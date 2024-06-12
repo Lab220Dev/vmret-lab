@@ -77,7 +77,7 @@ const checkActiveRoute = (item) => {
         :href="item.url" @click="itemClick($event, item, index)" :class="item.class" 
         :target="item.target" tabindex="0">
             <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span :class="[{ disabledtext: item.disabled }, abletext ]">{{ item.label }}</span>
+            <span :class="[item.disabled? disabledtext:abletext]">{{ item.label }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
         </a>
         <router-link v-if="item.to && !item.items && item.visible !== false" 

@@ -14,7 +14,7 @@ const model = ref([
 
                 items: [
                     { label: 'Retiradas Realizadas', icon: 'pi pi-fw pi-id-card', to: '', disabled: true },
-                    { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '', disabled: false },
+                    { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '', disabled: true },
                     { label: 'Itens Mais Retirados', icon: 'pi pi-fw pi-bookmark', to: '', disabled: true },
                     { label: 'Retiradas Avulsas', icon: 'pi pi-fw pi-exclamation-circle', to: '', disabled: true },
                     { label: 'Historicos de Abastecimentos', icon: 'pi pi-fw pi-mobile', to: '', disabled: true },
