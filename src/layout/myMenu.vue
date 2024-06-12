@@ -11,44 +11,41 @@ const model = ref([
             {
                 label: 'Relatorios',
                 icon: 'pi pi-fw pi-globe',
+
                 items: [
                     { label: 'Retiradas Realizadas', icon: 'pi pi-fw pi-id-card', to: '', disabled: true },
-                    { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '', disabled: true },
-                    { label: 'Itens Mais Retirados', icon: 'pi pi-fw pi-bookmark', to: '',disabled: true },
-                    { label: 'Retiradas Avulsas', icon: 'pi pi-fw pi-exclamation-circle', to: '' ,disabled: true },
-                    { label: 'Historicos de Abastecimentos', icon: 'pi pi-fw pi-mobile', to: '',disabled: true },
-                    { label: 'Status da DM', icon: 'pi pi-fw pi-table', to: '',disabled: true },
-                    { label: 'Fichas de Retiradas', icon: 'pi pi-fw pi-list', to: '' ,disabled: true },
-                    { label: 'Logs', icon: 'pi pi-fw pi-share-alt', to: '',disabled: true },
+                    { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '', disabled: false },
+                    { label: 'Itens Mais Retirados', icon: 'pi pi-fw pi-bookmark', to: '', disabled: true },
+                    { label: 'Retiradas Avulsas', icon: 'pi pi-fw pi-exclamation-circle', to: '', disabled: true },
+                    { label: 'Historicos de Abastecimentos', icon: 'pi pi-fw pi-mobile', to: '', disabled: true },
+                    { label: 'Status da DM', icon: 'pi pi-fw pi-table', to: '', disabled: true },
+                    { label: 'Fichas de Retiradas', icon: 'pi pi-fw pi-list', to: '', disabled: true },
+                    { label: 'Logs', icon: 'pi pi-fw pi-share-alt', to: '', disabled: true },
                 ]
             }, {
                 label: 'Configurações', icon: 'pi pi-fw pi-globe',
                 items: [
                     { label: 'Dispenser Machines', icon: 'pi pi-fw pi-eye', to: '', disabled: true },
-                    { label: 'Liberação Avulsa', icon: 'pi pi-fw pi-globe', target: '_blank' ,disabled: true },
+                    { label: 'Liberação Avulsa', icon: 'pi pi-fw pi-globe', target: '_blank', disabled: true },
                     { label: 'Tema', icon: 'pi pi-fw pi-globe', target: '_blank', disabled: true }
                 ]
             },
             {
                 label: 'Importações',
                 icon: 'pi pi-fw pi-prime',
-                items: [
-                    {
-                        label: 'Importações',
-                        to: '',
-                        disabled: true
-                    },
-                ]
+                to: '',
+                disabled: true
             },
             {
                 label: 'Cadastros',
                 icon: 'pi pi-fw pi-briefcase',
+                disabled: false,
                 items: [
                     {
                         label: 'funcionarios',
                         icon: 'pi pi-fw pi-globe',
                         to: '/cadastros/funcionarios',
-                        disabled: true
+                        disabled: false
                     },
                     {
                         label: 'usuarios',
