@@ -5,93 +5,109 @@ import AppMenuItem from './AppMenuItem.vue';
 
 const model = ref([
     {
-        label: 'Home',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
-    },
-    {
-        label: 'Relatorios',
+        label: 'Menu',
         items: [
-            { label: 'Retiradas Realizadas', icon: 'pi pi-fw pi-id-card', to: '/relatorios/retiradasrealizadas' },
-            { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '/relatorios/estoquedm' },
-            { label: 'Itens Mais Retirados', icon: 'pi pi-fw pi-bookmark', to: '/relatorios/itemsmaisretirados' },
-            { label: 'Retiradas Avulsas', icon: 'pi pi-fw pi-exclamation-circle', to: '/relatorios/retiradasavulsas' },
-            { label: 'Historicos de Abastecimentos', icon: 'pi pi-fw pi-mobile', to: '/relatorios/historicosabastecimento', class: 'rotated-icon' },
-            { label: 'Status da DM', icon: 'pi pi-fw pi-table', to: '/relatorios/statusdm' },
-            { label: 'Fichas de Retiradas', icon: 'pi pi-fw pi-list', to: '/relatorios/fichasretiradas' },
-            { label: 'Logs', icon: 'pi pi-fw pi-share-alt', to: '/relatorios/logs' },
-        ]
-    },
-    {
-        label: 'Configurações',
-        items: [
-            { label: 'Dispenser Machines', icon: 'pi pi-fw pi-eye', to: '/pages/crud', badge: 'NEW' },
-            { label: 'Liberação Avulsa', icon: 'pi pi-fw pi-globe', url: 'https://www.primefaces.org/primeblocks-vue', target: '_blank' },
-            { label: 'Tema', icon: 'pi pi-fw pi-globe', url: 'https://www.primefaces.org/primeblocks-vue', target: '_blank' }
-        ]
-    },
-    {
-        label: 'Importações',
-        items: [
-            { label: 'Importações', icon: 'pi pi-fw pi-prime', to: '/utilities/icons' },
-        ]
-    },
-    {
-        label: 'Cadastros',
-        icon: 'pi pi-fw pi-briefcase',
-        items: [
+            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
             {
-                label: 'funcionarios',
+                label: 'Relatorios',
                 icon: 'pi pi-fw pi-globe',
-                to: '/cadastros/funcionarios'
+                items: [
+                    { label: 'Retiradas Realizadas', icon: 'pi pi-fw pi-id-card', to: '', disabled: true },
+                    { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '', disabled: true },
+                    { label: 'Itens Mais Retirados', icon: 'pi pi-fw pi-bookmark', to: '',disabled: true },
+                    { label: 'Retiradas Avulsas', icon: 'pi pi-fw pi-exclamation-circle', to: '' ,disabled: true },
+                    { label: 'Historicos de Abastecimentos', icon: 'pi pi-fw pi-mobile', to: '',disabled: true },
+                    { label: 'Status da DM', icon: 'pi pi-fw pi-table', to: '',disabled: true },
+                    { label: 'Fichas de Retiradas', icon: 'pi pi-fw pi-list', to: '' ,disabled: true },
+                    { label: 'Logs', icon: 'pi pi-fw pi-share-alt', to: '',disabled: true },
+                ]
+            }, {
+                label: 'Configurações', icon: 'pi pi-fw pi-globe',
+                items: [
+                    { label: 'Dispenser Machines', icon: 'pi pi-fw pi-eye', to: '', disabled: true },
+                    { label: 'Liberação Avulsa', icon: 'pi pi-fw pi-globe', target: '_blank' ,disabled: true },
+                    { label: 'Tema', icon: 'pi pi-fw pi-globe', target: '_blank', disabled: true }
+                ]
             },
             {
-                label: 'usuarios',
-                icon: 'pi pi-fw pi-pencil',
+                label: 'Importações',
+                icon: 'pi pi-fw pi-prime',
                 items: [
                     {
-                        label: 'Web',
-                        icon: 'pi pi-fw pi-bookmark',
-                        to: '/cadastros/web'
+                        label: 'Importações',
+                        to: '',
+                        disabled: true
+                    },
+                ]
+            },
+            {
+                label: 'Cadastros',
+                icon: 'pi pi-fw pi-briefcase',
+                items: [
+                    {
+                        label: 'funcionarios',
+                        icon: 'pi pi-fw pi-globe',
+                        to: '/cadastros/funcionarios',
+                        disabled: true
                     },
                     {
-                        label: 'Liberação Avulsa',
+                        label: 'usuarios',
+                        icon: 'pi pi-fw pi-pencil',
+                        items: [
+                            {
+                                label: 'Web',
+                                icon: 'pi pi-fw pi-bookmark',
+                                to: '',
+                                disabled: true
+                            },
+                            {
+                                label: 'Liberação Avulsa',
+                                icon: 'pi pi-fw pi-bookmark',
+                                to: '',
+                                disabled: true
+                            }
+                        ]
+                    },
+                    {
+                        label: 'DM',
                         icon: 'pi pi-fw pi-bookmark',
-                        to: '/cadastros/Avulsa'
-                    }
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Centro de Custo',
+                        icon: 'pi pi-fw pi-bookmark',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Setor/diretoria',
+                        icon: 'pi pi-fw pi-bookmark',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Função/Nivel Hierarquico',
+                        icon: 'pi pi-fw pi-bookmark',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Planta',
+                        icon: 'pi pi-fw pi-bookmark',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Produtos',
+                        icon: 'pi pi-fw pi-bookmark',
+                        to: ''
+                    },
                 ]
-            }, ,
-            {
-                label: 'DM',
-                icon: 'pi pi-fw pi-bookmark',
-                to: '/cadastros/DM'
-            },
-            {
-                label: 'Centro de Custo',
-                icon: 'pi pi-fw pi-bookmark',
-                to: '/cadastros/cdc'
-            },
-            {
-                label: 'Setor/diretoria',
-                icon: 'pi pi-fw pi-bookmark',
-                to: '/cadastros/setor'
-            },
-            {
-                label: 'Função/Nivel Hierarquico',
-                icon: 'pi pi-fw pi-bookmark',
-                to: '/cadastros/funcao'
-            },
-            {
-                label: 'Planta',
-                icon: 'pi pi-fw pi-bookmark',
-                to: '/cadastros/planta'
-            },
-            {
-                label: 'Produtos',
-                icon: 'pi pi-fw pi-bookmark',
-                to: '/cadastros/produtos'
-            },
-        ]
-    }
+            }]
+    },
+
+
 ]);
 </script>
 

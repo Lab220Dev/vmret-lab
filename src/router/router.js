@@ -16,42 +16,42 @@ const router = createRouter({
                 {
                     path: '/relatorios/retiradasrealizadas',
                     name: 'retiradasrealizadas',
-                    component: () => import('@/views/uikit/FormLayout.vue')
+                    component: () => import('@/views/relatorios/retiradasrealizadas.vue')
                 },
                 {
                     path: '/relatorios/estoquedm',
                     name: 'estoquedm',
-                    component: () => import('@/views/uikit/Input.vue')
+                    component: () => import('@/views/relatorios/estoquedm.vue')
                 },
                 {
                     path: '/relatorios/itemsmaisretirados',
                     name: 'itemsmaisretirados',
-                    component: () => import('@/views/uikit/FloatLabel.vue')
+                    component: () => import('@/views/relatorios/itemsmaisretirados.vue')
                 },
                 {
                     path: '/relatorios/retiradasavulsas',
                     name: 'retiradasavulsas',
-                    component: () => import('@/views/uikit/InvalidState.vue')
+                    component: () => import('@/views/relatorios/retiradasavulsas.vue')
                 },
                 {
                     path: '/relatorios/historicosabastecimento',
                     name: 'historicosabastecimento',
-                    component: () => import('@/views/uikit/Button.vue')
+                    component: () => import('@/views/relatorios/historicosabastecimento.vue')
                 },
                 {
                     path: '/relatorios/statusdm',
                     name: 'statusdm',
-                    component: () => import('@/views/uikit/Table.vue')
+                    component: () => import('@/views/relatorios/statusdm.vue')
                 },
                 {
                     path: '/relatorios/fichasretiradas',
                     name: 'fichasretiradas',
-                    component: () => import('@/views/uikit/List.vue')
+                    component: () => import('@/views/relatorios/fichasretiradas.vue')
                 },
                 {
                     path: '/relatorios/logs',
                     name: 'logs',
-                    component: () => import('@/views/uikit/Tree.vue')
+                    component: () => import('@/views/relatorios/logs.vue')
                 },
                 {
                     path: '/cadastros/funcionarios',
@@ -68,48 +68,6 @@ const router = createRouter({
                     path: '/cadastros/usuarios/avulsa',
                     name: 'media',
                     component: () => import('@/views/cadastros/usuarios/Avulsa.vue')
-                },
-                {
-                    path: '/uikit/menu',
-                    component: () => import('@/views/uikit/Menu.vue'),
-                    children: [
-                        {
-                            path: '/uikit/menu',
-                            component: () => import('@/views/uikit/menu/PersonalDemo.vue')
-                        },
-                        {
-                            path: '/uikit/menu/seat',
-                            component: () => import('@/views/uikit/menu/SeatDemo.vue')
-                        },
-                        {
-                            path: '/uikit/menu/payment',
-                            component: () => import('@/views/uikit/menu/PaymentDemo.vue')
-                        },
-                        {
-                            path: '/uikit/menu/confirmation',
-                            component: () => import('@/views/uikit/menu/ConfirmationDemo.vue')
-                        }
-                    ]
-                },
-                {
-                    path: '/uikit/message',
-                    name: 'message',
-                    component: () => import('@/views/uikit/Messages.vue')
-                },
-                {
-                    path: '/uikit/file',
-                    name: 'file',
-                    component: () => import('@/views/uikit/File.vue')
-                },
-                {
-                    path: '/uikit/charts',
-                    name: 'charts',
-                    component: () => import('@/views/uikit/Chart.vue')
-                },
-                {
-                    path: '/uikit/misc',
-                    name: 'misc',
-                    component: () => import('@/views/uikit/Misc.vue')
                 },
                 {
                     path: '/blocks',
