@@ -7,101 +7,135 @@ const model = ref([
     {
         label: 'Menu',
         items: [
-            { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' },
+            { label: 'Dashboard',
+             icon: 'pi pi-fw pi-chart-pie', 
+             items:[
+             {label: 'Retiradas Realizadas',  to: '',   disabled: true},
+             {label: 'Estoques da DM',  to: '', disabled: true },
+             {label: 'Metricas da VM', to: '', disabled: true },
+             {label: 'Itens Mais Retirados', to: '', disabled: true },
+             {label: 'Performace por VM', to: '', disabled: true },
+             {label: 'Performace por Horario', to: '', disabled: true },
+             {label: 'Status da VM', to: '', disabled: true },
+             {label: 'Fichas Retiradas', to: '', disabled: true },
+
+             ]
+            },
             {
-                label: 'Relatorios',
-                icon: 'pi pi-fw pi-globe',
+                label: 'Vending Machines',
+                icon: 'pi pi-fw pi-book',
 
                 items: [
-                    { label: 'Retiradas Realizadas', icon: 'pi pi-fw pi-id-card', to: '', disabled: true },
-                    { label: 'Estoques da DM', icon: 'pi pi-fw pi-check-square', to: '', disabled: true },
-                    { label: 'Itens Mais Retirados', icon: 'pi pi-fw pi-bookmark', to: '', disabled: true },
-                    { label: 'Retiradas Avulsas', icon: 'pi pi-fw pi-exclamation-circle', to: '', disabled: true },
-                    { label: 'Historicos de Abastecimentos', icon: 'pi pi-fw pi-mobile', to: '', disabled: true },
-                    { label: 'Status da DM', icon: 'pi pi-fw pi-table', to: '', disabled: true },
-                    { label: 'Fichas de Retiradas', icon: 'pi pi-fw pi-list', to: '', disabled: true },
-                    { label: 'Logs', icon: 'pi pi-fw pi-share-alt', to: '', disabled: true },
+                    { label: 'Lista de Itens Não Alocados', to: '', disabled: true },
+                    { label: 'Lista de VMs', to: '', disabled: true }
                 ]
             }, {
-                label: 'Configurações', icon: 'pi pi-fw pi-globe',
+                label: 'Funcionarios', icon: 'pi pi-fw pi-users',
                 items: [
-                    { label: 'Dispenser Machines', icon: 'pi pi-fw pi-eye', to: '', disabled: true },
-                    { label: 'Liberação Avulsa', icon: 'pi pi-fw pi-globe', target: '_blank', disabled: true },
-                    { label: 'Tema', icon: 'pi pi-fw pi-globe', target: '_blank', disabled: true }
+                    { label: 'Lista de Funcionarios', to: '/cadastros/funcionarios', disabled: true },
+                    { label: 'Adicionar Funcionarios', disabled: true }
                 ]
             },
             {
-                label: 'Importações',
-                icon: 'pi pi-fw pi-prime',
-                to: '',
-                disabled: true
-            },
-            {
-                label: 'Cadastros',
-                icon: 'pi pi-fw pi-briefcase',
-                disabled: false,
+                label: 'Empresa',
+                icon: 'pi pi-fw pi-building',
                 items: [
                     {
-                        label: 'funcionarios',
-                        icon: 'pi pi-fw pi-globe',
-                        to: '/cadastros/funcionarios',
+                        label: 'Lista de Usuarios WEB',                       
+                        to: '',
                         disabled: false
                     },
                     {
-                        label: 'usuarios',
-                        icon: 'pi pi-fw pi-pencil',
-                        items: [
-                            {
-                                label: 'Web',
-                                icon: 'pi pi-fw pi-bookmark',
-                                to: '',
-                                disabled: true
-                            },
-                            {
-                                label: 'Liberação Avulsa',
-                                icon: 'pi pi-fw pi-bookmark',
-                                to: '',
-                                disabled: true
-                            }
-                        ]
-                    },
-                    {
-                        label: 'DM',
-                        icon: 'pi pi-fw pi-bookmark',
+                        label: 'Lista de Usuarios VM',
                         to: '',
                         disabled: true
-                    },
-                    {
-                        label: 'Centro de Custo',
-                        icon: 'pi pi-fw pi-bookmark',
-                        to: '',
-                        disabled: true
-                    },
-                    {
-                        label: 'Setor/diretoria',
-                        icon: 'pi pi-fw pi-bookmark',
-                        to: '',
-                        disabled: true
-                    },
-                    {
-                        label: 'Função/Nivel Hierarquico',
-                        icon: 'pi pi-fw pi-bookmark',
-                        to: '',
-                        disabled: true
-                    },
-                    {
-                        label: 'Planta',
-                        icon: 'pi pi-fw pi-bookmark',
-                        to: '',
-                        disabled: true
-                    },
-                    {
-                        label: 'Produtos',
-                        icon: 'pi pi-fw pi-bookmark',
-                        to: ''
-                    },
+                    }
                 ]
-            }]
+            },
+            {
+                label: 'CAD Auxiliares Produto',
+                icon: 'pi pi-fw pi-list',
+                items: [
+                    {
+                        label: 'Categorias',                       
+                        to: '',
+                        disabled: false
+                    },
+                    {
+                        label: 'Cores',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Tamanhos',
+                        to: '',
+                        disabled: true
+                    }
+                ]
+            },
+            {
+                label: 'CAD Auxiliares Empresas',
+                icon: 'pi pi-fw pi-list',
+                items: [
+                    {
+                        label: 'Centro de Custo',                       
+                        to: '',
+                        disabled: false
+                    },
+                    {
+                        label: 'Setores',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Funções',
+                        to: '',
+                        disabled: true
+                    },
+                    {
+                        label: 'Plantas',
+                        to: '',
+                        disabled: true
+                    }
+                ]
+            },
+            {
+                label: 'Produtoss',
+                icon: 'pi pi-fw pi-gift',
+                items: [
+                    {
+                        label: 'Lista de Produto',                       
+                        to: '',
+                        disabled: false
+                    },
+                    {
+                        label: 'Adicionar Produto',
+                        to: '',
+                        disabled: true
+                    }
+                ]
+            },
+            {
+                label: 'Configurações',
+                icon: 'pi pi-fw pi-cog',
+                items: [
+                    {
+                        label: 'Tema',                       
+                        to: '',
+                        disabled: false
+                    },
+                    {
+                        label: 'Importação de Dados',
+                        to: '',
+                        disabled: true
+                    }
+                ]
+            }
+        
+        
+        
+        
+        ]
     },
 
 
@@ -110,6 +144,9 @@ const model = ref([
 
 <template>
     <ul class="layout-menu">
+        <div>
+
+        </div>
         <template v-for="(item, i) in model" :key="item">
             <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>

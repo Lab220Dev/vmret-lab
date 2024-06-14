@@ -70,16 +70,6 @@ const router = createRouter({
                     component: () => import('@/views/cadastros/usuarios/Avulsa.vue')
                 },
                 {
-                    path: '/blocks',
-                    name: 'blocks',
-                    component: () => import('@/views/utilities/Blocks.vue')
-                },
-                {
-                    path: '/utilities/icons',
-                    name: 'icons',
-                    component: () => import('@/views/utilities/Icons.vue')
-                },
-                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')
@@ -94,11 +84,6 @@ const router = createRouter({
                     name: 'crud',
                     component: () => import('@/views/pages/Crud.vue')
                 },
-                {
-                    path: '/documentation',
-                    name: 'documentation',
-                    component: () => import('@/views/utilities/Documentation.vue')
-                }
             ]
         },
         {
