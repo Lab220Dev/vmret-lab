@@ -55,7 +55,7 @@ const router = createRouter({
                 },
                 {
                     path: '/cadastros/funcionarios',
-                    name: 'cadastros de funcionarios',
+                    name: 'cadastros de Funcionários',
                     component: () => import('@/views/cadastros/funcionarios.vue')
                 },
 
