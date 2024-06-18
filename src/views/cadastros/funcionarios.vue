@@ -125,58 +125,58 @@ const onUpload = () => {
                     <div class="card">
                         <!--form de cadastro de novo funcionario-->
                         <div class="p-fluid formgrid grid">
-                            <div class="field col-12">
+                            <div class="field lg:col-12 md:col-6 sm:col-4 ">
                                 <label for="name">Nome</label>
                                 <InputText v-model="funcionario.nome" id="name" type="text"></InputText>
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="matricula">Matrícula</label>
                                 <InputText id="matricula" v-model="funcionario.Matricula" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="Hash">Hash 1</label>
                                 <InputText disabled id="Hash" v-model="funcionario.Hash1" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="Hash2">Hash 2</label>
                                 <InputText disabled id="Hash2" v-model="funcionario.Hash2" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="DataAdmissao">Data de Admissao</label>
                                 <Calendar v-model="funcionario.DataAdmissao" showIcon :showOnFocus="false"
                                     dateFormat="dd/mm/yy" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="rg">RG</label>
                                 <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="cpf">CPF</label>
                                 <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="ctps">CTPS</label>
                                 <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="email">email</label>
                                 <InputText id="email" v-model="funcionario.email" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="perfil">Centro de Custo</label>
                                 <Dropdown v-model="funcionario.CentrodeCusto" :options="centroCusto" optionLabel="name"
-                                    placeholder="Selecione Um Centro de Custo" />
+                                    placeholder="Selecione Um " />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="planta">Planta</label>
                                 <InputText id="planta" v-model="funcionario.planta" type="text" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="setor">Setor/Diretoria</label>
                                 <Dropdown v-model="funcionario.Setor" :options="SetorDiretoria" optionLabel="name"
                                     placeholder="Selecione o Setor" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="funcao">Função/Nivel Hierarquico</label>
                                 <Dropdown v-model="funcionario.Funcao" :options="hieraquiaoptions" optionLabel="name"
                                     placeholder="Selecione a Função" />
@@ -185,12 +185,12 @@ const onUpload = () => {
                         </div>
                         <!--Grid separado para carregar os campos caso for ativo-->
                         <div class="p-fluid formgrid grid">
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="status">Status</label>
                                 <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="name"
                                     placeholder="Escolha um"></Dropdown>
                             </div>
-                            <div class="field col-2">
+                            <div class="field lg:col-2  md:col-6 sm:col-4">
                                 <label for="inicio">Hora Inicio</label>
                                 <VueDatePicker v-model="funcionario.HoraInicio" time-picker
                                     disable-time-range-validation>
@@ -199,7 +199,7 @@ const onUpload = () => {
                                     </template>
                                 </VueDatePicker>
                             </div>
-                            <div class="field col-2">
+                            <div class="field lg:col-2  md:col-6 sm:col-4">
                                 <label for="inicio">Hora Fim</label>
                                 <VueDatePicker id="inicio" v-model="funcionario.HoraFim" time-picker
                                     disable-time-range-validation>
@@ -211,13 +211,13 @@ const onUpload = () => {
 
                         </div>
                         <div class="p-fluid formgrid grid">
-                            <div class="col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <Toast />
                                 <img role="presentation" :src="imageUrl" width="170" />
                                 <FileUpload mode="basic" name="demo[]" url="demo/images" accept="image/*"
                                     :maxFileSize="1000000" @upload="onUpload" />
                             </div>
-                            <div class="field col-4">
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="fim">Permissões:</label>
                                 <div class="flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Segunda" name="pizza"
@@ -292,4 +292,5 @@ const onUpload = () => {
     width: auto;
     margin-left: 5px;
 }
+
 </style>

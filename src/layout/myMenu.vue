@@ -53,7 +53,7 @@ const model = ref([
                     { label: 'Setor/Diretoria', to :'' , disabled:true},
                     { label: 'Função/Nivel Hierarquico', to :'' , disabled:true},
                     { label: 'Planta', to :'' , disabled:true},
-                    { label: 'Produto', to :'' , disabled:true},
+                    { label: 'Produto', to :'/cadastros/produtos' , disabled:false},
                 ]
             },
             
