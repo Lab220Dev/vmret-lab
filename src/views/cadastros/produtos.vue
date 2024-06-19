@@ -18,7 +18,7 @@ const produto = reactive({
     planta: '',
     tipo: '',
     nome: '',
-    descricao: '',
+    descricao: ' ',
     especificacoes: '',
     unidadesdemedida: '',
     validade: '',
@@ -41,65 +41,56 @@ const plantas = ref([
             <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="p-fluid formgrid grid">
-                        <div class="field lg:col-4 md:col-12 sm:col-12">
-                            <h4 class="mt-3">Descrição</h4>
+                        <div class="card">
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
-                                    <label for="nome">Nome</label>
-                                    <InputText v-model="produto.nome" id="nome" type="text"></InputText>
-                                </div>
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="sku">SKU</label>
                                     <InputText v-model="produto.sku" id="sku" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                    <label for="nome">Nome</label>
+                                    <InputText v-model="produto.nome" id="nome" type="text"></InputText>
+                                </div>
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                    <label for="nome">Descrição</label>
+                                    <Textarea v-model="produto.descricao"  class="overflow-scroll" rows="5" cols="30" />
+                                </div>
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                    <label for="sku">Especificação</label>
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
+                                </div>
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="tipo">Tipo</label>
                                     <Dropdown v-model="produto.tipo" :options="tipoProduto" optionLabel="nome"
                                         placeholder="Selecione um tipo" />
                                 </div>
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
-                                    <label for="tipo">Plantas</label>
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                    <label for="tipo">Planta</label>
                                     <Dropdown v-model="produto.tipo" :options="plantas" optionLabel="nome"
                                         placeholder="Selecione um" />
                                 </div>
-                            </div>
-                        </div>
-                        <div class="field lg:col-4 md:col-12 sm:col-12">
-                            <h4 class="mt-3">Informações</h4>
-                            <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
-                                    <label for="nome">Descrição</label>
-                                    <Textarea v-model="produto.descricao" autoResize rows="5" cols="30" />
-                                </div>
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
-                                    <label for="sku">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" autoResize rows="5" cols="30" />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field lg:col-4 md:col-12 sm:col-12">
-                            <h4 class="mt-3">Outros</h4>
-                            <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="UndMedida">Unidade de Medida</label>
                                     <InputText v-model="produto.unidadesdemedida" id="UndMedida" type="text">
                                     </InputText>
 
                                 </div>
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="vldDias">Validade em dias</label>
                                     <InputNumber v-model="produto.validade" inputId="vldDias"  suffix=" dias" />
 
                                 </div>
                             </div>
                         </div>
+                       
                     </div>
                     <div class="p-fluid formgrid grid">
                         <div class="field lg:col-12 md:col-6 sm:col-4 ">
                             <h3>Imagem Principal</h3>
                             <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                accept="image/*" :multiple="false" :maxFileSize="1000000" @select="onSelectedFiles">
+                                accept="image/*" :multiple="false" :maxFileSize="1000000" @select="onSelectedFiles"
+                                chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
                                 <template #empty>
                                     <div class="flex align-items-center justify-content-center flex-column">
 
@@ -110,7 +101,8 @@ const plantas = ref([
                         <div class="field lg:col-12 md:col-6 sm:col-4 ">
                             <h3>Imagens Secundaria</h3>
                             <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles">
+                                :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles"
+                                chooseLabel="Escolha Fotos" cancelLabel="Limpar">
                                 <template #empty>
                                     <div class="flex align-items-center justify-content-center flex-column">
 
@@ -121,7 +113,8 @@ const plantas = ref([
                         <div class="field lg:col-12 md:col-6 sm:col-4 ">
                             <h3>Informações Adicionais</h3>
                             <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                :multiple="false" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles">
+                                :multiple="false" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles"
+                                chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
                                 <template #empty>
                                     <div class="flex align-items-center justify-content-center flex-column">
 
@@ -141,3 +134,9 @@ const plantas = ref([
 
     </div>
 </template>
+
+<style>
+.overflow-scroll {
+  overflow: scroll !important;
+  resize: none;
+}</style>
