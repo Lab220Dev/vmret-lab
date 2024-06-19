@@ -4,8 +4,15 @@ import { useToast } from 'primevue/usetoast';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import imageUrl from '@/assets/images/placeholder4.png'
-import clockurl from '@/assets/images/OIP.jpeg'
 
+const toast = useToast();
+const active = ref(1);
+const saveProduto = () => {
+
+    //veirficar data/rg valido/se o status for ativado e as permissoes/
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
+
+}
 const produto = reactive({
     sku: '',
     planta: '',
@@ -30,14 +37,11 @@ const plantas = ref([
 
 <template>
     <div class="card">
-        <TabView v-model:activeIndex="active">
-            <TabPanel header="Listar Produto">
-
-            </TabPanel>
-            <TabPanel header="Adicionar Produto">
+        <TabView>
+            <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="p-fluid formgrid grid">
-                        <div class="col-4">
+                        <div class="field lg:col-4 md:col-12 sm:col-12">
                             <h4 class="mt-3">Descrição</h4>
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid">
@@ -61,7 +65,7 @@ const plantas = ref([
                                 </div>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="field lg:col-4 md:col-12 sm:col-12">
                             <h4 class="mt-3">Informações</h4>
                             <div class="p-fluid formgrid grid">
                                 <div class="field lg:col-12 md:col-6 sm:col-4 ">
@@ -74,7 +78,7 @@ const plantas = ref([
                                 </div>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="field lg:col-4 md:col-12 sm:col-12">
                             <h4 class="mt-3">Outros</h4>
                             <div class="p-fluid formgrid grid">
                                 <div class="field lg:col-12 md:col-6 sm:col-4 ">
@@ -85,24 +89,55 @@ const plantas = ref([
                                 </div>
                                 <div class="field lg:col-12 md:col-6 sm:col-4 ">
                                     <label for="vldDias">Validade em dias</label>
-                                    <InputText v-model="produto.validade" id="vldDias" type="text"></InputText>
+                                    <InputNumber v-model="produto.validade" inputId="vldDias"  suffix=" dias" />
 
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="p-fluid formgrid grid">
-                        <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="true"
-                            accept="image/*" :maxFileSize="1000000" @select="onSelectedFiles">
-                            <template #empty>
-                                <div class="flex align-items-center justify-content-center flex-column">
-                                
-                                </div>
-                            </template>
-                        </FileUpload>
+                        <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                            <h3>Imagem Principal</h3>
+                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
+                                accept="image/*" :multiple="false" :maxFileSize="1000000" @select="onSelectedFiles">
+                                <template #empty>
+                                    <div class="flex align-items-center justify-content-center flex-column">
+
+                                    </div>
+                                </template>
+                            </FileUpload>
+                        </div>
+                        <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                            <h3>Imagens Secundaria</h3>
+                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
+                                :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles">
+                                <template #empty>
+                                    <div class="flex align-items-center justify-content-center flex-column">
+
+                                    </div>
+                                </template>
+                            </FileUpload>
+                        </div>
+                        <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                            <h3>Informações Adicionais</h3>
+                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
+                                :multiple="false" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles">
+                                <template #empty>
+                                    <div class="flex align-items-center justify-content-center flex-column">
+
+                                    </div>
+                                </template>
+                            </FileUpload>
+                        </div>
+
                     </div>
                 </div>
+                <Button label="Salvar" icon="pi pi-check" text="" @click="saveProduto" />
+            </TabPanel>
+            <TabPanel header="Listar Produto">
+
             </TabPanel>
         </TabView>
+
     </div>
 </template>

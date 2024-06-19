@@ -12,15 +12,6 @@ const status = ref([
     { name: 'Ativo', status: true },
     { name: 'Inativo', status: false }
 ]);
-const diasSemana = ref([
-    { name: "Segunda-Feira", key: "SEG" },
-    { name: "Terça-Feira", key: "TER" },
-    { name: "Quarta-Feira", key: "QUA" },
-    { name: "Quinta-Feira", key: "QUI" },
-    { name: "Sext-Feira", key: "SEX" },
-    { name: "Sabado", key: "SAB" },
-    { name: "Domingo", key: "DOM" },
-]);
 const centroCusto = ref([
     { name: "Centro de Custo 1", key: "cc1" },
     { name: "Centro de Custo 2", key: "cc2" },
@@ -52,10 +43,11 @@ const funcionario = reactive({
     HoraInicio: '',
     HoraFim: '',
     dias: [],
-    itemsSelecionados: [],
+    itemsSelecionadosSetor: [],
+    itemsSelecionadosFuncionario: [],
     file: []
 })
-const selectedProduct = ref();
+const selectedProduct = ref([]);
 
 const ItensSetorDev = ref([
     { name: "Mouse", sku: "mse", prazo: 3, quantidade: 1 },
@@ -66,30 +58,25 @@ const ItensSetorDev = ref([
 
 ])
 const ItensSetorAdm = ref([
-    { name: "Post-it", sku: "pit", prazo: 3, quantidade: 1 },
-    { name: "caderno", sku: "cdn", prazo: 3, quantidade: 1 },
-    { name: "corretivo", sku: "crr", prazo: 3, quantidade: 1 },
-    { name: "clipe de papel", sku: "clp", prazo: 3, quantidade: 1 },
+    { name: "Post-it", sku: "pit", prazo: 0, quantidade: 0 },
+    { name: "caderno", sku: "cdn", prazo: 0, quantidade: 0 },
+    { name: "corretivo", sku: "crr", prazo: 0, quantidade: 0 },
+    { name: "clipe de papel", sku: "clp", prazo: 0, quantidade: 0 },
 ])
-const ItensFuncionario = ref([
-    { name: "usb", sku: "usb", prazo: 3, quantidade: 1 },
-    { name: "protetor auricuklar", sku: "pauri", prazo: 2, quantidade: 1 },
-    { name: "caneta", sku: "cnt", prazo: 1, quantidade: 1 },
-    { name: "fita crepe", sku: "fcp", prazo: 30, quantidade: 1 },
-    { name: "carregador", sku: "crg", prazo: 30, quantidade: 1 }
-])
+
 const ListaFuncionarios = ref([
-    { "name": "Magdalen", "matricula": 80700 },
-    { "name": "Hillary", "matricula": 12228 },
-    { "name": "Aristotle", "matricula": 95795 },
-    { "name": "Kiele", "matricula": 24045 },
-    { "name": "Robinetta", "matricula": 28333 },
-    { "name": "Lionello", "matricula": 47629 },
-    { "name": "Carling", "matricula": 15321 },
-    { "name": "Sebastiano", "matricula": 20196 },
-    { "name": "Cointon", "matricula": 58933 },
-    { "name": "Delbert", "matricula": 32068 }
+    { "Nome": "Magdalen", "matricula": 80700 },
+    { "Nome": "Hillary", "matricula": 12228 },
+    { "Nome": "Aristotle", "matricula": 95795 },
+    { "Nome": "Kiele", "matricula": 24045 },
+    { "Nome": "Robinetta", "matricula": 28333 },
+    { "Nome": "Lionello", "matricula": 47629 },
+    { "Nome": "Carling", "matricula": 15321 },
+    { "Nome": "Sebastiano", "matricula": 20196 },
+    { "Nome": "Cointon", "matricula": 58933 },
+    { "Nome": "Delbert", "matricula": 32068 }
 ]);
+const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
 const saveFuncionario = () => {
@@ -97,10 +84,14 @@ const saveFuncionario = () => {
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
 
 }
+const SalvarProduto = () =>{
+    funcionario.itemsSelecionadosFuncionario.push(selectedProduct.value);
+    visible.value=false;
+}
 const onRowSelect = (event) => {
-    funcionario.Nome = event.data.nome;
+    funcionario.Nome = event.data.Nome;
     funcionario.Matricula = event.data.matricula;
-    active = 1;
+    active.value = 1;
 };
 const onUpload = () => {
     toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
@@ -111,9 +102,9 @@ const onUpload = () => {
     <TabView v-model:activeIndex="active">
         <TabPanel header="Listar Funcionário">
             <div class="card">
-                <DataTable :value="ListaFuncionarios" :selection="selectedProduct" selectionMode="single" stripedRows
-                    tableStyle="min-width: 50rem" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
-                    <Column field="name" header="Nome"></Column>
+                <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows tableStyle="min-width: 50rem"
+                    dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <Column field="Nome" header="Nome"></Column>
                     <Column field="matricula" header="Matrícula"></Column>
                 </DataTable>
             </div>
@@ -127,7 +118,7 @@ const onUpload = () => {
                         <div class="p-fluid formgrid grid">
                             <div class="field lg:col-12 md:col-6 sm:col-4 ">
                                 <label for="name">Nome</label>
-                                <InputText v-model="funcionario.nome" id="name" type="text"></InputText>
+                                <InputText v-model="funcionario.Nome" id="name" type="text"></InputText>
                             </div>
                             <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="matricula">Matrícula</label>
@@ -143,23 +134,24 @@ const onUpload = () => {
                             </div>
                             <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="DataAdmissao">Data de Admissao</label>
-                                <Calendar v-model="funcionario.DataAdmissao" showIcon :showOnFocus="false"
-                                    dateFormat="dd/mm/yy" />
-                            </div>
-                            <div class="field lg:col-4  md:col-6 sm:col-4">
-                                <label for="rg">RG</label>
-                                <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" />
+                                <VueDatePicker v-model="funcionario.DataAdmissao" showIcon :showOnFocus="false"
+                                    dateFormat="dd/mm/yy" locale="pt-BR" cancelText="Cancelar"
+                                    selectText="Selecionar" />
                             </div>
                             <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="cpf">CPF</label>
                                 <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" />
                             </div>
                             <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <label for="rg">RG</label>
+                                <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" />
+                            </div>
+                            <div class="field lg:col-4  md:col-6 sm:col-4">
                                 <label for="ctps">CTPS</label>
                                 <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" />
                             </div>
                             <div class="field lg:col-4  md:col-6 sm:col-4">
-                                <label for="email">email</label>
+                                <label for="email">E-mail</label>
                                 <InputText id="email" v-model="funcionario.email" />
                             </div>
                             <div class="field lg:col-4  md:col-6 sm:col-4">
@@ -215,51 +207,52 @@ const onUpload = () => {
                                 <Toast />
                                 <img role="presentation" :src="imageUrl" width="170" />
                                 <FileUpload mode="basic" name="demo[]" url="demo/images" accept="image/*"
-                                    :maxFileSize="1000000" @upload="onUpload" />
+                                    :maxFileSize="1000000" @upload="onUpload" chooseLabel="Escolha uma Foto" />
                             </div>
-                            <div class="field lg:col-4  md:col-6 sm:col-4">
-                                <label for="fim">Permissões:</label>
-                                <div class="flex align-items-center">
+                            <!--Div com os dias da Semana-->
+                            <div class=" field lg:col-4  md:col-6 sm:col-4">
+                                <label for="fim">Selecione os dias que o Funcionario poderá retirar os items:</label>
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Segunda" name="pizza"
                                         value="Segunda" />
                                     <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                 </div>
-                                <div class="flex align-items-center">
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Terca" name="Dias" value="Terca" />
                                     <label for="Terca" class="ml-2"> Terça-Feira </label>
                                 </div>
-                                <div class="flex align-items-center">
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Quarta" name="Dias" value="Quarta" />
                                     <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                 </div>
-                                <div class="flex align-items-center">
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Quinta" name="Dias" value="Quinta" />
                                     <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                 </div>
-                                <div class="flex align-items-center">
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Sexta" name="Dias" value="Sexta" />
                                     <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                 </div>
-                                <div class="flex align-items-center">
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Sabado" name="Dias" value="Sabado" />
                                     <label for="Sabado" class="ml-2"> Sabado </label>
                                 </div>
-                                <div class="flex align-items-center">
+                                <div class="m-2 flex align-items-center">
                                     <Checkbox v-model="funcionario.dias" inputId="Domingo" name="Dias"
                                         value="Domingo" />
                                     <label for="Domingo" class="ml-2"> Domingo</label>
                                 </div>
 
                             </div>
-                        </div>
 
+                        </div>
+                        <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveFuncionario" />
                         <!--Datatables com os items que são carregados a partir das escolhas do cadastro do usuario-->
                         <div class="col-12">
                             <TabView>
                                 <TabPanel header="Items do Setor">
-                                    <DataTable :value="funcionario.Setor.key === 'adm' ? ItensSetorAdm : ItensSetorDev"
-                                        stripedRows dataKey="sku" v-model:selection="funcionario.itemsSelecionados">
-                                        <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                                    <DataTable :value="ItensSetorDev" stripedRows dataKey="sku"
+                                        v-model="funcionario.itemsSelecionadosSetor">
                                         <Column field="name" header="Nome"></Column>
                                         <Column field="sku" header="SKU"></Column>
                                         <Column field="quantidade" header="Quantidade"></Column>
@@ -267,9 +260,29 @@ const onUpload = () => {
                                     </DataTable>
                                 </TabPanel>
                                 <TabPanel header="Items do Funcionario">
-                                    <DataTable :value="ItensFuncionario" tableStyle="min-width: 50rem" stripedRows
-                                        dataKey="sku" v-model:selection="funcionario.itemsSelecionados">
-                                        <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                                    <Button label="Adicionar Items" @click="visible = true" />
+                                    <Dialog v-model:visible="visible" modal header="Adicionar Items do Funcionário">
+                                        <div class="flex align-items-center gap-3 mb-3">
+                                            <label for="username" class="font-semibold w-6rem">Produto</label>
+                                            <Dropdown v-model="selectedProduct" :options="ItensSetorAdm"
+                                                optionLabel="name" placeholder="Selecione um produto" />
+                                        </div>
+                                        <div class="flex align-items-center gap-3 mb-5">
+                                            <label for="Ordem" class="font-semibold w-6rem">Ordem</label>
+                                            <InputText id="Ordem" v-model="selectedProduct.prazo" class="flex-auto" autocomplete="off" />
+                                        </div>
+                                        <div class="flex align-items-center gap-3 mb-5">
+                                            <label for="Quantidade" class="font-semibold w-6rem">Quantidade</label>
+                                            <InputNumber  id="Quantidade" v-model="selectedProduct.quantidade" class="flex-auto" autocomplete="off" />
+                                        </div>
+                                        <div class="flex justify-content-end gap-2">
+                                            <Button type="button" label="Cancelar" severity="secondary"
+                                                @click="visible = false"></Button>
+                                            <Button type="button" label="Adicionar" @click="SalvarProduto"></Button>
+                                        </div>
+                                    </Dialog>
+                                    <DataTable :value="funcionario.itemsSelecionadosFuncionario" tableStyle="min-width: 50rem"
+                                        stripedRows dataKey="sku">
                                         <Column field="name" header="Nome"></Column>
                                         <Column field="sku" header="SKU"></Column>
                                         <Column field="quantidade" header="Quantidade"></Column>
@@ -278,7 +291,7 @@ const onUpload = () => {
                                 </TabPanel>
                             </TabView>
                         </div>
-                        <Button label="Salvar" icon="pi pi-check" text="" @click="saveFuncionario" />
+
                     </div>
                 </div>
             </div>
@@ -292,5 +305,4 @@ const onUpload = () => {
     width: auto;
     margin-left: 5px;
 }
-
 </style>
