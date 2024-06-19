@@ -125,7 +125,7 @@ const plantas = ref([
 
                     </div>
                 </div>
-                <Button label="Salvar" icon="pi pi-check" text="" @click="saveProduto" />
+                <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
             </TabPanel>
             <TabPanel header="Listar Produto">
 
