@@ -1,5 +1,5 @@
 <script setup>
-import { ref,  onMounted, onBeforeUnmount } from 'vue';
+import { ref,  onMounted, onBeforeUnmount, reactive } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 
@@ -41,10 +41,9 @@ const unbindOutsideClickListener = () => {
 const isOutsideClicked = (event) => {
     if (!topbarMenuActive.value) return;
 
-    const sidebarEl = document.querySelector('.layout-topbar-menu');
     const topbarEl = document.querySelector('.layout-topbar-menu-button');
 
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+    return !(topbarEl===(event.target) || topbarEl.contains(event.target));
 };
 </script>
 

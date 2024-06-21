@@ -3,7 +3,9 @@ import { reactive, ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
-import imageUrl from '@/assets/images/placeholder4.png'
+import image1 from '@/assets/images/placeholder4.png'
+import image2 from '@/assets/images/th.jpg'
+import image3 from '@/assets/images/OIG1.jpg'
 
 const toast = useToast();
 const active = ref(1);
@@ -22,6 +24,7 @@ const produto = reactive({
     especificacoes: '',
     unidadesdemedida: '',
     validade: '',
+    imagemPrincipal:''
 });
 const tipoProduto = ref([
     { nome: 'EPI', key: 'epi' },
@@ -33,11 +36,57 @@ const plantas = ref([
     { nome: 'Planta 2', key: 'p2' },
     { nome: 'Planta 3', key: 'p3' },
 ])
+const ListaProduto = ref([
+    {
+        sku: 123,
+        planta: 'Planta 1',
+        tipo: 'EPI',
+        nome: 'exemplo 1',
+        descricao: ' teste',
+        especificacoes: 'teste',
+        unidadesdemedida: 'teste',
+        validade: 22, 
+        image: image1
+    },
+    {
+        sku: 456,
+        planta: 'Planta 2',
+        tipo: 'Insumo',
+        nome: 'exemplo 2',
+        descricao: 'teste ',
+        especificacoes: 'teste',
+        unidadesdemedida: 'teste',
+        validade: 33,
+        image: image2
+    },
+    {
+        sku: 789,
+        planta: 'Planta 3',
+        tipo: 'Consumivel',
+        nome: 'exemplo 3',
+        descricao: 'teste ',
+        especificacoes: 'teste',
+        unidadesdemedida: 'teste',
+        validade: 44,
+        image: image3
+    },
+])
 </script>
 
 <template>
     <div class="card">
         <TabView>
+            <TabPanel header="Listar Produto">
+                <DataTable :value="ListaProduto" tableStyle="min-width: 50rem">
+                    <Column header="Imagem">
+                        <template #body="slotProps">
+                            <img :src="slotProps.data.image" class="w-6rem border-round" />
+                        </template>
+                    </Column>
+                    <Column field="sku" header="SKU"></Column>
+                    <Column field="nome" header="Nome"></Column>
+                </DataTable>
+            </TabPanel>
             <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="p-fluid formgrid grid">
@@ -54,11 +103,12 @@ const plantas = ref([
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="nome">Descrição</label>
-                                    <Textarea v-model="produto.descricao"  class="overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.descricao" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="sku">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
+                                        cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="tipo">Tipo</label>
@@ -78,12 +128,12 @@ const plantas = ref([
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="vldDias">Validade em dias</label>
-                                    <InputNumber v-model="produto.validade" inputId="vldDias"  suffix=" dias" />
+                                    <InputNumber v-model="produto.validade" inputId="vldDias" suffix=" dias" />
 
                                 </div>
                             </div>
                         </div>
-                       
+
                     </div>
                     <div class="p-fluid formgrid grid">
                         <div class="field lg:col-12 md:col-6 sm:col-4 ">
@@ -127,9 +177,6 @@ const plantas = ref([
                 </div>
                 <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
             </TabPanel>
-            <TabPanel header="Listar Produto">
-
-            </TabPanel>
         </TabView>
 
     </div>
@@ -137,6 +184,7 @@ const plantas = ref([
 
 <style>
 .overflow-scroll {
-  overflow: scroll !important;
-  resize: none;
-}</style>
+    overflow: scroll !important;
+    resize: none;
+}
+</style>
