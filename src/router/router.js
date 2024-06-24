@@ -63,16 +63,20 @@ const router = createRouter({
                     name: 'cadastros de Produtos',
                     component: () => import('@/views/cadastros/produtos.vue')
                 },
-
                 {
                     path: '/cadastros/usuarios/web',
-                    name: 'overlay',
+                    name: 'Cadastro Usuario',
                     component: () => import('@/views/cadastros/usuarios/web.vue')
                 },
                 {
                     path: '/cadastros/usuarios/avulsa',
-                    name: 'media',
+                    name: 'Cadastro Liberação Avulsa',
                     component: () => import('@/views/cadastros/usuarios/Avulsa.vue')
+                },
+                {
+                    path: '/cadastros/usuarios/dm',
+                    name: 'Cadastro DM',
+                    component: () => import('@/views/cadastros/usuarios/dm.vue')
                 },
                 {
                     path: '/pages/timeline',

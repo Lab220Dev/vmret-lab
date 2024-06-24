@@ -30,7 +30,7 @@ const model = ref([
                 icon: 'pi pi-fw pi-cog',
                 items: [
                     { label: 'Lista de DM', to: '', disabled: true },
-                    { label: 'Liberação A vulsa', to: '', disabled: true },
+                    { label: 'Liberação Avulsa', to: '', disabled: true },
                     { label: 'Tema', to: '', disabled: true }
                 ]
             },
@@ -48,7 +48,13 @@ const model = ref([
                 icon: 'pi pi-fw pi-user-plus',
                 items:[
                     { label: 'Funcionarios', to :'/cadastros/funcionarios' , disabled:false},
-                    { label: 'Usuarios', to :'' , disabled:true},
+                    { label: 'Usuarios',
+                      to :'' ,
+                      items:[
+                        {label:'Usuario Web', to:'/cadastros/usuarios/Web', disabled:false},
+                        {label:'Liberação Avulsa', to:'/cadastros/usuarios/Avulsa', disabled:false},
+                        {label:'DM', to:'/cadastros/usuarios/DM', disabled:false},
+                      ]},
                     { label: 'Centro de Custo', to :'' , disabled:true},
                     { label: 'Setor/Diretoria', to :'' , disabled:true},
                     { label: 'Função/Nivel Hierarquico', to :'' , disabled:true},
