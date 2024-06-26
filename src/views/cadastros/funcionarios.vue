@@ -354,8 +354,8 @@ const deleteProduct = () => {
                 </div>
             </div>
             <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Save" icon="pi pi-check" text @click="SalvarProduto" />
+                <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+                <Button label="Salvar" icon="pi pi-check" text @click="SalvarProduto" />
             </template>
         </Dialog>
         <Dialog v-model:visible="visible" modal header="Adicionar Items do Funcionário">

@@ -43,7 +43,7 @@ const saveUsuario = () =>{
                         <InputText v-model="usuario.nome"id="name" type="text" />
                     </div>
                     <div class="field col-12">
-                        <label for="email">email</label>
+                        <label for="email">E-mail</label>
                         <InputText v-model="usuario.email"id="email" />
                     </div>
                     <div class="field col-12 md:col-3">

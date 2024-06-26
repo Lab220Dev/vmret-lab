@@ -24,7 +24,7 @@ const produto = reactive({
     especificacoes: '',
     unidadesdemedida: '',
     validade: '',
-    imagemPrincipal:''
+    imagemPrincipal: ''
 });
 const tipoProduto = ref([
     { nome: 'EPI', key: 'epi' },
@@ -45,7 +45,7 @@ const ListaProduto = ref([
         descricao: ' teste',
         especificacoes: 'teste',
         unidadesdemedida: 'teste',
-        validade: 22, 
+        validade: 22,
         image: image1
     },
     {
@@ -77,15 +77,18 @@ const ListaProduto = ref([
     <div class="card">
         <TabView>
             <TabPanel header="Listar Produto">
-                <DataTable :value="ListaProduto" tableStyle="min-width: 50rem">
-                    <Column header="Imagem">
-                        <template #body="slotProps">
-                            <img :src="slotProps.data.image" class="w-6rem border-round" />
-                        </template>
-                    </Column>
-                    <Column field="sku" header="SKU"></Column>
-                    <Column field="nome" header="Nome"></Column>
-                </DataTable>
+                <div class="col-12">
+                    <DataTable :value="ListaProduto">
+                        <Column field="nome" header="Nome"></Column>
+                        <Column field="sku" header="SKU"></Column>
+                        <Column header="Imagem">
+                            <template #body="slotProps">
+                                <img :src="slotProps.data.image" class="w-6rem border-round" />
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
+
             </TabPanel>
             <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
