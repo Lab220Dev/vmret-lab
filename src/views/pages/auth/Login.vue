@@ -1,5 +1,14 @@
 <script setup>
 
+import { ref } from 'vue'; //isso é uma variável reativa
+
+const forgotPassword = ref(false);
+
+function resetPassword() {
+  alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br"); // função que vai abrir uma "messagebox" se a operação for concluida
+  forgotPassword.value = false; 
+}
+
 </script>
 
 <template>
@@ -24,23 +33,39 @@
                 <img id="img" src="C:\users\supor\OneDrive\Documents\Gitzinho\vmret-lab\src\assets\images\LogoLabSF.png" alt="Logo da empresa">
             </div> 
             <div>
-                <h2 class="text-red-600 text-5xl">Vamos começar</h2>
-                <h4>Para acessar o sistema preencha os campos abaixo.</h4>
+                
                 <div class="login">
-                        <form id="form-login" method="post" autocomplete="off">
+                    <form id="form-login" method="post" autocomplete="off">
+                        <div v-if="!forgotPassword">
+                            <h2 class="text-red-600 text-5xl">Vamos começar!</h2>
+                            <h4>Para acessar o sistema, preencha os campos abaixo.</h4>
                             <div class="form mb-3">
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
                                 <input type="email" name="email" id="email" class="formstyle" placeholder="Digite o seu email" autocomplete="on">
-                                <label id="email-error" class="error" for="email">Digite o email corretamente, por favor (ex: user@lab220.com.br)</label>
                             </div>
 
                             <div class="form mb-3">
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Senha:</label>
                                 <input type="password" name="senha" id="senha" class="formstyle" placeholder="Digite a sua senha" autocomplete="on">
                             </div>
-
                             <button id="btn_button" class="login-button text-white bg-red-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm">LOGIN</button>
-                        </form>
+                                <h6 class="mt-3 text-center">
+                                <a href="#" @click.prevent="forgotPassword = true" class="text-red-500 font-semibold hover:text-orange-500">Esqueceu sua senha?</a>
+                                </h6>
+                </div>
+                        <div v-else>
+                            <h2 class="text-red-600 text-5xl">Esqueceu sua senha?</h2>
+                            <h4>Insira seu email para recuperar seu acesso:</h4>
+                            <div class="form mb-3">
+                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
+                                <input type="email" name="reset-email" id="reset-email" class="formstyle" placeholder="Digite o seu email" autocomplete="on">
+                            </div>
+                                <button @click="resetPassword" class="login-button text-white bg-red-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm">Enviar link de recuperação</button>
+                                <h6 class="mt-3 text-center">
+                                    <a href="#" @click.prevent="forgotPassword = false" class="text-red-500 font-semibold hover:text-orange-500">Voltar para login</a>
+                                </h6>
+                        </div>
+                    </form>
                 </div>
             </div>
             <div>
