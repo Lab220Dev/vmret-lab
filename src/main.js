@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import axios from './axios';
 import App from './App.vue';
 import router from './router/router';
 
@@ -105,13 +106,13 @@ import TreeSelect from 'primevue/treeselect';
 import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
-
+import { createPinia } from 'pinia';
 import BlockViewer from '@/components/BlockViewer.vue';
 
 import '@/assets/styles.scss';
 
 const app = createApp(App);
-
+const pinia = createPinia();
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
@@ -220,5 +221,6 @@ app.component('TreeSelect', TreeSelect);
 app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
-
+app.config.globalProperties.$axios = axios;
+app.use(pinia);
 app.mount('#app');

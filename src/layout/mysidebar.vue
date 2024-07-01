@@ -1,7 +1,13 @@
 <script setup>
 import MyMenu from './myMenu.vue';
 import VueCountdown from '@chenfengyuan/vue-countdown';
-import imageUrl from '@/assets/images/LogoDMBranco.png'
+import imageUrl from '@/assets/images/LogoDMBranco.png';
+import { ref, onMounted } from 'vue';
+import { useAuthStore } from '@/store/authStore.js';
+
+const store = useAuthStore();
+const nome = store.userName;
+const role = store.userRole;
 </script>
 
 <template>
@@ -16,8 +22,8 @@ import imageUrl from '@/assets/images/LogoDMBranco.png'
             <Avatar icon="pi pi-user" class="mr-2" size="xlarge" shape="circle" />
         </div>
         <div class="field col-6 mt-3" >
-            <h6 class="m-0">Desenvolvimento</h6>
-            <span style="color: rgba(255,255,255,.5)">Master</span>
+            <h6 class="m-0">{{ nome }}</h6>
+            <span style="color: rgba(255,255,255,.5)">{{ role }}</span>
         </div>
     
     </div>

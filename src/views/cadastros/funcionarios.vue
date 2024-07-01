@@ -1,13 +1,16 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { FuncionarioService } from '@/service/FuncionarioService';
+import axios from '@/axios.js'
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import imageUrl from '@/assets/images/placeholder4.png'
 import clockurl from '@/assets/images/OIP.jpeg'
+import { useAuthStore } from '@/store/authStore.js';
 
+const store = useAuthStore();
 const toast = useToast();
+
 const status = ref([
     { name: 'Ativo', status: true },
     { name: 'Inativo', status: false }
@@ -25,24 +28,30 @@ const hieraquiaoptions = ref([
     { name: "Junior" },
     { name: "Pleno" }
 ]);
-const funcionario = reactive({
-    Matricula: '',
-    Nome: '',
-    Hash1: '',
-    Hash2: '',
-    DataAdmissao: new Date().toDateString(),
+let funcionario = reactive({
+    matricula: '',
+    nome: '',
+    biometria: '',
+    biometria2: '',
+    data_admissao: new Date().toDateString(),
     CPF: '',
     RG: '',
     CTPS: '',
     email: '',
-    CentrodeCusto: '',
-    planta: '',
-    Setor: '',
-    Funcao: '',
+    id_centro_custo: '',
+    id_planta: '',
+    id_setor: '',
+    id_funcao: '',
     status: '',
-    HoraInicio: '',
-    HoraFim: '',
-    dias: [],
+    hora_inicial: '',
+    hora_final: '',
+    segunda: false,
+    terca: false,
+    quarta: false,
+    quinta: false,
+    sexta: false,
+    sabado: false,
+    domingo: false,
     itemsSelecionadosFuncionario: [],
 })
 const selectedProduct = ref([]);
@@ -60,20 +69,8 @@ const ItensSetorAdm = ref([
     { name: "caderno", sku: 827642, quantidade: 0 },
     { name: "corretivo", sku: 7462, quantidade: 0 },
     { name: "clipe de papel", sku: 2978264, quantidade: 0 },
-])
-
-const ListaFuncionarios = ref([
-    { "Nome": "Magdalen", "matricula": 80700 },
-    { "Nome": "Hillary", "matricula": 12228 },
-    { "Nome": "Aristotle", "matricula": 95795 },
-    { "Nome": "Kiele", "matricula": 24045 },
-    { "Nome": "Robinetta", "matricula": 28333 },
-    { "Nome": "Lionello", "matricula": 47629 },
-    { "Nome": "Carling", "matricula": 15321 },
-    { "Nome": "Sebastiano", "matricula": 20196 },
-    { "Nome": "Cointon", "matricula": 58933 },
-    { "Nome": "Delbert", "matricula": 32068 }
 ]);
+const ListaFuncionarios = ref([]);
 const itemDialog = ref(false);
 const deleteProductDialog = ref(false)
 const visible = ref(false);
@@ -107,8 +104,7 @@ const format = (date) => {
     return `${day}/${month}/${year}`;
 }
 const onRowSelect = (event) => {
-    funcionario.Nome = event.data.Nome;
-    funcionario.Matricula = event.data.matricula;
+    funcionario = event.data;
     active.value = 1;
 };
 const onUpload = () => {
@@ -142,6 +138,25 @@ const deleteProduct = () => {
     item.value = {};
     deleteProductDialog.value = false;
 };
+const loadFuncionarios = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+
+        const response = await axios.post('/funcionarios/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        ListaFuncionarios.value = response.data;
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+    }
+};
+onMounted(() => {
+    loadFuncionarios();
+});
 </script>
 
 <template>
@@ -151,7 +166,7 @@ const deleteProduct = () => {
                 <div class="card">
                     <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows
                         tableStyle="min-width: 50rem" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
-                        <Column field="Nome" header="Nome"></Column>
+                        <Column field="nome" header="Nome"></Column>
                         <Column field="matricula" header="Matrícula"></Column>
                     </DataTable>
                 </div>
@@ -165,23 +180,23 @@ const deleteProduct = () => {
                             <div class="p-fluid formgrid grid">
                                 <div class="field lg:col-12 md:col-6 sm:col-4 ">
                                     <label for="name">Nome</label>
-                                    <InputText v-model="funcionario.Nome" id="name" type="text"></InputText>
+                                    <InputText v-model="funcionario.nome" id="name" type="text"></InputText>
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="matricula">Matrícula</label>
-                                    <InputText id="matricula" v-model="funcionario.Matricula" />
+                                    <InputText id="matricula" v-model="funcionario.matricula" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="Hash">Hash 1</label>
-                                    <InputText disabled id="Hash" v-model="funcionario.Hash1" />
+                                    <InputText disabled id="Hash" v-model="funcionario.biometria" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="Hash2">Hash 2</label>
-                                    <InputText disabled id="Hash2" v-model="funcionario.Hash2" />
+                                    <InputText disabled id="Hash2" v-model="funcionario.biometria2" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="DataAdmissao">Data de Admissao</label>
-                                    <VueDatePicker v-model="funcionario.DataAdmissao" showIcon :showOnFocus="false"
+                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false"
                                         :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
                                         :enable-time-picker="false" />
                                 </div>
@@ -203,21 +218,21 @@ const deleteProduct = () => {
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
-                                    <Dropdown v-model="funcionario.CentrodeCusto" :options="centroCusto"
+                                    <Dropdown v-model="funcionario.id_centro_custo" :options="centroCusto"
                                         optionLabel="name" placeholder="Selecione Um " />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="planta">Planta</label>
-                                    <InputText id="planta" v-model="funcionario.planta" type="text" />
+                                    <InputText id="planta" v-model="funcionario.id_planta" type="text" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="setor">Setor/Diretoria</label>
-                                    <Dropdown v-model="funcionario.Setor" :options="SetorDiretoria" optionLabel="name"
+                                    <Dropdown v-model="funcionario.id_setor" :options="SetorDiretoria" optionLabel="name"
                                         placeholder="Selecione o Setor" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="funcao">Função/Nivel Hierarquico</label>
-                                    <Dropdown v-model="funcionario.Funcao" :options="hieraquiaoptions"
+                                    <Dropdown v-model="funcionario.id_funcao" :options="hieraquiaoptions"
                                         optionLabel="name" placeholder="Selecione a Função" />
                                 </div>
 
@@ -230,7 +245,7 @@ const deleteProduct = () => {
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Inicio</label>
-                                    <VueDatePicker v-model="funcionario.HoraInicio" time-picker
+                                    <VueDatePicker v-model="funcionario.hora_inicial" time-picker
                                         disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
@@ -239,7 +254,7 @@ const deleteProduct = () => {
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Fim</label>
-                                    <VueDatePicker id="inicio" v-model="funcionario.HoraFim" time-picker
+                                    <VueDatePicker id="inicio" v-model="funcionario.hora_final" time-picker
                                         disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
@@ -261,37 +276,37 @@ const deleteProduct = () => {
                                         items:</label>
                                     <div id="fim" class="flex align-content-end flex-wrap">
                                         <div class="m-2 flex align-items-end">
-                                            <Checkbox v-model="funcionario.dias" inputId="Segunda" name="pizza"
+                                            <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="pizza"
                                                 value="Segunda" />
                                             <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.dias" inputId="Terca" name="Dias"
+                                            <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
                                                 value="Terca" />
                                             <label for="Terca" class="ml-2"> Terça-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.dias" inputId="Quarta" name="Dias"
+                                            <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
                                                 value="Quarta" />
                                             <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.dias" inputId="Quinta" name="Dias"
+                                            <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
                                                 value="Quinta" />
                                             <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.dias" inputId="Sexta" name="Dias"
+                                            <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
                                                 value="Sexta" />
                                             <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.dias" inputId="Sabado" name="Dias"
+                                            <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
                                                 value="Sabado" />
                                             <label for="Sabado" class="ml-2"> Sabado </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.dias" inputId="Domingo" name="Dias"
+                                            <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
                                                 value="Domingo" />
                                             <label for="Domingo" class="ml-2"> Domingo</label>
                                         </div>

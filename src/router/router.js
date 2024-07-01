@@ -6,11 +6,16 @@ const router = createRouter({
     routes: [
         {
             path: '/',
+            name: 'login',
+            component: () => import('@/views/pages/auth/Login.vue')
+        },
+        {
+            path: '/app',
             component: AppLayout,
             children: [
                 {
-                    path: '/',
-                    name: 'dashboard',
+                    path: '/dashboard',
+                    name: 'Dashboard',
                     component: () => import('@/views/HomeView.vue')
                 },
                 {
@@ -99,16 +104,6 @@ const router = createRouter({
             path: '/pages/notfound',
             name: 'notfound',
             component: () => import('@/views/pages/NotFound.vue')
-        },
-        {
-            path: '/auth/login',
-            name: 'login',
-            component: () => import('@/views/pages/auth/Login.vue')
-        },
-        {
-            path: '/auth/esquecisenha',
-            name: 'esqueciSenha',
-            component: () => import('@/views/pages/auth/EsqueciSenha.vue')
         }
     ]
 });
