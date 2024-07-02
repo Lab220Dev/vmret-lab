@@ -16,6 +16,7 @@
     margin: 0;
     padding: 0;
     list-style-type: none;
+    color: white;
 
     .layout-root-menuitem {
         >.layout-menuitem-root-text {
@@ -71,7 +72,7 @@
             transition: background-color $transitionDuration, box-shadow $transitionDuration;
             .layout-menuitem-text{
                 cursor: pointer;
-                color: rgba(255,255,255,.5);
+                color: #ffffff;
             }
             .layout-menuitem-text-disabled {
                 text-decoration: line-through !important;

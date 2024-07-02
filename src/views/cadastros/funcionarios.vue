@@ -245,11 +245,11 @@ onMounted(() => {
     <div class="card">
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionário">
-                <div class="card">
+                <div class="col-12">
                     <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows
-                        tableStyle="min-width: 50rem" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
-                        <Column field="nome" header="Nome"></Column>
-                        <Column field="matricula" header="Matrícula"></Column>
+                         dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                        <Column field="nome" header="Nome" class="col-6"></Column>
+                        <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
                 </div>
             </TabPanel>

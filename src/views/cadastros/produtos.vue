@@ -1,12 +1,8 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js'
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
-import image1 from '@/assets/images/placeholder4.png'
-import image2 from '@/assets/images/th.jpg'
-import image3 from '@/assets/images/OIG1.jpg'
+import axios from '@/axios.js';
+import imagePlaceholder from '@/assets/images/placeholder4.png';
 import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
@@ -17,12 +13,14 @@ const tipoProduto = ref([
     { nome: 'EPI', key: 'epi' },
     { nome: 'Insumo', key: 'isn' },
     { nome: 'Consumivel', key: 'csn' },
-])
+]);
+
 const plantas = ref([
     { nome: 'Planta 1', key: 'p1' },
     { nome: 'Planta 2', key: 'p2' },
     { nome: 'Planta 3', key: 'p3' },
-])
+]);
+
 let produto = reactive({
     codigo: '',
     planta: '',
@@ -38,11 +36,8 @@ let produto = reactive({
 const ListaProdutos = ref([]);
 
 const saveProduto = () => {
-
-    //veirficar data/rg valido/se o status for ativado e as permissoes/
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
-
-}
+};
 
 const onRowSelect = (event) => {
     produto = event.data;
@@ -58,7 +53,6 @@ const loadProdutos = async () => {
         "id_cliente": store.userIdCliente
     };
     try {
-
         const response = await axios.post('/produtos/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -66,14 +60,13 @@ const loadProdutos = async () => {
         });
         ListaProdutos.value = response.data;
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+        console.error('Erro ao carregar produtos:', error);
     }
 };
 
 onMounted(() => {
     loadProdutos();
 });
-
 </script>
 
 <template>
@@ -81,16 +74,16 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows
-                    tableStyle="min-width: 50rem" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
-                        <Column header="Imagem">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                        <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
-                                <img :src="slotProps.data.image" class="w-6rem border-round" />
+                                <div>
+                                    <img :src="slotProps.data.image ? slotProps.data.image : imagePlaceholder" class="w-6rem border-round" />
+                                </div>
                             </template>
                         </Column>
-                        <Column field="nome" header="Nome"></Column>
-                        <Column field="codigo" header="Código"></Column>
-                        
+                        <Column field="codigo" header="SKU" class="col-2"></Column>
+                        <Column field="nome" header="Nome" class="col-7"></Column>
                     </DataTable>
                 </div>
 
@@ -102,7 +95,7 @@ onMounted(() => {
                             <!--form de cadastro de novo produto-->
                             <div class="p-fluid formgrid grid">
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
-                                    <label for="codigo">Código</label>
+                                    <label for="codigo">SKU</label>
                                     <InputText v-model="produto.codigo" id="codigo" type="text"></InputText>
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
@@ -160,7 +153,7 @@ onMounted(() => {
                             <h3>Imagens Secundaria</h3>
                             <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
                                 :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles"
-                                chooseLabel="Escolha Fotos" cancelLabel="Limpar">
+                                chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
                                 <template #empty>
                                     <div class="flex align-items-center justify-content-center flex-column">
 
