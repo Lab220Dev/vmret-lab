@@ -109,6 +109,7 @@ const onRowSelect = (event) => {
     funcionario = event.data;
     active.value = 1;
 };
+
 const onUpload = () => {
     toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
 };

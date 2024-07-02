@@ -1,31 +1,18 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import axios from '@/axios.js'
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 import image1 from '@/assets/images/placeholder4.png'
 import image2 from '@/assets/images/th.jpg'
 import image3 from '@/assets/images/OIG1.jpg'
+import { useAuthStore } from '@/store/authStore.js';
 
+const store = useAuthStore();
 const toast = useToast();
 const active = ref(1);
-const saveProduto = () => {
 
-    //veirficar data/rg valido/se o status for ativado e as permissoes/
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
-
-}
-const produto = reactive({
-    sku: '',
-    planta: '',
-    tipo: '',
-    nome: '',
-    descricao: ' ',
-    especificacoes: '',
-    unidadesdemedida: '',
-    validade: '',
-    imagemPrincipal: ''
-});
 const tipoProduto = ref([
     { nome: 'EPI', key: 'epi' },
     { nome: 'Insumo', key: 'isn' },
@@ -36,56 +23,74 @@ const plantas = ref([
     { nome: 'Planta 2', key: 'p2' },
     { nome: 'Planta 3', key: 'p3' },
 ])
-const ListaProduto = ref([
-    {
-        sku: 123,
-        planta: 'Planta 1',
-        tipo: 'EPI',
-        nome: 'exemplo 1',
-        descricao: ' teste',
-        especificacoes: 'teste',
-        unidadesdemedida: 'teste',
-        validade: 22,
-        image: image1
-    },
-    {
-        sku: 456,
-        planta: 'Planta 2',
-        tipo: 'Insumo',
-        nome: 'exemplo 2',
-        descricao: 'teste ',
-        especificacoes: 'teste',
-        unidadesdemedida: 'teste',
-        validade: 33,
-        image: image2
-    },
-    {
-        sku: 789,
-        planta: 'Planta 3',
-        tipo: 'Consumivel',
-        nome: 'exemplo 3',
-        descricao: 'teste ',
-        especificacoes: 'teste',
-        unidadesdemedida: 'teste',
-        validade: 44,
-        image: image3
-    },
-])
+let produto = reactive({
+    codigo: '',
+    planta: '',
+    tipo: '',
+    nome: '',
+    descricao: ' ',
+    especificacoes: '',
+    unidadesdemedida: '',
+    validade: '',
+    imagemPrincipal: ''
+});
+
+const ListaProdutos = ref([]);
+
+const saveProduto = () => {
+
+    //veirficar data/rg valido/se o status for ativado e as permissoes/
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
+
+}
+
+const onRowSelect = (event) => {
+    produto = event.data;
+    active.value = 1;
+};
+
+const onTemplatedUpload = () => {
+    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+};
+
+const loadProdutos = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+
+        const response = await axios.post('/produtos/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        ListaProdutos.value = response.data;
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+    }
+};
+
+onMounted(() => {
+    loadProdutos();
+});
+
 </script>
 
 <template>
     <div class="card">
-        <TabView>
+        <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProduto">
-                        <Column field="nome" header="Nome"></Column>
-                        <Column field="sku" header="SKU"></Column>
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows
+                    tableStyle="min-width: 50rem" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column header="Imagem">
                             <template #body="slotProps">
                                 <img :src="slotProps.data.image" class="w-6rem border-round" />
                             </template>
                         </Column>
+                        <Column field="nome" header="Nome"></Column>
+                        <Column field="codigo" header="Código"></Column>
+                        
                     </DataTable>
                 </div>
 
@@ -94,11 +99,11 @@ const ListaProduto = ref([
                 <div class="grid">
                     <div class="p-fluid formgrid grid">
                         <div class="card">
-                            <!--form de cadastro de novo funcionario-->
+                            <!--form de cadastro de novo produto-->
                             <div class="p-fluid formgrid grid">
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
-                                    <label for="sku">SKU</label>
-                                    <InputText v-model="produto.sku" id="sku" type="text"></InputText>
+                                    <label for="codigo">Código</label>
+                                    <InputText v-model="produto.codigo" id="codigo" type="text"></InputText>
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="nome">Nome</label>
@@ -109,7 +114,7 @@ const ListaProduto = ref([
                                     <Textarea v-model="produto.descricao" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
-                                    <label for="sku">Especificação</label>
+                                    <label for="codigo">Especificação</label>
                                     <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
                                         cols="30" />
                                 </div>
