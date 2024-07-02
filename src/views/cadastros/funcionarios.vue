@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, watch  } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js'
 import VueDatePicker from '@vuepic/vue-datepicker';
@@ -103,6 +103,8 @@ const format = (date) => {
 
     return `${day}/${month}/${year}`;
 }
+const selectedTimeObject = ref(null);
+const selectedTimeeObject2 = ref(null);
 const onRowSelect = (event) => {
     funcionario = event.data;
     active.value = 1;
@@ -154,6 +156,57 @@ const loadFuncionarios = async () => {
         console.error('Erro ao carregar usuários:', error);
     }
 };
+const adicionarFuncionario = async () => {
+    let data = {
+        "id_cliente": store.userIdCliente
+    };
+    Object.assign(data, funcionario);
+    try {
+
+        const response = await axios.post('/funcionarios/adicionar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
+    } catch (error) {
+        console.error('Erro ao adicionar o funcionario usuários:', error);
+    }
+};
+watch([startDateObject, endDateObject], ([newStartDate, newEndDate]) => {
+  if (newStartDate) {
+    formattedStartDate.value = formatTime(newStartDate);
+  } else {
+    formattedStartDate.value = '';
+  }
+
+  if (newEndDate) {
+    formattedEndDate.value = formatTime(newEndDate);
+  } else {
+    formattedEndDate.value = '';
+  }
+});
+
+function updateFormattedDates() {
+  if (startDateObject.value) {
+    formattedStartDate.value = formatTime(startDateObject.value);
+  } else {
+    formattedStartDate.value = '';
+  }
+
+  if (endDateObject.value) {
+    formattedEndDate.value = formatTime(endDateObject.value);
+  } else {
+    formattedEndDate.value = '';
+  }
+}
+
+function formatTime(date) {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
 onMounted(() => {
     loadFuncionarios();
 });
@@ -245,8 +298,8 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Inicio</label>
-                                    <VueDatePicker v-model="funcionario.hora_inicial" time-picker
-                                        disable-time-range-validation>
+                                    <VueDatePicker v-model="selectedTimeObject" time-picker
+                                        disable-time-range-validation @input="updateFormattedDates">
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
                                         </template>
@@ -254,8 +307,8 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Fim</label>
-                                    <VueDatePicker id="inicio" v-model="funcionario.hora_final" time-picker
-                                        disable-time-range-validation>
+                                    <VueDatePicker id="inicio" v-model="selectedTimeObject2" time-picker
+                                        disable-time-range-validation @input="updateFormattedDates">
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
                                         </template>
@@ -277,44 +330,44 @@ onMounted(() => {
                                     <div id="fim" class="flex align-content-end flex-wrap">
                                         <div class="m-2 flex align-items-end">
                                             <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="pizza"
-                                                value="Segunda" />
+                                                value="Segunda" :binary="true" />
                                             <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
-                                                value="Terca" />
+                                                value="Terca":binary="true" />
                                             <label for="Terca" class="ml-2"> Terça-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
-                                                value="Quarta" />
+                                                value="Quarta" :binary="true"/>
                                             <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
-                                                value="Quinta" />
+                                                value="Quinta":binary="true" />
                                             <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
-                                                value="Sexta" />
+                                                value="Sexta" :binary="true"/>
                                             <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
-                                                value="Sabado" />
+                                                value="Sabado":binary="true" />
                                             <label for="Sabado" class="ml-2"> Sabado </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
-                                                value="Domingo" />
+                                                value="Domingo":binary="true" />
                                             <label for="Domingo" class="ml-2"> Domingo</label>
                                         </div>
                                     </div>
                                 </div>
 
                             </div>
-                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveFuncionario"
+                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario"
                                 class="m-2" />
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
