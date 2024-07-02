@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted, watch  } from 'vue';
+import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js'
 import VueDatePicker from '@vuepic/vue-datepicker';
@@ -15,19 +15,9 @@ const status = ref([
     { name: 'Ativo', status: true },
     { name: 'Inativo', status: false }
 ]);
-const centroCusto = ref([
-    { name: "Centro de Custo 1", key: "cc1" },
-    { name: "Centro de Custo 2", key: "cc2" },
-]);
-const SetorDiretoria = ref([
-    { name: "Desenvolvimento", key: "dev" },
-    { name: "Administração", key: "adm" },
-]);
-const hieraquiaoptions = ref([
-    { name: "Senior" },
-    { name: "Junior" },
-    { name: "Pleno" }
-]);
+const centroCusto = ref([]);
+const SetorDiretoria = ref([]);
+const hieraquiaoptions = ref([]);
 let funcionario = reactive({
     matricula: '',
     nome: '',
@@ -77,11 +67,7 @@ const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
 const item = ref({});
-const saveFuncionario = () => {
-    //veirficar data/rg valido/se o status for ativado e as permissoes/
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
 
-}
 const SalvarProduto = () => {
     if (!(funcionario.itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
         funcionario.itemsSelecionadosFuncionario.push(selectedProduct.value);
@@ -103,10 +89,10 @@ const format = (date) => {
 
     return `${day}/${month}/${year}`;
 }
-const selectedTimeObject = ref(null);
-const selectedTimeeObject2 = ref(null);
+const TempoInicio = ref(null);
+const TempoFim = ref(null);
 const onRowSelect = (event) => {
-    funcionario = event.data;
+    funcionario.value = { ...event.data };
     active.value = 1;
 };
 
@@ -146,7 +132,6 @@ const loadFuncionarios = async () => {
         "id_cliente": store.userIdCliente
     };
     try {
-
         const response = await axios.post('/funcionarios/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -172,44 +157,87 @@ const adicionarFuncionario = async () => {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
     } catch (error) {
         console.error('Erro ao adicionar o funcionario usuários:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o usuario', life: 3000 });
+
     }
 };
-watch([startDateObject, endDateObject], ([newStartDate, newEndDate]) => {
-  if (newStartDate) {
-    formattedStartDate.value = formatTime(newStartDate);
-  } else {
-    formattedStartDate.value = '';
-  }
 
-  if (newEndDate) {
-    formattedEndDate.value = formatTime(newEndDate);
-  } else {
-    formattedEndDate.value = '';
-  }
-});
+const fetchCentroCusto = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+        const response = await axios.post("funcionarios/listarcentrocusto", data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        centroCusto.value = response.data;
+    } catch (error) {
+        console.error("Erro ao buscar centros de custo:", error);
+    }
+};
 
-function updateFormattedDates() {
-  if (startDateObject.value) {
-    formattedStartDate.value = formatTime(startDateObject.value);
-  } else {
-    formattedStartDate.value = '';
-  }
+const fetchSetorDiretoria = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+        const response = await axios.post("funcionarios/listarsetor", data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        SetorDiretoria.value = response.data;
+    } catch (error) {
+        console.error("Erro ao buscar setores/diretorias:", error);
+    }
+};
 
-  if (endDateObject.value) {
-    formattedEndDate.value = formatTime(endDateObject.value);
-  } else {
-    formattedEndDate.value = '';
-  }
-}
+const fetchHieraquiaOptions = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+        const response = await axios.post("funcionarios/listarhierarquia", data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        hieraquiaoptions.value = response.data;
+    } catch (error) {
+        console.error("Erro ao buscar opções de hierarquia:", error);
+    }
+};
 
-function formatTime(date) {
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  const seconds = date.getSeconds().toString().padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
+
+watch(TempoInicio, (newTime) => {
+    if (newTime) {
+        funcionario.hora_inicial = formatarTempo(newTime);
+    } else {
+        funcionario.hora_inicial = '';
+    }
+}, { deep: true });
+
+watch(TempoFim, (newTime) => {
+    if (newTime) {
+        funcionario.hora_final = formatarTempo(newTime);
+    } else {
+        funcionario.hora_final = '';
+    }
+}, { deep: true });
+
+function formatarTempo(time) {
+    const hours = time.hours.toString().padStart(2, '0');
+    const minutes = time.minutes.toString().padStart(2, '0');
+    const seconds = time.seconds.toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
 }
 onMounted(() => {
     loadFuncionarios();
+    fetchCentroCusto();
+    fetchSetorDiretoria();
+    fetchHieraquiaOptions();
 });
 </script>
 
@@ -273,7 +301,7 @@ onMounted(() => {
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
                                     <Dropdown v-model="funcionario.id_centro_custo" :options="centroCusto"
-                                        optionLabel="name" placeholder="Selecione Um " />
+                                        optionLabel="id_centro_custo" placeholder="Selecione Um " />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="planta">Planta</label>
@@ -281,13 +309,13 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="setor">Setor/Diretoria</label>
-                                    <Dropdown v-model="funcionario.id_setor" :options="SetorDiretoria" optionLabel="name"
-                                        placeholder="Selecione o Setor" />
+                                    <Dropdown v-model="funcionario.id_setor" :options="SetorDiretoria"
+                                        optionLabel="id_setor" placeholder="Selecione o Setor" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="funcao">Função/Nivel Hierarquico</label>
                                     <Dropdown v-model="funcionario.id_funcao" :options="hieraquiaoptions"
-                                        optionLabel="name" placeholder="Selecione a Função" />
+                                        optionLabel="id_funcao" placeholder="Selecione a Função" />
                                 </div>
 
                             </div>
@@ -299,8 +327,7 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Inicio</label>
-                                    <VueDatePicker v-model="selectedTimeObject" time-picker
-                                        disable-time-range-validation @input="updateFormattedDates">
+                                    <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
                                         </template>
@@ -308,8 +335,8 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Fim</label>
-                                    <VueDatePicker id="inicio" v-model="selectedTimeObject2" time-picker
-                                        disable-time-range-validation @input="updateFormattedDates">
+                                    <VueDatePicker id="inicio" v-model="TempoFim" time-picker
+                                        disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
                                         </template>
@@ -336,32 +363,32 @@ onMounted(() => {
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
-                                                value="Terca":binary="true" />
+                                                value="Terca" :binary="true" />
                                             <label for="Terca" class="ml-2"> Terça-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
-                                                value="Quarta" :binary="true"/>
+                                                value="Quarta" :binary="true" />
                                             <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
-                                                value="Quinta":binary="true" />
+                                                value="Quinta" :binary="true" />
                                             <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
-                                                value="Sexta" :binary="true"/>
+                                                value="Sexta" :binary="true" />
                                             <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
-                                                value="Sabado":binary="true" />
+                                                value="Sabado" :binary="true" />
                                             <label for="Sabado" class="ml-2"> Sabado </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
-                                                value="Domingo":binary="true" />
+                                                value="Domingo" :binary="true" />
                                             <label for="Domingo" class="ml-2"> Domingo</label>
                                         </div>
                                     </div>
