@@ -18,6 +18,7 @@ const status = ref([
 const centroCusto = ref([]);
 const SetorDiretoria = ref([]);
 const hieraquiaoptions = ref([]);
+const plantas = ref([]);
 let funcionario = reactive({
     matricula: '',
     nome: '',
@@ -92,7 +93,7 @@ const format = (date) => {
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
 const onRowSelect = (event) => {
-    funcionario.value = { ...event.data };
+    funcionario.value = event.data;
     active.value = 1;
 };
 
@@ -209,6 +210,21 @@ const fetchHieraquiaOptions = async () => {
         console.error("Erro ao buscar opções de hierarquia:", error);
     }
 };
+const fetchIdPlanta = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+        const response = await axios.post("funcionarios/listarhierarquia", data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        plantas.value = response.data;
+    } catch (error) {
+        console.error("Erro ao buscar opções de hierarquia:", error);
+    }
+};
 
 
 watch(TempoInicio, (newTime) => {
@@ -238,6 +254,7 @@ onMounted(() => {
     fetchCentroCusto();
     fetchSetorDiretoria();
     fetchHieraquiaOptions();
+    fetchIdPlanta();
 });
 </script>
 
@@ -305,7 +322,8 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="planta">Planta</label>
-                                    <InputText id="planta" v-model="funcionario.id_planta" type="text" />
+                                    <Dropdown v-model="funcionario.id_planta" :options="plantas"
+                                        optionLabel="id_planta" placeholder="Selecione a Planta" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="setor">Setor/Diretoria</label>
