@@ -8,11 +8,12 @@ import { useAuthStore } from '@/store/authStore.js';
 const store = useAuthStore();
 const toast = useToast();
 const active = ref(1);
-
+const plantasoptions = ref([]);
+const formatedPlantaOptions = ref([]);
 const tipoProduto = ref([
-    { nome: 'EPI', key: 'epi' },
-    { nome: 'Insumo', key: 'isn' },
-    { nome: 'Consumivel', key: 'csn' },
+    { label: 'EPI', value: 1 },
+    { label: 'Insumo', value: 2 },
+    { label: 'Consumivel', value: 3 }
 ]);
 
 const plantas = ref([
@@ -63,7 +64,25 @@ const loadProdutos = async () => {
         console.error('Erro ao carregar produtos:', error);
     }
 };
-
+const fetchIdPlanta = async () => {
+    const data = {
+        "id_cliente": store.userIdCliente
+    };
+    try {
+        const response = await axios.post("produtos/listarplanta", data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        plantasoptions = response.data;
+        formatedPlantaOptions = plantasoptions.map(plantasoptions =>({
+            label: `Planta ${plantasoptions.id_planta}`, 
+            value: plantasoptions.id_planta
+        }))
+    } catch (error) {
+        console.error("Erro ao buscar opções de plantas:", error);
+    }
+};
 onMounted(() => {
     loadProdutos();
 });
@@ -113,13 +132,13 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.tipo" :options="tipoProduto" optionLabel="nome"
-                                        placeholder="Selecione um tipo" />
+                                    <Dropdown v-model="produto.tipo" :options="tipoProduto" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.tipo" :options="plantas" optionLabel="nome"
-                                        placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.tipo" :options="formatedPlantaOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="UndMedida">Unidade de Medida</label>
