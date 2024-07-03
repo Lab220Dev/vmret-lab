@@ -10,15 +10,21 @@ import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
 const toast = useToast();
-
+const RG = ref('');
+const CPF = ref('');
+const CTPS = ref('');
 const status = ref([
-    { name: 'Ativo', status: true },
-    { name: 'Inativo', status: false }
+    { label: 'Ativo', value: 'Ativo' },
+    { label: 'Inativo', value: 'Inativo' }
 ]);
-const centroCusto = ref([]);
-const SetorDiretoria = ref([]);
-const hieraquiaoptions = ref([]);
-const plantas = ref([]);
+let centroCustooptions = ref([]);
+let SetorDiretoriaoptions = ref([]);
+let hieraquiaoptions = ref([]);
+let plantasoptions = ref([]);
+let formatedCentroCustoOptions = ref([]);
+let formatedSetorOptions = ref([]);
+let formatedHierarquiaOptions = ref([]);
+let formatedPlantaOptions = ref([]);
 let funcionario = reactive({
     matricula: '',
     nome: '',
@@ -29,10 +35,6 @@ let funcionario = reactive({
     RG: '',
     CTPS: '',
     email: '',
-    id_centro_custo: '',
-    id_planta: '',
-    id_setor: '',
-    id_funcao: '',
     status: '',
     hora_inicial: '',
     hora_final: '',
@@ -173,7 +175,11 @@ const fetchCentroCusto = async () => {
                 Authorization: `Bearer ${store.token}`,
             },
         });
-        centroCusto.value = response.data;
+        centroCustooptions = response.data;
+        formatedCentroCustoOptions = centroCustooptions.map(centroCustooptions =>({
+            label: `Centro de Custo ${centroCustooptions.id_centro_custo}`, 
+            value: centroCustooptions.id_centro_custo
+        }))
     } catch (error) {
         console.error("Erro ao buscar centros de custo:", error);
     }
@@ -189,7 +195,11 @@ const fetchSetorDiretoria = async () => {
                 Authorization: `Bearer ${store.token}`,
             },
         });
-        SetorDiretoria.value = response.data;
+        SetorDiretoriaoptions = response.data;
+        formatedSetorOptions = SetorDiretoriaoptions.map(SetorDiretoriaoptions =>({
+            label: `Setor ${SetorDiretoriaoptions.id_setor}`, 
+            value: SetorDiretoriaoptions.id_setor
+        }))
     } catch (error) {
         console.error("Erro ao buscar setores/diretorias:", error);
     }
@@ -205,7 +215,12 @@ const fetchHieraquiaOptions = async () => {
                 Authorization: `Bearer ${store.token}`,
             },
         });
-        hieraquiaoptions.value = response.data;
+        hieraquiaoptions = response.data;
+        formatedHierarquiaOptions = hieraquiaoptions.map(hieraquiaoptions =>({
+            label: ` ${hieraquiaoptions.id_funcao}`, 
+            value: hieraquiaoptions.id_funcao
+        }))
+        
     } catch (error) {
         console.error("Erro ao buscar opções de hierarquia:", error);
     }
@@ -215,14 +230,18 @@ const fetchIdPlanta = async () => {
         "id_cliente": store.userIdCliente
     };
     try {
-        const response = await axios.post("funcionarios/listarhierarquia", data, {
+        const response = await axios.post("funcionarios/listarplanta", data, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
             },
         });
-        plantas.value = response.data;
+        plantasoptions = response.data;
+        formatedPlantaOptions = plantasoptions.map(plantasoptions =>({
+            label: `Planta ${plantasoptions.id_planta}`, 
+            value: plantasoptions.id_planta
+        }))
     } catch (error) {
-        console.error("Erro ao buscar opções de hierarquia:", error);
+        console.error("Erro ao buscar opções de plantas:", error);
     }
 };
 
@@ -242,13 +261,43 @@ watch(TempoFim, (newTime) => {
         funcionario.hora_final = '';
     }
 }, { deep: true });
+watch(RG, (newValue) => {
+    if (newValue) {
+        funcionario.RG = unmaskValue(newValue);
+    } else {
+        funcionario.RG = '';
+    }
+});
+watch(CPF, (newValue) => {
+    if (newValue) {
+        funcionario.CPF = unmaskValue(newValue);
+    } else {
+        funcionario.CPF = '';
+    }
+});
+watch(CTPS, (newValue) => {
+    if (newValue) {
+        funcionario.CTPS = unmaskValue(newValue);
+    } else {
+        funcionario.CTPS = '';
+    }
+});
 
-function formatarTempo(time) {
-    const hours = time.hours.toString().padStart(2, '0');
-    const minutes = time.minutes.toString().padStart(2, '0');
-    const seconds = time.seconds.toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+function formatarTempo(time, baseDate = new Date()) {
+  const hours = time.hours.toString().padStart(2, '0');
+  const minutes = time.minutes.toString().padStart(2, '0');
+  const seconds = time.seconds.toString().padStart(2, '0');
+
+  baseDate.setHours(parseInt(hours, 10));
+  baseDate.setMinutes(parseInt(minutes, 10));
+  baseDate.setSeconds(parseInt(seconds, 10));
+
+  return baseDate.toISOString();
 }
+
+const unmaskValue = (maskedValue) => {
+    return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
+};
 onMounted(() => {
     loadFuncionarios();
     fetchCentroCusto();
@@ -263,8 +312,8 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionário">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows
-                         dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
                         <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
@@ -301,15 +350,15 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="cpf">CPF</label>
-                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" />
+                                    <InputMask v-model="CPF" id="cpf" mask="999.999.999-99" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="rg">RG</label>
-                                    <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" />
+                                    <InputMask id="rg" v-model="RG" mask="99.999.999-*" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="ctps">CTPS</label>
-                                    <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" />
+                                    <InputMask id="ctps" v-model="CTPS" mask="9999999/9999" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="email">E-mail</label>
@@ -317,23 +366,23 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
-                                    <Dropdown v-model="funcionario.id_centro_custo" :options="centroCusto"
-                                        optionLabel="id_centro_custo" placeholder="Selecione Um " />
+                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione Um " />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="planta">Planta</label>
-                                    <Dropdown v-model="funcionario.id_planta" :options="plantas"
-                                        optionLabel="id_planta" placeholder="Selecione a Planta" />
+                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="setor">Setor/Diretoria</label>
-                                    <Dropdown v-model="funcionario.id_setor" :options="SetorDiretoria"
-                                        optionLabel="id_setor" placeholder="Selecione o Setor" />
+                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions"
+                                    optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
                                 </div>
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="funcao">Função/Nivel Hierarquico</label>
-                                    <Dropdown v-model="funcionario.id_funcao" :options="hieraquiaoptions"
-                                        optionLabel="id_funcao" placeholder="Selecione a Função" />
+                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions"
+                                    optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
                                 </div>
 
                             </div>
@@ -341,7 +390,7 @@ onMounted(() => {
                                 <div class="field lg:col-4  md:col-6 sm:col-4">
                                     <label for="status">Status</label>
                                     <Dropdown id="status" v-model="funcionario.status" :options="status"
-                                        optionLabel="name" placeholder="Escolha um"></Dropdown>
+                                    optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
                                 <div class="field lg:col-2  md:col-6 sm:col-4">
                                     <label for="inicio">Hora Inicio</label>
@@ -493,8 +542,8 @@ onMounted(() => {
         </Dialog>
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="item">Você tem certeza que quer deletar o Item: {{ item.name }}</span>
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza
+                    que quer deletar o Item: {{ item.name }}</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />

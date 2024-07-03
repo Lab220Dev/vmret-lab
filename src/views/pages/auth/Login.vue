@@ -24,7 +24,7 @@ const login = async () => {
         });
         if (response.status === 200) {
             authStore.login({ token: response.data.token, usuario: response.data.Usuario });
-            // localStorage.setItem('usuario:', JSON.stringify(response.data.Usuario));
+             localStorage.setItem('usuario:', JSON.stringify(response.data.Usuario));
             router.push({ name: 'Dashboard' });// Redirecionar para o dashboard
         }
     } catch (err) {
