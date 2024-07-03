@@ -34,12 +34,12 @@ const saveUsuario = () =>{
                         <label for="usuario">Usuario</label>
                         <InputText v-model="libAvulsa.usuario"id="usuario" />
                     </div>
-                    <div class="field col-12 md:col-3">
+                    <div class="field col-12 md:col-4">
                         <label for="planta">Planta</label>
                         <Dropdown id="planta" v-model="libAvulsa.planta" :options="plantaOptions" optionLabel="nome"
                             placeholder="Escolha um" ></Dropdown>
                     </div>
-                    <div class="field col-12 md:col-6">
+                    <div class="field col-12 md:col-8">
                         <label for="senha">Senha</label>
                         <InputText id="senha" v-model="libAvulsa.senha" type="password" />
                     </div>
