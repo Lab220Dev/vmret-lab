@@ -8,38 +8,34 @@ import { useAuthStore } from '@/store/authStore.js';
 const store = useAuthStore();
 const toast = useToast();
 const active = ref(1);
-const plantasoptions = ref([]);
-const formatedPlantaOptions = ref([]);
+let plantasoptions = ref([]);
+let formatedPlantaOptions = ref([]);
 const tipoProduto = ref([
     { label: 'EPI', value: 1 },
     { label: 'Insumo', value: 2 },
     { label: 'Consumivel', value: 3 }
 ]);
 
-const plantas = ref([
-    { nome: 'Planta 1', key: 'p1' },
-    { nome: 'Planta 2', key: 'p2' },
-    { nome: 'Planta 3', key: 'p3' },
-]);
 
 let produto = reactive({
     codigo: '',
-    planta: '',
-    tipo: '',
+    id_planta: '',
+    id_tipoProduto: '',
+    id_categoria:71,
     nome: '',
     descricao: ' ',
-    especificacoes: '',
-    unidadesdemedida: '',
-    validade: '',
-    imagemPrincipal: ''
+    unidade_medida: '',
+    validadedias: '',
 });
 
 const ListaProdutos = ref([]);
 
 const saveProduto = async () => {
     let data={
-        "id_produto": store.userIdCliente
+        "id_cliente": store.userIdCliente
     };
+    Object.assign(data, produto);
+
     try{
         const response = await axios.post('/produtos/adicionar', data, {
             headers:{
@@ -48,6 +44,8 @@ const saveProduto = async () => {
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
     }catch(error){
+        console.error('Erro ao adicionar o funcionario usuários:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o usuario', life: 3000 });
     }
 };
 
@@ -144,23 +142,23 @@ onMounted(() => {
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.tipo" :options="tipoProduto" 
+                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" 
                                     optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.tipo" :options="formatedPlantaOptions" 
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" 
                                     optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="UndMedida">Unidade de Medida</label>
-                                    <InputText v-model="produto.unidadesdemedida" id="UndMedida" type="text">
+                                    <InputText v-model="produto.unidade_medida" id="UndMedida" type="text">
                                     </InputText>
 
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4 ">
                                     <label for="vldDias">Validade em dias</label>
-                                    <InputNumber v-model="produto.validade" inputId="vldDias" suffix=" dias" />
+                                    <InputNumber v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
 
                                 </div>
                             </div>
