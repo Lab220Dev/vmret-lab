@@ -36,8 +36,19 @@ let produto = reactive({
 
 const ListaProdutos = ref([]);
 
-const saveProduto = () => {
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
+const saveProduto = async () => {
+    let data={
+        "id_produto": store.userIdCliente
+    };
+    try{
+        const response = await axios.post('/produtos/adicionar', data, {
+            headers:{
+                Authorization: `Bearer ${store.token}`,
+            },
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
+    }catch(error){
+    }
 };
 
 const onRowSelect = (event) => {
@@ -85,6 +96,7 @@ const fetchIdPlanta = async () => {
 };
 onMounted(() => {
     loadProdutos();
+    fetchIdPlanta();
 });
 </script>
 
