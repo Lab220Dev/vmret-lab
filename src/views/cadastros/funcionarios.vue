@@ -98,8 +98,9 @@ const format = (date) => {
 }
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
+
 const onRowSelect = (event) => {
-    funcionario.value = event.data;
+    funcionario = event.data;
     active.value = 1;
 };
 
