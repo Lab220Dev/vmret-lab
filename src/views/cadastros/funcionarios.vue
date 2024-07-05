@@ -7,12 +7,19 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import imageUrl from '@/assets/images/placeholder4.png'
 import clockurl from '@/assets/images/OIP.jpeg'
 import { useAuthStore } from '@/store/authStore.js';
+import ImageUpload from '@/components/ImageUpload.vue';
 
 const store = useAuthStore();
 const toast = useToast();
 const RG = ref('');
 const CPF = ref('');
 const CTPS = ref('');
+const selectedFile = ref(null);
+
+const handleFileSelected = (file) => {
+  selectedFile.value = file;
+};
+
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
@@ -25,7 +32,7 @@ let formatedCentroCustoOptions = ref([]);
 let formatedSetorOptions = ref([]);
 let formatedHierarquiaOptions = ref([]);
 let formatedPlantaOptions = ref([]);
-let funcionario = reactive({
+const funcionario = reactive({
     matricula: '',
     nome: '',
     biometria: '',
@@ -49,10 +56,10 @@ let funcionario = reactive({
     sexta: false,
     sabado: false,
     domingo: false,
-    itemsSelecionadosFuncionario: [],
+    nomearquivo:'',
 })
 const selectedProduct = ref([]);
-
+const itemsSelecionadosFuncionario=ref([]);
 const ItensSetorDev = ref([
     { name: "Mouse", sku: 123, quantidade: 1 },
     { name: "Teclado", sku: 647, quantidade: 1 },
@@ -67,6 +74,7 @@ const ItensSetorAdm = ref([
     { name: "corretivo", sku: 7462, quantidade: 0 },
     { name: "clipe de papel", sku: 2978264, quantidade: 0 },
 ]);
+const arquivo = ref(null);
 const ListaFuncionarios = ref([]);
 const itemDialog = ref(false);
 const deleteProductDialog = ref(false)
@@ -76,13 +84,13 @@ const active = ref(0);
 const item = ref({});
 
 const SalvarProduto = () => {
-    if (!(funcionario.itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
-        funcionario.itemsSelecionadosFuncionario.push(selectedProduct.value);
+    if (!(itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
+        itemsSelecionadosFuncionario.push(selectedProduct.value);
         selectedProduct.value = {};
         visible.value = false;
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Adicionado', life: 3000 });
     } else {
-        funcionario.itemsSelecionadosFuncionario[findIndexById(item.value.sku)] = item.value;
+        itemsSelecionadosFuncionario[findIndexById(item.value.sku)] = item.value;
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Item atualizado', life: 3000 });
         item.value = {};
         itemDialog.value = false;
@@ -102,18 +110,14 @@ const onRowSelect = (event) => {
     funcionario.value = event.data;
     active.value = 1;
 };
-
-const onUpload = () => {
-    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
-};
 const editItem = (itm) => {
     item.value = { ...itm }
     itemDialog.value = true;
 };
 const findIndexById = (sku) => {
     let index = 0;
-    for (let i = 0; i < funcionario.itemsSelecionadosFuncionario.length; i++) {
-        if (funcionario.itemsSelecionadosFuncionario[i].sku === sku) {
+    for (let i = 0; i < itemsSelecionadosFuncionario.length; i++) {
+        if (itemsSelecionadosFuncionario[i].sku === sku) {
             index = i;
             break;
         }
@@ -126,9 +130,9 @@ const confirmDeleteProduct = (itm) => {
     deleteProductDialog.value = true;
 };
 const deleteProduct = () => {
-    const remover = funcionario.itemsSelecionadosFuncionario.findIndex(itm => itm.sku === item.value.sku);
+    const remover = itemsSelecionadosFuncionario.findIndex(itm => itm.sku === item.value.sku);
     if (remover !== -1) {
-        funcionario.itemsSelecionadosFuncionario.splice(remover, 1);
+        itemsSelecionadosFuncionario.splice(remover, 1);
     }
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Deletado', life: 3000 });
     item.value = {};
@@ -149,16 +153,25 @@ const loadFuncionarios = async () => {
         console.error('Erro ao carregar usuários:', error);
     }
 };
+
 const adicionarFuncionario = async () => {
-    let data = {
-        "id_cliente": store.userIdCliente
-    };
-    Object.assign(data, funcionario);
+
+  const formData = new FormData();
+  if (selectedFile.value) {
+    const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`; 
+    formData.append('foto', nomeArquivo);
+    formData.append('file', selectedFile.value);
+  }
+  Object.entries(funcionario).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+  formData.append('id_cliente',  store.userIdCliente);
     try {
 
-        const response = await axios.post('/funcionarios/adicionar', data, {
+        const response = await axios.post('/funcionarios/adicionar', formData, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
+                Authorization: `Bearer ${store.token}`,  
+               'Content-Type': 'multipart/form-data'
             },
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
@@ -419,8 +432,7 @@ onMounted(() => {
                                 <div class="flex align-content-end flex-wrap field lg:col-4  md:col-6 sm:col-4">
                                     <Toast />
                                     <img role="presentation" :src="imageUrl" width="170" />
-                                    <FileUpload mode="basic" name="demo[]" url="demo/images" accept="image/*"
-                                        :maxFileSize="1000000" @upload="onUpload" chooseLabel="Escolha uma Foto" />
+                                    <ImageUpload @fileSelected="handleFileSelected" />
                                 </div>
                                 <!--Div com os dias da Semana-->
                                 <div class=" lg:col-8  md:col-6 sm:col-4">
@@ -428,7 +440,7 @@ onMounted(() => {
                                         items:</label>
                                     <div id="fim" class="flex align-content-end flex-wrap">
                                         <div class="m-2 flex align-items-end">
-                                            <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="pizza"
+                                            <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
                                                 value="Segunda" :binary="true" />
                                             <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                         </div>
@@ -483,7 +495,7 @@ onMounted(() => {
                                     <TabPanel header="Items do Funcionario">
                                         <Button label="Adicionar Items" @click="visible = true" />
                                         <!--data table que exibe os items adicionados-->
-                                        <DataTable :value="funcionario.itemsSelecionadosFuncionario"
+                                        <DataTable :value="itemsSelecionadosFuncionario"
                                             tableStyle="min-width: 50rem" stripedRows dataKey="sku">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
