@@ -15,12 +15,12 @@ const model = ref([
                 label: 'Relatorios',
                 icon: 'pi pi-fw pi-list',
                 items: [
-                    { label: 'Retiradas Realizadas', to: '', disabled: true },
+                    { label: 'Retiradas Realizadas', to: '/relatorios/retiradasrealizadas', disabled: false },
                     { label: 'Estoques da DM', to: '', disabled: true },
                     { label: 'Itens Mais Retirados', to: '', disabled: true },
                     { label: 'Retirada Avulsas por Exceções/Voucher', to: '', disabled: true },
                     { label: 'Historico de Abastecimento', to: '', disabled: true },
-                    { label: 'Status DM', to: '', disabled: true },
+                    { label: 'Status DM', to: '/relatorios/statusdm', disabled: false },
                     { label: 'Fichas Retiradas', to: '', disabled: true },
                     { label: 'Log', to: '', disabled: true },
                 ]
