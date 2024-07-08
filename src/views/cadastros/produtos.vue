@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
 const toast = useToast();
-const active = ref(1);
+const active = ref(0);
 let plantasoptions = ref([]);
 let formatedPlantaOptions = ref([]);
 const tipoProduto = ref([
@@ -16,35 +16,35 @@ const tipoProduto = ref([
     { label: 'Consumivel', value: 3 }
 ]);
 
-
 let produto = reactive({
     codigo: '',
     id_planta: '',
     id_tipoProduto: '',
-    id_categoria:71,
+    id_categoria: 71,
     nome: '',
     descricao: ' ',
     unidade_medida: '',
-    validadedias: '',
+    validadedias: ''
 });
 
 const ListaProdutos = ref([]);
+const deleteProdutoDialog = ref(false);
+const visible = ref(false);
 
 const saveProduto = async () => {
-    let data={
-        "id_cliente": store.userIdCliente
-    };
+    let data = { id_cliente: store.userIdCliente };
     Object.assign(data, produto);
 
-    try{
-        const response = await axios.post('/produtos/adicionar', data, {
-            headers:{
-                Authorization: `Bearer ${store.token}`,
-            },
+    try {
+        await axios.post('/produtos/adicionar', data, {
+            headers: { Authorization: `Bearer ${store.token}` }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
-    }catch(error){
-        console.error('Erro ao adicionar o funcionario usuários:', error);
+        loadProdutos();
+
+        resetForm();
+    } catch (error) {
+        console.error('Erro ao adicionar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o usuario', life: 3000 });
     }
 };
@@ -60,42 +60,78 @@ const onTemplatedUpload = () => {
 
 const loadProdutos = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
         const response = await axios.post('/produtos/listar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         ListaProdutos.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
     }
 };
+
 const fetchIdPlanta = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post("produtos/listarplanta", data, {
+        const response = await axios.post('produtos/listarplanta', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         plantasoptions = response.data;
-        formatedPlantaOptions = plantasoptions.map(plantasoptions =>({
-            label: `Planta ${plantasoptions.id_planta}`, 
+        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
+            label: `Planta ${plantasoptions.id_planta}`,
             value: plantasoptions.id_planta
-        }))
+        }));
     } catch (error) {
-        console.error("Erro ao buscar opções de plantas:", error);
+        console.error('Erro ao buscar opções de plantas:', error);
     }
 };
+
 onMounted(() => {
     loadProdutos();
     fetchIdPlanta();
 });
+
+const deleteProduto = async () => {
+    let data = { id_produto: produto.id_produto };
+    try {
+        await axios.post('/produtos/deleteProduto', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        const index = ListaProdutos.value.findIndex((f) => f.id_produto === produto.id_produto);
+        if (index !== -1) {
+            ListaProdutos.value.splice(index, 1);
+        }
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
+        deleteProdutoDialog.value = false;
+
+        resetForm();
+    } catch {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
+    }
+};
+
+const resetForm = () => {
+    produto.codigo = '';
+    produto.id_produto = '';
+    produto.id_cliente = '';
+    produto.id_categoria = '';
+    produto.nome = '';
+    produto.descricao = '';
+    produto.validadedias = '';
+    produto.id_planta = '';
+    produto.id_tipoProduto = '';
+    produto.unidade_medida = '';
+};
 </script>
 
 <template>
@@ -115,7 +151,6 @@ onMounted(() => {
                         <Column field="nome" header="Nome" class="col-7"></Column>
                     </DataTable>
                 </div>
-
             </TabPanel>
             <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
@@ -123,92 +158,87 @@ onMounted(() => {
                         <div class="card">
                             <!--form de cadastro de novo produto-->
                             <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="codigo">SKU</label>
                                     <InputText v-model="produto.codigo" id="codigo" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="nome">Nome</label>
                                     <InputText v-model="produto.nome" id="nome" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="nome">Descrição</label>
                                     <Textarea v-model="produto.descricao" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="codigo">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
-                                        cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="UndMedida">Unidade de Medida</label>
-                                    <InputText v-model="produto.unidade_medida" id="UndMedida" type="text">
-                                    </InputText>
-
+                                    <InputText v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="vldDias">Validade em dias</label>
                                     <InputNumber v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
-
                                 </div>
                             </div>
                         </div>
-
                     </div>
                     <div class="p-fluid formgrid grid">
-                        <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                        <div class="field lg:col-12 md:col-6 sm:col-4">
                             <h3>Imagem Principal</h3>
-                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                accept="image/*" :multiple="false" :maxFileSize="1000000" @select="onSelectedFiles"
-                                chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
+                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" accept="image/*" :multiple="false" :maxFileSize="1000000" @select="onSelectedFiles" chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
                                 <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column">
-
-                                    </div>
+                                    <div class="flex align-items-center justify-content-center flex-column"></div>
                                 </template>
                             </FileUpload>
                         </div>
-                        <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                        <div class="field lg:col-12 md:col-6 sm:col-4">
                             <h3>Imagens Secundaria</h3>
-                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles"
-                                chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
+                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles" chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
                                 <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column">
-
-                                    </div>
+                                    <div class="flex align-items-center justify-content-center flex-column"></div>
                                 </template>
                             </FileUpload>
                         </div>
-                        <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                        <div class="field lg:col-12 md:col-6 sm:col-4">
                             <h3>Informações Adicionais</h3>
-                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)"
-                                :multiple="false" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles"
-                                chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
+                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="false" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles" chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
                                 <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column">
-
-                                    </div>
+                                    <div class="flex align-items-center justify-content-center flex-column"></div>
                                 </template>
                             </FileUpload>
                         </div>
-
                     </div>
-                </div>
-                <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    
+                </div><div class="grid justify-content-end flex-wrap">
+                            <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                            <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                        </div>
+                        <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
+                            <div class="confirmation-content">
+                                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                                <span class="">
+                                    Você tem certeza que deseja deletar o produto <b>{{ produto.nome }}</b
+                                    >?</span
+                                >
+                            </div>
+                            <template #footer>
+                                <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
+                                <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
+                            </template>
+                        </Dialog>
             </TabPanel>
         </TabView>
-
     </div>
 </template>
 

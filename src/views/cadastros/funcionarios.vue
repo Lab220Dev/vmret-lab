@@ -1,11 +1,11 @@
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js'
+import axios from '@/axios.js';
 import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
-import imageUrl from '@/assets/images/placeholder4.png'
-import clockurl from '@/assets/images/OIP.jpeg'
+import '@vuepic/vue-datepicker/dist/main.css';
+import imageUrl from '@/assets/images/placeholder4.png';
+import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -32,7 +32,8 @@ let formatedCentroCustoOptions = ref([]);
 let formatedSetorOptions = ref([]);
 let formatedHierarquiaOptions = ref([]);
 let formatedPlantaOptions = ref([]);
-const funcionario = reactive({
+let funcionario = reactive({
+    id_funcionario: '',
     matricula: '',
     nome: '',
     biometria: '',
@@ -45,10 +46,10 @@ const funcionario = reactive({
     status: '',
     hora_inicial: '',
     hora_final: '',
-    id_centro_custo:'',
-    id_funcao:'',
-    id_planta:'',
-    id_setor:'',
+    id_centro_custo: '',
+    id_funcao: '',
+    id_planta: '',
+    id_setor: '',
     segunda: false,
     terca: false,
     quarta: false,
@@ -61,23 +62,23 @@ const funcionario = reactive({
 const selectedProduct = ref([]);
 const itemsSelecionadosFuncionario=ref([]);
 const ItensSetorDev = ref([
-    { name: "Mouse", sku: 123, quantidade: 1 },
-    { name: "Teclado", sku: 647, quantidade: 1 },
-    { name: "Microfone", sku: 563, quantidade: 1 },
-    { name: "Fone de ouvido", sku: 436, quantidade: 1 },
-    { name: "Cabo USB", sku: 279, quantidade: 1 },
-
-])
+    { name: 'Mouse', sku: 123, quantidade: 1 },
+    { name: 'Teclado', sku: 647, quantidade: 1 },
+    { name: 'Microfone', sku: 563, quantidade: 1 },
+    { name: 'Fone de ouvido', sku: 436, quantidade: 1 },
+    { name: 'Cabo USB', sku: 279, quantidade: 1 }
+]);
 const ItensSetorAdm = ref([
-    { name: "Post-it", sku: 98374, quantidade: 0 },
-    { name: "caderno", sku: 827642, quantidade: 0 },
-    { name: "corretivo", sku: 7462, quantidade: 0 },
-    { name: "clipe de papel", sku: 2978264, quantidade: 0 },
+    { name: 'Post-it', sku: 98374, quantidade: 0 },
+    { name: 'caderno', sku: 827642, quantidade: 0 },
+    { name: 'corretivo', sku: 7462, quantidade: 0 },
+    { name: 'clipe de papel', sku: 2978264, quantidade: 0 }
 ]);
 const arquivo = ref(null);
 const ListaFuncionarios = ref([]);
 const itemDialog = ref(false);
-const deleteProductDialog = ref(false)
+const deleteProductDialog = ref(false);
+const deleteFuncionarioDialog = ref(false);
 const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
@@ -95,23 +96,24 @@ const SalvarProduto = () => {
         item.value = {};
         itemDialog.value = false;
     }
+};
 
-}
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
     return `${day}/${month}/${year}`;
-}
+};
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
+
 const onRowSelect = (event) => {
-    funcionario.value = event.data;
+    funcionario = event.data;
     active.value = 1;
 };
 const editItem = (itm) => {
-    item.value = { ...itm }
+    item.value = { ...itm };
     itemDialog.value = true;
 };
 const findIndexById = (sku) => {
@@ -121,7 +123,6 @@ const findIndexById = (sku) => {
             index = i;
             break;
         }
-
     }
     return index;
 };
@@ -140,13 +141,13 @@ const deleteProduct = () => {
 };
 const loadFuncionarios = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
         const response = await axios.post('/funcionarios/listar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         ListaFuncionarios.value = response.data;
     } catch (error) {
@@ -175,109 +176,117 @@ const adicionarFuncionario = async () => {
             },
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
-    } catch (error) {
-        console.error('Erro ao adicionar o funcionario usuários:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o usuario', life: 3000 });
+        loadFuncionarios();
 
+        resetForm();
+    } catch (error) {
+        console.error('Erro ao adicionar o funcionário:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
     }
 };
 
 const fetchCentroCusto = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post("funcionarios/listarcentrocusto", data, {
+        const response = await axios.post('funcionarios/listarcentrocusto', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         centroCustooptions = response.data;
-        formatedCentroCustoOptions = centroCustooptions.map(centroCustooptions =>({
-            label: `Centro de Custo ${centroCustooptions.id_centro_custo}`, 
+        formatedCentroCustoOptions = centroCustooptions.map((centroCustooptions) => ({
+            label: `Centro de Custo ${centroCustooptions.id_centro_custo}`,
             value: centroCustooptions.id_centro_custo
-        }))
+        }));
     } catch (error) {
-        console.error("Erro ao buscar centros de custo:", error);
+        console.error('Erro ao buscar centros de custo:', error);
     }
 };
 
 const fetchSetorDiretoria = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post("funcionarios/listarsetor", data, {
+        const response = await axios.post('funcionarios/listarsetor', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         SetorDiretoriaoptions = response.data;
-        formatedSetorOptions = SetorDiretoriaoptions.map(SetorDiretoriaoptions =>({
-            label: `Setor ${SetorDiretoriaoptions.id_setor}`, 
+        formatedSetorOptions = SetorDiretoriaoptions.map((SetorDiretoriaoptions) => ({
+            label: `Setor ${SetorDiretoriaoptions.id_setor}`,
             value: SetorDiretoriaoptions.id_setor
-        }))
+        }));
     } catch (error) {
-        console.error("Erro ao buscar setores/diretorias:", error);
+        console.error('Erro ao buscar setores/diretorias:', error);
     }
 };
 
 const fetchHieraquiaOptions = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post("funcionarios/listarhierarquia", data, {
+        const response = await axios.post('funcionarios/listarhierarquia', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         hieraquiaoptions = response.data;
-        formatedHierarquiaOptions = hieraquiaoptions.map(hieraquiaoptions =>({
-            label: ` ${hieraquiaoptions.id_funcao}`, 
+        formatedHierarquiaOptions = hieraquiaoptions.map((hieraquiaoptions) => ({
+            label: ` ${hieraquiaoptions.id_funcao}`,
             value: hieraquiaoptions.id_funcao
-        }))
-        
+        }));
     } catch (error) {
-        console.error("Erro ao buscar opções de hierarquia:", error);
+        console.error('Erro ao buscar opções de hierarquia:', error);
     }
 };
 const fetchIdPlanta = async () => {
     const data = {
-        "id_cliente": store.userIdCliente
+        id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post("funcionarios/listarplanta", data, {
+        const response = await axios.post('funcionarios/listarplanta', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
-            },
+                Authorization: `Bearer ${store.token}`
+            }
         });
         plantasoptions = response.data;
-        formatedPlantaOptions = plantasoptions.map(plantasoptions =>({
-            label: `Planta ${plantasoptions.id_planta}`, 
+        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
+            label: `Planta ${plantasoptions.id_planta}`,
             value: plantasoptions.id_planta
-        }))
+        }));
     } catch (error) {
-        console.error("Erro ao buscar opções de plantas:", error);
+        console.error('Erro ao buscar opções de plantas:', error);
     }
 };
 
+watch(
+    TempoInicio,
+    (newTime) => {
+        if (newTime) {
+            funcionario.hora_inicial = formatarTempo(newTime);
+        } else {
+            funcionario.hora_inicial = '';
+        }
+    },
+    { deep: true }
+);
 
-watch(TempoInicio, (newTime) => {
-    if (newTime) {
-        funcionario.hora_inicial = formatarTempo(newTime);
-    } else {
-        funcionario.hora_inicial = '';
-    }
-}, { deep: true });
-
-watch(TempoFim, (newTime) => {
-    if (newTime) {
-        funcionario.hora_final = formatarTempo(newTime);
-    } else {
-        funcionario.hora_final = '';
-    }
-}, { deep: true });
+watch(
+    TempoFim,
+    (newTime) => {
+        if (newTime) {
+            funcionario.hora_final = formatarTempo(newTime);
+        } else {
+            funcionario.hora_final = '';
+        }
+    },
+    { deep: true }
+);
 watch(RG, (newValue) => {
     if (newValue) {
         funcionario.RG = unmaskValue(newValue);
@@ -301,20 +310,21 @@ watch(CTPS, (newValue) => {
 });
 
 function formatarTempo(time, baseDate = new Date()) {
-  const hours = time.hours.toString().padStart(2, '0');
-  const minutes = time.minutes.toString().padStart(2, '0');
-  const seconds = time.seconds.toString().padStart(2, '0');
+    const hours = time.hours.toString().padStart(2, '0');
+    const minutes = time.minutes.toString().padStart(2, '0');
+    const seconds = time.seconds.toString().padStart(2, '0');
 
-  baseDate.setHours(parseInt(hours, 10));
-  baseDate.setMinutes(parseInt(minutes, 10));
-  baseDate.setSeconds(parseInt(seconds, 10));
+    baseDate.setHours(parseInt(hours, 10));
+    baseDate.setMinutes(parseInt(minutes, 10));
+    baseDate.setSeconds(parseInt(seconds, 10));
 
-  return baseDate.toISOString();
+    return baseDate.toISOString();
 }
 
 const unmaskValue = (maskedValue) => {
     return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
 };
+
 onMounted(() => {
     loadFuncionarios();
     fetchCentroCusto();
@@ -322,6 +332,58 @@ onMounted(() => {
     fetchHieraquiaOptions();
     fetchIdPlanta();
 });
+
+const deleteFuncionario = async () => {
+    let data = { id_funcionario: funcionario.id_funcionario };
+    try {
+        await axios.post('/funcionarios/deleteFuncionario', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
+        if (index !== -1) {
+            ListaFuncionarios.value.splice(index, 1);
+        }
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
+        deleteFuncionarioDialog.value = false;
+
+        resetForm();
+    } catch {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
+    }
+};
+
+const resetForm = () => {
+    funcionario.id_funcionario = '';
+    funcionario.matricula = '';
+    funcionario.nome = '';
+    funcionario.biometria = '';
+    funcionario.biometria2 = '';
+    funcionario.data_admissao = new Date().toDateString();
+    funcionario.CPF = '';
+    funcionario.RG = '';
+    funcionario.CTPS = '';
+    funcionario.email = '';
+    funcionario.status = '';
+    funcionario.hora_inicial = '';
+    funcionario.hora_final = '';
+    funcionario.id_centro_custo = '';
+    funcionario.id_funcao = '';
+    funcionario.id_planta = '';
+    funcionario.id_setor = '';
+    funcionario.segunda = false;
+    funcionario.terca = false;
+    funcionario.quarta = false;
+    funcionario.quinta = false;
+    funcionario.sexta = false;
+    funcionario.sabado = false;
+    funcionario.domingo = false;
+    funcionario.itemsSelecionadosFuncionario = [];
+    CPF.value = '';
+    RG.value = '';
+    CTPS.value = '';
+};
 </script>
 
 <template>
@@ -329,8 +391,7 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionário">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id"
-                        :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
                         <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
@@ -343,73 +404,65 @@ onMounted(() => {
                         <div class="card">
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                                <div class="field lg:col-12 md:col-6 sm:col-4">
                                     <label for="name">Nome</label>
                                     <InputText v-model="funcionario.nome" id="name" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="matricula">Matrícula</label>
                                     <InputText id="matricula" v-model="funcionario.matricula" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="Hash">Hash 1</label>
                                     <InputText disabled id="Hash" v-model="funcionario.biometria" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="Hash2">Hash 2</label>
                                     <InputText disabled id="Hash2" v-model="funcionario.biometria2" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="DataAdmissao">Data de Admissao</label>
-                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false"
-                                        :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                                        :enable-time-picker="false" />
+                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="cpf">CPF</label>
                                     <InputMask v-model="CPF" id="cpf" mask="999.999.999-99" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="rg">RG</label>
                                     <InputMask id="rg" v-model="RG" mask="99.999.999-*" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="ctps">CTPS</label>
                                     <InputMask id="ctps" v-model="CTPS" mask="9999999/9999" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="email">E-mail</label>
                                     <InputText id="email" v-model="funcionario.email" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
-                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione Um " />
+                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="planta">Planta</label>
-                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
+                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="setor">Setor/Diretoria</label>
-                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions"
-                                    optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
+                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
                                 </div>
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="funcao">Função/Nivel Hierarquico</label>
-                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions"
-                                    optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
+                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
                                 </div>
-
                             </div>
                             <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-4  md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="status">Status</label>
-                                    <Dropdown id="status" v-model="funcionario.status" :options="status"
-                                    optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                    <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
-                                <div class="field lg:col-2  md:col-6 sm:col-4">
+                                <div class="field lg:col-2 md:col-6 sm:col-4">
                                     <label for="inicio">Hora Inicio</label>
                                     <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
                                         <template #input-icon>
@@ -417,27 +470,24 @@ onMounted(() => {
                                         </template>
                                     </VueDatePicker>
                                 </div>
-                                <div class="field lg:col-2  md:col-6 sm:col-4">
+                                <div class="field lg:col-2 md:col-6 sm:col-4">
                                     <label for="inicio">Hora Fim</label>
-                                    <VueDatePicker id="inicio" v-model="TempoFim" time-picker
-                                        disable-time-range-validation>
+                                    <VueDatePicker id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
                                         </template>
                                     </VueDatePicker>
                                 </div>
-
                             </div>
                             <div class="p-fluid formgrid grid">
-                                <div class="flex align-content-end flex-wrap field lg:col-4  md:col-6 sm:col-4">
+                                <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
                                     <Toast />
                                     <img role="presentation" :src="imageUrl" width="170" />
                                     <ImageUpload @fileSelected="handleFileSelected" />
                                 </div>
                                 <!--Div com os dias da Semana-->
-                                <div class=" lg:col-8  md:col-6 sm:col-4">
-                                    <label for="fim">Selecione os dias que o Funcionario poderá retirar os
-                                        items:</label>
+                                <div class="lg:col-8 md:col-6 sm:col-4">
+                                    <label for="fim">Selecione os dias que o Funcionario poderá retirar os items:</label>
                                     <div id="fim" class="flex align-content-end flex-wrap">
                                         <div class="m-2 flex align-items-end">
                                             <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
@@ -445,47 +495,57 @@ onMounted(() => {
                                             <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
-                                                value="Terca" :binary="true" />
+                                            <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
                                             <label for="Terca" class="ml-2"> Terça-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
-                                                value="Quarta" :binary="true" />
+                                            <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
                                             <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
-                                                value="Quinta" :binary="true" />
+                                            <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
                                             <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
-                                                value="Sexta" :binary="true" />
+                                            <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
                                             <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
-                                                value="Sabado" :binary="true" />
+                                            <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
                                             <label for="Sabado" class="ml-2"> Sabado </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
-                                                value="Domingo" :binary="true" />
+                                            <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
                                             <label for="Domingo" class="ml-2"> Domingo</label>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario"
-                                class="m-2" />
+
+                            <div class="grid justify-content-end flex-wrap">
+                                <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
+                            </div>
+
+                            <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
+                                <div class="confirmation-content">
+                                    <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                                    <span class="">
+                                        Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.nome }}</b
+                                        >?</span
+                                    >
+                                </div>
+                                <template #footer>
+                                    <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
+                                    <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario" class="p-button-text" />
+                                </template>
+                            </Dialog>
+
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Items do Setor">
-                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku"
-                                            v-model="funcionario.itemsSelecionadosSetor">
+                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
@@ -500,33 +560,29 @@ onMounted(() => {
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
-                                            <Column style="min-width:8rem">
+                                            <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
-                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2"
-                                                        @click="editItem(slotProps.data)" />
-                                                    <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                                        @click="confirmDeleteProduct(slotProps.data)" />
+                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
+                                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
                                                 </template>
                                             </Column>
                                         </DataTable>
                                     </TabPanel>
                                 </TabView>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true"
-            class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
-                    <div class="field lg:col-12 md:col-6 sm:col-4 ">
+                    <div class="field lg:col-12 md:col-6 sm:col-4">
                         <label for="name">Nome:</label>
                         <InputText disabled v-model="item.name" id="name" type="text"></InputText>
                     </div>
-                    <div class="field lg:col-4  md:col-6 sm:col-4">
+                    <div class="field lg:col-4 md:col-6 sm:col-4">
                         <label for="Quantidade">Quantidade</label>
                         <InputText id="Quantidade" v-model="item.quantidade" />
                     </div>
@@ -541,13 +597,11 @@ onMounted(() => {
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="font-semibold col-2">Produto</label>
-                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name"
-                        placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem">Quantidade</label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3"
-                        autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -558,8 +612,7 @@ onMounted(() => {
         </Dialog>
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza
-                    que quer deletar o Item: {{ item.name }}</span>
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza que quer deletar o Item: {{ item.name }}</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />
@@ -567,8 +620,6 @@ onMounted(() => {
             </template>
         </Dialog>
     </div>
-
-
 </template>
 <style>
 .input-slot-image {
