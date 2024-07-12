@@ -69,15 +69,45 @@ const buscar = async () => {
 };
 const onRowSelect = (event) => {
     if (event.data) {
-    selectedItem.value = event.data;
-    show.value = false;
-    }else{
+        selectedItem.value = event.data;
+        show.value = false;
+    } else {
         voltar();
     }
 };
 const voltar = () => {
     show.value = true;
     selectedItem.value = {}
+};
+const dt = ref(null);
+
+const generateCSV = (data) => {
+  const headers = Object.keys(data[0]).join(',');
+  const rows = data.map(row => Object.values(row).join(',')).join('\n');
+  return `${headers}\n${rows}`;
+};
+
+const exportCSV = () => {
+  const csvContent = generateCSV(retiradas.value);
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'RetiradasRealizadas.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+const exportJSON = () => {
+  const jsonContent = JSON.stringify(retiradas.value, null, 2);
+  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'RetiradasRealizadas.json');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 const fetchVM = async () => {
     const data = {
@@ -153,7 +183,6 @@ const fetchFuncionarios = async () => {
     <div class="card">
         <div class="form">
             <div class="grid">
-                <div class="col12">
                     <div class="p-fluid formgrid grid" v-if="show">
                         <!-- div de busca de informações para o relatorio -->
                         <div class="field lg:col-3  md:col-6 sm:col-4">
@@ -198,16 +227,22 @@ const fetchFuncionarios = async () => {
                             <Button type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
                                 @click="buscar" />
                         </div>
+                        <div class="field lg:col-2  md:col-6 sm:col-4">
+                            <Button icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+                        </div>
+                        <div class="field lg:col-2  md:col-6 sm:col-4">
+                            <Button icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
 
+                        </div>
 
                     </div>
                     <!--  datatable do relatorio -->
+                    <div class="datatable-wrapper">
                     <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
                         :rows="10" dataKey="id" filterDisplay="row" :loading="loading"
                         :rowsPerPageOptions="[5, 10, 20, 50]" v-model:selection="selectedItem"
                         :globalFilterFields="['id', 'vm', 'data', 'matricula', 'nome', 'email', 'item', 'qtd', 'ca', 'valor']"
-                        :tableStyle="{ width: '100%' }" selectionMode="single"
-                        :metaKeySelection="false">
+                        :tableStyle="{ width: '100%' }" selectionMode="single" :metaKeySelection="false" ref="dt">
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
                             <div class="flex justify-content-end">
@@ -232,20 +267,24 @@ const fetchFuncionarios = async () => {
                         <Column field="ca" sortable header="CA"></Column>
                         <Column field="valor" sortable header="Valor(R$)"></Column>
                     </DataTable>
+                    </div>
                     <Card v-if="!show">
                         <template #title>{{ selectedItem.vm }}</template>
                         <template #content>
-                            <Button type="button" label="Voltar" icon="pi pi-check" severity="info"
-                            @click="voltar" />
+                            <Button type="button" label="Voltar" icon="pi pi-check" severity="info" @click="voltar" />
                         </template>
                     </Card>
                 </div>
             </div>
         </div>
-    </div>
+
 </template>
 <style>
 .card {
     overflow-x: auto;
+}
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100%;
 }
 </style>
