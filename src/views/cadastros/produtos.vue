@@ -4,6 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
 import { useAuthStore } from '@/store/authStore.js';
+import ImageUpload from '@/components/ImageUpload.vue';
 
 const store = useAuthStore();
 const toast = useToast();
@@ -16,6 +17,18 @@ const tipoProduto = ref([
     { label: 'Consumivel', value: 3 }
 ]);
 
+const selectedFile = ref(null);
+const selectedFilesSecondary = ref([]);
+
+
+const handleFileSelectedSecondary = (file) => {
+  selectedFilesSecondary.value.push(file);
+};
+
+const handleFileSelected = (file) => {
+  selectedFile.value = file;
+};
+
 let produto = reactive({
     codigo: '',
     id_planta: '',
@@ -24,20 +37,38 @@ let produto = reactive({
     nome: '',
     descricao: ' ',
     unidade_medida: '',
-    validadedias: ''
-});
+    validadedias: '',
+    nomeArquivo:'',
+    });
 
 const ListaProdutos = ref([]);
 const deleteProdutoDialog = ref(false);
 const visible = ref(false);
 
 const saveProduto = async () => {
-    let data = { id_cliente: store.userIdCliente };
-    Object.assign(data, produto);
+    const formData = new FormData();
+    if (selectedFile.value) {
+    const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
+    formData.append('imagem1', nomeArquivoPrincipal);
+    formData.append('file', selectedFile.value); 
+  }
+
+  if (selectedFilesSecondary.value){
+      const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
+      formData.append(`imagem2`, nomeArquivoSecundario); 
+      formData.append('file', selectedFilesSecondary.file); 
+  }
+  Object.entries(produto).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+  formData.append('id_cliente',  store.userIdCliente);
 
     try {
-        await axios.post('/produtos/adicionar', data, {
-            headers: { Authorization: `Bearer ${store.token}` }
+        await axios.post('/produtos/adicionar', formData ,
+        {
+            headers: { Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
@@ -45,7 +76,7 @@ const saveProduto = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o usuario', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
     }
 };
 
@@ -194,29 +225,17 @@ const resetForm = () => {
                         </div>
                     </div>
                     <div class="p-fluid formgrid grid">
-                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                            <h3>Imagem Principal</h3>
-                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" accept="image/*" :multiple="false" :maxFileSize="1000000" @select="onSelectedFiles" chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
-                                <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column"></div>
-                                </template>
-                            </FileUpload>
+                        <div class="border-right-2 surface-border field lg:col-4 md:col-4 sm:col-4">
+                            <h3 class="text-center">Imagem Principal</h3>
+                            <ImageUpload @fileSelected="handleFileSelected" />
                         </div>
-                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                            <h3>Imagens Secundaria</h3>
-                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="true" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles" chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
-                                <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column"></div>
-                                </template>
-                            </FileUpload>
+                        <div class=" field surface-border lg:col-4 md:col-4 sm:col-4">
+                            <h3 class="text-center">Imagens Secundaria</h3>
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" />
                         </div>
-                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                            <h3>Informações Adicionais</h3>
-                            <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="false" accept=" image/*" :maxFileSize="1000000" @select="onSelectedFiles" chooseLabel="Escolha uma Foto" cancelLabel="Limpar">
-                                <template #empty>
-                                    <div class="flex align-items-center justify-content-center flex-column"></div>
-                                </template>
-                            </FileUpload>
+                        <div class="surface-border border-left-2 field lg:col-4 md:col-4 sm:col-4">
+                            <h3 class="text-center">Informações Adicionais</h3>
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" />
                         </div>
                     </div>
                     
@@ -228,8 +247,7 @@ const resetForm = () => {
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">
-                                    Você tem certeza que deseja deletar o produto <b>{{ produto.nome }}</b
-                                    >?</span
+                                    Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
                                 >
                             </div>
                             <template #footer>

@@ -169,7 +169,8 @@ const adicionarFuncionario = async () => {
   formData.append('id_cliente',  store.userIdCliente);
     try {
 
-        const response = await axios.post('/funcionarios/adicionar', formData, {
+        const response = await axios.post('/funcionarios/adicionar', formData, 
+        {
             headers: {
                 Authorization: `Bearer ${store.token}`,  
                'Content-Type': 'multipart/form-data'
@@ -481,10 +482,9 @@ const resetForm = () => {
                             </div>
                             <div class="p-fluid formgrid grid">
                                 <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
-                                    <Toast />
-                                    <img role="presentation" :src="imageUrl" width="170" />
                                     <ImageUpload @fileSelected="handleFileSelected" />
                                 </div>
+
                                 <!--Div com os dias da Semana-->
                                 <div class="lg:col-8 md:col-6 sm:col-4">
                                     <label for="fim">Selecione os dias que o Funcionario poderá retirar os items:</label>
@@ -531,8 +531,7 @@ const resetForm = () => {
                                 <div class="confirmation-content">
                                     <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                     <span class="">
-                                        Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.nome }}</b
-                                        >?</span
+                                        Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{ funcionario.nome }}</b> ?</span
                                     >
                                 </div>
                                 <template #footer>
