@@ -37,5 +37,6 @@ export const useAuthStore = defineStore('auth', {
     userIdCliente: (state) => {
       return state.usuario[0].id_cliente;
     }
-  }
+  },
+  persist: true 
 });

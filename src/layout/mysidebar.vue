@@ -5,31 +5,45 @@ import imageUrl from '@/assets/images/LogoDMBranco.png';
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/store/authStore.js';
 import { useRouter } from 'vue-router'
+import { useCountdownStore } from '@/store/countdown';
 
 const store = useAuthStore();
 const router = useRouter()
 const nome = store.userName;
 const role = store.userRole;
-const counting = ref(false);
+
+const countdownStore = useCountdownStore();
+const millisecondsRemaining = countdownStore.millisecondsRemaining
+
 
 function startCountdown() {
-  counting.value = true;
+   return true;
 }
 
+
 function onCountdownEnd() {
-  counting.value = false;
+//   counting.value = false;
   store.logout();
   router.push({ name: 'login'})
 }
+onMounted(() => {
+  if (millisecondsRemaining > 0) {
+    startCountdown();  
+  }
+});
 </script>
 
 <template>
     <Image :src="imageUrl" width="250" class="mt-12" />
     <div class="relogio justify-content text-center p-4">
-        <vue-countdown :time="60* 60 * 1000" v-slot="{ minutes, seconds }"
+        <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }"
+                   @start="startCountdown" @end="onCountdownEnd">
+      {{ minutes }}:{{ seconds }}
+    </vue-countdown>
+        <!-- <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }"
          @start="startCountdown" @end="onCountdownEnd">
             {{ minutes }} : {{ seconds }}
-        </vue-countdown>    
+        </vue-countdown>     -->
     </div>
     <div class="formgrid grid">
         <div class="field col-3">

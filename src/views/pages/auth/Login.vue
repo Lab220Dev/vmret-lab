@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router'
 import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore';
+import { useCountdownStore } from '@/store/countdown';
 
 const router = useRouter()
 const username = ref('');
@@ -11,6 +12,8 @@ const password = ref('');
 const error = ref(null);
 const forgotPassword = ref(false);
 const authStore = useAuthStore();
+
+const countdownStore = useCountdownStore();
 
 function resetPassword() {
     alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br"); // função que vai abrir uma "messagebox" se a operação for concluida
@@ -24,8 +27,8 @@ const login = async () => {
         });
         if (response.status === 200) {
             authStore.login({ token: response.data.token, usuario: response.data.Usuario });
-             localStorage.setItem('usuario:', JSON.stringify(response.data.Usuario));
-            router.push({ name: 'Dashboard' });// Redirecionar para o dashboard
+            countdownStore.startCountdown(60* 60*1000);
+            router.push({ name: 'Dashboard' });
         }
     } catch (err) {
         error.value = err.response?.data?.message || err.message;

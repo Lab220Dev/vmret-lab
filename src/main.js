@@ -108,7 +108,7 @@ import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 import { createPinia } from 'pinia';
 import BlockViewer from '@/components/BlockViewer.vue';
-
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import '@/assets/styles.scss';
 
 const app = createApp(App);
@@ -123,7 +123,7 @@ app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);
 app.directive('ripple', Ripple);
 app.directive('styleclass', StyleClass);
-
+pinia.use(piniaPluginPersistedstate);
 app.component('BlockViewer', BlockViewer);
 
 app.component('Accordion', Accordion);
