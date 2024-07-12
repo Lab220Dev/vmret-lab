@@ -1,8 +1,11 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
-import imagePlaceholder from '@/assets/images/placeholder4.png';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import imageUrl from '@/assets/images/placeholder4.png';
+import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -53,10 +56,11 @@ const saveProduto = async () => {
     formData.append('file', selectedFile.value); 
   }
 
-  if (selectedFilesSecondary.value){
-      const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-      formData.append(`imagem2`, nomeArquivoSecundario); 
-      formData.append('file', selectedFilesSecondary.file); 
+  if (selectedFilesSecondary.value) {
+        const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
+        formData.append('imagem2', nomeArquivoSecundario);
+        formData.append('file2', selectedFilesSecondary.value); 
+        
   }
   Object.entries(produto).forEach(([key, value]) => {
     formData.append(key, value);
@@ -78,6 +82,7 @@ const saveProduto = async () => {
         console.error('Erro ao adicionar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
     }
+    active.value = 0;
 };
 
 const onRowSelect = (event) => {
@@ -149,9 +154,11 @@ const deleteProduto = async () => {
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
     }
+    active.value = 0;
 };
 
 const resetForm = () => {
+    produto.id_cliente = '';
     produto.codigo = '';
     produto.id_produto = '';
     produto.id_cliente = '';
