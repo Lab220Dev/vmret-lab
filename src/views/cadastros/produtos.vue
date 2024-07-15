@@ -50,14 +50,22 @@ const saveProduto = async () => {
     if (selectedFile.value) {
     const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
     formData.append('imagem1', nomeArquivoPrincipal);
-    formData.append('file', selectedFile.value); 
+    formData.append('file_principal', selectedFile.value); 
   }
 
-  if (selectedFilesSecondary.value){
-      const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-      formData.append(`imagem2`, nomeArquivoSecundario); 
-      formData.append('file', selectedFilesSecondary.file); 
-  }
+//   if (selectedFilesSecondary.value){
+//       const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
+//       formData.append(`imagem2`, nomeArquivoSecundario); 
+//       formData.append('file', selectedFilesSecondary.file); 
+//   }
+
+if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)){
+        selectedFilesSecondary.value.forEach((file, index) => {
+            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
+            formData.append(`imagemSecundaria_${index}`, nomeArquivoSecundario);
+            formData.append(`file_secundario_${index}`, file);
+        });
+    }
   Object.entries(produto).forEach(([key, value]) => {
     formData.append(key, value);
   });
@@ -70,9 +78,10 @@ const saveProduto = async () => {
                 'Content-Type': 'multipart/form-data'
              }
         });
+
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
-
+        active.value = 0;
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
