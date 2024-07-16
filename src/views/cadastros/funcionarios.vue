@@ -110,6 +110,7 @@ const TempoFim = ref(null);
 
 const onRowSelect = (event) => {
     funcionario = event.data;
+    getImagem(funcionario.nomearquivo);
     active.value = 1;
 };
 const editItem = (itm) => {
@@ -325,7 +326,23 @@ function formatarTempo(time, baseDate = new Date()) {
 const unmaskValue = (maskedValue) => {
     return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
 };
-
+const getImagem = async (filename) => {
+    if(filename===""){
+        return imagePlaceholder;
+    }
+    try {
+        const response = await axios.get(`/image/funcionario/${store.userIdCliente}/${filename}`, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            },
+        });
+        const { image, mimeType } = response.data;
+        selectedFile.value = `data:${mimeType};base64,${image}`;
+    } catch (error) {   
+        console.error("Erro ao carregar imagem:", error);
+        return imagePlaceholder; 
+    }
+};
 onMounted(() => {
     loadFuncionarios();
     fetchCentroCusto();

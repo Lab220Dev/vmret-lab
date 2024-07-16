@@ -57,7 +57,7 @@ const saveProduto = async () => {
     if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
         selectedFilesSecondary.value.forEach((file, index) => {
             const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-            formData.append(`imagemSecundaria_${index}`, nomeArquivoSecundario);
+            formData.append(`imagem${index+2}`, nomeArquivoSecundario);
             formData.append(`file_secundario_${index}`, file);
         });
     }
@@ -89,8 +89,6 @@ const onRowSelect = (event) => {
     produto = event.data;
     active.value = 1;
 };
-
-
 const loadProdutos = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -160,7 +158,7 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
     try {
-        const response = await axios.get(`/image/${store.userIdCliente}/${filename}`, {
+        const response = await axios.get(`/image/produtos/${store.userIdCliente}/${filename}`, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             },
@@ -169,7 +167,7 @@ const getImagem = async (filename) => {
         return `data:${mimeType};base64,${image}`;
     } catch (error) {   
         console.error("Erro ao carregar imagem:", error);
-        return imagePlaceholder; // Retorne um placeholder ou imagem padrão em caso de erro
+        return imagePlaceholder; 
     }
 };
 const resetForm = () => {
