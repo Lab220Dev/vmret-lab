@@ -19,14 +19,14 @@ const tipoProduto = ref([
 
 const selectedFile = ref(null);
 const selectedFilesSecondary = ref([]);
-
+const imagemProduto = ref(imagePlaceholder);
 
 const handleFileSelectedSecondary = (file) => {
-  selectedFilesSecondary.value.push(file);
+    selectedFilesSecondary.value.push(file);
 };
 
 const handleFileSelected = (file) => {
-  selectedFile.value = file;
+    selectedFile.value = file;
 };
 
 let produto = reactive({
@@ -38,8 +38,8 @@ let produto = reactive({
     descricao: ' ',
     unidade_medida: '',
     validadedias: '',
-    nomeArquivo:'',
-    });
+    nomeArquivo: '',
+});
 
 const ListaProdutos = ref([]);
 const deleteProdutoDialog = ref(false);
@@ -48,36 +48,32 @@ const visible = ref(false);
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-    const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
-    formData.append('imagem1', nomeArquivoPrincipal);
-    formData.append('file_principal', selectedFile.value); 
-  }
+        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
+        formData.append('imagem1', nomeArquivoPrincipal);
+        formData.append('file_principal', selectedFile.value);
+    }
 
-//   if (selectedFilesSecondary.value){
-//       const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-//       formData.append(`imagem2`, nomeArquivoSecundario); 
-//       formData.append('file', selectedFilesSecondary.file); 
-//   }
 
-if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)){
+    if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
         selectedFilesSecondary.value.forEach((file, index) => {
             const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-            formData.append(`imagemSecundaria_${index}`, nomeArquivoSecundario);
+            formData.append(`imagem${index+2}`, nomeArquivoSecundario);
             formData.append(`file_secundario_${index}`, file);
         });
     }
-  Object.entries(produto).forEach(([key, value]) => {
-    formData.append(key, value);
-  });
-  formData.append('id_cliente',  store.userIdCliente);
+    Object.entries(produto).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    formData.append('id_cliente', store.userIdCliente);
 
     try {
-        await axios.post('/produtos/adicionar', formData ,
-        {
-            headers: { Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
-             }
-        });
+        await axios.post('/produtos/adicionar', formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${store.token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
@@ -93,11 +89,6 @@ const onRowSelect = (event) => {
     produto = event.data;
     active.value = 1;
 };
-
-const onTemplatedUpload = () => {
-    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
-};
-
 const loadProdutos = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -134,9 +125,12 @@ const fetchIdPlanta = async () => {
     }
 };
 
-onMounted(() => {
-    loadProdutos();
-    fetchIdPlanta();
+onMounted(async () => {
+    await loadProdutos();
+    await fetchIdPlanta();
+    ListaProdutos.value.forEach(async (produto) => {
+        produto.imagemUrl = await getImagem(produto.imagem1);
+    });
 });
 
 const deleteProduto = async () => {
@@ -159,7 +153,23 @@ const deleteProduto = async () => {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
     }
 };
-
+const getImagem = async (filename) => {
+    if(filename===""){
+        return imagePlaceholder;
+    }
+    try {
+        const response = await axios.get(`/image/produtos/${store.userIdCliente}/${filename}`, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            },
+        });
+        const { image, mimeType } = response.data;
+        return `data:${mimeType};base64,${image}`;
+    } catch (error) {   
+        console.error("Erro ao carregar imagem:", error);
+        return imagePlaceholder; 
+    }
+};
 const resetForm = () => {
     produto.codigo = '';
     produto.id_produto = '';
@@ -167,10 +177,13 @@ const resetForm = () => {
     produto.id_categoria = '';
     produto.nome = '';
     produto.descricao = '';
+    produto.especificacoes = '';
     produto.validadedias = '';
     produto.id_planta = '';
     produto.id_tipoProduto = '';
     produto.unidade_medida = '';
+    selectedFile.value = null;
+    selectedFilesSecondary.value = [];
 };
 </script>
 
@@ -179,11 +192,13 @@ const resetForm = () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.image ? slotProps.data.image : imagePlaceholder" class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl"
+                                        alt="Imagem do Produto" class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
@@ -212,15 +227,18 @@ const resetForm = () => {
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="codigo">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
+                                        cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="UndMedida">Unidade de Medida</label>
@@ -247,23 +265,29 @@ const resetForm = () => {
                             <ImageUpload @fileSelected="handleFileSelectedSecondary" />
                         </div>
                     </div>
-                    
-                </div><div class="grid justify-content-end flex-wrap">
-                            <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                            <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
-                        </div>
-                        <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
-                            <div class="confirmation-content">
-                                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                <span class="">
-                                    Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
-                                >
-                            </div>
-                            <template #footer>
-                                <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
-                                <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
-                            </template>
-                        </Dialog>
+
+                </div>
+                <div class="grid justify-content-end flex-wrap">
+                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
+                        icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check"
+                        severity="info" @click="saveProduto" />
+                </div>
+                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px"
+                    :modal="true" :closable="false">
+                    <div class="confirmation-content">
+                        <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                        <span class="">
+                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
+                                produto.nome
+                            }}</b> ?</span>
+                    </div>
+                    <template #footer>
+                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false"
+                            class="p-button-text" />
+                        <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
+                    </template>
+                </Dialog>
             </TabPanel>
         </TabView>
     </div>

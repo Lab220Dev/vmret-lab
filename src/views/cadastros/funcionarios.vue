@@ -4,7 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
-import imageUrl from '@/assets/images/placeholder4.png';
+import imagePlaceholder from '@/assets/images/placeholder4.png';
 import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
@@ -110,6 +110,7 @@ const TempoFim = ref(null);
 
 const onRowSelect = (event) => {
     funcionario = event.data;
+    getImagem(funcionario.foto);
     active.value = 1;
 };
 const editItem = (itm) => {
@@ -325,7 +326,23 @@ function formatarTempo(time, baseDate = new Date()) {
 const unmaskValue = (maskedValue) => {
     return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
 };
-
+const getImagem = async (filename) => {
+    if(filename===""){
+        return imagePlaceholder;
+    }
+    try {
+        const response = await axios.get(`/image/funcionario/${store.userIdCliente}/${filename}`, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            },
+        });
+        const { image, mimeType } = response.data;
+        selectedFile.value = `data:${mimeType};base64,${image}`;
+    } catch (error) {   
+        console.error("Erro ao carregar imagem:", error);
+        return imagePlaceholder; 
+    }
+};
 onMounted(() => {
     loadFuncionarios();
     fetchCentroCusto();
