@@ -32,10 +32,6 @@ onBeforeUnmount(() => {
     unbindOutsideClickListener();
 });
 
-const onTopBarMenuButton = () => {
-    topbarMenuActive.value = !topbarMenuActive.value;
-};
-
 const bindOutsideClickListener = () => {
     if (!outsideClickListener.value) {
         outsideClickListener.value = (event) => {
@@ -46,18 +42,31 @@ const bindOutsideClickListener = () => {
         document.addEventListener('click', outsideClickListener.value);
     }
 };
+
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
         document.removeEventListener('click', outsideClickListener);
         outsideClickListener.value = null;
     }
 };
+
 const isOutsideClicked = (event) => {
     if (!topbarMenuActive.value) return;
 
-    const topbarEl = document.querySelector('.layout-topbar-menu-button');
+    const topbarEl = document.querySelector('.layout-topbar-sair-button');
 
     return !(topbarEl === event.target || topbarEl.contains(event.target));
+};
+
+const fazerLogoff = () => {
+    store.logout(); 
+    router.push({ name: 'login' }); 
+};
+
+const confirmLogoff = () => {
+    if (confirm('Deseja realmente efetuar logoff?')) {
+        fazerLogoff();
+    }
 };
 
 function startCountdown() {
@@ -81,38 +90,40 @@ function padZero(value) {
             <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            <button class="p-link layout-topbar-menu-button layout-topbar-button" @click="onTopBarMenuButton()">
-                <i class="pi pi-ellipsis-v"></i>
-            </button>
             <Image :src="imageUrl" width="250" class="mt-12" />
         </div>
 
-        <!-- usuário, role -->
-        <div class=" flex align-items-center">
-            <div class="formgrid grid flex align-items-center">
+        <!-- sair, usuario e role -->
+        <button class="p-link layout-topbar-sair-button layout-topbar-button" @click="confirmLogoff()">
+            <i class="pi pi-ellipsis-v"></i>
+        </button>
+
+        <div class="flex align-items-center justify-content-end" style="position: relative; flex-grow: 1;">
+            <div class="formgrid flex align-items-center" style="margin-right: 60px;">
                 <div class="mt-3 field col-3">
-                    <Avatar icon="pi pi-user" class="" size="xlarge" shape="circle" />
+                    <Avatar icon="pi pi-user" class="formgrid" size="xlarge" shape="circle" />
                 </div>
-                <div class="field col-6 ml-3">
+                <div class="formgrid field col-6 ml-3">
                     <h6 class="usuario mt-3 m-0">{{ nome }}</h6>
-                    <span class='role text-left' style="color: rgba(255,255,255,.5)">{{ role }}</span>
+                    <span class='role' style="color: rgba(255,255,255,.5)">{{ role }}</span>
                 </div>
             </div>
-        </div>
-        <!-- relogio -->
-        <div class="relogio ml-3">
+            <!-- Relógio -->
+            <div class="relogio" style="position: absolute; right: 0;">
                 <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd">{{ padZero(minutes) }}:{{ padZero(seconds) }}</vue-countdown>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
 .relogio {
-    font-size: 22pt;
+    font-size: 20pt;
     font-weight: bold;
     color: white;
     padding-top: 0px;
-    margin-left: 10px;
+    margin-left: 0px;
+    margin-right: 10px;
 }
 
 .usuario {
@@ -121,5 +132,18 @@ function padZero(value) {
 
 .role {
     color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+    .formgrid {
+        display: none;
+    }
+}
+
+@media (max-width: 424px) {
+    .relogio {
+        display: none;
+    }
+    
 }
 </style>

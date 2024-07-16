@@ -45,10 +45,10 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.relogio {
-    font-size: 22pt;
-    font-weight: bold;
-    color: white;
+@media (min-width: 770px) {
+    .formgrid {
+        display: none;
+    }
 }
 .span {
     color: rgba(255, 255, 255, 0.5);
