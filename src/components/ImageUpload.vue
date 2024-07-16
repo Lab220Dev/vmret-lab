@@ -1,9 +1,14 @@
 <script setup>
-import { ref, defineEmits } from 'vue';
+import { ref, defineEmits, defineProps, watch } from 'vue';
 import imageUrl from '@/assets/images/placeholder4.png';
 
 const emit = defineEmits(['fileSelected']);
-
+const props = defineProps({
+  externalImage: {
+    type: String,
+    default: ''
+  }
+});
 const fileInput = ref(null);
 const imageData = ref(null);
 const fileInputSecondary = ref([]);
@@ -44,7 +49,11 @@ const handleFileUploadSecondary = (event) => {
     });
   }
 };
-
+watch(() => props.externalImage, (newImage) => {
+  if (newImage) {
+    imageData.value = newImage;
+  }
+});
 </script>
 
 <template>
@@ -57,7 +66,7 @@ const handleFileUploadSecondary = (event) => {
     />
     <div class="image-container">
       <img
-        :src="imageData ? imageData : placeholderImage"
+        :src="imageData || externalImage || placeholderImage"
         alt="Uploaded or Placeholder Image"
         class="uploaded-image"
       />
@@ -73,7 +82,7 @@ const handleFileUploadSecondary = (event) => {
         multiple
       />
       <img
-        :src="image ? image : placeholderImage"
+         :src="image || placeholderImage"
         alt="Uploaded or Placeholder Image"
         class="uploaded-image"
       />
