@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import axios from './axios';
 import App from './App.vue';
 import router from './router/router';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
@@ -108,11 +109,12 @@ import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 import { createPinia } from 'pinia';
 import BlockViewer from '@/components/BlockViewer.vue';
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import '@/assets/styles.scss';
 
 const app = createApp(App);
 const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
+
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
@@ -123,7 +125,6 @@ app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);
 app.directive('ripple', Ripple);
 app.directive('styleclass', StyleClass);
-pinia.use(piniaPluginPersistedstate);
 app.component('BlockViewer', BlockViewer);
 
 app.component('Accordion', Accordion);

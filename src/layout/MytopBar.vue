@@ -59,15 +59,26 @@ const isOutsideClicked = (event) => {
 };
 
 const fazerLogoff = () => {
+    store.$reset();
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    document.cookie.split(";").forEach((c) => {
+        document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+    });
+
     store.logout(); 
     router.push({ name: 'login' }); 
 };
 
-const confirmLogoff = () => {
+
+/*const confirmLogoff = () => {
     if (confirm('Deseja realmente efetuar logoff?')) {
         fazerLogoff();
     }
 };
+*/
 
 function startCountdown() {
     return true;
@@ -81,6 +92,25 @@ function onCountdownEnd() {
 function padZero(value) {
     return String(value).padStart(2, '0');
 }
+
+const menu = ref();
+const items = ref([
+    {
+        label: 'Opções',
+        items: [
+            {
+                label: 'Fazer Logoff',
+                icon: 'pi pi-power-off',
+                command: fazerLogoff
+            }
+        ]
+    }
+]);
+
+const toggle = (event) => {
+    menu.value.toggle(event);
+};
+
 </script>
 
 <template>
@@ -94,8 +124,10 @@ function padZero(value) {
         </div>
 
         <!-- sair, usuario e role -->
-        <button class="p-link layout-topbar-sair-button layout-topbar-button" @click="confirmLogoff()">
-            <i class="pi pi-ellipsis-v"></i>
+        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
+            <i class="pi pi-ellipsis-v">
+            </i>
+            <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
         </button>
 
         <div class="flex align-items-center justify-content-end" style="position: relative; flex-grow: 1;">
