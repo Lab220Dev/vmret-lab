@@ -16,14 +16,16 @@ const CPF = ref('');
 const CTPS = ref('');
 const selectedFile = ref(null);
 
-const handleFileSelected = (file) => {
-  selectedFile.value = file;
+const handleFileSelected = ({ file }) => {
+
+    selectedFile.value = file;
 };
 
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
 ]);
+const imageUrl = ref(null);
 let centroCustooptions = ref([]);
 let SetorDiretoriaoptions = ref([]);
 let hieraquiaoptions = ref([]);
@@ -57,10 +59,10 @@ let funcionario = reactive({
     sexta: false,
     sabado: false,
     domingo: false,
-    nomearquivo:'',
+    nomearquivo: '',
 })
 const selectedProduct = ref([]);
-const itemsSelecionadosFuncionario=ref([]);
+const itemsSelecionadosFuncionario = ref([]);
 const ItensSetorDev = ref([
     { name: 'Mouse', sku: 123, quantidade: 1 },
     { name: 'Teclado', sku: 647, quantidade: 1 },
@@ -158,25 +160,25 @@ const loadFuncionarios = async () => {
 
 const adicionarFuncionario = async () => {
 
-  const formData = new FormData();
-  if (selectedFile.value) {
-    const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`; 
-    formData.append('foto', nomeArquivo);
-    formData.append('file', selectedFile.value);
-  }
-  Object.entries(funcionario).forEach(([key, value]) => {
-    formData.append(key, value);
-  });
-  formData.append('id_cliente',  store.userIdCliente);
+    const formData = new FormData();
+    if (selectedFile.value) {
+        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
+        formData.append('foto', nomeArquivo);
+        formData.append('file', selectedFile.value);
+    }
+    Object.entries(funcionario).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    formData.append('id_cliente', store.userIdCliente);
     try {
 
-        const response = await axios.post('/funcionarios/adicionar', formData, 
-        {
-            headers: {
-                Authorization: `Bearer ${store.token}`,  
-               'Content-Type': 'multipart/form-data'
-            },
-        });
+        const response = await axios.post('/funcionarios/adicionar', formData,
+            {
+                headers: {
+                    Authorization: `Bearer ${store.token}`,
+                    'Content-Type': 'multipart/form-data'
+                },
+            });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
         loadFuncionarios();
 
@@ -327,7 +329,7 @@ const unmaskValue = (maskedValue) => {
     return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
 };
 const getImagem = async (filename) => {
-    if(filename===""){
+    if (filename === "") {
         return imagePlaceholder;
     }
     try {
@@ -337,12 +339,13 @@ const getImagem = async (filename) => {
             },
         });
         const { image, mimeType } = response.data;
-        selectedFile.value = `data:${mimeType};base64,${image}`;
-    } catch (error) {   
+        imageUrl.value = `data:${mimeType};base64,${image}`;
+    } catch (error) {
         console.error("Erro ao carregar imagem:", error);
-        return imagePlaceholder; 
+        return imagePlaceholder;
     }
 };
+
 onMounted(() => {
     loadFuncionarios();
     fetchCentroCusto();
@@ -409,7 +412,8 @@ const resetForm = () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionário">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
                         <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
@@ -440,7 +444,9 @@ const resetForm = () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="DataAdmissao">Data de Admissao</label>
-                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false"
+                                        :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
+                                        :enable-time-picker="false" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="cpf">CPF</label>
@@ -460,25 +466,31 @@ const resetForm = () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
-                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " />
+                                    <Dropdown v-model="funcionario.id_centro_custo"
+                                        :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value"
+                                        placeholder="Selecione Um " />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="planta">Planta</label>
-                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
+                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="setor">Setor/Diretoria</label>
-                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
+                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="funcao">Função/Nivel Hierarquico</label>
-                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
+                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
                                 </div>
                             </div>
                             <div class="p-fluid formgrid grid">
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="status">Status</label>
-                                    <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                    <Dropdown id="status" v-model="funcionario.status" :options="status"
+                                        optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
                                 <div class="field lg:col-2 md:col-6 sm:col-4">
                                     <label for="inicio">Hora Inicio</label>
@@ -490,7 +502,8 @@ const resetForm = () => {
                                 </div>
                                 <div class="field lg:col-2 md:col-6 sm:col-4">
                                     <label for="inicio">Hora Fim</label>
-                                    <VueDatePicker id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                    <VueDatePicker id="inicio" v-model="TempoFim" time-picker
+                                        disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
                                         </template>
@@ -499,12 +512,13 @@ const resetForm = () => {
                             </div>
                             <div class="p-fluid formgrid grid">
                                 <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
-                                    <ImageUpload @fileSelected="handleFileSelected" />
+                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl":multiple="false" />
                                 </div>
 
                                 <!--Div com os dias da Semana-->
                                 <div class="lg:col-8 md:col-6 sm:col-4">
-                                    <label for="fim">Selecione os dias que o Funcionario poderá retirar os items:</label>
+                                    <label for="fim">Selecione os dias que o Funcionario poderá retirar os
+                                        items:</label>
                                     <div id="fim" class="flex align-content-end flex-wrap">
                                         <div class="m-2 flex align-items-end">
                                             <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
@@ -512,27 +526,33 @@ const resetForm = () => {
                                             <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
+                                            <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
+                                                value="Terca" :binary="true" />
                                             <label for="Terca" class="ml-2"> Terça-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
+                                            <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
+                                                value="Quarta" :binary="true" />
                                             <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
+                                            <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
+                                                value="Quinta" :binary="true" />
                                             <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
+                                            <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
+                                                value="Sexta" :binary="true" />
                                             <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
+                                            <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
+                                                value="Sabado" :binary="true" />
                                             <label for="Sabado" class="ml-2"> Sabado </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
+                                            <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
+                                                value="Domingo" :binary="true" />
                                             <label for="Domingo" class="ml-2"> Domingo</label>
                                         </div>
                                     </div>
@@ -540,20 +560,26 @@ const resetForm = () => {
                             </div>
 
                             <div class="grid justify-content-end flex-wrap">
-                                <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
-                                <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
+                                <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
+                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button class="flex align-items-center justify-content-center m-2" label="Salvar"
+                                    icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
                             </div>
 
-                            <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
+                            <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog"
+                                style="width: 400px" :modal="true" :closable="false">
                                 <div class="confirmation-content">
                                     <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                     <span class="">
-                                        Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{ funcionario.nome }}</b> ?</span
-                                    >
+                                        Você tem certeza que deseja deletar o funcionário <b>{{
+                                            funcionario.id_funcionario }}</b> - <b>{{
+                                            funcionario.nome }}</b> ?</span>
                                 </div>
                                 <template #footer>
-                                    <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
-                                    <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario" class="p-button-text" />
+                                    <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false"
+                                        class="p-button-text" />
+                                    <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario"
+                                        class="p-button-text" />
                                 </template>
                             </Dialog>
 
@@ -561,7 +587,8 @@ const resetForm = () => {
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Items do Setor">
-                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
+                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku"
+                                            v-model="funcionario.itemsSelecionadosSetor">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
@@ -571,15 +598,17 @@ const resetForm = () => {
                                     <TabPanel header="Items do Funcionario">
                                         <Button label="Adicionar Items" @click="visible = true" />
                                         <!--data table que exibe os items adicionados-->
-                                        <DataTable :value="itemsSelecionadosFuncionario"
-                                            tableStyle="min-width: 50rem" stripedRows dataKey="sku">
+                                        <DataTable :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem"
+                                            stripedRows dataKey="sku">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
-                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
-                                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2"
+                                                        @click="editItem(slotProps.data)" />
+                                                    <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                                        @click="confirmDeleteProduct(slotProps.data)" />
                                                 </template>
                                             </Column>
                                         </DataTable>
@@ -591,7 +620,8 @@ const resetForm = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true"
+            class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -613,11 +643,13 @@ const resetForm = () => {
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="font-semibold col-2">Produto</label>
-                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name"
+                        placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem">Quantidade</label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3"
+                        autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -628,7 +660,9 @@ const resetForm = () => {
         </Dialog>
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza que quer deletar o Item: {{ item.name }}</span>
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza
+                    que
+                    quer deletar o Item: {{ item.name }}</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />

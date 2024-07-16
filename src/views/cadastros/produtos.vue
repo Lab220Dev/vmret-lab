@@ -22,7 +22,10 @@ const tipoProduto = ref([
 
 const selectedFile = ref(null);
 const selectedFilesSecondary = ref([]);
-const imagemProduto = ref(imagePlaceholder);
+// const imagemProduto = ref(imagePlaceholder);
+const imagePrinc = ref(null);
+const imageUrls = ref([]);
+const imageInfoAd = ref(null);
 
 const handleFileSelectedSecondary = (file) => {
     selectedFilesSecondary.value.push(file);
@@ -258,17 +261,18 @@ const resetForm = () => {
                         </div>
                     </div>
                     <div class="p-fluid formgrid grid">
+                        <!-- Grid de Upload de Imagens -->
                         <div class="border-right-2 surface-border field lg:col-4 md:col-4 sm:col-4">
                             <h3 class="text-center">Imagem Principal</h3>
-                            <ImageUpload @fileSelected="handleFileSelected" />
+                            <ImageUpload @fileSelected="handleFileSelected" :externalImage="imagePrinc":multiple="false"/>
                         </div>
                         <div class=" field surface-border lg:col-4 md:col-4 sm:col-4">
                             <h3 class="text-center">Imagens Secundaria</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" />
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageUrls":multiple="true" />
                         </div>
                         <div class="surface-border border-left-2 field lg:col-4 md:col-4 sm:col-4">
                             <h3 class="text-center">Informações Adicionais</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" />
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageInfoAd":multiple="false" />
                         </div>
                     </div>
 
