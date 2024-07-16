@@ -54,14 +54,14 @@ onMounted(() => {
 
 <template>
     <div class="card">
-        <!-- Header com a Seleção de Vms -->
+        <!-- Header com a Seleção de Dms -->
         <div>
             <Dropdown v-model="selectedDM" :options="Dms" optionLabel="name" placeholder="Selecione uma DM"
                 class="w-full md:w-14rem" />
         </div>
         <div>
             <DataTable :value="ListaDM" tableStyle="min-width: 50rem">
-                <Column field="id_maquina" header="vm"></Column>
+                <Column field="id_maquina" header="dm"></Column>
                 <Column field="name" header="data"></Column>
              </DataTable>
         </div>

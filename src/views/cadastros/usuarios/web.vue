@@ -36,7 +36,7 @@ const saveUsuario = () =>{
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5>Novo Usuario Web</h5>
+                <h5>Novo Usuário Web</h5>
                 <div class="p-fluid formgrid grid">
                     <div class="field col-12">
                         <label for="name">Nome</label>

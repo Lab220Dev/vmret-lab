@@ -44,7 +44,7 @@ let produto = reactive({
     descricao: ' ',
     unidade_medida: '',
     validadedias: '',
-    nomeArquivo: '',
+    nomeArquivo: ''
 });
 
 const ListaProdutos = ref([]);
@@ -59,11 +59,10 @@ const saveProduto = async () => {
         formData.append('file_principal', selectedFile.value);
     }
 
-
     if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
         selectedFilesSecondary.value.forEach((file, index) => {
             const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-            formData.append(`imagem${index+2}`, nomeArquivoSecundario);
+            formData.append(`imagem${index + 2}`, nomeArquivoSecundario);
             formData.append(`file_secundario_${index}`, file);
         });
     }
@@ -73,13 +72,12 @@ const saveProduto = async () => {
     formData.append('id_cliente', store.userIdCliente);
 
     try {
-        await axios.post('/produtos/adicionar', formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+        await axios.post('/produtos/adicionar', formData, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
 
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
@@ -162,20 +160,20 @@ const deleteProduto = async () => {
     active.value = 0;
 };
 const getImagem = async (filename) => {
-    if(filename===""){
+    if (filename === '') {
         return imagePlaceholder;
     }
     try {
         const response = await axios.get(`/image/produtos/${store.userIdCliente}/${filename}`, {
             headers: {
                 Authorization: `Bearer ${store.token}`
-            },
+            }
         });
         const { image, mimeType } = response.data;
         return `data:${mimeType};base64,${image}`;
-    } catch (error) {   
-        console.error("Erro ao carregar imagem:", error);
-        return imagePlaceholder; 
+    } catch (error) {
+        console.error('Erro ao carregar imagem:', error);
+        return imagePlaceholder;
     }
 };
 const resetForm = () => {
@@ -201,13 +199,11 @@ const resetForm = () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id"
-                        :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.imagemUrl"
-                                        alt="Imagem do Produto" class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto" class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
@@ -236,18 +232,15 @@ const resetForm = () => {
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="codigo">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
-                                        cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="UndMedida">Unidade de Medida</label>
@@ -260,41 +253,38 @@ const resetForm = () => {
                             </div>
                         </div>
                     </div>
-                    <div class="p-fluid formgrid grid">
-                        <!-- Grid de Upload de Imagens -->
-                        <div class="border-right-2 surface-border field lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Imagem Principal</h3>
-                            <ImageUpload @fileSelected="handleFileSelected" :externalImage="imagePrinc":multiple="false"/>
-                        </div>
-                        <div class=" field surface-border lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Imagens Secundaria</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageUrls":multiple="true" />
-                        </div>
-                        <div class="surface-border border-left-2 field lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Informações Adicionais</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageInfoAd":multiple="false" />
-                        </div>
-                    </div>
-
+                    <div class="p-fluid formgrid grid"></div>
                 </div>
-                <div class="grid justify-content-end flex-wrap">
-                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
-                        icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check"
-                        severity="info" @click="saveProduto" />
+                <Splitter class="mt-2" style="height: 350px">
+                    <SplitterPanel class="flex align-items-center justify-content-center" :size="33" :minSize="10">
+                        <div class="surface-border field lg:col-4 md:col-4 sm:col-4 text-center">
+                            <h3>Imagem Principal</h3>
+                            <ImageUpload @fileSelected="handleFileSelected" :externalImage="imagePrinc" :multiple="false" /></div
+                    ></SplitterPanel>
+                    <SplitterPanel class="flex align-items-center justify-content-center" :size="33"
+                        ><div class="surface-border field lg:col-4 md:col-4 sm:col-4 text-center">
+                            <h3>Imagens Secundaria</h3>
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageUrls" :multiple="true" /></div
+                    ></SplitterPanel>
+                    <SplitterPanel class="flex align-items-center justify-content-center" :size="33">
+                        <div class="surface-border field lg:col-4 md:col-4 sm:col-4">
+                            <h3>Informações Adicionais</h3>
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageInfoAd" :multiple="false" /></div
+                    ></SplitterPanel>
+                </Splitter>
+                <div class="grid justify-content-end flex-wrap mt-4">
+                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
-                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px"
-                    :modal="true" :closable="false">
+                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
-                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
-                                produto.nome
-                            }}</b> ?</span>
+                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
+                        >
                     </div>
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false"
-                            class="p-button-text" />
+                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
                     </template>
                 </Dialog>
@@ -307,5 +297,9 @@ const resetForm = () => {
 .overflow-scroll {
     overflow: scroll !important;
     resize: none;
+}
+
+.p-splitter-gutter {
+    display: none;
 }
 </style>

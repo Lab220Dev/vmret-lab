@@ -38,14 +38,14 @@ const saveDMs = () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5>Novo Usuario DM</h5>
+                <h5>Novo Usuário DM</h5>
                 <div class="p-fluid formgrid grid">
                         <div class="field col-12">
                             <label for="name">DM</label>
                             <InputText v-model="DM.nome" id="name" type="text" />
                         </div>
                         <div class="field col-12 md:col-8">
-                            <label for="email">Usuario</label>
+                            <label for="email">Usuário</label>
                             <InputText v-model="DM.usuario" id="email" />
                         </div>
                         <div class="field col-12 md:col-4">
