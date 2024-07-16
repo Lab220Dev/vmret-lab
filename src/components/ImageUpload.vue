@@ -1,61 +1,3 @@
-<script setup>
-import { ref, defineEmits, defineProps, watch } from 'vue';
-import imageUrl from '@/assets/images/placeholder4.png';
-
-const emit = defineEmits(['fileSelected']);
-const props = defineProps({
-  externalImage: {
-    type: String,
-    default: ''
-  }
-});
-const fileInput = ref(null);
-const imageData = ref(null);
-const fileInputSecondary = ref([]);
-const imageDataSecondary = ref([]);
-const placeholderImage = imageUrl;
-
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
-
-const handleFileUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    emit('fileSelected', file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imageData.value = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const triggerFileInputSecondary = (index) => {
-  fileInputSecondary.value[index].click();
-};
-
-const handleFileUploadSecondary = (event) => {
-  const files = event.target.files;
-  if (files) {
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        imageDataSecondary.value.push(e.target.result);
-      };
-      reader.readAsDataURL(file);
-
-      emit('fileSelected', file);
-    });
-  }
-};
-watch(() => props.externalImage, (newImage) => {
-  if (newImage) {
-    imageData.value = newImage;
-  }
-});
-</script>
-
 <template>
   <div class="flex align-items-center justify-content-center">
     <input
@@ -63,34 +5,100 @@ watch(() => props.externalImage, (newImage) => {
       ref="fileInput"
       @change="handleFileUpload"
       style="display: none"
+      :multiple="multiple"
     />
-    <div class="image-container">
+    <div v-if="!multiple && !imageData" class="image-container">
       <img
-        :src="imageData || externalImage || placeholderImage"
+        :src="externalImages || placeholderImage"
         alt="Uploaded or Placeholder Image"
         class="uploaded-image"
       />
-      <button class="button" @click="triggerFileInput">+ Escolha uma Imagem</button>
     </div>
-
-    <div v-for="(image, index) in imageDataSecondary" :key="index" class="image-container">
-      <input
-        type="file"
-        ref="fileInputSecondary"
-        @change="handleFileUploadSecondary"
-        style="display: none"
-        multiple
-      />
-      <img
-         :src="image || placeholderImage"
-        alt="Uploaded or Placeholder Image"
-        class="uploaded-image"
-      />
-      <button class="button" @click="triggerFileInputSecondary(index)">+ Escolha Imagens Secundárias</button>
+    <div v-else>
+      <div v-for="(image, index) in imageData" :key="index" class="image-container">
+        <img
+          :src="image || placeholderImage"
+          alt="Uploaded or Placeholder Image"
+          class="uploaded-image"
+        />
+      </div>
+      <div v-if="imageData.length === 0" class="image-container">
+        <img
+          :src="placeholderImage"
+          alt="Placeholder Image"
+          class="uploaded-image"
+        />
+      </div>
+      <button class="button" @click="triggerFileInput">+ Escolha {{ multiple ? 'Imagens' : 'uma Imagem' }}</button>
     </div>
-
   </div>
 </template>
+
+<script setup>
+import { ref, defineProps, defineEmits } from 'vue';
+import imageUrl from '@/assets/images/placeholder4.png';
+import { useToast } from 'primevue/usetoast';
+
+const emit = defineEmits(['fileSelected']);
+
+const props = defineProps({
+  externalImages: {
+    type: [Array, String],
+    default: () => []
+  },
+  multiple: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const fileInput = ref(null);
+const imageData = ref(props.externalImages ? (Array.isArray(props.externalImages) ? props.externalImages : [props.externalImages]) : []);
+const placeholderImage = imageUrl;
+const toast = useToast();
+const maxImages = 2;
+const maxSize = 2 * 1024 * 1024; 
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const handleFileUpload = (event) => {
+  const files = Array.from(event.target.files);
+  if (props.multiple) {
+    files.forEach(file => {
+      if (imageData.value.length < maxImages) {
+        if (file.size <= maxSize) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            imageData.value.push(e.target.result);
+            emit('fileSelected', file);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
+        }
+      } else {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Você pode carregar no máximo 2 imagens.', life: 3000 });
+      }
+    });
+  } else {
+    const file = files[0];
+    if (file) {
+      if (file.size <= maxSize) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imageData.value = [e.target.result];
+          emit('fileSelected', file);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
+      }
+    }
+  }
+};
+</script>
 
 <style>
 .button {

@@ -512,7 +512,7 @@ const resetForm = () => {
                             </div>
                             <div class="p-fluid formgrid grid">
                                 <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
-                                    <ImageUpload @fileSelected="handleFileSelected" :externalImage="imageUrl" />
+                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl":multiple="false" />
                                 </div>
 
                                 <!--Div com os dias da Semana-->
