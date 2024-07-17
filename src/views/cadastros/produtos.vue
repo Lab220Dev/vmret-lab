@@ -362,7 +362,16 @@ const handleRowSelection = async (event) => {
     resize: none;
 }
 
-.text-center {
-    width: 200px;
+
+@media (max-width: 1024px) {
+.text-center{
+margin:2px
+}
+} 
+
+.titulo {
+white-space: pre-wrap;
+text-align: center; 
 }
 </style>
+
