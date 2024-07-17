@@ -59,13 +59,13 @@ const visible = ref(false);
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
+        const nomeArquivoPrincipal = `prod_Princ_${produto.nome}_${produto.codigo}_${Date.now()}`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
     }
 
     if (selectedInfoFile.value) {
-        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}`;
+        const nomeArquivoInfo = `prod_Info_${produto.nome}_${produto.codigo}_${Date.now()}`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
         formData.append('file_info', selectedFile.value);
     }
@@ -73,7 +73,7 @@ const saveProduto = async () => {
     if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
         selectedFilesSecondary.value.forEach((file, index) => {
             const fileExtension = file.name.split('.').pop();
-            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
+            const nomeArquivoSecundario = `prod_Sec_${produto.nome}_${produto.codigo}_${index}.${fileExtension}`;
 
             formData.append(`file_secundario_${index}`, file); // Adiciona o arquivo
             formData.append(`imagem${index+2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
