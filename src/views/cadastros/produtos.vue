@@ -274,7 +274,7 @@ const resetForm = () => {
                     </div>
                 </div>
 
-                <div class="mt-5 grid justify-content-end flex-wrap">
+                <div class="mt-7 grid justify-content-end flex-wrap">
                     <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
                     <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
@@ -303,8 +303,11 @@ const resetForm = () => {
     resize: none;
 }
 
+
+
+@media (max-width: 1300px) {
 .text-center {
-    width: 200px;
+}
 }
 
 
