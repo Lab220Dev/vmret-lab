@@ -2,8 +2,10 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
+import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
+import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -21,6 +23,7 @@ const tipoProduto = ref([
 const selectedFile = ref(null);
 const selectedInfoFile = ref(null);
 const selectedFilesSecondary = ref([]);
+// const imagemProduto = ref(imagePlaceholder);
 const imagePrinc = ref("");
 const imageUrls = ref([]);
 const imageInfoAd = ref("");
@@ -45,7 +48,8 @@ let produto = reactive({
     nome: '',
     descricao: ' ',
     unidade_medida: '',
-    validadedias: ''
+    validadedias: '',
+    nomeArquivo: ''
 });
 
 const ListaProdutos = ref([]);
@@ -72,7 +76,7 @@ const saveProduto = async () => {
             const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
 
             formData.append(`file_secundario_${index}`, file); // Adiciona o arquivo
-            formData.append(`imagem${index + 2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
+            formData.append(`imagem${index+2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
         });
     }
     Object.entries(produto).forEach(([key, value]) => {
@@ -100,22 +104,21 @@ const saveProduto = async () => {
 };
 
 const setImageIfValid = async (image, targetRef) => {
-    if (image) {
-        targetRef.value = await getImagem(image);
-    } else {
-        targetRef.value = null;
-    }
+  if (image) {
+    targetRef.value = await getImagem(image);
+  } else {
+    targetRef.value = null;
+  }
 };
 
 const onRowSelect = async (event) => {
-    produto = event.data;
-    const { imagem2, imagem3, imagem4 } = produto;
-    const filenames = [imagem2, imagem3, imagem4].filter(filename => filename !== '');
-    await setImageIfValid(produto.imagem1, imagePrinc);
-    await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
-    const secondaryImages = await getImagens(filenames);
-    imageUrls.value = secondaryImages;
-    active.value = 1;
+  produto = event.data;
+
+  await setImageIfValid(produto.imagem1, imagePrinc);
+  await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
+  await setImageIfValid(produto.imagem2, imageUrls);
+
+  active.value = 1;
 };
 
 
@@ -185,76 +188,41 @@ const deleteProduto = async () => {
     active.value = 0;
 };
 const getImagem = async (filename) => {
-    if (filename === '') {
+    if (filename === "") {
         return imagePlaceholder;
     }
     try {
         const response = await axios.get(`/image/produtos/${store.userIdCliente}/${filename}`, {
             headers: {
-                Authorization:  `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}`
             }
         });
         if(response.status === 200){    
         const { image, mimeType } = response.data;
-        return`data:${mimeType};base64,${image}`;
+        return `data:${mimeType};base64,${image}`;
         }
-    }catch (error) {
+    } catch (error) {
         return imagePlaceholder;
     }
 };
-    
- 
-
-const getImagens = async (filenames) => {
-    if (!Array.isArray(filenames) || filenames.length === 0) {
-        return filenames.map(() => imagePlaceholder);
-    }
-
-    try {
-        const response = await axios.post(
-            `/produtos/imagesAdicionais`,
-            { idcliente: store.userIdCliente, imageNames: filenames },
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
-                }
-            }
-        );
-
-        return response.data.map((imageName) => {
-            return imageName !== '' ? imageName : imagePlaceholder;
-        });
-    } catch (error) {
-        console.error('Erro ao buscar imagens:', error);
-        return filenames.map(() => imagePlaceholder);
-    }
-};
-
 const resetForm = () => {
-    produto = {
-        codigo: '',
-        id_planta: '',
-        id_tipoProduto: '',
-        id_categoria: 71,
-        nome: '',
-        descricao: ' ',
-        unidade_medida: '',
-        validadedias: '',
-        imagem1: '',
-        imagem2: '',
-        imagem3: '',
-        imagem4: '',
-        imagemdetalhe: '',
-    };
+    produto.id_cliente = '';
+    produto.codigo = '';
+    produto.id_produto = '';
+    produto.id_cliente = '';
+    produto.id_categoria = '';
+    produto.nome = '';
+    produto.descricao = '';
+    produto.especificacoes = '';
+    produto.validadedias = '';
+    produto.id_planta = '';
+    produto.id_tipoProduto = '';
+    produto.unidade_medida = '';
     selectedFile.value = null;
-    selectedInfoFile.value = null;
     selectedFilesSecondary.value = [];
-    imagePrinc.value = "";
-    imageUrls.value = [];
-    imageInfoAd.value = "";
 };
 const handleRowSelection = async (event) => {
-    await onRowSelect(event);
+  await onRowSelect(event);
 };
 </script>
 
@@ -298,18 +266,15 @@ const handleRowSelection = async (event) => {
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="codigo">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
-                                        cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="UndMedida">Unidade de Medida</label>
@@ -342,26 +307,22 @@ const handleRowSelection = async (event) => {
                     </div>
                 </div>
 
-                <div class="mt-5 grid justify-content-end flex-wrap">
-                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
-                        icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check"
-                        severity="info" @click="saveProduto" />
+                <div class="mt-7 grid justify-content-end flex-wrap">
+                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
 
-                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px"
-                    :modal="true" :closable="false">
+                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
                             Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
                                 produto.nome
-                            }}</b> ?</span>
+                                }}</b> ?</span>
                     </div>
 
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false"
-                            class="p-button-text" />
+                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
                     </template>
                 </Dialog>
@@ -376,7 +337,12 @@ const handleRowSelection = async (event) => {
     resize: none;
 }
 
+
+
+@media (max-width: 1300px) {
 .text-center {
-    width: 200px;
 }
+}
+
+
 </style>
