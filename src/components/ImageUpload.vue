@@ -109,25 +109,17 @@ watch(
 </script>
 
 <style>
-@media (max-width: 1024px) {
+@media (max-width: 425px) {
     .uploaded-image {
         max-width: 150px;
         min-width: 150px;
+        min-height: 150px;
+        max-height: 150px;
     }
 
     .button {
-        width: 150px;
-    }
-}
-
-@media (max-width: 768px) {
-    .uploaded-image {
-        max-width: 100px;
-        min-width: 100px;
-    }
-
-    .button {
-        width: 100px;
+        min-width: 150px;
+        max-width: 150px;
     }
 }
 
@@ -160,6 +152,7 @@ watch(
 
 .uploaded-image {
     width: 200px;
+    height: 200px;
     display: block;
 }
 
