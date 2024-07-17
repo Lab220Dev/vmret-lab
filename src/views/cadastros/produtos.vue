@@ -21,18 +21,23 @@ const tipoProduto = ref([
 ]);
 
 const selectedFile = ref(null);
+const selectedInfoFile = ref(null);
 const selectedFilesSecondary = ref([]);
 // const imagemProduto = ref(imagePlaceholder);
-const imagePrinc = ref(null);
+const imagePrinc = ref("");
 const imageUrls = ref([]);
-const imageInfoAd = ref(null);
+const imageInfoAd = ref("");
 
 const handleFileSelectedSecondary = (file) => {
     selectedFilesSecondary.value.push(file);
 };
 
-const handleFileSelected = (file) => {
+const handleFilePrefSelected = (file) => {
     selectedFile.value = file;
+};
+
+const handleFileInfoSelected = (file) => {
+    selectedInfoFile.value = file;
 };
 
 let produto = reactive({
@@ -59,11 +64,19 @@ const saveProduto = async () => {
         formData.append('file_principal', selectedFile.value);
     }
 
+    if (selectedInfoFile.value) {
+        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}`;
+        formData.append('imagemdetalhe', nomeArquivoInfo);
+        formData.append('file_info', selectedFile.value);
+    }
+
     if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
         selectedFilesSecondary.value.forEach((file, index) => {
-            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}`;
-            formData.append(`imagem${index + 2}`, nomeArquivoSecundario);
-            formData.append(`file_secundario_${index}`, file);
+            const fileExtension = file.name.split('.').pop();
+            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
+
+            formData.append(`file_secundario_${index}`, file); // Adiciona o arquivo
+            formData.append(`imagem${index+2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
         });
     }
     Object.entries(produto).forEach(([key, value]) => {
@@ -90,10 +103,25 @@ const saveProduto = async () => {
     active.value = 0;
 };
 
-const onRowSelect = (event) => {
-    produto = event.data;
-    active.value = 1;
+const setImageIfValid = async (image, targetRef) => {
+  if (image) {
+    targetRef.value = await getImagem(image);
+  } else {
+    targetRef.value = null;
+  }
 };
+
+const onRowSelect = async (event) => {
+  produto = event.data;
+
+  await setImageIfValid(produto.imagem1, imagePrinc);
+  await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
+  await setImageIfValid(produto.imagem2, imageUrls);
+
+  active.value = 1;
+};
+
+
 const loadProdutos = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -160,7 +188,7 @@ const deleteProduto = async () => {
     active.value = 0;
 };
 const getImagem = async (filename) => {
-    if (filename === '') {
+    if (filename === "") {
         return imagePlaceholder;
     }
     try {
@@ -169,10 +197,11 @@ const getImagem = async (filename) => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        if(response.status === 200){    
         const { image, mimeType } = response.data;
         return `data:${mimeType};base64,${image}`;
+        }
     } catch (error) {
-        console.error('Erro ao carregar imagem:', error);
         return imagePlaceholder;
     }
 };
@@ -192,6 +221,9 @@ const resetForm = () => {
     selectedFile.value = null;
     selectedFilesSecondary.value = [];
 };
+const handleRowSelection = async (event) => {
+  await onRowSelect(event);
+};
 </script>
 
 <template>
@@ -199,11 +231,13 @@ const resetForm = () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto" class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto"
+                                        class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
@@ -250,26 +284,25 @@ const resetForm = () => {
                                     <label for="vldDias">Validade em dias</label>
                                     <InputNumber v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
                                 </div>
-
-                                <div class="card p-0 col-12 ">
-                                    <div class="p-fluid grid flex-wrap col-12 mt-4 mr-0 ml-0 mb-4 ">
-                                        <!-- Grid de Upload de Imagens -->
-                                        <div class="field lg:col-4 md:col-4 sm:col-4 m-0 p-0" >
-                                            <h3 class="text-center">Imagem Principal</h3>
-                                            <ImageUpload @fileSelected="handleFileSelected" :externalImage="imagePrinc" :multiple="false" />
-                                        </div>
-                                        <div class="field lg:col-4 md:col-4 sm:col-4 m-0 p-0">
-                                            <h3 class="text-center">Imagens Secundaria</h3>
-                                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageUrls" :multiple="true" />
-                                        </div>
-                                        <div class="field lg:col-4 md:col-4 sm:col-4 m-0 p-0">
-                                            <h3 class="text-center">Informações Adicionais</h3>
-                                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageInfoAd" :multiple="false" />
-                                        </div>
-                                    </div>
-                                </div>
-
                             </div>
+                        </div>
+                    </div>
+                    <div class="p-fluid formgrid grid">
+                        <!-- Grid de Upload de Imagens -->
+                        <div class="border-right-2 surface-border field lg:col-4 md:col-4 sm:col-4">
+                            <h3 class="text-center">Imagem Principal</h3>
+                            <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc"
+                                :multiple="false" />
+                        </div>
+                        <div class=" field surface-border lg:col-4 md:col-4 sm:col-4">
+                            <h3 class="text-center">Imagens Secundaria</h3>
+                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls"
+                                :multiple="true" />
+                        </div>
+                        <div class="surface-border border-left-2 field lg:col-4 md:col-4 sm:col-4">
+                            <h3 class="text-center">Informações Adicionais</h3>
+                            <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd"
+                                :multiple="false" />
                         </div>
                     </div>
                 </div>
@@ -283,8 +316,9 @@ const resetForm = () => {
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
-                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
-                        >
+                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
+                                produto.nome
+                                }}</b> ?</span>
                     </div>
 
                     <template #footer>
