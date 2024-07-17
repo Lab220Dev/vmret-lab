@@ -1,33 +1,16 @@
 <template>
   <div class="flex align-items-center justify-content-center">
-    <input
-      type="file"
-      ref="fileInput"
-      @change="handleFileUpload"
-      style="display: none"
-      :multiple="multiple"
-    />
+    <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none" :multiple="multiple"
+      accept="image/png" />
     <div v-if="!multiple && !imageData.length" class="image-container">
-      <img
-        :src="externalImages || placeholderImage"
-        alt="Uploaded or Placeholder Image"
-        class="uploaded-image"
-      />
+      <img :src="externalImages || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
     </div>
     <div v-else>
       <div v-for="(image, index) in imageData" :key="index" class="image-container">
-        <img
-          :src="image || placeholderImage"
-          alt="Uploaded or Placeholder Image"
-          class="uploaded-image"
-        />
+        <img :src="image || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
       </div>
       <div v-if="imageData.length === 0" class="image-container">
-        <img
-          :src="placeholderImage"
-          alt="Placeholder Image"
-          class="uploaded-image"
-        />
+        <img :src="placeholderImage" alt="Placeholder Image" class="uploaded-image" />
       </div>
     </div>
     <button class="button" @click="triggerFileInput">+ Escolha {{ multiple ? 'Imagens' : 'uma Imagem' }}</button>
@@ -67,25 +50,33 @@ const triggerFileInput = () => {
 const handleFileUpload = (event) => {
   const files = Array.from(event.target.files);
   if (props.multiple) {
+    if (imageData.value.length + files.length > maxImages) {
+      toast.add({ severity: 'error', summary: 'Erro', detail: 'Você pode carregar no máximo 3 imagens.', life: 3000 });
+      return;
+    }
     files.forEach(file => {
-      if (imageData.value.length < maxImages) {
-        if (file.size <= maxSize) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            imageData.value.push(e.target.result);
-            emit('fileSelected', file);
-          };
-          reader.readAsDataURL(file);
-        } else {
-          toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
-        }
+      if (file.type !== 'image/png') {
+        toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} não é um PNG.`, life: 3000 });
+        return;
+      }
+      if (file.size <= maxSize) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          imageData.value.push(e.target.result);
+          emit('fileSelected', file);
+        };
+        reader.readAsDataURL(file);
       } else {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Você pode carregar no máximo 3 imagens.', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
       }
     });
   } else {
     const file = files[0];
     if (file) {
+      if (file.type !== 'image/png') {
+        toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} não é um PNG.`, life: 3000 });
+        return;
+      }
       if (file.size <= maxSize) {
         const reader = new FileReader();
         reader.onload = (e) => {
