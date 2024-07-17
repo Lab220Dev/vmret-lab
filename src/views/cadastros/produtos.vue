@@ -2,10 +2,8 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
-import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
-import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -23,10 +21,9 @@ const tipoProduto = ref([
 const selectedFile = ref(null);
 const selectedInfoFile = ref(null);
 const selectedFilesSecondary = ref([]);
-// const imagemProduto = ref(imagePlaceholder);
-const imagePrinc = ref("");
+const imagePrinc = ref('');
 const imageUrls = ref([]);
-const imageInfoAd = ref("");
+const imageInfoAd = ref('');
 
 const handleFileSelectedSecondary = (file) => {
     selectedFilesSecondary.value.push(file);
@@ -48,8 +45,7 @@ let produto = reactive({
     nome: '',
     descricao: ' ',
     unidade_medida: '',
-    validadedias: '',
-    nomeArquivo: ''
+    validadedias: ''
 });
 
 const ListaProdutos = ref([]);
@@ -59,13 +55,13 @@ const visible = ref(false);
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        const nomeArquivoPrincipal = `prod_Princ_${produto.nome}_${produto.codigo}_${Date.now()}`;
+        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
     }
 
     if (selectedInfoFile.value) {
-        const nomeArquivoInfo = `prod_Info_${produto.nome}_${produto.codigo}_${Date.now()}`;
+        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
         formData.append('file_info', selectedFile.value);
     }
@@ -73,10 +69,10 @@ const saveProduto = async () => {
     if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
         selectedFilesSecondary.value.forEach((file, index) => {
             const fileExtension = file.name.split('.').pop();
-            const nomeArquivoSecundario = `prod_Sec_${produto.nome}_${produto.codigo}_${index}.${fileExtension}`;
+            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
 
             formData.append(`file_secundario_${index}`, file); // Adiciona o arquivo
-            formData.append(`imagem${index+2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
+            formData.append(`imagem${index + 2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
         });
     }
     Object.entries(produto).forEach(([key, value]) => {
@@ -104,23 +100,22 @@ const saveProduto = async () => {
 };
 
 const setImageIfValid = async (image, targetRef) => {
-  if (image) {
-    targetRef.value = await getImagem(image);
-  } else {
-    targetRef.value = null;
-  }
+    if (image) {
+        targetRef.value = await getImagem(image);
+    } else {
+        targetRef.value = null;
+    }
 };
 
 const onRowSelect = async (event) => {
-  produto = event.data;
+    produto = event.data;
 
-  await setImageIfValid(produto.imagem1, imagePrinc);
-  await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
-  await setImageIfValid(produto.imagem2, imageUrls);
+    await setImageIfValid(produto.imagem1, imagePrinc);
+    await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
+    await setImageIfValid(produto.imagem2, imageUrls);
 
-  active.value = 1;
+    active.value = 1;
 };
-
 
 const loadProdutos = async () => {
     const data = {
@@ -188,7 +183,7 @@ const deleteProduto = async () => {
     active.value = 0;
 };
 const getImagem = async (filename) => {
-    if (filename === "") {
+    if (filename === '') {
         return imagePlaceholder;
     }
     try {
@@ -197,32 +192,66 @@ const getImagem = async (filename) => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        if(response.status === 200){    
-        const { image, mimeType } = response.data;
-        return `data:${mimeType};base64,${image}`;
+        if (response.status === 200) {
+            const { image, mimeType } = response.data;
+            return `data:${mimeType};base64,${image}`;
         }
     } catch (error) {
         return imagePlaceholder;
     }
 };
+
+const getImagens = async (filenames) => {
+    if (!Array.isArray(filenames) || filenames.length === 0) {
+        return filenames.map(() => imagePlaceholder);
+    }
+
+    try {
+        const response = await axios.post(
+            `/produtos/imagesAdicionais`,
+            { idcliente: store.userIdCliente, imageNames: filenames },
+            {
+                headers: {
+                    Authorization: `Bearer ${store.token}`
+                }
+            }
+        );
+
+        return response.data.map((imageName) => {
+            return imageName !== '' ? imageName : imagePlaceholder;
+        });
+    } catch (error) {
+        console.error('Erro ao buscar imagens:', error);
+        return filenames.map(() => imagePlaceholder);
+    }
+};
+
 const resetForm = () => {
-    produto.id_cliente = '';
-    produto.codigo = '';
-    produto.id_produto = '';
-    produto.id_cliente = '';
-    produto.id_categoria = '';
-    produto.nome = '';
-    produto.descricao = '';
-    produto.especificacoes = '';
-    produto.validadedias = '';
-    produto.id_planta = '';
-    produto.id_tipoProduto = '';
-    produto.unidade_medida = '';
+    produto = {
+        codigo: '',
+        id_planta: '',
+        id_tipoProduto: '',
+        id_categoria: 71,
+        nome: '',
+        descricao: ' ',
+        unidade_medida: '',
+        validadedias: '',
+        imagem1: '',
+        imagem2: '',
+        imagem3: '',
+        imagem4: '',
+        imagemdetalhe: ''
+    };
     selectedFile.value = null;
+    selectedInfoFile.value = null;
     selectedFilesSecondary.value = [];
+    imagePrinc.value = '';
+    imageUrls.value = [];
+    imageInfoAd.value = '';
 };
 const handleRowSelection = async (event) => {
-  await onRowSelect(event);
+    await onRowSelect(event);
+    await onRowSelect(event);
 };
 </script>
 
@@ -231,13 +260,11 @@ const handleRowSelection = async (event) => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id"
-                        :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto"
-                                        class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto" class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
@@ -286,23 +313,22 @@ const handleRowSelection = async (event) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="p-fluid formgrid grid">
-                        <!-- Grid de Upload de Imagens -->
-                        <div class="border-right-2 surface-border field lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Imagem Principal</h3>
-                            <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc"
-                                :multiple="false" />
-                        </div>
-                        <div class=" field surface-border lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Imagens Secundaria</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls"
-                                :multiple="true" />
-                        </div>
-                        <div class="surface-border border-left-2 field lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Informações Adicionais</h3>
-                            <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd"
-                                :multiple="false" />
+                        <div class="card p-0 col-12" style="width: 100%">
+                            <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
+                                <!-- Grid de Upload de Imagens -->
+                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Imagem<br />Principal</h4>
+                                    <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc" :multiple="false" />
+                                </div>
+                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Imagens<br />Secundarias</h4>
+                                    <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls" :multiple="true" />
+                                </div>
+                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Informações<br />Adicionais</h4>
+                                    <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd" :multiple="false" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -316,9 +342,8 @@ const handleRowSelection = async (event) => {
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
-                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
-                                produto.nome
-                                }}</b> ?</span>
+                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
+                        >
                     </div>
 
                     <template #footer>
@@ -338,11 +363,15 @@ const handleRowSelection = async (event) => {
 }
 
 
-
-@media (max-width: 1300px) {
-.text-center {
+@media (max-width: 1024px) {
+.text-center{
+margin:2px
 }
+} 
+
+.titulo {
+white-space: pre-wrap;
+text-align: center; 
 }
-
-
 </style>
+
