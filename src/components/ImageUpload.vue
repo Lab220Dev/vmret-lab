@@ -7,7 +7,7 @@
       style="display: none"
       :multiple="multiple"
     />
-    <div v-if="!multiple && !imageData" class="image-container">
+    <div v-if="!multiple && !imageData.length" class="image-container">
       <img
         :src="externalImages || placeholderImage"
         alt="Uploaded or Placeholder Image"
@@ -29,17 +29,16 @@
           class="uploaded-image"
         />
       </div>
-      <button class="button" @click="triggerFileInput">+ Escolha {{ multiple ? 'Imagens' : 'uma Imagem' }}</button>
     </div>
+    <button class="button" @click="triggerFileInput">+ Escolha {{ multiple ? 'Imagens' : 'uma Imagem' }}</button>
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, watch } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import imageUrl from '@/assets/images/placeholder4.png';
 import { useToast } from 'primevue/usetoast';
-
-const emit = defineEmits(['fileSelected']);
 
 const props = defineProps({
   externalImages: {
@@ -52,12 +51,14 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['fileSelected']);
+
 const fileInput = ref(null);
-const imageData = ref(props.externalImages ? (Array.isArray(props.externalImages) ? props.externalImages : [props.externalImages]) : []);
+const imageData = ref([]);
 const placeholderImage = imageUrl;
 const toast = useToast();
-const maxImages = 2;
-const maxSize = 2 * 1024 * 1024; 
+const maxImages = 3;
+const maxSize = 2 * 1024 * 1024;
 
 const triggerFileInput = () => {
   fileInput.value.click();
@@ -79,7 +80,7 @@ const handleFileUpload = (event) => {
           toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
         }
       } else {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Você pode carregar no máximo 2 imagens.', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Você pode carregar no máximo 3 imagens.', life: 3000 });
       }
     });
   } else {
@@ -98,6 +99,15 @@ const handleFileUpload = (event) => {
     }
   }
 };
+
+watch(() => props.externalImages, (newVal) => {
+  if (Array.isArray(newVal)) {
+    imageData.value = newVal;
+  } else if (typeof newVal === 'string') {
+    imageData.value = [newVal];
+  }
+}, { immediate: true });
+
 </script>
 
 <style>
