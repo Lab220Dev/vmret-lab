@@ -24,9 +24,9 @@ const selectedFile = ref(null);
 const selectedInfoFile = ref(null);
 const selectedFilesSecondary = ref([]);
 // const imagemProduto = ref(imagePlaceholder);
-const imagePrinc = ref("");
+const imagePrinc = ref('');
 const imageUrls = ref([]);
-const imageInfoAd = ref("");
+const imageInfoAd = ref('');
 
 const handleFileSelectedSecondary = (file) => {
     selectedFilesSecondary.value.push(file);
@@ -76,7 +76,7 @@ const saveProduto = async () => {
             const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
 
             formData.append(`file_secundario_${index}`, file); // Adiciona o arquivo
-            formData.append(`imagem${index+2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
+            formData.append(`imagem${index + 2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
         });
     }
     Object.entries(produto).forEach(([key, value]) => {
@@ -104,23 +104,22 @@ const saveProduto = async () => {
 };
 
 const setImageIfValid = async (image, targetRef) => {
-  if (image) {
-    targetRef.value = await getImagem(image);
-  } else {
-    targetRef.value = null;
-  }
+    if (image) {
+        targetRef.value = await getImagem(image);
+    } else {
+        targetRef.value = null;
+    }
 };
 
 const onRowSelect = async (event) => {
-  produto = event.data;
+    produto = event.data;
 
-  await setImageIfValid(produto.imagem1, imagePrinc);
-  await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
-  await setImageIfValid(produto.imagem2, imageUrls);
+    await setImageIfValid(produto.imagem1, imagePrinc);
+    await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
+    await setImageIfValid(produto.imagem2, imageUrls);
 
-  active.value = 1;
+    active.value = 1;
 };
-
 
 const loadProdutos = async () => {
     const data = {
@@ -188,7 +187,7 @@ const deleteProduto = async () => {
     active.value = 0;
 };
 const getImagem = async (filename) => {
-    if (filename === "") {
+    if (filename === '') {
         return imagePlaceholder;
     }
     try {
@@ -197,9 +196,9 @@ const getImagem = async (filename) => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        if(response.status === 200){    
-        const { image, mimeType } = response.data;
-        return `data:${mimeType};base64,${image}`;
+        if (response.status === 200) {
+            const { image, mimeType } = response.data;
+            return `data:${mimeType};base64,${image}`;
         }
     } catch (error) {
         return imagePlaceholder;
@@ -222,7 +221,7 @@ const resetForm = () => {
     selectedFilesSecondary.value = [];
 };
 const handleRowSelection = async (event) => {
-  await onRowSelect(event);
+    await onRowSelect(event);
 };
 </script>
 
@@ -231,13 +230,11 @@ const handleRowSelection = async (event) => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produto">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id"
-                        :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto"
-                                        class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto" class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
@@ -286,23 +283,22 @@ const handleRowSelection = async (event) => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="p-fluid formgrid grid">
-                        <!-- Grid de Upload de Imagens -->
-                        <div class="border-right-2 surface-border field lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Imagem Principal</h3>
-                            <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc"
-                                :multiple="false" />
-                        </div>
-                        <div class=" field surface-border lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Imagens Secundaria</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls"
-                                :multiple="true" />
-                        </div>
-                        <div class="surface-border border-left-2 field lg:col-4 md:col-4 sm:col-4">
-                            <h3 class="text-center">Informações Adicionais</h3>
-                            <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd"
-                                :multiple="false" />
+                        <div class="card p-0 col-12" style="width: 100%;">
+                            <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
+                                <!-- Grid de Upload de Imagens -->
+                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Imagem<br>Principal</h4>
+                                    <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc" :multiple="false" />
+                                </div>
+                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Imagens<br>Secundarias</h4>
+                                    <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls" :multiple="true" />
+                                </div>
+                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Informações<br>Adicionais</h4>
+                                    <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd" :multiple="false" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -316,9 +312,8 @@ const handleRowSelection = async (event) => {
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
-                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
-                                produto.nome
-                                }}</b> ?</span>
+                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
+                        >
                     </div>
 
                     <template #footer>
@@ -338,11 +333,14 @@ const handleRowSelection = async (event) => {
 }
 
 
-
-@media (max-width: 1300px) {
-.text-center {
+@media (max-width: 1024px) {
+.text-center{
+margin:2px
 }
+} 
+
+.titulo {
+    white-space: pre-wrap; /* Permite a quebra de linha */
+  text-align: center; /* Centraliza o texto */
 }
-
-
 </style>

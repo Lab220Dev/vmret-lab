@@ -1,5 +1,5 @@
 <template>
-  <div class="flex align-items-center justify-content-center">
+  <div class="flex align-items-center justify-content-center flex-column">
     <input
       type="file"
       ref="fileInput"
@@ -21,6 +21,7 @@
           alt="Uploaded or Placeholder Image"
           class="uploaded-image"
         />
+        <button v-if="image" class="remove-button" @click="removeImage(index)">×</button>
       </div>
       <div v-if="imageData.length === 0" class="image-container">
         <img
@@ -30,7 +31,9 @@
         />
       </div>
     </div>
-    <button class="button" @click="triggerFileInput">+ Escolha {{ multiple ? 'Imagens' : 'uma Imagem' }}</button>
+    <button class="button" @click="triggerFileInput">
+      <i class="pi pi-upload icon-left"></i> Enviar {{ multiple ? 'Imagens' : 'uma Imagem' }}
+    </button>
   </div>
 </template>
 
@@ -100,6 +103,10 @@ const handleFileUpload = (event) => {
   }
 };
 
+const removeImage = (index) => {
+  imageData.value.splice(index, 1);
+};
+
 watch(() => props.externalImages, (newVal) => {
   if (Array.isArray(newVal)) {
     imageData.value = newVal;
@@ -111,6 +118,30 @@ watch(() => props.externalImages, (newVal) => {
 </script>
 
 <style>
+
+@media (max-width: 1024px) {
+  .uploaded-image {
+    max-width: 150px;
+    min-width: 150px;
+  }
+
+  .button {
+    width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .uploaded-image {
+    max-width: 100px;
+    min-width: 100px;
+  }
+
+  .button {
+    width: 100px;
+  }
+}
+
+
 .button {
   color: #ffffff;
   background: #3B82F6;
@@ -121,6 +152,11 @@ watch(() => props.externalImages, (newVal) => {
   border-radius: 6px;
   outline-color: transparent;
   width: 200px;
+  margin-top: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button:hover {
@@ -130,11 +166,38 @@ watch(() => props.externalImages, (newVal) => {
 
 .image-container {
   margin-top: 1rem;
+  position: relative;
 }
 
 .uploaded-image {
-  max-width: 200px;
+  width: 200px;
   display: block;
-  min-width: 200px;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.remove-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.icon-left {
+  margin-right: 0.5rem;
 }
 </style>
