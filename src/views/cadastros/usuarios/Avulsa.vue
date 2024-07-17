@@ -31,7 +31,7 @@ const saveUsuario = () =>{
                         <InputText v-model="libAvulsa.nome"id="name" type="text" />
                     </div>
                     <div class="field col-12">
-                        <label for="usuario">Usuario</label>
+                        <label for="usuario">Usuário</label>
                         <InputText v-model="libAvulsa.usuario"id="usuario" />
                     </div>
                     <div class="field col-12 md:col-4">

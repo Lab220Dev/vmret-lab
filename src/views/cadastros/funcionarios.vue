@@ -5,7 +5,7 @@ import axios from '@/axios.js';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
-import clockurl from '@/assets/images/OIP.jpeg';
+import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -443,7 +443,7 @@ const resetForm = () => {
                                     <InputText disabled id="Hash2" v-model="funcionario.biometria2" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
-                                    <label for="DataAdmissao">Data de Admissao</label>
+                                    <label for="DataAdmissao">Data de Admissão</label>
                                     <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false"
                                         :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
                                         :enable-time-picker="false" />
@@ -481,7 +481,7 @@ const resetForm = () => {
                                         optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
-                                    <label for="funcao">Função/Nivel Hierarquico</label>
+                                    <label for="funcao">Função/Nível Hierárquico</label>
                                     <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions"
                                         optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
                                 </div>
@@ -493,7 +493,7 @@ const resetForm = () => {
                                         optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
                                 <div class="field lg:col-2 md:col-6 sm:col-4">
-                                    <label for="inicio">Hora Inicio</label>
+                                    <label for="inicio">Hora Início</label>
                                     <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
@@ -517,8 +517,8 @@ const resetForm = () => {
 
                                 <!--Div com os dias da Semana-->
                                 <div class="lg:col-8 md:col-6 sm:col-4">
-                                    <label for="fim">Selecione os dias que o Funcionario poderá retirar os
-                                        items:</label>
+                                    <label for="fim">Selecione os dias que o Funcionário poderá retirar os
+                                        Itens:</label>
                                     <div id="fim" class="flex align-content-end flex-wrap">
                                         <div class="m-2 flex align-items-end">
                                             <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
@@ -548,7 +548,7 @@ const resetForm = () => {
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
                                                 value="Sabado" :binary="true" />
-                                            <label for="Sabado" class="ml-2"> Sabado </label>
+                                            <label for="Sabado" class="ml-2"> Sábado </label>
                                         </div>
                                         <div class="m-2 flex align-items-center">
                                             <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
@@ -586,7 +586,7 @@ const resetForm = () => {
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
-                                    <TabPanel header="Items do Setor">
+                                    <TabPanel header="Itens do Setor">
                                         <DataTable :value="ItensSetorDev" stripedRows dataKey="sku"
                                             v-model="funcionario.itemsSelecionadosSetor">
                                             <Column field="name" header="Nome"></Column>
@@ -595,8 +595,8 @@ const resetForm = () => {
                                             <Column field="prazo" header="Prazo"></Column>
                                         </DataTable>
                                     </TabPanel>
-                                    <TabPanel header="Items do Funcionario">
-                                        <Button label="Adicionar Items" @click="visible = true" />
+                                    <TabPanel header="Itens do Funcionario">
+                                        <Button label="Adicionar Itens" @click="visible = true" />
                                         <!--data table que exibe os items adicionados-->
                                         <DataTable :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem"
                                             stripedRows dataKey="sku">
@@ -639,7 +639,7 @@ const resetForm = () => {
                 <Button label="Salvar" icon="pi pi-check" text @click="SalvarProduto" />
             </template>
         </Dialog>
-        <Dialog v-model:visible="visible" modal header="Adicionar Items do Funcionário">
+        <Dialog v-model:visible="visible" modal header="Adicionar Itens do Funcionário">
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="font-semibold col-2">Produto</label>
@@ -662,7 +662,7 @@ const resetForm = () => {
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza
                     que
-                    quer deletar o Item: {{ item.name }}</span>
+                    quer deletar o Item <b>{{ item.name }}</b> ?</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />

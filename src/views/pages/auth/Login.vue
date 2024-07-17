@@ -49,7 +49,7 @@ const login = async () => {
                 </svg>
 
                 <div class="block justify-content-center">
-                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">VM<span
+                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span
                             class="font-bold text-blue-600 mt-0 mb-0">WEB</span></h1>
                     <H4 class="text-lg m-0">Sistema de Gerenciamento de Dispenser Machines</H4>
                 </div>

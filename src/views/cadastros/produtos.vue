@@ -1,8 +1,11 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
+import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -46,7 +49,7 @@ let produto = reactive({
     descricao: ' ',
     unidade_medida: '',
     validadedias: '',
-    nomeArquivo: '',
+    nomeArquivo: ''
 });
 
 const ListaProdutos = ref([]);
@@ -82,13 +85,12 @@ const saveProduto = async () => {
     formData.append('id_cliente', store.userIdCliente);
 
     try {
-        await axios.post('/produtos/adicionar', formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+        await axios.post('/produtos/adicionar', formData, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
 
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
@@ -98,6 +100,7 @@ const saveProduto = async () => {
         console.error('Erro ao adicionar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
     }
+    active.value = 0;
 };
 
 const setImageIfValid = async (image, targetRef) => {
@@ -182,16 +185,17 @@ const deleteProduto = async () => {
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
     }
+    active.value = 0;
 };
 const getImagem = async (filename) => {
-    if (filename === "") {
+    if (filename === '') {
         return imagePlaceholder;
     }
     try {
         const response = await axios.get(`/image/produtos/${store.userIdCliente}/${filename}`, {
             headers: {
                 Authorization: `Bearer ${store.token}`
-            },
+            }
         });
         if(response.status === 200){    
         const { image, mimeType } = response.data;
@@ -202,6 +206,7 @@ const getImagem = async (filename) => {
     }
 };
 const resetForm = () => {
+    produto.id_cliente = '';
     produto.codigo = '';
     produto.id_produto = '';
     produto.id_cliente = '';
@@ -261,18 +266,15 @@ const handleRowSelection = async (event) => {
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="codigo">Especificação</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5"
-                                        cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Tipo</label>
-                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                                 </div>
                                 <div class="field lg:col-6 md:col-6 sm:col-4">
                                     <label for="UndMedida">Unidade de Medida</label>
@@ -303,16 +305,14 @@ const handleRowSelection = async (event) => {
                                 :multiple="false" />
                         </div>
                     </div>
+                </div>
 
+                <div class="mt-5 grid justify-content-end flex-wrap">
+                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
-                <div class="grid justify-content-end flex-wrap">
-                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
-                        icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check"
-                        severity="info" @click="saveProduto" />
-                </div>
-                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px"
-                    :modal="true" :closable="false">
+
+                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
@@ -320,9 +320,9 @@ const handleRowSelection = async (event) => {
                                 produto.nome
                                 }}</b> ?</span>
                     </div>
+
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false"
-                            class="p-button-text" />
+                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
                     </template>
                 </Dialog>
@@ -333,7 +333,13 @@ const handleRowSelection = async (event) => {
 
 <style>
 .overflow-scroll {
-    overflow: scroll !important;
+    overflow: scroll;
     resize: none;
 }
+
+.text-center {
+    width: 200px;
+}
+
+
 </style>

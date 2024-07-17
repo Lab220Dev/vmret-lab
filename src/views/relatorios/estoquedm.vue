@@ -2,17 +2,17 @@
 import { ref } from 'vue';
 
 const relatorio = ref({
-    vm: ''
+    dm: ''
 })
-const formatedVMOptions = ref([]);
+const formatedDMOptions = ref([]);
 const dms = ref([]);
 </script>
 
 <template>
     <div class="card">
         <div class="mb-5">
-            <Dropdown id="vm" v-model="relatorio.vm" :options="formatedVMOptions" optionLabel="label"
-                optionValue="value" placeholder="Seleciona A VM:" />
+            <Dropdown id="dm" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label"
+                optionValue="value" placeholder="Selecione a DM" />
         </div>
 
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="id" filterDisplay="row"
