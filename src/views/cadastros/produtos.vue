@@ -250,32 +250,35 @@ const resetForm = () => {
                                     <label for="vldDias">Validade em dias</label>
                                     <InputNumber v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
                                 </div>
+
+                                <div class="card p-0 col-12 ">
+                                    <div class="p-fluid grid flex-wrap col-12 mt-4 mr-0 ml-0 mb-4 ">
+                                        <!-- Grid de Upload de Imagens -->
+                                        <div class="field lg:col-4 md:col-4 sm:col-4 m-0 p-0" >
+                                            <h3 class="text-center">Imagem Principal</h3>
+                                            <ImageUpload @fileSelected="handleFileSelected" :externalImage="imagePrinc" :multiple="false" />
+                                        </div>
+                                        <div class="field lg:col-4 md:col-4 sm:col-4 m-0 p-0">
+                                            <h3 class="text-center">Imagens Secundaria</h3>
+                                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageUrls" :multiple="true" />
+                                        </div>
+                                        <div class="field lg:col-4 md:col-4 sm:col-4 m-0 p-0">
+                                            <h3 class="text-center">Informações Adicionais</h3>
+                                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageInfoAd" :multiple="false" />
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-                    <div class="p-fluid formgrid grid"></div>
                 </div>
-                <Splitter class="mt-2" style="height: 350px">
-                    <SplitterPanel class="flex align-items-center justify-content-center" :size="33" :minSize="10">
-                        <div class="surface-border field lg:col-4 md:col-4 sm:col-4 text-center">
-                            <h3>Imagem Principal</h3>
-                            <ImageUpload @fileSelected="handleFileSelected" :externalImage="imagePrinc" :multiple="false" /></div
-                    ></SplitterPanel>
-                    <SplitterPanel class="flex align-items-center justify-content-center" :size="33"
-                        ><div class="surface-border field lg:col-4 md:col-4 sm:col-4 text-center">
-                            <h3>Imagens Secundaria</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageUrls" :multiple="true" /></div
-                    ></SplitterPanel>
-                    <SplitterPanel class="flex align-items-center justify-content-center" :size="33">
-                        <div class="surface-border field lg:col-4 md:col-4 sm:col-4">
-                            <h3>Informações Adicionais</h3>
-                            <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImage="imageInfoAd" :multiple="false" /></div
-                    ></SplitterPanel>
-                </Splitter>
-                <div class="grid justify-content-end flex-wrap mt-4">
+
+                <div class="mt-5 grid justify-content-end flex-wrap">
                     <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
                     <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
+
                 <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
@@ -283,6 +286,7 @@ const resetForm = () => {
                             Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
                         >
                     </div>
+
                     <template #footer>
                         <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
@@ -295,11 +299,13 @@ const resetForm = () => {
 
 <style>
 .overflow-scroll {
-    overflow: scroll !important;
+    overflow: scroll;
     resize: none;
 }
 
-.p-splitter-gutter {
-    display: none;
+.text-center {
+    width: 200px;
 }
+
+
 </style>
