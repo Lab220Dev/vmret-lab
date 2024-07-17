@@ -2,10 +2,8 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
-import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
-import clockurl from '@/assets/images/OIP.jpeg';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 
@@ -23,7 +21,6 @@ const tipoProduto = ref([
 const selectedFile = ref(null);
 const selectedInfoFile = ref(null);
 const selectedFilesSecondary = ref([]);
-// const imagemProduto = ref(imagePlaceholder);
 const imagePrinc = ref('');
 const imageUrls = ref([]);
 const imageInfoAd = ref('');
@@ -48,8 +45,7 @@ let produto = reactive({
     nome: '',
     descricao: ' ',
     unidade_medida: '',
-    validadedias: '',
-    nomeArquivo: ''
+    validadedias: ''
 });
 
 const ListaProdutos = ref([]);
@@ -204,23 +200,57 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
 };
+
+const getImagens = async (filenames) => {
+    if (!Array.isArray(filenames) || filenames.length === 0) {
+        return filenames.map(() => imagePlaceholder);
+    }
+
+    try {
+        const response = await axios.post(
+            `/produtos/imagesAdicionais`,
+            { idcliente: store.userIdCliente, imageNames: filenames },
+            {
+                headers: {
+                    Authorization: `Bearer ${store.token}`
+                }
+            }
+        );
+
+        return response.data.map((imageName) => {
+            return imageName !== '' ? imageName : imagePlaceholder;
+        });
+    } catch (error) {
+        console.error('Erro ao buscar imagens:', error);
+        return filenames.map(() => imagePlaceholder);
+    }
+};
+
 const resetForm = () => {
-    produto.id_cliente = '';
-    produto.codigo = '';
-    produto.id_produto = '';
-    produto.id_cliente = '';
-    produto.id_categoria = '';
-    produto.nome = '';
-    produto.descricao = '';
-    produto.especificacoes = '';
-    produto.validadedias = '';
-    produto.id_planta = '';
-    produto.id_tipoProduto = '';
-    produto.unidade_medida = '';
+    produto = {
+        codigo: '',
+        id_planta: '',
+        id_tipoProduto: '',
+        id_categoria: 71,
+        nome: '',
+        descricao: ' ',
+        unidade_medida: '',
+        validadedias: '',
+        imagem1: '',
+        imagem2: '',
+        imagem3: '',
+        imagem4: '',
+        imagemdetalhe: ''
+    };
     selectedFile.value = null;
+    selectedInfoFile.value = null;
     selectedFilesSecondary.value = [];
+    imagePrinc.value = '';
+    imageUrls.value = [];
+    imageInfoAd.value = '';
 };
 const handleRowSelection = async (event) => {
+    await onRowSelect(event);
     await onRowSelect(event);
 };
 </script>
@@ -283,19 +313,19 @@ const handleRowSelection = async (event) => {
                                 </div>
                             </div>
                         </div>
-                        <div class="card p-0 col-12" style="width: 100%;">
+                        <div class="card p-0 col-12" style="width: 100%">
                             <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
                                 <!-- Grid de Upload de Imagens -->
                                 <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Imagem<br>Principal</h4>
+                                    <h4 class="titulo">Imagem<br />Principal</h4>
                                     <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc" :multiple="false" />
                                 </div>
                                 <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Imagens<br>Secundarias</h4>
+                                    <h4 class="titulo">Imagens<br />Secundarias</h4>
                                     <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls" :multiple="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Informações<br>Adicionais</h4>
+                                    <h4 class="titulo">Informações<br />Adicionais</h4>
                                     <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd" :multiple="false" />
                                 </div>
                             </div>
@@ -332,15 +362,7 @@ const handleRowSelection = async (event) => {
     resize: none;
 }
 
-
-@media (max-width: 1024px) {
-.text-center{
-margin:2px
-}
-} 
-
-.titulo {
-    white-space: pre-wrap; /* Permite a quebra de linha */
-  text-align: center; /* Centraliza o texto */
+.text-center {
+    width: 200px;
 }
 </style>
