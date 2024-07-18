@@ -256,16 +256,14 @@ const fetchFuncionarios = async () => {
                         </template>
                         <template #empty> Nenhuma retirada realizada </template>
                         <template #loading> Carregando dados, por favor aguarde... </template>
-                        <Column field="id" sortable header="ID"></Column>
                         <Column field="dm" sortable header="DM"></Column>
                         <Column field="data" sortable header="Data"></Column>
                         <Column field="matricula" sortable header="Matricula"></Column>
                         <Column field="nome" sortable header="Nome"></Column>
                         <Column field="email" sortable header="E-mail"></Column>
                         <Column field="item" sortable header="Item"></Column>
-                        <Column field="quantidade" sortable header="Quantidade"></Column>
+                        <Column field="quantidade" sortable header="Quant" class="text-center"></Column>
                         <Column field="ca" sortable header="CA"></Column>
-                        <Column field="valor" sortable header="Valor(R$)"></Column>
                     </DataTable>
                     </div>
                     <Card v-if="!show">
@@ -285,6 +283,6 @@ const fetchFuncionarios = async () => {
 }
 .datatable-wrapper {
     overflow-x: auto;
-    width: 100%;
+    width: 100vw;
 }
 </style>

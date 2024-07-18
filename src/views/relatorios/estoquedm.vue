@@ -21,7 +21,7 @@ const dms = ref([]);
             <Column field="produto" header="Produto"></Column>
             <Column field="posicao" header="Posição"></Column>
             <Column field="quantidade_atual" header="Quantidade Atual"></Column>
-            <Column field="quantidade_minima" header="Quantidade Minima"></Column>
+            <Column field="quantidade_minima" header="Quantidade Mínima"></Column>
             <Column field="capacidade" header="Capacidade"></Column>
         </DataTable>
     </div>

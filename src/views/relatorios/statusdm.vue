@@ -60,9 +60,9 @@ onMounted(() => {
                 class="w-full md:w-14rem" />
         </div>
         <div>
-            <DataTable :value="ListaDM" tableStyle="min-width: 50rem">
-                <Column field="id_maquina" header="dm"></Column>
-                <Column field="name" header="data"></Column>
+            <DataTable :value="ListaDM" tableStyle="min-width: 50rem" class="mt-3">
+                <Column field="id_maquina" header="DM"></Column>
+                <Column field="name" header="Data"></Column>
              </DataTable>
         </div>
     </div>
