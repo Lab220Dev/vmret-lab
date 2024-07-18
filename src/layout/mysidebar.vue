@@ -90,14 +90,15 @@ const toggle = (event) => {
 </script>
 
 <template>
-    <div class="flex align-items-center justify-content-start mt-1 " style="flex-grow: 1">
+    <hr class="linha mb-0">
+    <div class=" p-0 flex align-items-center justify-content-start mt-1 " style="flex-grow: 1">
         <!-- Imagem do usuário -->
-        <div class="mt-3 field pic">
+        <div class="field pic col-2 p-1 mt-3">
             <Avatar icon="pi pi-user" class="formgrid" size="xlarge" shape="circle" />
         </div>
 
         <!-- Nome, role e relógio -->
-        <div class="formgrid field ml-2" style="display: flex; flex-direction: column; align-items: flex-start">
+        <div class="formgrid field col-10 p-0 ml-4" style="display: flex; flex-direction: column; align-items: flex-start">
             <h6 class="usuario mt-3 m-0">{{ nome }}</h6>
             <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
             <div class="relogio mt-1 mr-0" style="align-self: flex-start">
@@ -105,6 +106,7 @@ const toggle = (event) => {
             </div>
         </div>
     </div>
+    <hr class="linha mt-0">
     <MyMenu></MyMenu>
         <!--Botão <div class="button mt-2">
             <button type="button" class="p-link m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
@@ -122,13 +124,13 @@ const toggle = (event) => {
     .button,
     .usuario,
     .relogio,
-    .role {
+    .role,.linha {
         display: none;
     }
 }
 
 .usuario {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .role {
@@ -166,5 +168,9 @@ const toggle = (event) => {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+}
+
+.pic {
+    width: 40px;
 }
 </style>
