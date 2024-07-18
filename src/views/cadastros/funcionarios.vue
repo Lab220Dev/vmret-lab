@@ -405,6 +405,44 @@ const resetForm = () => {
     RG.value = '';
     CTPS.value = '';
 };
+
+const atualizarFuncionario = async () => {
+    const formData = new FormData();
+    
+    // Adiciona a foto se houver uma selecionada
+    if (selectedFile.value) {
+        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
+        formData.append('foto', nomeArquivo);
+        formData.append('file', selectedFile.value);
+    }
+
+    // Adiciona os dados do funcionário
+    Object.entries(funcionario).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    
+    try {
+        // Faz a requisição PUT para atualizar o funcionário
+        const response = await axios.put(`/funcionarios/atualizar`, formData, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+            },
+        });
+
+        // Exibe um toast de sucesso e recarrega a lista de funcionários
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
+        loadFuncionarios();
+        active.value = 0;
+        // Reseta o formulário ou faz outra ação necessária
+        resetForm();
+    } catch (error) {
+        // Em caso de erro, exibe um toast de erro
+        console.error('Erro ao atualizar o funcionário:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
+    }
+};
+
 </script>
 
 <template>
@@ -566,7 +604,7 @@ const resetForm = () => {
                                 <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2" label="Salvar"
                                     icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
                                 <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateFuncionario" />
+                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
                             </div>
 
                             <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog"
