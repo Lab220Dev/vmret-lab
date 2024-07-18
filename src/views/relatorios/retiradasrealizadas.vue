@@ -28,7 +28,7 @@ const retiradas = ref([{ "id": 1, "nome": "Yorgo Mielnik", "dm": "dm003", "data"
 { "id": 17, "nome": "Sherrie Critchley", "dm": "dm005", "data": "9/19/2024", "email": "scritchleyg@cloudflare.com", "item": "caneca 3", "quantidade": 2, "ca": 431285, "matricula": 9698, "valor": 0.52 },
 { "id": 18, "nome": "Arthur Bricket", "dm": "dm005", "data": "7/13/2024", "email": "abricketh@posterous.com", "item": "caneca 4", "quantidade": 10, "ca": 488499, "matricula": 8244, "valor": 0.32 },
 { "id": 19, "nome": "Aretha Janout", "dm": "dm004", "data": "12/10/2025", "email": "ajanouti@spotify.com", "item": "caneca 2", "quantidade": 9, "ca": 53764, "matricula": 2012, "valor": 0.41 },
-{ "id": 20, "nome": "Berthe Swaisland", "dm": "dm003", "data": "2/28/2022", "email": "bswaislandj@wunderground.com", "item": "caneca 1", "quantidade": 1, "ca": 415522, "matricula": 2585, "valor": 0.43 }]);
+{ "id": 20, "nome": "Berthe Swaisland", "dm": "dm003", "data": "2/28/2022", "email": "bswaislandj@wunderground.com", "item": "caneca 1", "quantidade": 1, "ca": 415522, "matricula": 2585, "valor": 0.43 }].filter(item => item && Object.keys(item).length));
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -183,56 +183,56 @@ const fetchFuncionarios = async () => {
     <div class="card">
         <div class="form">
             <div class="grid">
-                    <div class="p-fluid formgrid grid" v-if="show">
+                    <div class="p-fluid formgrid grid col-12" v-if="show">
                         <!-- div de busca de informações para o relatorio -->
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="dm">Selecione a DM</label>
-                            <Dropdown v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label"
-                                optionValue="value" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="planta">Selecione a Planta</label>
-                            <Dropdown v-model="relatorio.id_planta" :options="formatedPlantaOptions" optionLabel="label"
-                                optionValue="value" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="perfil">Selecione o Centro de Custo</label>
-                            <Dropdown v-model="relatorio.id_centro_custo" :options="formatedCentroCustoOptions"
-                                optionLabel="label" optionValue="value" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="perfil">Selecione o Setor</label>
-                            <Dropdown v-model="relatorio.id_setor" :options="formatedSetorOptions" optionLabel="label"
-                                optionValue="value" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="perfil">Selecione o Funcionário</label>
-                            <Dropdown v-model="relatorio.id_funcionario" :options="formatedFuncionarioOptions"
-                                optionLabel="label" optionValue="value" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="perfil">Data Inicial</label>
-                            <VueDatePicker v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                                :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                                :enable-time-picker="false" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <label for="perfil">Data Final</label>
-                            <VueDatePicker v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format"
-                                locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                                :enable-time-picker="false" />
-                        </div>
-                        <div class="field lg:col-3  md:col-6 sm:col-4">
-                            <!-- botão de filtrar -->
-                            <Button type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
-                                @click="buscar" />
-                        </div>
-                        <div class="field lg:col-2  md:col-6 sm:col-4">
-                            <Button icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
-                        </div>
-                        <div class="field lg:col-2  md:col-6 sm:col-4">
-                            <Button icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="dm">Selecione a DM</label>
+                                <Dropdown class="drop" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label"
+                                    optionValue="value" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="planta">Selecione a Planta</label>
+                                <Dropdown class="drop"v-model="relatorio.id_planta" :options="formatedPlantaOptions" optionLabel="label"
+                                    optionValue="value" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="perfil">Selecione o Centro de Custo</label>
+                                <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="formatedCentroCustoOptions"
+                                    optionLabel="label" optionValue="value" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="perfil">Selecione o Setor</label>
+                                <Dropdown class="drop" v-model="relatorio.id_setor" :options="formatedSetorOptions" optionLabel="label"
+                                    optionValue="value" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="perfil">Selecione o Funcionário</label>
+                                <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="formatedFuncionarioOptions"
+                                    optionLabel="label" optionValue="value" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="perfil">Data Inicial</label>
+                                <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                                    :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
+                                    :enable-time-picker="false" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <label for="perfil">Data Final</label>
+                                <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format"
+                                    locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
+                                    :enable-time-picker="false" />
+                            </div>
+                            <div class="field lg:col-3  md:col-6 sm:col-6">
+                                <!-- botão de filtrar -->
+                                <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
+                                    @click="buscar" />
+                            </div>
 
+                        <div class="field lg:col-2  md:col-6 sm:col-6">
+                            <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+                        </div>
+                        <div class="field lg:col-2  md:col-6 sm:col-6">
+                            <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                         </div>
 
                     </div>
@@ -284,5 +284,30 @@ const fetchFuncionarios = async () => {
 .datatable-wrapper {
     overflow-x: auto;
     width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
+.drop {
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%; 
+        max-width: 100%; 
+        margin-bottom: 1rem; 
+    }
+
+    .form .field .drop {
+        width: 100%; 
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%; 
+    }
 }
 </style>
