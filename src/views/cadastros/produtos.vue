@@ -55,13 +55,15 @@ const visible = ref(false);
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}`;
+        // const fileExtension = selectedFile.name.split('.').pop();
+        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
     }
 
     if (selectedInfoFile.value) {
-        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}`;
+        // const fileExtension = selectedInfoFile.name.split('.').pop();
+        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
         formData.append('file_info', selectedFile.value);
     }
@@ -109,11 +111,12 @@ const setImageIfValid = async (image, targetRef) => {
 
 const onRowSelect = async (event) => {
     produto = event.data;
-
+    const { imagem2, imagem3, imagem4 } = produto;
+    const filenames = [imagem2, imagem3, imagem4].filter(filename => filename !== '');
     await setImageIfValid(produto.imagem1, imagePrinc);
     await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
-    await setImageIfValid(produto.imagem2, imageUrls);
-
+    const secondaryImages = await getImagens(filenames);
+    imageUrls.value = secondaryImages;
     active.value = 1;
 };
 
@@ -187,7 +190,7 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
     try {
-        const response = await axios.get(`/image/produtos/${store.userIdCliente}/${filename}`, {
+        const response = await axios.get(`/image/produto/${store.userIdCliente}/${filename}`, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -208,7 +211,7 @@ const getImagens = async (filenames) => {
 
     try {
         const response = await axios.post(
-            `/produtos/imagesAdicionais`,
+            `image/produtos/imagesAdicionais`,
             { idcliente: store.userIdCliente, imageNames: filenames },
             {
                 headers: {
@@ -250,7 +253,6 @@ const resetForm = () => {
     imageInfoAd.value = '';
 };
 const handleRowSelection = async (event) => {
-    await onRowSelect(event);
     await onRowSelect(event);
 };
 </script>
