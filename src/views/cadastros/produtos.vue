@@ -17,13 +17,15 @@ const tipoProduto = ref([
     { label: 'Insumo', value: 2 },
     { label: 'Consumivel', value: 3 }
 ]);
-
 const selectedFile = ref(null);
 const selectedInfoFile = ref(null);
 const selectedFilesSecondary = ref([]);
 const imagePrinc = ref('');
 const imageUrls = ref([]);
 const imageInfoAd = ref('');
+const ListaProdutos = ref([]);
+const deleteProdutoDialog = ref(false);
+const visible = ref(false);
 
 const handleFileSelectedSecondary = (file) => {
     selectedFilesSecondary.value.push(file);
@@ -48,9 +50,64 @@ let produto = reactive({
     validadedias: ''
 });
 
-const ListaProdutos = ref([]);
-const deleteProdutoDialog = ref(false);
-const visible = ref(false);
+const setImageIfValid = async (image, targetRef) => {
+    if (image) {
+        targetRef.value = await getImagem(image);
+    } else {
+        targetRef.value = null;
+    }
+};
+
+const onRowSelect = async (event) => {
+    produto = event.data;
+    const { imagem2, imagem3, imagem4 } = produto;
+    const filenames = [imagem2, imagem3, imagem4].filter(filename => filename !== '');
+    await setImageIfValid(produto.imagem1, imagePrinc);
+    await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
+    const secondaryImages = await getImagens(filenames);
+    imageUrls.value = secondaryImages;
+    visible.value = true;
+    active.value = 1;
+};
+
+const loadProdutos = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('/produtos/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaProdutos.value = response.data;
+        ListaProdutos.value.forEach(async (produto) => {
+        produto.imagemUrl = await getImagem(produto.imagem1);
+    });
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+    }
+};
+
+const fetchIdPlanta = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('produtos/listarplanta', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        plantasoptions = response.data;
+        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
+            label: `Planta ${plantasoptions.id_planta}`,
+            value: plantasoptions.id_planta
+        }));
+    } catch (error) {
+        console.error('Erro ao buscar opções de plantas:', error);
+    }
+};
 
 const saveProduto = async () => {
     const formData = new FormData();
@@ -101,69 +158,6 @@ const saveProduto = async () => {
     active.value = 0;
 };
 
-const setImageIfValid = async (image, targetRef) => {
-    if (image) {
-        targetRef.value = await getImagem(image);
-    } else {
-        targetRef.value = null;
-    }
-};
-
-const onRowSelect = async (event) => {
-    produto = event.data;
-    const { imagem2, imagem3, imagem4 } = produto;
-    const filenames = [imagem2, imagem3, imagem4].filter(filename => filename !== '');
-    await setImageIfValid(produto.imagem1, imagePrinc);
-    await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
-    const secondaryImages = await getImagens(filenames);
-    imageUrls.value = secondaryImages;
-    active.value = 1;
-};
-
-const loadProdutos = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/produtos/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaProdutos.value = response.data;
-    } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-    }
-};
-
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('produtos/listarplanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        plantasoptions = response.data;
-        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
-            label: `Planta ${plantasoptions.id_planta}`,
-            value: plantasoptions.id_planta
-        }));
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-
-onMounted(async () => {
-    await loadProdutos();
-    await fetchIdPlanta();
-    ListaProdutos.value.forEach(async (produto) => {
-        produto.imagemUrl = await getImagem(produto.imagem1);
-    });
-});
-
 const deleteProduto = async () => {
     let data = { id_produto: produto.id_produto };
     try {
@@ -172,19 +166,67 @@ const deleteProduto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        const index = ListaProdutos.value.findIndex((f) => f.id_produto === produto.id_produto);
-        if (index !== -1) {
-            ListaProdutos.value.splice(index, 1);
-        }
+        // const index = ListaProdutos.value.findIndex((f) => f.id_produto === produto.id_produto);
+        // if (index !== -1) {
+        //     ListaProdutos.value.splice(index, 1);
+        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
         deleteProdutoDialog.value = false;
-
+        loadProdutos();
+        active.value = 0;
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
     }
     active.value = 0;
 };
+
+const updateProduto = async () => {
+    const formData = new FormData();
+
+    Object.entries(produto).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+
+    if (selectedFile.value) {
+        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`);
+        formData.append('file_principal', selectedFile.value);
+    }
+
+    if (selectedInfoFile.value) {
+        formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`);
+        formData.append('file_info', selectedInfoFile.value);
+    }
+
+    if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
+        selectedFilesSecondary.value.forEach((file, index) => {
+            const fileExtension = file.name.split('.').pop();
+            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
+
+            formData.append(`file_secundario_${index}`, file); 
+            formData.append(`imagem${index + 2}`, nomeArquivoSecundario); 
+        });
+    }
+
+    try {
+        await axios.post('/produtos/atualizar', formData, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto atualizado', life: 3000 });
+        loadProdutos();
+        active.value = 0;
+        resetForm();
+    } catch (error) {
+        console.error('Erro ao atualizar o produto:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
+    }
+};
+
+
 const getImagem = async (filename) => {
     if (filename === '') {
         return imagePlaceholder;
@@ -248,13 +290,20 @@ const resetForm = () => {
     selectedFile.value = null;
     selectedInfoFile.value = null;
     selectedFilesSecondary.value = [];
-    imagePrinc.value = '';
-    imageUrls.value = [];
-    imageInfoAd.value = '';
+    // imagePrinc.value = '';
+    // imageUrls.value = [];
+    // imageInfoAd.value = '';
 };
+
 const handleRowSelection = async (event) => {
     await onRowSelect(event);
 };
+
+onMounted(async () => {
+    await loadProdutos();
+    await fetchIdPlanta();
+
+});
 </script>
 
 <template>
@@ -336,8 +385,9 @@ const handleRowSelection = async (event) => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    <Button  v-if="visible" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
+                    <Button  v-if="visible" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button  v-if="!visible" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
 
                 <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">

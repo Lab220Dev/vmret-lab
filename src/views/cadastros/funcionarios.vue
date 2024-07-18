@@ -15,9 +15,7 @@ const RG = ref('');
 const CPF = ref('');
 const CTPS = ref('');
 const selectedFile = ref(null);
-
 const handleFileSelected = ({ file }) => {
-
     selectedFile.value = file;
 };
 
@@ -61,6 +59,7 @@ let funcionario = reactive({
     domingo: false,
     nomearquivo: '',
 })
+const editVisible = ref(false);
 const selectedProduct = ref([]);
 const itemsSelecionadosFuncionario = ref([]);
 const ItensSetorDev = ref([
@@ -114,6 +113,7 @@ const onRowSelect = (event) => {
     funcionario = event.data;
     getImagem(funcionario.foto);
     active.value = 1;
+    editVisible.value = true;
 };
 const editItem = (itm) => {
     item.value = { ...itm };
@@ -512,7 +512,8 @@ const resetForm = () => {
                             </div>
                             <div class="p-fluid formgrid grid">
                                 <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
-                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl":multiple="false" />
+                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl"
+                                        :multiple="false" />
                                 </div>
 
                                 <!--Div com os dias da Semana-->
@@ -560,10 +561,12 @@ const resetForm = () => {
                             </div>
 
                             <div class="grid justify-content-end flex-wrap">
-                                <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
+                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2" label="Excluir"
                                     icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
-                                <Button class="flex align-items-center justify-content-center m-2" label="Salvar"
+                                <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2" label="Salvar"
                                     icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
+                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
+                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateFuncionario" />
                             </div>
 
                             <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog"
@@ -573,7 +576,7 @@ const resetForm = () => {
                                     <span class="">
                                         Você tem certeza que deseja deletar o funcionário <b>{{
                                             funcionario.id_funcionario }}</b> - <b>{{
-                                            funcionario.nome }}</b> ?</span>
+                                                funcionario.nome }}</b> ?</span>
                                 </div>
                                 <template #footer>
                                     <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false"
