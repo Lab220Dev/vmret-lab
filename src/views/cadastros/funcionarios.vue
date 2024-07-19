@@ -11,11 +11,8 @@ import ImageUpload from '@/components/ImageUpload.vue';
 
 const store = useAuthStore();
 const toast = useToast();
-const RG = ref('');
-const CPF = ref('');
-const CTPS = ref('');
 const selectedFile = ref(null);
-const handleFileSelected = ({ file }) => {
+const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
 
@@ -111,6 +108,8 @@ const TempoFim = ref(null);
 
 const onRowSelect = (event) => {
     funcionario = event.data;
+    setTempo(TempoInicio, funcionario.hora_inicial);
+    setTempo(TempoFim, funcionario.hora_final);
     getImagem(funcionario.foto);
     active.value = 1;
     editVisible.value = true;
@@ -181,7 +180,7 @@ const adicionarFuncionario = async () => {
             });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
         loadFuncionarios();
-
+        active.value = 0;
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar o funcionário:', error);
@@ -291,28 +290,11 @@ watch(
     },
     { deep: true }
 );
-watch(RG, (newValue) => {
-    if (newValue) {
-        funcionario.RG = unmaskValue(newValue);
-    } else {
-        funcionario.RG = '';
-    }
+watch(active, (newIndex, oldIndex) => {
+  if (newIndex !== oldIndex && newIndex === 0) {
+    resetForm();
+  }
 });
-watch(CPF, (newValue) => {
-    if (newValue) {
-        funcionario.CPF = unmaskValue(newValue);
-    } else {
-        funcionario.CPF = '';
-    }
-});
-watch(CTPS, (newValue) => {
-    if (newValue) {
-        funcionario.CTPS = unmaskValue(newValue);
-    } else {
-        funcionario.CTPS = '';
-    }
-});
-
 function formatarTempo(time, baseDate = new Date()) {
     const hours = time.hours.toString().padStart(2, '0');
     const minutes = time.minutes.toString().padStart(2, '0');
@@ -325,9 +307,17 @@ function formatarTempo(time, baseDate = new Date()) {
     return baseDate.toISOString();
 }
 
-const unmaskValue = (maskedValue) => {
-    return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
+const setTempo = (tempoRef, isoString) => {
+  const date = new Date(isoString);
+  const time = {
+    hours: date.getUTCHours(),
+    minutes: date.getUTCMinutes(),
+    seconds: date.getUTCSeconds(),
+  };
+  tempoRef.value = time;
 };
+
+
 const getImagem = async (filename) => {
     if (filename === "") {
         return imagePlaceholder;
@@ -362,13 +352,14 @@ const deleteFuncionario = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
-        if (index !== -1) {
-            ListaFuncionarios.value.splice(index, 1);
-        }
+        // const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
+        // if (index !== -1) {
+        //     ListaFuncionarios.value.splice(index, 1);
+        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
         deleteFuncionarioDialog.value = false;
-
+        loadFuncionarios();
+        active.value = 0;
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
@@ -401,14 +392,14 @@ const resetForm = () => {
     funcionario.sabado = false;
     funcionario.domingo = false;
     funcionario.itemsSelecionadosFuncionario = [];
-    CPF.value = '';
-    RG.value = '';
-    CTPS.value = '';
+    selectedFile.value = null;
+    TempoInicio.value =null;
+    TempoFim.value = null;
 };
 
 const atualizarFuncionario = async () => {
     const formData = new FormData();
-    
+
     // Adiciona a foto se houver uma selecionada
     if (selectedFile.value) {
         const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
@@ -420,7 +411,7 @@ const atualizarFuncionario = async () => {
     Object.entries(funcionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
-    
+
     try {
         // Faz a requisição PUT para atualizar o funcionário
         const response = await axios.put(`/funcionarios/atualizar`, formData, {
@@ -488,15 +479,17 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="cpf">CPF</label>
-                                    <InputMask v-model="CPF" id="cpf" mask="999.999.999-99" />
+                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99"
+                                        :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="rg">RG</label>
-                                    <InputMask id="rg" v-model="RG" mask="99.999.999-*" />
+                                    <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="ctps">CTPS</label>
-                                    <InputMask id="ctps" v-model="CTPS" mask="9999999/9999" />
+                                    <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999"
+                                        :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="email">E-mail</label>
@@ -599,12 +592,14 @@ const atualizarFuncionario = async () => {
                             </div>
 
                             <div class="grid justify-content-end flex-wrap">
-                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2" label="Excluir"
-                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
-                                <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2" label="Salvar"
-                                    icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
                                 <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
+                                    label="Excluir" icon="pi pi-trash" severity="danger"
+                                    @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2"
+                                    label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
+                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
+                                    label="Atualizar" icon="pi pi-refresh" severity="primary"
+                                    @click="atualizarFuncionario" />
                             </div>
 
                             <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog"
