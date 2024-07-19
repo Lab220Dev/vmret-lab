@@ -55,8 +55,8 @@ let funcionario = reactive({
     sexta: false,
     sabado: false,
     domingo: false,
-    nomearquivo: '',
-})
+    nomearquivo: ''
+});
 const editVisible = ref(false);
 const selectedProduct = ref([]);
 const itemsSelecionadosFuncionario = ref([]);
@@ -134,7 +134,7 @@ const confirmDeleteProduct = (itm) => {
     deleteProductDialog.value = true;
 };
 const deleteProduct = () => {
-    const remover = itemsSelecionadosFuncionario.findIndex(itm => itm.sku === item.value.sku);
+    const remover = itemsSelecionadosFuncionario.findIndex((itm) => itm.sku === item.value.sku);
     if (remover !== -1) {
         itemsSelecionadosFuncionario.splice(remover, 1);
     }
@@ -159,7 +159,6 @@ const loadFuncionarios = async () => {
 };
 
 const adicionarFuncionario = async () => {
-
     const formData = new FormData();
     if (selectedFile.value) {
         const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
@@ -171,14 +170,12 @@ const adicionarFuncionario = async () => {
     });
     formData.append('id_cliente', store.userIdCliente);
     try {
-
-        const response = await axios.post('/funcionarios/adicionar', formData,
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`,
-                    'Content-Type': 'multipart/form-data'
-                },
-            });
+        const response = await axios.post('/funcionarios/adicionar', formData, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
         loadFuncionarios();
         active.value = 0;
@@ -313,28 +310,28 @@ const setTempo = (tempoRef, isoString) => {
     const time = {
         hours: date.getUTCHours(),
         minutes: date.getUTCMinutes(),
-        seconds: date.getUTCSeconds(),
+        seconds: date.getUTCSeconds()
     };
     tempoRef.value = time;
 };
 
 const validateForm = () => {
     errors.value = {};
-    validateCPF();  
-    validateEmail(); 
+    validateCPF();
+    validateEmail();
     return Object.keys(errors.value).length === 0;
 };
 
 const validateEmail = () => {
-  const email = funcionario.email;
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailPattern.test(email)) {
-    errors.value.email = 'E-mail inválido';
-  } else {
-    errors.value.email = '';
-  }
+    const email = funcionario.email;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailPattern.test(email)) {
+        errors.value.email = 'E-mail inválido';
+    } else {
+        errors.value.email = '';
+    }
 };
-const retardedasschatgpt = () => {
+const cpfvalidate = () => {
     const cpf = funcionario.CPF;
     if (!cpf || !validateCPF(cpf)) {
         errors.value.CPF = 'CPF inválido';
@@ -353,19 +350,19 @@ const handleSubmit = () => {
 };
 
 const getImagem = async (filename) => {
-    if (filename === "") {
+    if (filename === '') {
         return imagePlaceholder;
     }
     try {
         const response = await axios.get(`/image/funcionario/${store.userIdCliente}/${filename}`, {
             headers: {
                 Authorization: `Bearer ${store.token}`
-            },
+            }
         });
         const { image, mimeType } = response.data;
         imageUrl.value = `data:${mimeType};base64,${image}`;
     } catch (error) {
-        console.error("Erro ao carregar imagem:", error);
+        console.error('Erro ao carregar imagem:', error);
         return imagePlaceholder;
     }
 };
@@ -452,7 +449,7 @@ const atualizarFuncionario = async () => {
             headers: {
                 Authorization: `Bearer ${store.token}`,
                 'Content-Type': 'multipart/form-data'
-            },
+            }
         });
 
         // Exibe um toast de sucesso e recarrega a lista de funcionários
@@ -467,7 +464,6 @@ const atualizarFuncionario = async () => {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
     }
 };
-
 </script>
 
 <template>
@@ -475,8 +471,7 @@ const atualizarFuncionario = async () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionário">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id"
-                        :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
                         <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
@@ -488,161 +483,138 @@ const atualizarFuncionario = async () => {
                     <div class="col-12">
                         <div class="card">
                             <!--form de cadastro de novo funcionario-->
-                            <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-12 md:col-6 sm:col-4">
+                            <div class="p-fluid formgrid grid m-0 p-0">
+                                <div class="field lg:col-8 md:col-6 sm:col-12">
                                     <label for="name">Nome</label>
                                     <InputText v-model="funcionario.nome" id="name" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="matricula">Matrícula</label>
                                     <InputText id="matricula" v-model="funcionario.matricula" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="Hash">Hash 1</label>
                                     <InputText disabled id="Hash" v-model="funcionario.biometria" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="Hash2">Hash 2</label>
                                     <InputText disabled id="Hash2" v-model="funcionario.biometria2" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão</label>
-                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false"
-                                        :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                                        :enable-time-picker="false" />
+                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF</label>
-                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true"
-                                        :invalid="!!errors.CPF" @blur="retardedasschatgpt" />
+                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="rg">RG</label>
                                     <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="ctps">CTPS</label>
-                                    <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999"
-                                        :unmask="true" />
+                                    <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="email">E-mail</label>
-                                    <InputText id="email" v-model="funcionario.email" :invalid="!!errors.email"
-                                        @blur="validateEmail" />
+                                    <InputText id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo</label>
-                                    <Dropdown v-model="funcionario.id_centro_custo"
-                                        :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value"
-                                        placeholder="Selecione Um " />
+                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta</label>
-                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
+                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria</label>
-                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
+                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
                                 </div>
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
-                                    <label for="funcao">Função/Nível Hierárquico</label>
-                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions"
-                                        optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
+                                    <label class="ajustetexto" for="funcao">Função/Nível Hierárquico</label>
+                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
                                 </div>
-                            </div>
-                            <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status</label>
-                                    <Dropdown id="status" v-model="funcionario.status" :options="status"
-                                        optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                    <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
-                                <div class="field lg:col-2 md:col-6 sm:col-4">
-                                    <label for="inicio">Hora Início</label>
-                                    <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
-                                        <template #input-icon>
-                                            <img class="input-slot-image" :src="clockurl" />
-                                        </template>
-                                    </VueDatePicker>
-                                </div>
-                                <div class="field lg:col-2 md:col-6 sm:col-4">
-                                    <label for="inicio">Hora Fim</label>
-                                    <VueDatePicker id="inicio" v-model="TempoFim" time-picker
-                                        disable-time-range-validation>
-                                        <template #input-icon>
-                                            <img class="input-slot-image" :src="clockurl" />
-                                        </template>
-                                    </VueDatePicker>
-                                </div>
-                            </div>
-                            <div class="p-fluid formgrid grid">
-                                <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
-                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl"
-                                        :multiple="false" />
-                                </div>
-
-                                <!--Div com os dias da Semana-->
-                                <div class="lg:col-8 md:col-6 sm:col-4">
-                                    <label for="fim">Selecione os dias que o Funcionário poderá retirar os
-                                        Itens:</label>
-                                    <div id="fim" class="flex align-content-end flex-wrap">
-                                        <div class="m-2 flex align-items-end">
-                                            <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
-                                                value="Segunda" :binary="true" />
-                                            <label for="Segunda" class="ml-2"> Segunda-Feira </label>
-                                        </div>
-                                        <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
-                                                value="Terca" :binary="true" />
-                                            <label for="Terca" class="ml-2"> Terça-Feira </label>
-                                        </div>
-                                        <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
-                                                value="Quarta" :binary="true" />
-                                            <label for="Quarta" class="ml-2"> Quarta-Feira </label>
-                                        </div>
-                                        <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
-                                                value="Quinta" :binary="true" />
-                                            <label for="Quinta" class="ml-2"> Quinta-Feira </label>
-                                        </div>
-                                        <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
-                                                value="Sexta" :binary="true" />
-                                            <label for="Sexta" class="ml-2"> Sexta-Feira </label>
-                                        </div>
-                                        <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
-                                                value="Sabado" :binary="true" />
-                                            <label for="Sabado" class="ml-2"> Sábado </label>
-                                        </div>
-                                        <div class="m-2 flex align-items-center">
-                                            <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
-                                                value="Domingo" :binary="true" />
-                                            <label for="Domingo" class="ml-2"> Domingo</label>
-                                        </div>
+                                <!-- primeira parte do nested -->
+                                <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0  pt-1">
+                                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                                        <label for="inicio">Hora Início</label>
+                                        <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
+                                            <template #input-icon>
+                                                <img class="input-slot-image" :src="clockurl" />
+                                            </template>
+                                        </VueDatePicker>
                                     </div>
-                                </div>
-                            </div>
+                                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                                        <label for="inicio">Hora Fim</label>
+                                        <VueDatePicker id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                            <template #input-icon>
+                                                <img class="input-slot-image" :src="clockurl" />
+                                            </template>
+                                        </VueDatePicker>
+                                    </div>
 
-                            <div class="grid justify-content-end flex-wrap">
-                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Excluir" icon="pi pi-trash" severity="danger"
-                                    @click="deleteFuncionarioDialog = true" />
-                                <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
-                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
+                                    <Fieldset
+                                        legend="Selecione os dias que o Funcionário poderá retirar os
+                                        Itens:"
+                                        class="p-1 lg:col-12 md:col-12 sm:col-12"
+                                    >
+                                        <label for="fim"></label>
+                                        <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
+                                            <div class="checkbox-items m-2 flex align-items-end">
+                                                <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
+                                                <label for="Segunda" class="ml-2"> Segunda-Feira </label>
+                                            </div>
+                                            <div class="checkbox-items m-2 flex align-items-center">
+                                                <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
+                                                <label for="Terca" class="ml-2"> Terça-Feira </label>
+                                            </div>
+                                            <div class="checkbox-items m-2 flex align-items-center">
+                                                <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
+                                                <label for="Quarta" class="ml-2"> Quarta-Feira </label>
+                                            </div>
+                                            <div class="checkbox-items m-2 flex align-items-center">
+                                                <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
+                                                <label for="Quinta" class="ml-2"> Quinta-Feira </label>
+                                            </div>
+                                            <div class="checkbox-items m-2 flex align-items-center">
+                                                <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
+                                                <label for="Sexta" class="ml-2"> Sexta-Feira </label>
+                                            </div>
+                                            <div class="checkbox-items m-2 flex align-items-center">
+                                                <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
+                                                <label for="Sabado" class="ml-2"> Sábado </label>
+                                            </div>
+                                            <div class="checkbox-items m-2 flex align-items-center">
+                                                <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
+                                                <label for="Domingo" class="ml-2"> Domingo</label>
+                                            </div>
+                                        </div>
+                                    </Fieldset>
+                                </div>
+
+                                <div class="lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
+                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl" :multiple="false" />
+                                </div>
+                                
                             </div>
+<div class="grid justify-content-end flex-wrap mt-8">
+                                    <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                    <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                    <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
+                                </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku"
-                                            v-model="funcionario.itemsSelecionadosSetor">
+                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
@@ -652,17 +624,14 @@ const atualizarFuncionario = async () => {
                                     <TabPanel header="Itens do Funcionario">
                                         <Button label="Adicionar Itens" @click="visible = true" />
                                         <!--data table que exibe os items adicionados-->
-                                        <DataTable :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem"
-                                            stripedRows dataKey="sku">
+                                        <DataTable :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem" stripedRows dataKey="sku">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
-                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2"
-                                                        @click="editItem(slotProps.data)" />
-                                                    <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                                        @click="confirmDeleteProduct(slotProps.data)" />
+                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
+                                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
                                                 </template>
                                             </Column>
                                         </DataTable>
@@ -674,8 +643,7 @@ const atualizarFuncionario = async () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true"
-            class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -697,13 +665,11 @@ const atualizarFuncionario = async () => {
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="font-semibold col-2">Produto</label>
-                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name"
-                        placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem">Quantidade</label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3"
-                        autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -714,23 +680,22 @@ const atualizarFuncionario = async () => {
         </Dialog>
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" /> <span v-if="item">Você tem certeza
-                    que
-                    quer deletar o Item <b>{{ item.name }}</b> ?</span>
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                <span v-if="item"
+                    >Você tem certeza que quer deletar o Item <b>{{ item.name }}</b> ?</span
+                >
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />
                 <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
             </template>
         </Dialog>
-        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px"
-            :modal="true" :closable="false">
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
-                    Você tem certeza que deseja deletar o funcionário <b>{{
-                        funcionario.id_funcionario }}</b> - <b>{{
-                            funcionario.nome }}</b> ?</span>
+                    Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{ funcionario.nome }}</b> ?</span
+                >
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
@@ -748,5 +713,40 @@ const atualizarFuncionario = async () => {
 
 .p-error {
     color: red;
+}
+
+.ajustetexto {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; /* Garantir que o label se comporte corretamente dentro de um grid */
+}
+
+.checkbox-container {
+    display: flex;
+}
+
+.checkbox-items {
+    width: 40%; /* Metade da largura do contêiner para duas colunas */
+    margin-bottom: 10px; /* Espaçamento entre as linhas */
+}
+
+.nested-grid {
+    padding: 10px;
+}
+
+.buttons {
+    width: 100px;
+}
+
+@media (max-width: 580px) {
+.field {
+        flex: 0 0 100%; 
+        max-width: 100%; 
+        margin-bottom: 1rem; 
+        width: 100%; 
+        margin:1px
+    
+}
 }
 </style>

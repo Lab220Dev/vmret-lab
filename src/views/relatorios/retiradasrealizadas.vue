@@ -182,8 +182,8 @@ const fetchFuncionarios = async () => {
 <template>
     <div class="card">
         <div class="form">
-            <div class="grid">
-                    <div class="p-fluid formgrid grid col-12" v-if="show">
+            <div class="grid mx-1 px-1">
+                    <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                         <!-- div de busca de informações para o relatorio -->
                             <div class="field lg:col-3  md:col-6 sm:col-6">
                                 <label for="dm">DM:</label>
@@ -228,10 +228,10 @@ const fetchFuncionarios = async () => {
                                     @click="buscar" />
                             </div>
 
-                        <div class="field lg:col-4  md:col-6 sm:col-6">
+                        <div class="field lg:col-3  md:col-6 sm:col-6">
                             <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                         </div>
-                        <div class="field lg:col-4  md:col-6 sm:col-6">
+                        <div class="field lg:col-3  md:col-6 sm:col-6">
                             <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                         </div>
 
