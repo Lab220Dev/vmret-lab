@@ -99,7 +99,7 @@ watch(
     () => props.externalImages,
     (newVal) => {
         if (Array.isArray(newVal)) {
-            imageData.value = newVal;
+            imageData.value = newVal.map(img => typeof img === 'string' ? img : `data:${img.mimeType};base64,${img.image}`);
         } else if (typeof newVal === 'string') {
             imageData.value = [newVal];
         }

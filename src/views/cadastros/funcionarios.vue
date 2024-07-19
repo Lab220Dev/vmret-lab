@@ -8,19 +8,15 @@ import imagePlaceholder from '@/assets/images/placeholder4.png';
 import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
-
+import { isValid as validateCPF } from 'cpf-validator';
 const store = useAuthStore();
 const toast = useToast();
-const RG = ref('');
-const CPF = ref('');
-const CTPS = ref('');
 const selectedFile = ref(null);
-
-const handleFileSelected = ({ file }) => {
-
+const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
 
+const errors = ref({});
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
@@ -61,6 +57,7 @@ let funcionario = reactive({
     domingo: false,
     nomearquivo: '',
 })
+const editVisible = ref(false);
 const selectedProduct = ref([]);
 const itemsSelecionadosFuncionario = ref([]);
 const ItensSetorDev = ref([
@@ -112,8 +109,11 @@ const TempoFim = ref(null);
 
 const onRowSelect = (event) => {
     funcionario = event.data;
+    setTempo(TempoInicio, funcionario.hora_inicial);
+    setTempo(TempoFim, funcionario.hora_final);
     getImagem(funcionario.foto);
     active.value = 1;
+    editVisible.value = true;
 };
 const editItem = (itm) => {
     item.value = { ...itm };
@@ -181,7 +181,7 @@ const adicionarFuncionario = async () => {
             });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
         loadFuncionarios();
-
+        active.value = 0;
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar o funcionário:', error);
@@ -291,28 +291,11 @@ watch(
     },
     { deep: true }
 );
-watch(RG, (newValue) => {
-    if (newValue) {
-        funcionario.RG = unmaskValue(newValue);
-    } else {
-        funcionario.RG = '';
+watch(active, (newIndex, oldIndex) => {
+    if (newIndex !== oldIndex && newIndex === 0) {
+        resetForm();
     }
 });
-watch(CPF, (newValue) => {
-    if (newValue) {
-        funcionario.CPF = unmaskValue(newValue);
-    } else {
-        funcionario.CPF = '';
-    }
-});
-watch(CTPS, (newValue) => {
-    if (newValue) {
-        funcionario.CTPS = unmaskValue(newValue);
-    } else {
-        funcionario.CTPS = '';
-    }
-});
-
 function formatarTempo(time, baseDate = new Date()) {
     const hours = time.hours.toString().padStart(2, '0');
     const minutes = time.minutes.toString().padStart(2, '0');
@@ -325,9 +308,50 @@ function formatarTempo(time, baseDate = new Date()) {
     return baseDate.toISOString();
 }
 
-const unmaskValue = (maskedValue) => {
-    return maskedValue ? maskedValue.toString().replace(/\D/g, '') : '';
+const setTempo = (tempoRef, isoString) => {
+    const date = new Date(isoString);
+    const time = {
+        hours: date.getUTCHours(),
+        minutes: date.getUTCMinutes(),
+        seconds: date.getUTCSeconds(),
+    };
+    tempoRef.value = time;
 };
+
+const validateForm = () => {
+    errors.value = {};
+    validateCPF();  
+    validateEmail(); 
+    return Object.keys(errors.value).length === 0;
+};
+
+const validateEmail = () => {
+  const email = funcionario.email;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailPattern.test(email)) {
+    errors.value.email = 'E-mail inválido';
+  } else {
+    errors.value.email = '';
+  }
+};
+const retardedasschatgpt = () => {
+    const cpf = funcionario.CPF;
+    if (!cpf || !validateCPF(cpf)) {
+        errors.value.CPF = 'CPF inválido';
+    } else {
+        errors.value.CPF = '';
+    }
+};
+const handleSubmit = () => {
+    if (validateForm()) {
+        if (editVisible.value) {
+            atualizarFuncionario();
+        } else {
+            adicionarFuncionario();
+        }
+    }
+};
+
 const getImagem = async (filename) => {
     if (filename === "") {
         return imagePlaceholder;
@@ -362,13 +386,14 @@ const deleteFuncionario = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
-        if (index !== -1) {
-            ListaFuncionarios.value.splice(index, 1);
-        }
+        // const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
+        // if (index !== -1) {
+        //     ListaFuncionarios.value.splice(index, 1);
+        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
         deleteFuncionarioDialog.value = false;
-
+        loadFuncionarios();
+        active.value = 0;
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
@@ -401,10 +426,48 @@ const resetForm = () => {
     funcionario.sabado = false;
     funcionario.domingo = false;
     funcionario.itemsSelecionadosFuncionario = [];
-    CPF.value = '';
-    RG.value = '';
-    CTPS.value = '';
+    selectedFile.value = null;
+    TempoInicio.value = null;
+    TempoFim.value = null;
 };
+
+const atualizarFuncionario = async () => {
+    const formData = new FormData();
+
+    // Adiciona a foto se houver uma selecionada
+    if (selectedFile.value) {
+        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
+        formData.append('foto', nomeArquivo);
+        formData.append('file', selectedFile.value);
+    }
+
+    // Adiciona os dados do funcionário
+    Object.entries(funcionario).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+
+    try {
+        // Faz a requisição PUT para atualizar o funcionário
+        const response = await axios.put(`/funcionarios/atualizar`, formData, {
+            headers: {
+                Authorization: `Bearer ${store.token}`,
+                'Content-Type': 'multipart/form-data'
+            },
+        });
+
+        // Exibe um toast de sucesso e recarrega a lista de funcionários
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
+        loadFuncionarios();
+        active.value = 0;
+        // Reseta o formulário ou faz outra ação necessária
+        resetForm();
+    } catch (error) {
+        // Em caso de erro, exibe um toast de erro
+        console.error('Erro ao atualizar o funcionário:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
+    }
+};
+
 </script>
 
 <template>
@@ -450,19 +513,24 @@ const resetForm = () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="cpf">CPF</label>
-                                    <InputMask v-model="CPF" id="cpf" mask="999.999.999-99" />
+                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true"
+                                        :invalid="!!errors.CPF" @blur="retardedasschatgpt" />
+                                    <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="rg">RG</label>
-                                    <InputMask id="rg" v-model="RG" mask="99.999.999-*" />
+                                    <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="ctps">CTPS</label>
-                                    <InputMask id="ctps" v-model="CTPS" mask="9999999/9999" />
+                                    <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999"
+                                        :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="email">E-mail</label>
-                                    <InputText id="email" v-model="funcionario.email" />
+                                    <InputText id="email" v-model="funcionario.email" :invalid="!!errors.email"
+                                        @blur="validateEmail" />
+                                    <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
@@ -512,7 +580,8 @@ const resetForm = () => {
                             </div>
                             <div class="p-fluid formgrid grid">
                                 <div class="static align-content-end flex-wrap field lg:col-4 md:col-6 sm:col-4">
-                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl":multiple="false" />
+                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl"
+                                        :multiple="false" />
                                 </div>
 
                                 <!--Div com os dias da Semana-->
@@ -560,29 +629,14 @@ const resetForm = () => {
                             </div>
 
                             <div class="grid justify-content-end flex-wrap">
-                                <Button class="flex align-items-center justify-content-center m-2" label="Excluir"
-                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
-                                <Button class="flex align-items-center justify-content-center m-2" label="Salvar"
-                                    icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
+                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
+                                    label="Excluir" icon="pi pi-trash" severity="danger"
+                                    @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2"
+                                    label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
+                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
                             </div>
-
-                            <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog"
-                                style="width: 400px" :modal="true" :closable="false">
-                                <div class="confirmation-content">
-                                    <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                    <span class="">
-                                        Você tem certeza que deseja deletar o funcionário <b>{{
-                                            funcionario.id_funcionario }}</b> - <b>{{
-                                            funcionario.nome }}</b> ?</span>
-                                </div>
-                                <template #footer>
-                                    <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false"
-                                        class="p-button-text" />
-                                    <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario"
-                                        class="p-button-text" />
-                                </template>
-                            </Dialog>
-
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
@@ -669,6 +723,20 @@ const resetForm = () => {
                 <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
             </template>
         </Dialog>
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px"
+            :modal="true" :closable="false">
+            <div class="confirmation-content">
+                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                <span class="">
+                    Você tem certeza que deseja deletar o funcionário <b>{{
+                        funcionario.id_funcionario }}</b> - <b>{{
+                            funcionario.nome }}</b> ?</span>
+            </div>
+            <template #footer>
+                <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
+                <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario" class="p-button-text" />
+            </template>
+        </Dialog>
     </div>
 </template>
 <style>
@@ -676,5 +744,9 @@ const resetForm = () => {
     height: 20px;
     width: auto;
     margin-left: 5px;
+}
+
+.p-error {
+    color: red;
 }
 </style>
