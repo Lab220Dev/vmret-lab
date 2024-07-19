@@ -186,38 +186,38 @@ const fetchFuncionarios = async () => {
                     <div class="p-fluid formgrid grid col-12" v-if="show">
                         <!-- div de busca de informações para o relatorio -->
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="dm">Selecione a DM</label>
+                                <label for="dm">DM:</label>
                                 <Dropdown class="drop" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label"
                                     optionValue="value" />
                             </div>
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="planta">Selecione a Planta</label>
+                                <label for="planta">Planta:</label>
                                 <Dropdown class="drop"v-model="relatorio.id_planta" :options="formatedPlantaOptions" optionLabel="label"
                                     optionValue="value" />
                             </div>
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="perfil">Selecione o Centro de Custo</label>
+                                <label for="perfil">Centro de Custo:</label>
                                 <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="formatedCentroCustoOptions"
                                     optionLabel="label" optionValue="value" />
                             </div>
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="perfil">Selecione o Setor</label>
+                                <label for="perfil">Setor:</label>
                                 <Dropdown class="drop" v-model="relatorio.id_setor" :options="formatedSetorOptions" optionLabel="label"
                                     optionValue="value" />
                             </div>
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="perfil">Selecione o Funcionário</label>
+                                <label for="perfil">Funcionário:</label>
                                 <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="formatedFuncionarioOptions"
                                     optionLabel="label" optionValue="value" />
                             </div>
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="perfil">Data Inicial</label>
+                                <label for="perfil">Data Inicial:</label>
                                 <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                                     :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
                                     :enable-time-picker="false" />
                             </div>
                             <div class="field lg:col-3  md:col-6 sm:col-6">
-                                <label for="perfil">Data Final</label>
+                                <label for="perfil">Data Final:</label>
                                 <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format"
                                     locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
                                     :enable-time-picker="false" />
@@ -228,10 +228,10 @@ const fetchFuncionarios = async () => {
                                     @click="buscar" />
                             </div>
 
-                        <div class="field lg:col-2  md:col-6 sm:col-6">
+                        <div class="field lg:col-4  md:col-6 sm:col-6">
                             <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                         </div>
-                        <div class="field lg:col-2  md:col-6 sm:col-6">
+                        <div class="field lg:col-4  md:col-6 sm:col-6">
                             <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                         </div>
 
@@ -310,4 +310,11 @@ const fetchFuncionarios = async () => {
         width: 100%; 
     }
 }
+
+.field {
+white-space: nowrap;
+text-align: left; 
+}
+
+
 </style>

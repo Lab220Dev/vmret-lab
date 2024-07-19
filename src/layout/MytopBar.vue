@@ -108,6 +108,7 @@ const items = ref([
 
 const toggle = (event) => {
     menu.value.toggle(event);
+    
 };
 </script>
 

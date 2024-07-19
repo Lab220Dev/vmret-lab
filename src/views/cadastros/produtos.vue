@@ -276,39 +276,39 @@ const handleRowSelection = async (event) => {
             <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="p-fluid formgrid grid">
-                        <div class="card">
+                        <div class="card col-12 ">
                             <!--form de cadastro de novo produto-->
-                            <div class="p-fluid formgrid grid">
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                            <div class="p-fluid m-0 formgrid grid p-2">
+                                <div class="field lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">SKU</label>
-                                    <InputText v-model="produto.codigo" id="codigo" type="text"></InputText>
+                                    <InputText v-model="produto.codigo" id="codigo" type="text" class=""></InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                                <div class="field lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Nome</label>
                                     <InputText v-model="produto.nome" id="nome" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                                <div class="field lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Descrição</label>
                                     <Textarea v-model="produto.descricao" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                                <div class="field lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">Especificação</label>
                                     <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                                <div class="field lg:col-3 md:col-6 sm:col-6">
                                     <label for="tipo">Tipo</label>
                                     <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                                <div class="field lg:col-3 md:col-6 sm:col-6">
                                     <label for="tipo">Planta</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
+                                <div class="field med lg:col-3 md:col-6 sm:col-6">
                                     <label for="UndMedida">Unidade de Medida</label>
                                     <InputText v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-4">
-                                    <label for="vldDias">Validade em dias</label>
+                                <div class="field lg:col-3 md:col-6 sm:col-6">
+                                    <label for="vldDias">Validade</label>
                                     <InputNumber v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
                                 </div>
                             </div>
@@ -365,13 +365,29 @@ const handleRowSelection = async (event) => {
 
 @media (max-width: 1024px) {
 .text-center{
-margin:2px
+margin:2px;
 }
 } 
+
+.field {
+    padding: 4.5px;
+}
 
 .titulo {
 white-space: pre-wrap;
 text-align: center; 
 }
+
+@media (max-width: 580px) {
+.field {
+        flex: 0 0 100%; 
+        max-width: 100%; 
+        margin-bottom: 1rem; 
+        width: 100%; 
+        margin:1px
+    
+}
+}
+
 </style>
 
