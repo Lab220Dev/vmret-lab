@@ -29,13 +29,13 @@ export const useAuthStore = defineStore('auth', {
   },
   getters: {
     userName: (state) => {
-      return state.usuario[0].nome;
+      return state.usuario.nome;
     },
     userRole: (state) => {
-      return state.usuario[0].role;
+      return state.usuario.role;
     },
     userIdCliente: (state) => {
-      return state.usuario[0].id_cliente;
+      return state.usuario.id_cliente;
     }
   },
   persist: true 
