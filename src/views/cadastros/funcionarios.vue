@@ -8,7 +8,7 @@ import imagePlaceholder from '@/assets/images/placeholder4.png';
 import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
-
+import { isValid as validateCPF } from 'cpf-validator';
 const store = useAuthStore();
 const toast = useToast();
 const selectedFile = ref(null);
@@ -16,6 +16,7 @@ const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
 
+const errors = ref({});
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
@@ -291,9 +292,9 @@ watch(
     { deep: true }
 );
 watch(active, (newIndex, oldIndex) => {
-  if (newIndex !== oldIndex && newIndex === 0) {
-    resetForm();
-  }
+    if (newIndex !== oldIndex && newIndex === 0) {
+        resetForm();
+    }
 });
 function formatarTempo(time, baseDate = new Date()) {
     const hours = time.hours.toString().padStart(2, '0');
@@ -308,15 +309,48 @@ function formatarTempo(time, baseDate = new Date()) {
 }
 
 const setTempo = (tempoRef, isoString) => {
-  const date = new Date(isoString);
-  const time = {
-    hours: date.getUTCHours(),
-    minutes: date.getUTCMinutes(),
-    seconds: date.getUTCSeconds(),
-  };
-  tempoRef.value = time;
+    const date = new Date(isoString);
+    const time = {
+        hours: date.getUTCHours(),
+        minutes: date.getUTCMinutes(),
+        seconds: date.getUTCSeconds(),
+    };
+    tempoRef.value = time;
 };
 
+const validateForm = () => {
+    errors.value = {};
+    validateCPF();  
+    validateEmail(); 
+    return Object.keys(errors.value).length === 0;
+};
+
+const validateEmail = () => {
+  const email = funcionario.email;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailPattern.test(email)) {
+    errors.value.email = 'E-mail inválido';
+  } else {
+    errors.value.email = '';
+  }
+};
+const retardedasschatgpt = () => {
+    const cpf = funcionario.CPF;
+    if (!cpf || !validateCPF(cpf)) {
+        errors.value.CPF = 'CPF inválido';
+    } else {
+        errors.value.CPF = '';
+    }
+};
+const handleSubmit = () => {
+    if (validateForm()) {
+        if (editVisible.value) {
+            atualizarFuncionario();
+        } else {
+            adicionarFuncionario();
+        }
+    }
+};
 
 const getImagem = async (filename) => {
     if (filename === "") {
@@ -393,7 +427,7 @@ const resetForm = () => {
     funcionario.domingo = false;
     funcionario.itemsSelecionadosFuncionario = [];
     selectedFile.value = null;
-    TempoInicio.value =null;
+    TempoInicio.value = null;
     TempoFim.value = null;
 };
 
@@ -479,8 +513,9 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="cpf">CPF</label>
-                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99"
-                                        :unmask="true" />
+                                    <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true"
+                                        :invalid="!!errors.CPF" @blur="retardedasschatgpt" />
+                                    <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="rg">RG</label>
@@ -493,7 +528,9 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="email">E-mail</label>
-                                    <InputText id="email" v-model="funcionario.email" />
+                                    <InputText id="email" v-model="funcionario.email" :invalid="!!errors.email"
+                                        @blur="validateEmail" />
+                                    <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                     <label for="perfil">Centro de Custo</label>
@@ -596,29 +633,10 @@ const atualizarFuncionario = async () => {
                                     label="Excluir" icon="pi pi-trash" severity="danger"
                                     @click="deleteFuncionarioDialog = true" />
                                 <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario" />
+                                    label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
                                 <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2"
-                                    label="Atualizar" icon="pi pi-refresh" severity="primary"
-                                    @click="atualizarFuncionario" />
+                                    label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
                             </div>
-
-                            <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog"
-                                style="width: 400px" :modal="true" :closable="false">
-                                <div class="confirmation-content">
-                                    <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                    <span class="">
-                                        Você tem certeza que deseja deletar o funcionário <b>{{
-                                            funcionario.id_funcionario }}</b> - <b>{{
-                                                funcionario.nome }}</b> ?</span>
-                                </div>
-                                <template #footer>
-                                    <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false"
-                                        class="p-button-text" />
-                                    <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario"
-                                        class="p-button-text" />
-                                </template>
-                            </Dialog>
-
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
@@ -705,6 +723,20 @@ const atualizarFuncionario = async () => {
                 <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
             </template>
         </Dialog>
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px"
+            :modal="true" :closable="false">
+            <div class="confirmation-content">
+                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                <span class="">
+                    Você tem certeza que deseja deletar o funcionário <b>{{
+                        funcionario.id_funcionario }}</b> - <b>{{
+                            funcionario.nome }}</b> ?</span>
+            </div>
+            <template #footer>
+                <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
+                <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario" class="p-button-text" />
+            </template>
+        </Dialog>
     </div>
 </template>
 <style>
@@ -712,5 +744,9 @@ const atualizarFuncionario = async () => {
     height: 20px;
     width: auto;
     margin-left: 5px;
+}
+
+.p-error {
+    color: red;
 }
 </style>
