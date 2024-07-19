@@ -31,7 +31,7 @@ const login = async () => {
             router.push({ name: 'Dashboard' });
         }
     } catch (err) {
-        error.value = err.response?.data?.message || err.message;
+        error.value = err.response?.data;
     }
 };
 </script>
@@ -80,11 +80,11 @@ const login = async () => {
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Senha:</label>
                                 <input type="password" v-model="password" name="senha" id="senha" class="formstyle"
                                     placeholder="Digite a sua senha" autocomplete="on">
-                            </div>
+                            </div> 
+                            <div v-if="error" class="div-error"><small  class="p-error">{{ error }}</small></div>
                             <button id="btn_button"
                                 class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm"
                                 @click.prevent="login">LOGIN</button>
-                                <div v-if="error" class="error">{{ error }}</div>
                             <h6 class="mt-3 text-center">
                                 <a href="#" @click.prevent="forgotPassword = true"
                                     class="text-blue-500 font-semibold hover:text-orange-500">Esqueceu sua senha?</a>
@@ -118,7 +118,7 @@ const login = async () => {
 </template>
 
 
-<style>
+<style scoped>
 @media (max-width: 768px) {
     .colunaesquerda {
         display: none;
@@ -167,11 +167,13 @@ const login = async () => {
     display: none;
 }
 
-label.erro {
+.p-error {
     color: red;
-    font-weight: 450;
+    font-weight: bold;
 }
-
+.div-error {
+ margin-bottom: 1.25rem;   
+}
 .login-button {
     transition: all 0.5s ease;
     border: none;
