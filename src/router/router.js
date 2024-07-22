@@ -94,6 +94,11 @@ const router = createRouter({
                     component: () => import('@/views/cadastros/funcao.vue')
                 },
                 {
+                    path: '/cadastros/planta',
+                    name: 'Cadastro de Plantas',
+                    component: () => import('@/views/cadastros/planta.vue')
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')

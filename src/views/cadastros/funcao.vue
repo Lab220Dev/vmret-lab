@@ -34,7 +34,7 @@ const fetchFuncao = async () => {
         ListaFuncao.value = response.data;
 
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao buscar Funções e Diretorias:', error);
     }
 };
 const adicionarFuncao = async () => {
@@ -53,7 +53,7 @@ const adicionarFuncao = async () => {
         resetForm();
 
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao buscar Funções e Diretorias:', error);
     }
 };
 const atualizarFuncao = async () => {
@@ -62,7 +62,7 @@ const atualizarFuncao = async () => {
         ...funcao 
     };
     try {
-        const response = await axios.post('/cdc/atualizar', data, {
+        const response = await axios.post('/funcao/atualizar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -72,7 +72,7 @@ const atualizarFuncao = async () => {
         resetForm();
 
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao buscar Funções e Diretorias:', error);
     }
 };
 const onRowSelect = (event) => {

@@ -58,7 +58,7 @@ const model = ref([
                     { label: 'Centro de Custo', to :'/cadastros/cdc' , disabled:false},
                     { label: 'Setor/Diretoria', to :'' , disabled:true},
                     { label: 'Função/Nivel Hierarquico', to :'/cadastros/funcao' , disabled:false},
-                    { label: 'Planta', to :'' , disabled:true},
+                    { label: 'Planta', to :'/cadastros/planta' , disabled:false},
                     { label: 'Produtos', to :'/cadastros/produtos' , disabled:false},
                 ]
             },
