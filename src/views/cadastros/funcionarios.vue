@@ -293,7 +293,7 @@ watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
         loadFuncionarios();
-        visible.value = false;
+        editVisible.value = false;
     }
 });
 
@@ -611,7 +611,7 @@ const atualizarFuncionario = async () => {
                             <div class="grid justify-content-end flex-wrap mt-8">
                                 <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
                                 <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
-                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
+                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">

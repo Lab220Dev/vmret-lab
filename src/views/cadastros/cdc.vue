@@ -61,6 +61,7 @@ const adicionarCentro = async () => {
         loadCentroCusto();
         active.value = 0;
         resetForm();
+        
     } catch (error) {
         console.error('Erro ao adicionar centro de custo:', error);
     }
@@ -128,6 +129,7 @@ const handleRowSelection = async (event) => {
 onMounted(() => {
     loadCentroCusto();
 });
+
 </script>
 
 <template>
@@ -172,7 +174,7 @@ onMounted(() => {
 
                         <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
 
-                        <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
+                        <Dialog header="Deletar Centro de Custo" v-model:visible="deleteCentroDialog" style="width: 400px" :modal="true" :closable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">
