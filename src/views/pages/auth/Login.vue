@@ -37,7 +37,7 @@ const login = async () => {
 </script>
 
 <template>
-    <Splitter class="flex justify-content-center align-items-center min-h-screen" style="height: 300px">
+    <Splitter class=" flex justify-content-center align-items-center min-h-screen" style="height: 300px">
         <SplitterPanel
             class="colunaesquerda flex-column h-screen justify-content-center align-items-center text-left m-0"
             :size="65">
@@ -164,7 +164,7 @@ const login = async () => {
 
 
 .p-splitter-gutter {
-    display: none;
+    display: none !important; /* Esconde o separador */
 }
 
 .p-error {

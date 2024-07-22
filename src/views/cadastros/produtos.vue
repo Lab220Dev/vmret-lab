@@ -61,13 +61,14 @@ const setImageIfValid = async (image, targetRef) => {
 const onRowSelect = async (event) => {
     produto = event.data;
     const { imagem2, imagem3, imagem4 } = produto;
-    const filenames = [imagem2, imagem3, imagem4].filter(filename => filename !== '');
+    const filenames = [imagem2, imagem3, imagem4].filter((filename) => filename !== '');
     await setImageIfValid(produto.imagem1, imagePrinc);
     await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
     const secondaryImages = await getImagens(filenames);
     imageUrls.value = secondaryImages;
     visible.value = true;
     active.value = 1;
+    loadProdutos();
 };
 
 const loadProdutos = async () => {
@@ -82,8 +83,8 @@ const loadProdutos = async () => {
         });
         ListaProdutos.value = response.data;
         ListaProdutos.value.forEach(async (produto) => {
-        produto.imagemUrl = await getImagem(produto.imagem1);
-    });
+            produto.imagemUrl = await getImagem(produto.imagem1);
+        });
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
     }
@@ -203,8 +204,8 @@ const updateProduto = async () => {
             const fileExtension = file.name.split('.').pop();
             const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
 
-            formData.append(`file_secundario_${index}`, file); 
-            formData.append(`imagem${index + 2}`, nomeArquivoSecundario); 
+            formData.append(`file_secundario_${index}`, file);
+            formData.append(`imagem${index + 2}`, nomeArquivoSecundario);
         });
     }
 
@@ -225,7 +226,6 @@ const updateProduto = async () => {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
     }
 };
-
 
 const getImagem = async (filename) => {
     if (filename === '') {
@@ -271,6 +271,15 @@ const getImagens = async (filenames) => {
     }
 };
 
+/*resetar informações e botões*/
+watch(active, (newIndex, oldIndex) => {
+    if (newIndex !== oldIndex && newIndex === 0) {
+        resetForm();
+        loadProdutos();
+        visible.value = false;
+    }
+});
+
 const resetForm = () => {
     produto = {
         codigo: '',
@@ -302,14 +311,13 @@ const handleRowSelection = async (event) => {
 onMounted(async () => {
     await loadProdutos();
     await fetchIdPlanta();
-
 });
 </script>
 
 <template>
     <div class="card">
         <TabView v-model:activeIndex="active">
-            <TabPanel header="Listar Produto">
+            <TabPanel header="Listar Produtos">
                 <div class="col-12">
                     <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column header="Imagem" class="col-3">
@@ -327,7 +335,7 @@ onMounted(async () => {
             <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="p-fluid formgrid grid">
-                        <div class="card col-12 ">
+                        <div class="card col-12">
                             <!--form de cadastro de novo produto-->
                             <div class="p-fluid m-0 formgrid grid p-2">
                                 <div class="field lg:col-6 md:col-6 sm:col-6">
@@ -385,9 +393,9 @@ onMounted(async () => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button  v-if="visible" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
-                    <Button  v-if="visible" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button  v-if="!visible" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
+                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
 
                 <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
@@ -414,32 +422,28 @@ onMounted(async () => {
     resize: none;
 }
 
-
 @media (max-width: 1024px) {
-.text-center{
-margin:2px;
+    .text-center {
+        margin: 2px;
+    }
 }
-} 
 
 .field {
     padding: 4.5px;
 }
 
 .titulo {
-white-space: pre-wrap;
-text-align: center; 
+    white-space: pre-wrap;
+    text-align: center;
 }
 
 @media (max-width: 580px) {
-.field {
-        flex: 0 0 100%; 
-        max-width: 100%; 
-        margin-bottom: 1rem; 
-        width: 100%; 
-        margin:1px
-    
+    .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        width: 100%;
+        margin: 1px;
+    }
 }
-}
-
 </style>
-

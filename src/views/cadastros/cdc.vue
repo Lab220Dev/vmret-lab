@@ -3,25 +3,35 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+
 const active = ref(0);
 const store = useAuthStore();
 const toast = useToast();
-const centroCusto = ref([])
-const editVisible = ref(false);
+const centroCusto = ref([]);
+const visible = ref(false);
+const ListaCentro = ref([]);
+const deleteCentroDialog = ref(false);
+
 let cdc = reactive({
     nome: '',
     codigo: ''
-})
-const submitForm = () => {
+});
 
-    if (editVisible.value) {
+const onRowSelect = async (event) => {
+    cdc = event.data;
+    visible.value = true;
+    active.value = 1;
+    loadCentroCusto();
+};
+
+const submitForm = () => {
+    if (visible.value) {
         atualizarCDC();
     } else {
         adicionarCentro();
     }
-
 };
-const fetchCentroCusto = async () => {
+const loadCentroCusto = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
@@ -32,15 +42,15 @@ const fetchCentroCusto = async () => {
             }
         });
         centroCusto.value = response.data;
-
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao listar centros de custo:', error);
     }
 };
+
 const adicionarCentro = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        ...cdc 
+        ...cdc
     };
     try {
         const response = await axios.post('/cdc/adicionar', data, {
@@ -48,18 +58,41 @@ const adicionarCentro = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        fetchCentroCusto();
+        loadCentroCusto();
         active.value = 0;
         resetForm();
-
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao adicionar centro de custo:', error);
     }
 };
+
+const deleteCentro = async () => {
+    let data = { id_centro_custo: cdc.id_centro_custo };
+    try {
+        await axios.post('/cdc/deleteCentro', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        // const index = ListaCentro.value.findIndex((f) => f.id_centro_custo === cdc.id_centro_custo);
+        // if (index !== -1) {
+        //     ListaCentro.value.splice(index, 1);
+        // }
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Centro Deletado', life: 3000 });
+        deleteCentroDialog.value = false;
+        loadCentroCusto();
+        active.value = 0;
+        resetForm();
+    } catch {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o centro de custo', life: 3000 });
+    }
+    active.value = 0;
+};
+
 const atualizarCDC = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        ...cdc 
+        ...cdc
     };
     try {
         const response = await axios.post('/cdc/atualizar', data, {
@@ -67,27 +100,34 @@ const atualizarCDC = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        fetchCentroCusto();
+        loadCentroCusto();
         active.value = 0;
         resetForm();
-
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao atualizar centros de custo:', error);
     }
 };
-const onRowSelect = (event) => {
-    cdc = { ...event.data };
-    active.value = 1;
-    editVisible.value = true;
-};
-onMounted(() => {
-    fetchCentroCusto();
+
+/*resetar informações e botões*/
+watch(active, (newIndex, oldIndex) => {
+    if (newIndex !== oldIndex && newIndex === 0) {
+        resetForm();
+        loadCentroCusto();
+        visible.value = false;
+    }
 });
-const resetForm = () =>{
-    cdc.nome ='',
-    cdc.codigo='',
-    cdc.id_centro_custo=''
-}
+
+const resetForm = () => {
+    (cdc.nome = ''), (cdc.codigo = ''), (cdc.id_centro_custo = '');
+};
+
+const handleRowSelection = async (event) => {
+    await onRowSelect(event);
+};
+
+onMounted(() => {
+    loadCentroCusto();
+});
 </script>
 
 <template>
@@ -95,31 +135,56 @@ const resetForm = () =>{
         <div class="col-12">
             <div class="card">
                 <TabView v-model:activeIndex="active">
-                    <TabPanel header="Lista de Centro de Custo">
-                        <DataTable :value="centroCusto" tableStyle="min-width: 50rem" :rowHover="true" stripedRows
-                            dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <TabPanel header="Listar Centros de Custo">
+                        <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 50rem" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                             <Column field="id_centro_custo" header="Código"></Column>
-                            <Column field="nome" header="Nome"></Column>
+                            <Column field="nome" header="Centro de Custo (Nome)"></Column>
                         </DataTable>
                     </TabPanel>
-                    <TabPanel header="Adicionar de Centro de Custo">
+                    <TabPanel header="Adicionar Centro de Custo" v-model:activeIndex="active">
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid">
                                     <div class="field lg:col-12 md:col-6 sm:col-4">
-                                        <label for="nome">Nome do Centro de Custo</label>
-                                        <InputText id="nome" v-model="cdc.nome" required />
+                                        <label for="id_centro_custo">Código:</label>
+                                        <InputText id="id_centro_custo" v-model="cdc.id_centro_custo" required />
                                     </div>
                                     <div class="field lg:col-12 md:col-6 sm:col-4">
-                                        <label for="nome">Codigo do Centro de Custo</label>
-                                        <InputText id="nome" v-model="cdc.codigo" required />
+                                        <label for="nome">Centro de Custo (Nome):</label>
+                                        <InputText id="nome" v-model="cdc.nome" required />
                                     </div>
                                 </div>
-                                <div class="grid justify-content-end flex-wrap">
-                                    <Button label="Adicionar" type="submit" />
+
+                                <!-- <div class="flex justify-content-between mt-5 flex-wrap">
+                                    <div class="flex align-items-center">
+                                        <Button label="Limpar Campos" icon="pi pi-eraser" @click="resetForm" />
+                                    </div> -->
+                                <div class="mr-1 mt-4 grid justify-content-end">
+                                    <!-- <Button label="Adicionar" type="submit" /> -->
+
+                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarCDC" />
+                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
+                                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCentro" />
                                 </div>
+                                <!-- </div> -->
                             </form>
                         </div>
+
+                        <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
+
+                        <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
+                            <div class="confirmation-content">
+                                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                                <span class="">
+                                    Você tem certeza que deseja deletar esse centro de custo? <b>{{ cdc.id_centro_custo }}</b> - <b>{{ cdc.nome }}</b> ?</span
+                                >
+                            </div>
+
+                            <template #footer>
+                                <Button label="Não" icon="pi pi-times" @click="deleteCentroDialog = false" class="p-button-text" />
+                                <Button label="Sim" icon="pi pi-check" @click="deleteCentro" class="p-button-text" />
+                            </template>
+                        </Dialog>
                     </TabPanel>
                 </TabView>
             </div>

@@ -288,11 +288,15 @@ watch(
     },
     { deep: true }
 );
+/*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
+        loadFuncionarios();
+        visible.value = false;
     }
 });
+
 function formatarTempo(time, baseDate = new Date()) {
     const hours = time.hours.toString().padStart(2, '0');
     const minutes = time.minutes.toString().padStart(2, '0');
@@ -469,7 +473,7 @@ const atualizarFuncionario = async () => {
 <template>
     <div class="card">
         <TabView v-model:activeIndex="active">
-            <TabPanel header="Listar Funcionário">
+            <TabPanel header="Listar Funcionários">
                 <div class="col-12">
                     <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
@@ -543,7 +547,7 @@ const atualizarFuncionario = async () => {
                                     <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
-                                <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0  pt-1">
+                                <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="field lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Início</label>
                                         <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
@@ -603,13 +607,12 @@ const atualizarFuncionario = async () => {
                                 <div class="ml-5 lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
                                     <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl" :multiple="false" />
                                 </div>
-                                
                             </div>
-<div class="grid justify-content-end flex-wrap mt-8">
-                                    <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
-                                    <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
-                                    <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
-                                </div>
+                            <div class="grid justify-content-end flex-wrap mt-8">
+                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="handleSubmit" />
+                            </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
@@ -740,14 +743,12 @@ const atualizarFuncionario = async () => {
 }
 
 @media (max-width: 580px) {
-.field {
-        flex: 0 0 100%; 
-        max-width: 100%; 
-        margin-bottom: 1rem; 
-        width: 100%; 
-        margin:1px
-    
+    .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        width: 100%;
+        margin: 1px;
+    }
 }
-}
-
 </style>

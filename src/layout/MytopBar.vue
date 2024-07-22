@@ -53,9 +53,9 @@ const unbindOutsideClickListener = () => {
 const isOutsideClicked = (event) => {
     if (!topbarMenuActive.value) return;
 
-const topbarEl = document.querySelector('.layout-topbar-sair-button');
+    const topbarEl = document.querySelector('.layout-topbar-sair-button');
 
-return !(topbarEl === event.target || topbarEl.contains(event.target));
+    return !(topbarEl === event.target || topbarEl.contains(event.target));
 };
 
 const fazerLogoff = () => {
@@ -108,7 +108,6 @@ const items = ref([
 
 const toggle = (event) => {
     menu.value.toggle(event);
-    
 };
 </script>
 
@@ -119,7 +118,10 @@ const toggle = (event) => {
             <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            <Image :src="imageUrl" width="200" class="mt-12 ml-2" />
+            <!-- Rota para o dash -->
+            <router-link :to="{ name: 'Dashboard' }" class="mt-12 ml-2">
+                <Image :src="imageUrl" width="200" href="/index.html" />
+            </router-link>
         </div>
 
         <!-- sair, usuario e role -->
@@ -134,7 +136,7 @@ const toggle = (event) => {
             <div class="formgrid field ml-2" style="display: flex; flex-direction: column; align-items: flex-start">
                 <h6 class="usuario mt-3 m-0">{{ nome }}</h6>
                 <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
-                <div class="relogio mt-1 mr-0" style="align-self: flex-start;">
+                <div class="relogio mt-1 mr-0" style="align-self: flex-start">
                     <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd"> {{ padZero(minutes) }}:{{ padZero(seconds) }} </vue-countdown>
                 </div>
             </div>
@@ -170,10 +172,11 @@ const toggle = (event) => {
 }
 
 @media (max-width: 767px) {
-    .relogio, .usuario, .role, .pic {
+    .relogio,
+    .usuario,
+    .role,
+    .pic {
         display: none;
     }
-
 }
-
 </style>
