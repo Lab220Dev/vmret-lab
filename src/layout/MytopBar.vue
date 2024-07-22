@@ -53,9 +53,9 @@ const unbindOutsideClickListener = () => {
 const isOutsideClicked = (event) => {
     if (!topbarMenuActive.value) return;
 
-    const topbarEl = document.querySelector('.layout-topbar-sair-button');
+const topbarEl = document.querySelector('.layout-topbar-sair-button');
 
-    return !(topbarEl === event.target || topbarEl.contains(event.target));
+return !(topbarEl === event.target || topbarEl.contains(event.target));
 };
 
 const fazerLogoff = () => {
@@ -64,14 +64,13 @@ const fazerLogoff = () => {
     localStorage.clear();
     sessionStorage.clear();
 
-    document.cookie.split(";").forEach((c) => {
-        document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+    document.cookie.split(';').forEach((c) => {
+        document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
     });
 
-    store.logout(); 
-    router.push({ name: 'login' }); 
+    store.logout();
+    router.push({ name: 'login' });
 };
-
 
 /*const confirmLogoff = () => {
     if (confirm('Deseja realmente efetuar logoff?')) {
@@ -88,7 +87,7 @@ function onCountdownEnd() {
     store.logout();
     router.push({ name: 'login' });
 }
-    
+
 function padZero(value) {
     return String(value).padStart(2, '0');
 }
@@ -109,8 +108,8 @@ const items = ref([
 
 const toggle = (event) => {
     menu.value.toggle(event);
+    
 };
-
 </script>
 
 <template>
@@ -120,29 +119,32 @@ const toggle = (event) => {
             <button class="p-link layout-menu-button layout-topbar-button" @click="onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            <Image :src="imageUrl" width="250" class="mt-12" />
+            <Image :src="imageUrl" width="200" class="mt-12 ml-2" />
         </div>
 
         <!-- sair, usuario e role -->
-        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
-            <i class="pi pi-ellipsis-v">
-            </i>
-            <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
-        </button>
 
-        <div class="flex align-items-center justify-content-end" style="position: relative; flex-grow: 1;">
-            <div class="formgrid flex align-items-center" style="margin-right: 60px;">
-                <div class="mt-3 field col-3">
-                    <Avatar icon="pi pi-user" class="formgrid" size="xlarge" shape="circle" />
-                </div>
-                <div class="formgrid field col-6 ml-3">
-                    <h6 class="usuario mt-3 m-0">{{ nome }}</h6>
-                    <span class='role' style="color: rgba(255,255,255,.5)">{{ role }}</span>
+        <div class="flex align-items-center justify-content-end mt-1" style="flex-grow: 1">
+            <!-- Imagem do usuário -->
+            <div class="mt-3 field pic">
+                <Avatar icon="pi pi-user" class="formgrid" size="xlarge" shape="circle" />
+            </div>
+
+            <!-- Nome, role e relógio -->
+            <div class="formgrid field ml-2" style="display: flex; flex-direction: column; align-items: flex-start">
+                <h6 class="usuario mt-3 m-0">{{ nome }}</h6>
+                <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
+                <div class="relogio mt-1 mr-0" style="align-self: flex-start;">
+                    <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd"> {{ padZero(minutes) }}:{{ padZero(seconds) }} </vue-countdown>
                 </div>
             </div>
-            <!-- Relógio -->
-            <div class="relogio" style="position: absolute; right: 0;">
-                <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd">{{ padZero(minutes) }}:{{ padZero(seconds) }}</vue-countdown>
+
+            <!-- Botão -->
+            <div class="formgrid field mt-2">
+                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
+                    <i class="pi pi-ellipsis-v"></i>
+                </button>
+                <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
             </div>
         </div>
     </div>
@@ -150,32 +152,28 @@ const toggle = (event) => {
 
 <style scoped>
 .relogio {
-    font-size: 20pt;
+    font-size: 10pt;
     font-weight: bold;
-    color: white;
+    color: #ff0000;
     padding-top: 0px;
     margin-left: 0px;
     margin-right: 10px;
 }
 
 .usuario {
-    width: 110px;
+    font-size: 12px;
 }
 
 .role {
     color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
 }
 
-@media (max-width: 768px) {
-    .formgrid {
+@media (max-width: 767px) {
+    .relogio, .usuario, .role, .pic {
         display: none;
     }
+
 }
 
-@media (max-width: 424px) {
-    .relogio {
-        display: none;
-    }
-    
-}
 </style>

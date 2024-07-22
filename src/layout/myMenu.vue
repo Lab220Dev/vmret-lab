@@ -12,7 +12,7 @@ const model = ref([
                 to: '/dashboard'
             },
             {
-                label: 'Relatorios',
+                label: 'Relatórios',
                 icon: 'pi pi-fw pi-list',
                 items: [
                     { label: 'Retiradas Realizadas', to: '/relatorios/retiradasrealizadas', disabled: false },
@@ -47,11 +47,11 @@ const model = ref([
                 label: 'Cadastros',
                 icon: 'pi pi-fw pi-user-plus',
                 items:[
-                    { label: 'Funcionarios', to :'/cadastros/funcionarios' , disabled:false},
-                    { label: 'Usuarios',
+                    { label: 'Funcionários', to :'/cadastros/funcionarios' , disabled:false},
+                    { label: 'Usuários',
                       to :'' ,
                       items:[
-                        {label:'Usuario Web', to:'/cadastros/usuarios/Web', disabled:false},
+                        {label:'Usuário Web', to:'/cadastros/usuarios/Web', disabled:false},
                         {label:'Liberação Avulsa', to:'/cadastros/usuarios/Avulsa', disabled:false},
                         {label:'DM', to:'/cadastros/usuarios/DM', disabled:false},
                       ]},
@@ -59,7 +59,7 @@ const model = ref([
                     { label: 'Setor/Diretoria', to :'' , disabled:true},
                     { label: 'Função/Nivel Hierarquico', to :'/cadastros/funcao' , disabled:false},
                     { label: 'Planta', to :'' , disabled:true},
-                    { label: 'Produto', to :'/cadastros/produtos' , disabled:false},
+                    { label: 'Produtos', to :'/cadastros/produtos' , disabled:false},
                 ]
             },
             
