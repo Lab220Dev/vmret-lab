@@ -11,14 +11,16 @@ const visible = ref(false);
 const deleteFuncaoDialog = ref(false);
 
 let funcao = reactive({
+    id_funcao: '',
     nome: '',
-    codigo: ''
+    id_centro_custo: ''
 });
 
 const onRowSelect = (event) => {
     funcao = event.data;
     visible.value = true;
     active.value = 1;
+    loadFuncao();
 };
 
 const submitForm = () => {
@@ -28,6 +30,7 @@ const submitForm = () => {
         adicionarFuncao();
     }
 };
+
 const loadFuncao = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -131,8 +134,8 @@ onMounted(() => {
         <div class="col-12">
             <div class="card">
                 <TabView v-model:activeIndex="active">
-                    <TabPanel header="Lista de Funções">
-                        <DataTable :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 50rem" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <TabPanel header="Listar Funções">
+                        <DataTable :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                             <Column field="id_funcao" header="Código"></Column>
                             <Column field="nome" header="Função (Nome)"></Column>
                             <Column field="id_centro_custo" header="Centro de Custo (Nome)"></Column>
@@ -142,15 +145,15 @@ onMounted(() => {
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid">
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="field lg:col-12 md:col-4 sm:col-12">
                                         <label for="id_funcao">Código da Função</label>
                                         <InputText id="id_funcao" v-model="funcao.id_funcao" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="field lg:col-12 md:col-4 sm:col-12">
                                         <label for="nome">Função (Nome)</label>
                                         <InputText id="nome" v-model="funcao.nome" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="field lg:col-12 md:col-4 sm:col-12">
                                         <label for="id_centro_custo">Centro de Custo (Nome)</label>
                                         <InputText id="id_centro_custo" v-model="funcao.id_centro_custo" required />
                                     </div>
@@ -169,8 +172,8 @@ onMounted(() => {
                                 <!-- </div> -->
                             </form>
                         </div>
-                        <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
 
+                        <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
                         <Dialog header="Deletar Função" v-model:visible="deleteFuncaoDialog" style="width: 400px" :modal="true" :closable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>

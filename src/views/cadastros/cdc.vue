@@ -14,7 +14,7 @@ const deleteCentroDialog = ref(false);
 
 let cdc = reactive({
     nome: '',
-    codigo: ''
+    id_centro_custo: ''
 });
 
 const onRowSelect = async (event) => {
@@ -31,6 +31,7 @@ const submitForm = () => {
         adicionarCentro();
     }
 };
+
 const loadCentroCusto = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -61,7 +62,6 @@ const adicionarCentro = async () => {
         loadCentroCusto();
         active.value = 0;
         resetForm();
-        
     } catch (error) {
         console.error('Erro ao adicionar centro de custo:', error);
     }
@@ -129,7 +129,6 @@ const handleRowSelection = async (event) => {
 onMounted(() => {
     loadCentroCusto();
 });
-
 </script>
 
 <template>
@@ -138,7 +137,7 @@ onMounted(() => {
             <div class="card">
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar Centros de Custo">
-                        <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 50rem" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                             <Column field="id_centro_custo" header="Código"></Column>
                             <Column field="nome" header="Centro de Custo (Nome)"></Column>
                         </DataTable>
