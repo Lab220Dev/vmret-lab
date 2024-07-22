@@ -600,7 +600,7 @@ const atualizarFuncionario = async () => {
                                     </Fieldset>
                                 </div>
 
-                                <div class="lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
+                                <div class="ml-5 lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
                                     <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl" :multiple="false" />
                                 </div>
                                 
@@ -749,4 +749,5 @@ const atualizarFuncionario = async () => {
     
 }
 }
+
 </style>

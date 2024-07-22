@@ -182,4 +182,17 @@ watch(
 .icon-left {
     margin-right: 0.5rem;
 }
+
+@media (min-width: 1020px){
+.uploaded-image {
+    width: 150px;
+    height: 150px;
+}
+
+.button {
+    width: 150px;
+}
+}
+
+
 </style>
