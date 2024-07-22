@@ -84,6 +84,16 @@ const router = createRouter({
                     component: () => import('@/views/cadastros/usuarios/dm.vue')
                 },
                 {
+                    path: '/cadastros/cdc',
+                    name: 'Cadastro de Centro de Custo',
+                    component: () => import('@/views/cadastros/cdc.vue')
+                },
+                {
+                    path: '/cadastros/funcao',
+                    name: 'Cadastro de Função',
+                    component: () => import('@/views/cadastros/funcao.vue')
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')

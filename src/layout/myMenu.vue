@@ -55,9 +55,9 @@ const model = ref([
                         {label:'Liberação Avulsa', to:'/cadastros/usuarios/Avulsa', disabled:false},
                         {label:'DM', to:'/cadastros/usuarios/DM', disabled:false},
                       ]},
-                    { label: 'Centro de Custo', to :'' , disabled:true},
+                    { label: 'Centro de Custo', to :'/cadastros/cdc' , disabled:false},
                     { label: 'Setor/Diretoria', to :'' , disabled:true},
-                    { label: 'Função/Nivel Hierarquico', to :'' , disabled:true},
+                    { label: 'Função/Nivel Hierarquico', to :'/cadastros/funcao' , disabled:false},
                     { label: 'Planta', to :'' , disabled:true},
                     { label: 'Produto', to :'/cadastros/produtos' , disabled:false},
                 ]
