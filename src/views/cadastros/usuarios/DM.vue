@@ -41,24 +41,24 @@ const saveDMs = () => {
                 <h5>Novo Usuário DM</h5>
                 <div class="p-fluid formgrid grid">
                         <div class="field col-12">
-                            <label for="name">DM</label>
+                            <label for="name">DM:</label>
                             <InputText v-model="DM.nome" id="name" type="text" />
                         </div>
                         <div class="field col-12 md:col-8">
-                            <label for="email">Usuário</label>
+                            <label for="email">Usuário:</label>
                             <InputText v-model="DM.usuario" id="email" />
                         </div>
                         <div class="field col-12 md:col-4">
-                            <label for="status">Status</label>
+                            <label for="status">Status:</label>
                             <Dropdown id="status" v-model="DM.status" :options="status" optionLabel="name"
                                 placeholder="Escolha um"></Dropdown>
                         </div>
                         <div class="field col-12 md:col-6">
-                            <label for="senha">Senha</label>
+                            <label for="senha">Senha:</label>
                             <InputText id="senha" v-model="DM.senha" type="password" />
                         </div>
                         <div class="field col-12 md:col-6">
-                            <label for="senha">Confirmar Senha</label>
+                            <label for="senha">Confirmar Senha:</label>
                             <InputText id="senha" v-model="DM.senha" type="password" />
                         </div>
                         

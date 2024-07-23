@@ -27,20 +27,20 @@ const saveUsuario = () =>{
                 <h5>Novo Usuario de Liberação Avulsa</h5>
                 <div class="p-fluid formgrid grid">
                     <div class="field col-12">
-                        <label for="name">Nome</label>
+                        <label for="name">Nome:</label>
                         <InputText v-model="libAvulsa.nome"id="name" type="text" />
                     </div>
                     <div class="field col-12">
-                        <label for="usuario">Usuário</label>
+                        <label for="usuario">Usuário:</label>
                         <InputText v-model="libAvulsa.usuario"id="usuario" />
                     </div>
                     <div class="field col-12 md:col-4">
-                        <label for="planta">Planta</label>
+                        <label for="planta">Planta:</label>
                         <Dropdown id="planta" v-model="libAvulsa.planta" :options="plantaOptions" optionLabel="nome"
                             placeholder="Escolha um" ></Dropdown>
                     </div>
                     <div class="field col-12 md:col-8">
-                        <label for="senha">Senha</label>
+                        <label for="senha">Senha:</label>
                         <InputText id="senha" v-model="libAvulsa.senha" type="password" />
                     </div>
 

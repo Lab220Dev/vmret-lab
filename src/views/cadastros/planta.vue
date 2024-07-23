@@ -40,7 +40,7 @@ const loadPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/planta/listar', data, {
+        const response = await axios.post('/plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -57,7 +57,7 @@ const adicionarPlanta = async () => {
         ...planta
     };
     try {
-        const response = await axios.post('/planta/adicionar', data, {
+        const response = await axios.post('/plantas/adicionar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -99,7 +99,7 @@ const atualizarPlanta = async () => {
         ...planta
     };
     try {
-        const response = await axios.post('/planta/atualizar', data, {
+        const response = await axios.post('/plantas/atualizar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -146,7 +146,7 @@ onMounted(() => {
             <div class="card">
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Lista de Plantas">
-                        <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 50rem" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                             <Column field="id_planta" header="Planta de Custo"></Column>
                             <Column field="nome" header="Planta(Nome)"></Column>
                         </DataTable>
@@ -160,28 +160,30 @@ onMounted(() => {
                                         <InputText id="id_planta" v-model="planta.id_planta" required />
                                     </div>
                                     <div class="field lg:col-12 md:col-6 sm:col-4">
-                                        <label for="nome">Planta(Nome)</label>
+                                        <label for="nome">Planta (Nome)</label>
                                         <InputText id="nome" v-model="planta.nome" required />
                                     </div>
-                                    <InputSwitch v-model="integração" inputId="switch1" />
-                                    <label for="switch1">Tem Integração?</label>
+                                    <InputSwitch class="ml-3" v-model="integração" inputId="switch1" />
+                                    <label class="ml-2" for="switch1">Tem Integração?</label>
 
-                                    <div v-if="integração" class="mt-4">
-                                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                                            <label for="userid">UserID</label>
-                                            <InputText id="userid" v-model="planta.userId" required />
-                                        </div>
-                                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                                            <label for="senha">Senha</label>
-                                            <InputText id="senha" v-model="planta.senha" required />
-                                        </div>
-                                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                                            <label for="urlapi">URL</label>
-                                            <InputText id="urlapi" v-model="planta.urlapi" required />
-                                        </div>
-                                        <div class="field lg:col-12 md:col-6 sm:col-4">
-                                            <label for="idcliente">IDCliente</label>
-                                            <InputText id="idcliente" v-model="planta.clienteid" required />
+                                    <div v-if="integração" class="card mt-4">
+                                        <div v-if="integração" class="my-3 grid">
+                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                                <label for="userid">UserID</label>
+                                                <InputText id="userid" v-model="planta.userId" required />
+                                            </div>
+                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                                <label for="senha">Senha</label>
+                                                <InputText id="senha" v-model="planta.senha" required />
+                                            </div>
+                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                                <label for="urlapi">URL</label>
+                                                <InputText id="urlapi" v-model="planta.urlapi" required />
+                                            </div>
+                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                                <label for="idcliente">ID Cliente</label>
+                                                <InputText id="idcliente" v-model="planta.clienteid" required />
+                                            </div>
                                         </div>
                                     </div>
                                     
