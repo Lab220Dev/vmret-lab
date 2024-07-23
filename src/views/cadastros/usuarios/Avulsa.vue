@@ -24,8 +24,8 @@ const saveUsuario = () =>{
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5>Novo Usuario de Liberação Avulsa</h5>
-                <div class="p-fluid formgrid grid">
+                <h5 class="mt-2">Novo usuário de liberação avulsa</h5>
+                <div class="mt-6 mx-0 p-fluid formgrid grid">
                     <div class="field col-12">
                         <label for="name">Nome:</label>
                         <InputText v-model="libAvulsa.nome"id="name" type="text" />
@@ -45,7 +45,7 @@ const saveUsuario = () =>{
                     </div>
 
                 <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario"
-                class="m-2" />
+                class="mt-4 mx-3" />
                 </div>
 
             </div>

@@ -7,13 +7,13 @@ const DM = reactive({
     nome: '',
     usuario: '',
     senha: ''
-})
+});
 
 const status = ref([
     { name: 'Ativo', code: 'ativo' },
     { name: 'Inativo', code: 'inativo' }
 ]);
-const confirmar = ref()
+const confirmar = ref();
 const selectedVM = ref([]);
 const DMOptions = ref([
     { nome: 'DM 1', code: 'plt1' },
@@ -23,63 +23,59 @@ const DMOptions = ref([
     { nome: 'DM 5', code: 'plt5' },
     { nome: 'DM 6', code: 'plt6' },
     { nome: 'DM 7', code: 'plt7' },
-    { nome: 'DM 8', code: 'plt8' },
+    { nome: 'DM 8', code: 'plt8' }
 ]);
 
 const saveUsuario = () => {
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB criado', life: 3000 });
-}
+};
 const saveDMs = () => {
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Maquinas Salvas para o Usuario', life: 3000 });
-}
+};
 </script>
 
 <template>
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5>Novo Usuário DM</h5>
-                <div class="p-fluid formgrid grid">
-                        <div class="field col-12">
-                            <label for="name">DM:</label>
-                            <InputText v-model="DM.nome" id="name" type="text" />
-                        </div>
-                        <div class="field col-12 md:col-8">
-                            <label for="email">Usuário:</label>
-                            <InputText v-model="DM.usuario" id="email" />
-                        </div>
-                        <div class="field col-12 md:col-4">
-                            <label for="status">Status:</label>
-                            <Dropdown id="status" v-model="DM.status" :options="status" optionLabel="name"
-                                placeholder="Escolha um"></Dropdown>
-                        </div>
-                        <div class="field col-12 md:col-6">
-                            <label for="senha">Senha:</label>
-                            <InputText id="senha" v-model="DM.senha" type="password" />
-                        </div>
-                        <div class="field col-12 md:col-6">
-                            <label for="senha">Confirmar Senha:</label>
-                            <InputText id="senha" v-model="DM.senha" type="password" />
-                        </div>
-                        
-                        <div class="flex align-items-center mt-4 justify-content-end field col-12">
-                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario"
-                                class="m-2" />
-                        </div>
+                <h5 class="mt-2">Novo usuário DM</h5>
+                <div class="mt-6 mx-0 p-fluid formgrid grid">
+                    <div class="field col-12">
+                        <label for="name">DM:</label>
+                        <InputText v-model="DM.nome" id="name" type="text" />
+                    </div>
+                    <div class="field col-12 md:col-8">
+                        <label for="email">Usuário:</label>
+                        <InputText v-model="DM.usuario" id="email" />
+                    </div>
+                    <div class="field col-12 md:col-4">
+                        <label for="status">Status:</label>
+                        <Dropdown id="status" v-model="DM.status" :options="status" optionLabel="name" placeholder="Escolha um"></Dropdown>
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label for="senha">Senha:</label>
+                        <InputText id="senha" v-model="DM.senha" type="password" />
+                    </div>
+                    <div class="field col-12 md:col-6">
+                        <label for="senha">Confirmar Senha:</label>
+                        <InputText id="senha" v-model="DM.senha" type="password" />
+                    </div>
+
+                    <div class="flex align-items-center mt-4 justify-content-end field col-12">
+                        <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario" class="m-2" />
+                    </div>
                 </div>
                 <div class="col-12">
-                    <DataTable v-model:selection="selectedVM" :value="DMOptions" dataKey="code"
-                        tableStyle="width:100% min-width: 50rem" :size="small">
+                    <DataTable v-model:selection="selectedVM" :value="DMOptions" dataKey="code" tableStyle="width:100% min-width: 50rem" :size="small">
                         <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                        <Column field="code" header="Code" class="col-12 md:col-6" :style="{ width: '30%' }" ></Column>
-                        <Column field="nome" header="Name" class="col-12 md:col-6" :style="{ width: '70%' }" ></Column>
+                        <Column field="code" header="Code" class="col-12 md:col-6" :style="{ width: '30%' }"></Column>
+                        <Column field="nome" header="Name" class="col-12 md:col-6" :style="{ width: '70%' }"></Column>
                     </DataTable>
-                    <div class="col-4">
-                        <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveDMs" class="m-2" />
+                    <div class="flex justify-content-end mt-4">
+                        <Button label="Adicionar" icon="pi pi-check" severity="info" @click="saveDMs" class="mx-3" />
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </template>

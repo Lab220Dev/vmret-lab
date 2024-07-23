@@ -8,7 +8,7 @@ const store = useAuthStore();
 const toast = useToast();
 const ListaPlanta = ref([]);
 const visible = ref(false);
-const integração = ref(false);
+const integracao = ref(false);
 const deletePlantaDialog = ref(false);
 
 let planta = reactive({
@@ -78,13 +78,13 @@ const deletePlanta = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // const index = ListaPlanta.value.findIndex((f) => f.id_Planta_custo === planta.id_Planta_custo);
+        // const index = ListaPlanta.value.findIndex((f) => f.id_Planta === planta.id_Planta);
         // if (index !== -1) {
         //     ListaPlanta.value.splice(index, 1);
         // }
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Planta Deletado', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Planta Deletada', life: 3000 });
         deletePlantaDialog.value = false;
-        loadPlantaCusto();
+        loadPlanta();
         active.value = 0;
         resetForm();
     } catch {
@@ -128,7 +128,7 @@ const resetForm = () => {
     planta.senha = '';
     planta.url = '';
     planta.userId = '';
-    integração.value = false;
+    integracao.value = false;
 };
 
 const handleRowSelection = async (event) => {
@@ -141,64 +141,65 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <TabView v-model:activeIndex="active">
-                    <TabPanel header="Lista de Plantas">
-                        <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                            <Column field="id_planta" header="Planta de Custo"></Column>
-                            <Column field="nome" header="Planta(Nome)"></Column>
-                        </DataTable>
-                    </TabPanel>
-                    <TabPanel header="Adicionar Planta ">
+    <div class="card">
+        <TabView v-model:activeIndex="active">
+            <TabPanel header="Listar Plantas">
+                <div class="col-12">
+                    <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <Column field="id_planta" header="Planta de Custo"></Column>
+                        <Column field="nome" header="Planta(Nome)"></Column>
+                    </DataTable>
+                </div>
+            </TabPanel>
+            <TabPanel header="Adicionar Planta" v-model:activeIndex="active">
+                <div class="grid">
+                    <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid">
                                     <div class="field lg:col-12 md:col-6 sm:col-4">
-                                        <label for="id_planta">Código</label>
+                                        <label for="id_planta">Código:</label>
                                         <InputText id="id_planta" v-model="planta.id_planta" required />
                                     </div>
                                     <div class="field lg:col-12 md:col-6 sm:col-4">
-                                        <label for="nome">Planta (Nome)</label>
+                                        <label for="nome">Planta (Nome):</label>
                                         <InputText id="nome" v-model="planta.nome" required />
                                     </div>
-                                    <InputSwitch class="ml-3" v-model="integração" inputId="switch1" />
-                                    <label class="ml-2" for="switch1">Tem Integração?</label>
+                                    <InputSwitch class="ml-3" v-model="integracao" inputId="switch1" />
+                                    <label class="ml-2" for="switch1">Tem integracao?</label>
 
-                                    <div v-if="integração" class="card mt-4">
-                                        <div v-if="integração" class="my-3 grid">
+                                    <div v-if="integracao" class="card mt-4">
+                                        <div v-if="integracao" class="my-3 grid">
                                             <div class="field lg:col-6 md:col-6 sm:col-4">
-                                                <label for="userid">UserID</label>
+                                                <label for="userid">UserID:</label>
                                                 <InputText id="userid" v-model="planta.userId" required />
                                             </div>
                                             <div class="field lg:col-6 md:col-6 sm:col-4">
-                                                <label for="senha">Senha</label>
+                                                <label for="senha">Senha:</label>
                                                 <InputText id="senha" v-model="planta.senha" required />
                                             </div>
                                             <div class="field lg:col-6 md:col-6 sm:col-4">
-                                                <label for="urlapi">URL</label>
+                                                <label for="urlapi">URL:</label>
                                                 <InputText id="urlapi" v-model="planta.urlapi" required />
                                             </div>
                                             <div class="field lg:col-6 md:col-6 sm:col-4">
-                                                <label for="idcliente">ID Cliente</label>
+                                                <label for="idcliente">ID Cliente:</label>
                                                 <InputText id="idcliente" v-model="planta.clienteid" required />
                                             </div>
                                         </div>
                                     </div>
-                                    
                                 </div>
                                 <!-- <div class="flex justify-content-between mt-5 flex-wrap">
                                     <div class="flex align-items-center">
                                         <Button label="Limpar Campos" icon="pi pi-eraser" @click="resetForm" />
                                     </div> -->
-                                    <div class="mr-1 mt-4 grid justify-content-end">
-                                        <!-- <Button label="Adicionar" type="submit" /> -->
+                                <div class="mr-1 mt-4 grid justify-content-end">
+                                    <!-- <Button label="Adicionar" type="submit" /> -->
 
-                                        <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
-                                        <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                        <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
-                                    </div>
+                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
+                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
+                                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                </div>
                                 <!-- </div> -->
                             </form>
                         </div>
@@ -217,9 +218,9 @@ onMounted(() => {
                                 <Button label="Sim" icon="pi pi-check" @click="deletePlanta" class="p-button-text" />
                             </template>
                         </Dialog>
-                    </TabPanel>
-                </TabView>
-            </div>
-        </div>
+                    </div>
+                </div>
+            </TabPanel>
+        </TabView>
     </div>
 </template>

@@ -17,7 +17,7 @@ const model = ref([
                 items: [
                     { label: 'Retiradas Realizadas', to: '/relatorios/retiradasrealizadas', disabled: false },
                     { label: 'Estoques da DM', to: '/relatorios/estoquedm', disabled: false },
-                    { label: 'Itens Mais Retirados', to: '', disabled: true },
+                    { label: 'Itens Mais Retirados', to: 'relatorios/itemsmaisretirados', disabled: false },
                     { label: 'Retirada Avulsas por Exceções/Voucher', to: '', disabled: true },
                     { label: 'Histórico de Abastecimento', to: '', disabled: true },
                     { label: 'Status DM', to: '/relatorios/statusdm', disabled: false },
@@ -56,7 +56,7 @@ const model = ref([
                         {label:'DM', to:'/cadastros/usuarios/DM', disabled:false},
                       ]},
                     { label: 'Centros de Custo', to :'/cadastros/cdc' , disabled:false},
-                    { label: 'Setor/Diretoria', to :'' , disabled:true},
+                    { label: 'Setor/Diretoria', to :'/cadastros/setor' , disabled:true},
                     { label: 'Função/Nível Hierárquico', to :'/cadastros/funcao' , disabled:false},
                     { label: 'Plantas', to :'/cadastros/planta' , disabled:false},
                     { label: 'Produtos', to :'/cadastros/produtos' , disabled:false},

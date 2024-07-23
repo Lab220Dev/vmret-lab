@@ -132,17 +132,20 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <TabView v-model:activeIndex="active">
-                    <TabPanel header="Listar Centros de Custo">
-                        <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                            <Column field="id_centro_custo" header="Código"></Column>
-                            <Column field="nome" header="Centro de Custo (Nome)"></Column>
-                        </DataTable>
-                    </TabPanel>
-                    <TabPanel header="Adicionar Centro de Custo" v-model:activeIndex="active">
+    <div class="card">
+        <TabView v-model:activeIndex="active">
+            <TabPanel header="Listar Centros de Custo">
+                <div class="col-12">
+                    <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <Column field="id_centro_custo" header="Código"></Column>
+                        <Column field="nome" header="Centro de Custo (Nome)"></Column>
+                    </DataTable>
+                </div>
+            </TabPanel>
+
+            <TabPanel header="Adicionar Centro de Custo" v-model:activeIndex="active">
+                <div class="grid">
+                    <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid">
@@ -186,9 +189,9 @@ onMounted(() => {
                                 <Button label="Sim" icon="pi pi-check" @click="deleteCentro" class="p-button-text" />
                             </template>
                         </Dialog>
-                    </TabPanel>
-                </TabView>
-            </div>
-        </div>
+                    </div>
+                </div>
+            </TabPanel>
+        </TabView>
     </div>
 </template>

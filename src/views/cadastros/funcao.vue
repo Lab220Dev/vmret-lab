@@ -130,31 +130,33 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <TabView v-model:activeIndex="active">
-                    <TabPanel header="Listar Funções">
-                        <DataTable :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                            <Column field="id_funcao" header="Código"></Column>
-                            <Column field="nome" header="Função (Nome)"></Column>
-                            <Column field="id_centro_custo" header="Centro de Custo (Nome)"></Column>
-                        </DataTable>
-                    </TabPanel>
-                    <TabPanel header="Adicionar Função ">
+    <div class="card">
+        <TabView v-model:activeIndex="active">
+            <TabPanel header="Listar Funções">
+                <div class="col-12">
+                    <DataTable :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <Column field="id_funcao" header="Código"></Column>
+                        <Column field="nome" header="Função (Nome)"></Column>
+                        <Column field="id_centro_custo" header="Centro de Custo (Nome)"></Column>
+                    </DataTable>
+                </div>
+            </TabPanel>
+            <TabPanel header="Adicionar Função" v-model:activeIndex="active">
+                <div class="grid">
+                    <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid">
                                     <div class="field lg:col-12 md:col-4 sm:col-12">
-                                        <label for="id_funcao">Código da Função</label>
+                                        <label for="id_funcao">Código da Função:</label>
                                         <InputText id="id_funcao" v-model="funcao.id_funcao" required />
                                     </div>
                                     <div class="field lg:col-12 md:col-4 sm:col-12">
-                                        <label for="nome">Função (Nome)</label>
+                                        <label for="nome">Função (Nome):</label>
                                         <InputText id="nome" v-model="funcao.nome" required />
                                     </div>
                                     <div class="field lg:col-12 md:col-4 sm:col-12">
-                                        <label for="id_centro_custo">Centro de Custo (Nome)</label>
+                                        <label for="id_centro_custo">Centro de Custo (Nome):</label>
                                         <InputText id="id_centro_custo" v-model="funcao.id_centro_custo" required />
                                     </div>
                                 </div>
@@ -165,9 +167,9 @@ onMounted(() => {
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- <Button label="Adicionar" type="submit" /> -->
 
-                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarCDC" />
-                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
-                                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCentro" />
+                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncao" />
+                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" />
+                                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncao" />
                                 </div>
                                 <!-- </div> -->
                             </form>
@@ -187,9 +189,9 @@ onMounted(() => {
                                 <Button label="Sim" icon="pi pi-check" @click="deleteFuncao" class="p-button-text" />
                             </template>
                         </Dialog>
-                    </TabPanel>
-                </TabView>
-            </div>
-        </div>
+                    </div>
+                </div>
+            </TabPanel>
+        </TabView>
     </div>
 </template>

@@ -89,6 +89,11 @@ const router = createRouter({
                     component: () => import('@/views/cadastros/cdc.vue')
                 },
                 {
+                    path: '/cadastros/setor',
+                    name: 'cadastro de Setor',
+                    component: () => import('@/views/cadastros/setor.vue')
+                },
+                {
                     path: '/cadastros/funcao',
                     name: 'Cadastro de Função',
                     component: () => import('@/views/cadastros/funcao.vue')

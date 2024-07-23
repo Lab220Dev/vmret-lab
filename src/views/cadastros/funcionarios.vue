@@ -489,67 +489,67 @@ const atualizarFuncionario = async () => {
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="field lg:col-8 md:col-6 sm:col-12">
-                                    <label for="name">Nome</label>
+                                    <label for="name">Nome:</label>
                                     <InputText v-model="funcionario.nome" id="name" type="text"></InputText>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="matricula">Matrícula</label>
+                                    <label for="matricula">Matrícula:</label>
                                     <InputText id="matricula" v-model="funcionario.matricula" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="Hash">Hash 1</label>
+                                    <label for="Hash">Hash 1:</label>
                                     <InputText disabled id="Hash" v-model="funcionario.biometria" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="Hash2">Hash 2</label>
+                                    <label for="Hash2">Hash 2:</label>
                                     <InputText disabled id="Hash2" v-model="funcionario.biometria2" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="DataAdmissao">Data de Admissão</label>
+                                    <label for="DataAdmissao">Data de Admissão:</label>
                                     <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="cpf">CPF</label>
+                                    <label for="cpf">CPF:</label>
                                     <InputMask v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="rg">RG</label>
+                                    <label for="rg">RG:</label>
                                     <InputMask id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="ctps">CTPS</label>
+                                    <label for="ctps">CTPS:</label>
                                     <InputMask id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="email">E-mail</label>
+                                    <label for="email">E-mail:</label>
                                     <InputText id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="perfil">Centro de Custo</label>
+                                    <label for="perfil">Centro de Custo:</label>
                                     <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="planta">Planta</label>
+                                    <label for="planta">Planta:</label>
                                     <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="setor">Setor/Diretoria</label>
+                                    <label for="setor">Setor/Diretoria:</label>
                                     <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label class="ajustetexto" for="funcao">Função/Nível Hierárquico</label>
+                                    <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
                                     <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
-                                    <label for="status">Status</label>
+                                    <label for="status">Status:</label>
                                     <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="field lg:col-6 md:col-6 sm:col-6">
-                                        <label for="inicio">Hora Início</label>
+                                        <label for="inicio">Hora Início:</label>
                                         <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
@@ -557,7 +557,7 @@ const atualizarFuncionario = async () => {
                                         </VueDatePicker>
                                     </div>
                                     <div class="field lg:col-6 md:col-6 sm:col-6">
-                                        <label for="inicio">Hora Fim</label>
+                                        <label for="inicio">Hora Fim:</label>
                                         <VueDatePicker id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
@@ -566,7 +566,7 @@ const atualizarFuncionario = async () => {
                                     </div>
 
                                     <Fieldset
-                                        legend="Selecione os dias que o Funcionário poderá retirar os
+                                        legend="Selecione os dias que o funcionário poderá retirar os
                                         Itens:"
                                         class="p-1 lg:col-12 md:col-12 sm:col-12"
                                     >
@@ -617,7 +617,7 @@ const atualizarFuncionario = async () => {
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
+                                        <DataTable class="" :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
@@ -625,9 +625,9 @@ const atualizarFuncionario = async () => {
                                         </DataTable>
                                     </TabPanel>
                                     <TabPanel header="Itens do Funcionario">
-                                        <Button label="Adicionar Itens" @click="visible = true" />
+                                        <Button class="m-1" label="Adicionar Itens" @click="visible = true" />
                                         <!--data table que exibe os items adicionados-->
-                                        <DataTable :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem" stripedRows dataKey="sku">
+                                        <DataTable class="mt-3" :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem" stripedRows dataKey="sku">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
