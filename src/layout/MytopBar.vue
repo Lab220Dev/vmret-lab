@@ -142,7 +142,7 @@ const toggle = (event) => {
             </div>
 
             <!-- Botão -->
-            <div class="formgrid field mt-2">
+            <div class="formgrid mt-2">
                 <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
                     <i class="pi pi-ellipsis-v"></i>
                 </button>

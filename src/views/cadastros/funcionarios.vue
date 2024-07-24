@@ -288,6 +288,7 @@ watch(
     },
     { deep: true }
 );
+
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -609,9 +610,10 @@ const atualizarFuncionario = async () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
-                                <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
                                 <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
+                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+
+                                <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
@@ -667,11 +669,11 @@ const atualizarFuncionario = async () => {
         <Dialog v-model:visible="visible" modal header="Adicionar Itens do Funcionário">
             <div class="grid">
                 <div class="col-12">
-                    <label for="Produto" class="font-semibold col-2">Produto</label>
+                    <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
                     <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
-                    <label for="Quantidade" class="font-semibold w-6rem">Quantidade</label>
+                    <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
                     <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
