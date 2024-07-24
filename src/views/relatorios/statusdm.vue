@@ -87,7 +87,7 @@ const format = (date) => {
 <template>
     <div class="card p-fluid formgrid">
         <!-- Header com a Seleção de Dms -->
-        <div class="flex flex-row gap-3 mb-5">
+        <div class="flex mt-3 flex-row gap-3 mb-5">
             <Dropdown 
                 id="dm" 
                 v-model="relatorio.statusdm" 

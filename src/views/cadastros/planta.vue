@@ -147,7 +147,7 @@ onMounted(() => {
                 <div class="col-12">
                     <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column field="id_planta" header="Planta de Custo"></Column>
-                        <Column field="nome" header="Planta(Nome)"></Column>
+                        <Column field="nome" header="Planta (Nome)"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
@@ -166,7 +166,7 @@ onMounted(() => {
                                         <InputText id="nome" v-model="planta.nome" required />
                                     </div>
                                     <InputSwitch class="ml-3" v-model="integracao" inputId="switch1" />
-                                    <label class="ml-2" for="switch1">Tem integracao?</label>
+                                    <label class="ml-2" for="switch1">Tem integração?</label>
 
                                     <div v-if="integracao" class="card mt-4">
                                         <div v-if="integracao" class="my-3 grid">
