@@ -3,71 +3,6 @@ import { ref,onMounted } from 'vue';
 import { useAuthStore } from '@/store/authStore';
 import AppMenuItem from './AppMenuItem.vue';
 
-const model2 = ref([
-    {
-        items: [
-            {
-                label: 'Dashboard',
-                icon: 'pi pi-fw pi-chart-pie',
-                to: '/dashboard'
-            },
-            {
-                label: 'Relatórios',
-                icon: 'pi pi-fw pi-list',
-                items: [
-                    { label: 'Retiradas Realizadas', to: '/relatorios/retiradasrealizadas', disabled: false },
-                    { label: 'Estoques da DM', to: '/relatorios/estoquedm', disabled: false },
-                    { label: 'Itens Mais Retirados', to: '', disabled: true },
-                    { label: 'Retirada Avulsas por Exceções/Voucher', to: '', disabled: true },
-                    { label: 'Historico de Abastecimento', to: '', disabled: true },
-                    { label: 'Status DM', to: '/relatorios/statusdm', disabled: false },
-                    { label: 'Fichas Retiradas', to: '', disabled: true },
-                    { label: 'Log', to: '', disabled: true },
-                ]
-            },
-            {
-                label: 'Configurações',
-                icon: 'pi pi-fw pi-cog',
-                items: [
-                    { label: 'Lista de DM', to: '', disabled: true },
-                    { label: 'Liberação Avulsa', to: '', disabled: true },
-                    { label: 'Tema', to: '', disabled: true }
-                ]
-            },
-            {label: 'Importações',icon: 'pi pi-fw pi-upload',to: '', disabled: true },
-            {
-                label: 'EndPoints',
-                icon: 'pi pi-fw pi-cloud',
-                items:[
-                    { label: 'Entrada', to :'' , disabled:true},
-                    { label: 'Saida', to :'' , disabled:true},
-                ]
-            },
-            {
-                label: 'Cadastros',
-                icon: 'pi pi-fw pi-user-plus',
-                items:[
-                    { label: 'Funcionários', to :'/cadastros/funcionarios' , disabled:false},
-                    { label: 'Usuários',
-                      to :'' ,
-                      items:[
-                        {label:'Usuário Web', to:'/cadastros/usuarios/Web', disabled:false},
-                        {label:'Liberação Avulsa', to:'/cadastros/usuarios/Avulsa', disabled:false},
-                        {label:'DM', to:'/cadastros/usuarios/DM', disabled:false},
-                      ]},
-                    { label: 'Centro de Custo', to :'/cadastros/cdc' , disabled:false},
-                    { label: 'Setor/Diretoria', to :'' , disabled:true},
-                    { label: 'Função/Nivel Hierarquico', to :'/cadastros/funcao' , disabled:false},
-                    { label: 'Planta', to :'/cadastros/planta' , disabled:false},
-                    { label: 'Produtos', to :'/cadastros/produtos' , disabled:false},
-                ]
-            },
-            
-        ]
-    },
-
-
-]);
 const store = useAuthStore();
 const model= ref([{items:[]}])
 
@@ -78,9 +13,11 @@ const buildMenu = () => {
         }
     ];
 };
+
 onMounted(() => {
     buildMenu();
 });
+
 </script>
 
 <template>
