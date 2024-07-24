@@ -160,7 +160,7 @@ onMounted(() => {
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <div class="field mt-4 lg:col-2 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -209,12 +209,12 @@ onMounted(() => {
                         <Column field="ProdutoSKU" sortable header="CA"></Column>
                     </DataTable> -->
                 <!-- </div> -->
-                <!-- <Card v-if="!show">
+                <Card v-if="!show">
                     <template #title>{{ selectedItem.dm }}</template>
                     <template #content>
                         <Button type="button" label="Voltar" icon="pi pi-check" severity="info" @click="voltar" />
                     </template>
-                </Card> -->
+                </Card>
             </div>
         </div>
     </div>
