@@ -6,7 +6,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { ref, onMounted } from 'vue';
 import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore.js';
-
+import { toRaw } from 'vue';
 const store = useAuthStore();
 const toast = useToast();
 const retiradas = ref([]);
@@ -64,7 +64,7 @@ const buscar = async () => {
     }
 };
 const onRowSelect = (event) => {
-    show.value =true
+    show.value = true
     selectedItem = event.data.Detalhes
 };
 const voltar = () => {
@@ -80,15 +80,32 @@ const generateCSV = (data) => {
 };
 
 const exportCSV = () => {
-    const csvContent = generateCSV(retiradas.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'RetiradasRealizadas.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (Array.isArray(retiradas.value)) {
+        // Agrega detalhes de cada produto
+        const detalhesAgregados = retiradas.value.flatMap(produto => {
+            if (Array.isArray(produto.Detalhes)) {
+                return produto.Detalhes;
+            } else {
+                console.warn(`Detalhes não é um array para o produto ${produto.ProdutoID}`);
+                return [];
+            }
+        });
+
+        // Gera o conteúdo CSV
+        const csvContent = generateCSV(detalhesAgregados);
+
+        // Cria um Blob e link para download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'Items_Mais_Retiradas.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        console.error('retiradas.value não é um array.');
+    }
 };
 const exportJSON = () => {
     const jsonContent = JSON.stringify(retiradas.value, null, 2);
@@ -207,7 +224,7 @@ onMounted(() => {
     <div class="card">
         <div class="form">
             <div class="grid mx-1 px-1">
-                <div class="p-0 m-0 p-fluid formgrid grid col-12" >
+                <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
@@ -263,7 +280,7 @@ onMounted(() => {
                 <!--  datatable do relatorio -->
                 <div class="datatable-wrapper">
                     <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
-                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover  @rowSelect="onRowSelect"
+                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover @rowSelect="onRowSelect"
                         :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']" selectionMode="single"
                         :tableStyle="{ width: '100%' }" ref="dt">
                         <template #header>
