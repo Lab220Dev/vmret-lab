@@ -26,7 +26,7 @@ const login = async () => {
             senha: password.value,
         });
         if (response.status === 200) {
-            authStore.login({ token: response.data.token, usuario: response.data.Usuario });
+            authStore.login({ token: response.data.token, usuario: response.data.Usuario, menu: response.data.items});
             countdownStore.startCountdown(60* 60*1000);
             router.push({ name: 'Dashboard' });
         }

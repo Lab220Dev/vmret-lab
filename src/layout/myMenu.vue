@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-
+import { ref,onMounted } from 'vue';
+import { useAuthStore } from '@/store/authStore';
 import AppMenuItem from './AppMenuItem.vue';
 
-const model = ref([
+const model2 = ref([
     {
         items: [
             {
@@ -17,9 +17,9 @@ const model = ref([
                 items: [
                     { label: 'Retiradas Realizadas', to: '/relatorios/retiradasrealizadas', disabled: false },
                     { label: 'Estoques da DM', to: '/relatorios/estoquedm', disabled: false },
-                    { label: 'Itens Mais Retirados', to: 'relatorios/itemsmaisretirados', disabled: false },
+                    { label: 'Itens Mais Retirados', to: '', disabled: true },
                     { label: 'Retirada Avulsas por Exceções/Voucher', to: '', disabled: true },
-                    { label: 'Histórico de Abastecimento', to: '', disabled: true },
+                    { label: 'Historico de Abastecimento', to: '', disabled: true },
                     { label: 'Status DM', to: '/relatorios/statusdm', disabled: false },
                     { label: 'Fichas Retiradas', to: '', disabled: true },
                     { label: 'Log', to: '', disabled: true },
@@ -51,14 +51,14 @@ const model = ref([
                     { label: 'Usuários',
                       to :'' ,
                       items:[
-                        {label:'Usuários Web', to:'/cadastros/usuarios/Web', disabled:false},
+                        {label:'Usuário Web', to:'/cadastros/usuarios/Web', disabled:false},
                         {label:'Liberação Avulsa', to:'/cadastros/usuarios/Avulsa', disabled:false},
                         {label:'DM', to:'/cadastros/usuarios/DM', disabled:false},
                       ]},
-                    { label: 'Centros de Custo', to :'/cadastros/cdc' , disabled:false},
-                    { label: 'Setor/Diretoria', to :'/cadastros/setor' , disabled:true},
-                    { label: 'Função/Nível Hierárquico', to :'/cadastros/funcao' , disabled:false},
-                    { label: 'Plantas', to :'/cadastros/planta' , disabled:false},
+                    { label: 'Centro de Custo', to :'/cadastros/cdc' , disabled:false},
+                    { label: 'Setor/Diretoria', to :'' , disabled:true},
+                    { label: 'Função/Nivel Hierarquico', to :'/cadastros/funcao' , disabled:false},
+                    { label: 'Planta', to :'/cadastros/planta' , disabled:false},
                     { label: 'Produtos', to :'/cadastros/produtos' , disabled:false},
                 ]
             },
@@ -68,6 +68,19 @@ const model = ref([
 
 
 ]);
+const store = useAuthStore();
+const model= ref([{items:[]}])
+
+const buildMenu = () => {
+    model.value = [
+        {
+            items: store.menuItems
+        }
+    ];
+};
+onMounted(() => {
+    buildMenu();
+});
 </script>
 
 <template>
