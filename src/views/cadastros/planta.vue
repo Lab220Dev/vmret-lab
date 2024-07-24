@@ -145,7 +145,7 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
-                    <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column field="id_planta" header="Planta de Custo"></Column>
                         <Column field="nome" header="Planta(Nome)"></Column>
                     </DataTable>
@@ -203,8 +203,7 @@ onMounted(() => {
                                 <!-- </div> -->
                             </form>
                         </div>
-
-                        <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
+                        
                         <Dialog header="Deletar Planta" v-model:visible="deletePlantaDialog" style="width: 400px" :modal="true" :closable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
