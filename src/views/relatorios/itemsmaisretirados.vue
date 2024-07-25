@@ -7,6 +7,8 @@ import { ref, onMounted } from 'vue';
 import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore.js';
 import { toRaw } from 'vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const store = useAuthStore();
 const toast = useToast();
 const retiradas = ref([]);
@@ -52,6 +54,7 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
+        loading.value = true
         const response = await axios.post("relatorioItems/relatorio", data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -61,6 +64,8 @@ const buscar = async () => {
         console.log(Array.isArray(retiradas.value));
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 const onRowSelect = (event) => {
@@ -318,7 +323,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
-
+    <LoadingSpinner v-if="loading" />
 </template>
 <style>
 .card {

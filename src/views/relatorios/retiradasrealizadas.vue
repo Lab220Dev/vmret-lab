@@ -6,6 +6,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const store = useAuthStore();
 const toast = useToast();
@@ -52,6 +53,7 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
+        loading.value = true
         const response = await axios.post('relatorioRetiRe/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -60,6 +62,8 @@ const buscar = async () => {
         retiradas.value = response.data;
     } catch (error) {
         console.error('Erro ao buscar retiradas:', error);
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 const voltar = () => {
@@ -292,6 +296,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <LoadingSpinner v-if="loading" />
 </template>
 <style>
 .card {

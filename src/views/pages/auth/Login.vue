@@ -5,7 +5,9 @@ import { useRouter } from 'vue-router'
 import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore';
 import { useCountdownStore } from '@/store/countdown';
+import LoadingModal from '@/components/LoadingModal.vue';
 
+const isLoading = ref(false);
 const router = useRouter()
 const username = ref('');
 const password = ref('');
@@ -20,6 +22,8 @@ function resetPassword() {
     forgotPassword.value = false;
 }
 const login = async () => {
+    isLoading.value = true;
+    error.value = '';
     try {
         const response = await axios.post('/login', {
             email: username.value,
@@ -30,13 +34,16 @@ const login = async () => {
             countdownStore.startCountdown(60* 60*1000);
             router.push({ name: 'Dashboard' });
         }
-    } catch (err) {
-        error.value = err.response?.data;
+    }catch (err) {
+        error.value = err.response?.data || 'Erro desconhecido';
+    } finally {
+        isLoading.value = false;
     }
 };
 </script>
 
 <template>
+    <LoadingModal :isLoading="isLoading" />
     <Splitter class=" flex justify-content-center align-items-center min-h-screen" style="height: 300px">
         <SplitterPanel
             class="colunaesquerda flex-column h-screen justify-content-center align-items-center text-left m-0"

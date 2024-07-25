@@ -9,6 +9,7 @@ import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import { isValid as validateCPF } from 'cpf-validator';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const store = useAuthStore();
 const toast = useToast();
 const selectedFile = ref(null);
@@ -82,6 +83,7 @@ const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
 const item = ref({});
+const loading = ref(false);
 
 const SalvarProduto = () => {
     if (!(itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
@@ -147,6 +149,7 @@ const loadFuncionarios = async () => {
         id_cliente: store.userIdCliente
     };
     try {
+        loading.value = true;
         const response = await axios.post('/funcionarios/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -155,6 +158,8 @@ const loadFuncionarios = async () => {
         ListaFuncionarios.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
+    }finally {
+        loading.value = false; 
     }
 };
 
@@ -170,6 +175,7 @@ const adicionarFuncionario = async () => {
     });
     formData.append('id_cliente', store.userIdCliente);
     try {
+        loading.value = true
         const response = await axios.post('/funcionarios/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -183,6 +189,8 @@ const adicionarFuncionario = async () => {
     } catch (error) {
         console.error('Erro ao adicionar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -383,6 +391,7 @@ onMounted(() => {
 const deleteFuncionario = async () => {
     let data = { id_funcionario: funcionario.id_funcionario };
     try {
+        loading.value = true
         await axios.post('/funcionarios/deleteFuncionario', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -399,6 +408,8 @@ const deleteFuncionario = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -449,6 +460,7 @@ const atualizarFuncionario = async () => {
     });
 
     try {
+        loading.value = true       
         // Faz a requisição PUT para atualizar o funcionário
         const response = await axios.put(`/funcionarios/atualizar`, formData, {
             headers: {
@@ -467,6 +479,8 @@ const atualizarFuncionario = async () => {
         // Em caso de erro, exibe um toast de erro
         console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 </script>
@@ -707,6 +721,7 @@ const atualizarFuncionario = async () => {
                 <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario" class="p-button-text" />
             </template>
         </Dialog>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 <style>
