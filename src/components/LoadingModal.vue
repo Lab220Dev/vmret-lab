@@ -2,7 +2,8 @@
     <div v-if="isLoading" class="loading-modal">
       <div class="loading-container">
         <div class="spinner"></div>
-        <p>Carregando...</p>
+        <p>Carregando... Aguarde</p>
+        
       </div>
     </div>
   </template>

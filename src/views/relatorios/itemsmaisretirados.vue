@@ -259,14 +259,12 @@ onMounted(() => {
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                            :enable-time-picker="false" />
+                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                            :enable-time-picker="false" />
+                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <!-- botão de filtrar -->

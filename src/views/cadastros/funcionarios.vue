@@ -521,7 +521,7 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
-                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>

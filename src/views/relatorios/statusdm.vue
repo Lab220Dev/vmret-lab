@@ -104,8 +104,7 @@ const format = (date) => {
                 :showOnFocus="false" 
                 :format="format" 
                 locale="pt-BR" 
-                cancelText="Cancelar" 
-                selectText="Selecionar" 
+                auto-apply
                 :enable-time-picker="false" 
             />
         </div>
