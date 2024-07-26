@@ -242,47 +242,48 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <div class="form">
-            <div class="grid mx-1 px-1">
+            <div class="grid mt-3 mx-1 px-1">
+                <h5 class="my-4 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
-                            optionValue="value" ref="dropdown1" />
+                            optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
-                            optionValue="value" ref="dropdown2"/>
+                            optionValue="value" placeholder="Todos"ref="dropdown2"/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
-                            optionLabel="label" optionValue="value" ref="dropdown3"/>
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3"/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
-                            optionValue="value" ref="dropdown4"/>
+                            optionValue="value" placeholder="Todos" ref="dropdown4"/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                            optionLabel="label" optionValue="value" ref="dropdown5"/>
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5"/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker1"
-                            @open="handleDatepickerOpen"/>
+                            @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
-                            @open="handleDatepickerOpen"/>
+                            @open="handleDatepickerOpen"placeholder="Selecione uma data final"/>
                     </div>
                     <div class="field lg:col-3  md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
@@ -316,7 +317,7 @@ onMounted(() => {
                         </template>
                         <template #empty> Nenhuma retirada realizada </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="quantidade_no_periodo" sortable header="Quant" class="text-center"></Column>
+                        <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
                         <Column field="ProdutoSKU" sortable header="CA"></Column>
                     </DataTable>
                     <Card v-if="show">
@@ -326,11 +327,10 @@ onMounted(() => {
                                 :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>
                                 <Column field="Data" sortable header="Data"></Column>
-                                <Column field="Quantidade" sortable header="Quant">
+                                <Column field="Quantidade" sortable header="Quantidade">
                                 </Column>
                                 <Column field="ProdutoSKU" sortable header="SKU"></Column>
                             </DataTable>
-                            <Button type="button" label="Voltar" icon="pi pi-check" severity="info" @click="voltar" />
                         </template>
                     </Card>
                 </div>

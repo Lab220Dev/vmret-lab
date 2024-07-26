@@ -3,6 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+
 const active = ref(0);
 const store = useAuthStore();
 const toast = useToast();
@@ -78,10 +79,6 @@ const deletePlanta = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // const index = ListaPlanta.value.findIndex((f) => f.id_Planta === planta.id_Planta);
-        // if (index !== -1) {
-        //     ListaPlanta.value.splice(index, 1);
-        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Planta Deletada', life: 3000 });
         deletePlantaDialog.value = false;
         loadPlanta();
@@ -112,7 +109,6 @@ const atualizarPlanta = async () => {
     }
 };
 
-/*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
@@ -141,7 +137,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
@@ -156,54 +152,47 @@ onMounted(() => {
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid">
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                <div class="p-fluid formgrid grid m-0 p-0">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_planta">Código:</label>
-                                        <InputText id="id_planta" v-model="planta.id_planta" required />
+                                        <InputText class="my-2" id="id_planta" v-model="planta.id_planta" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Planta (Nome):</label>
-                                        <InputText id="nome" v-model="planta.nome" required />
+                                        <InputText class="my-2" id="nome" v-model="planta.nome" required />
                                     </div>
-                                    <InputSwitch class="ml-3" v-model="integracao" inputId="switch1" />
-                                    <label class="ml-2" for="switch1">Tem integração?</label>
+                                    <InputSwitch class="grid mt-3 ml-3" v-model="integracao" inputId="switch1" />
+                                    <label class="mt-3 ml-4" for="switch1">Tem integração?</label>
 
                                     <div v-if="integracao" class="card mt-4">
                                         <div v-if="integracao" class="my-3 grid">
-                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                            <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="userid">UserID:</label>
-                                                <InputText id="userid" v-model="planta.userId" required />
+                                                <InputText class="my-2" id="userid" v-model="planta.userId" required />
                                             </div>
-                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                            <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="senha">Senha:</label>
-                                                <InputText id="senha" v-model="planta.senha" required />
+                                                <InputText class="my-2" id="senha" v-model="planta.senha" required />
                                             </div>
-                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                            <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="urlapi">URL:</label>
-                                                <InputText id="urlapi" v-model="planta.urlapi" required />
+                                                <InputText class="my-2" id="urlapi" v-model="planta.urlapi" required />
                                             </div>
-                                            <div class="field lg:col-6 md:col-6 sm:col-4">
+                                            <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="idcliente">ID Cliente:</label>
-                                                <InputText id="idcliente" v-model="planta.clienteid" required />
+                                                <InputText class="my-2" id="idcliente" v-model="planta.clienteid" required />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- <div class="flex justify-content-between mt-5 flex-wrap">
-                                    <div class="flex align-items-center">
-                                        <Button label="Limpar Campos" icon="pi pi-eraser" @click="resetForm" />
-                                    </div> -->
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <!-- <Button label="Adicionar" type="submit" /> -->
-
-                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
-                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
+                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
+                                    <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
                                 </div>
-                                <!-- </div> -->
                             </form>
                         </div>
-                        
+
                         <Dialog header="Deletar Planta" v-model:visible="deletePlantaDialog" style="width: 400px" :modal="true" :closable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
@@ -223,3 +212,40 @@ onMounted(() => {
         </TabView>
     </div>
 </template>
+
+<style scoped>
+.overflow-scroll {
+    overflow: scroll;
+    resize: none;
+}
+
+@media (max-width: 1024px) {
+    .text-center {
+        margin: 2px;
+    }
+}
+
+.field {
+    padding: 4.5px;
+}
+
+.buttons {
+    width: 200px;
+}
+
+.titulo {
+    white-space: pre-wrap;
+    text-align: center;
+}
+
+@media (max-width: 580px) {
+    .full {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        width: 100%;
+        margin: 1px;
+    }
+}
+
+</style>

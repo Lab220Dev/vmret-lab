@@ -179,43 +179,39 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card p-fluid formgrid">
-        <div class="form grid mt-3">
-            <!-- Header com a Seleção de Dms -->
-            <div class="field lg:col-4 md:col-6 sm:col-6">
-                <label for="dm">DM:</label>
-                <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value"
-                    ref="dropdown1" />
-            </div>
-            <div class="field lg:col-4 md:col-6 sm:col-6">
-                <label for="usuario">Usuário:</label>
-                <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label"
-                    optionValue="value" ref="dropdown2" />
-            </div>
-            <div class="field lg:col-4 md:col-6 sm:col-6">
-                <label for="funcionario">Funcionário:</label>
-                <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                    optionLabel="label" optionValue="value" ref="dropdown3" />
-            </div>
-            <div class="field lg:col-4 md:col-6 sm:col-6">
-                <label for="operacao">Operação:</label>
-                <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
-                    optionValue="value" ref="dropdown4" />
-            </div>
-            <div class="field lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">Data Inicial:</label>
-                <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                    :format="format" locale="pt-BR" :enable-time-picker="false" @open="handleDatepickerOpen" />
-            </div>
-            <div class="field lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">Data Final:</label>
-                <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                    :format="format" locale="pt-BR" @open="handleDatepickerOpen"
-                    :enable-time-picker="false" />
-            </div>
-        </div>
-        <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM"
-            :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+    <div class="card vh p-fluid formgrid">
+        <div class="form">
+            <h5 class="my-4 text-2xl">Log</h5>
+        <div class="grid mt-3 mx-1 p-1">
+        <!-- Header com a Seleção de Dms -->
+        
+        <div class="field lg:col-4 md:col-6 sm:col-6">
+                        <label for="dm">DM:</label>
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"/>
+                    </div>
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                        <label for="usuario">Usuário:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                    </div>
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                        <label for="funcionario">Funcionário:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2"/>
+                    </div>
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                        <label for="operacao">Operação:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
+                    </div>
+        <div class="field lg:col-4 md:col-6 sm:col-6">
+                        <label for="perfil">Data Inicial:</label>
+                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" @open="handleDatepickerOpen":enable-time-picker="false" placeholder="Selecione uma data inicial"/>
+                    </div>
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                        <label for="perfil">Data Final:</label>
+                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" @open="handleDatepickerOpen" :enable-time-picker="false" placeholder="Selecione uma data final"/>
+                    </div>
+                </div>
+                </div>
+        <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="DM" header="DM"></Column>
             <Column field="Data" header="Data"></Column>
             <Column field="usuario" header="Usuário"></Column>
@@ -224,3 +220,43 @@ onMounted(() => {
         </DataTable>
     </div>
 </template>
+<style>
+.card {
+    overflow-x: auto;
+}
+
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
+.drop {
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
+}
+</style>

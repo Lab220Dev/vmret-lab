@@ -94,8 +94,9 @@ const handleDatepickerOpen = () => {
 </script>
 
 <template>
-    <div class="card p-fluid formgrid">
+    <div class="card vh p-fluid formgrid">
         <!-- Header com a Seleção de Dms -->
+        <h5 class="my-4 text-2xl">Status DM</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
             <Dropdown 
                 id="dm" 
@@ -116,6 +117,7 @@ const handleDatepickerOpen = () => {
                 locale="pt-BR" 
                 auto-apply
                 :enable-time-picker="false" 
+                placeholder="Selecione uma data"
                 @open="handleDatepickerOpen"
             />
         </div>
@@ -131,7 +133,39 @@ const handleDatepickerOpen = () => {
     overflow-x: auto;
 }
 
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
 .drop {
     width: 100%;
 }
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
+}
 </style>
+
