@@ -1,19 +1,11 @@
 <template>
     <div class="flex align-items-center justify-content-center flex-column">
-        <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none" :multiple="multiple" accept="image/png" />
-        <div v-if="!multiple && !imageData.length" class="image-container">
-            <img :src="externalImages || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
+        <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none" accept="image/png" />
+        <div class="image-container">
+            <img :src="imageData || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
+            <button v-if="imageData" class="remove-button" @click="removeImage">×</button>
         </div>
-        <div v-else>
-            <div v-for="(image, index) in imageData" :key="index" class="image-container">
-                <img :src="image || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
-                <button v-if="image" class="remove-button" @click="removeImage(index)">×</button>
-            </div>
-            <div v-if="imageData.length === 0" class="image-container">
-                <img :src="placeholderImage" alt="Placeholder Image" class="uploaded-image" />
-            </div>
-        </div>
-        <button class="button" @click="triggerFileInput"><i class="pi pi-upload icon-left"></i> Enviar {{ multiple ? 'Imagens' : 'uma Imagem' }}</button>
+        <button class="button" @click="triggerFileInput"><i class="pi pi-upload icon-left"></i> Enviar Imagem</button>
     </div>
 </template>
 
@@ -25,22 +17,17 @@ import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     externalImages: {
-        type: [Array, String],
-        default: () => []
-    },
-    multiple: {
-        type: Boolean,
-        default: false
+        type: [String, Object],
+        default: ''
     }
 });
 
 const emit = defineEmits(['fileSelected']);
 
 const fileInput = ref(null);
-const imageData = ref([]);
+const imageData = ref(null);
 const placeholderImage = imageUrl;
 const toast = useToast();
-const maxImages = 3;
 const maxSize = 2 * 1024 * 1024;
 
 const triggerFileInput = () => {
@@ -48,60 +35,38 @@ const triggerFileInput = () => {
 };
 
 const handleFileUpload = (event) => {
-    const files = Array.from(event.target.files);
-    if (props.multiple) {
-        if (imageData.value.length + files.length > maxImages) {
-            toast.add({ severity: 'error', summary: 'Erro', detail: 'Você pode carregar no máximo 3 imagens.', life: 3000 });
+    const file = event.target.files[0];
+    if (file) {
+        if (file.type !== 'image/png') {
+            toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} não é um PNG.`, life: 3000 });
             return;
         }
-        files.forEach((file) => {
-            if (file.type !== 'image/png') {
-                toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} não é um PNG.`, life: 3000 });
-                return;
-            }
-            if (file.size <= maxSize) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imageData.value.push(e.target.result);
-                    emit('fileSelected', file);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
-            }
-        });
-    } else {
-        const file = files[0];
-        if (file) {
-            if (file.type !== 'image/png') {
-                toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} não é um PNG.`, life: 3000 });
-                return;
-            }
-            if (file.size <= maxSize) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    imageData.value = [e.target.result];
-                    emit('fileSelected', file);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
-            }
+        if (file.size <= maxSize) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageData.value = e.target.result;
+                emit('fileSelected', file);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
         }
     }
 };
 
-const removeImage = (index) => {
-    imageData.value.splice(index, 1);
+const removeImage = () => {
+    imageData.value = null;
 };
 
 watch(
     () => props.externalImages,
     (newVal) => {
-        if (Array.isArray(newVal)) {
-            imageData.value = newVal.map(img => typeof img === 'string' ? img : `data:${img.mimeType};base64,${img.image}`);
-        } else if (typeof newVal === 'string') {
-            imageData.value = [newVal];
+        if (typeof newVal === 'string') {
+            imageData.value = newVal;
+        } else if (typeof newVal === 'object' && newVal !== null) {
+            imageData.value = `data:${newVal.mimeType};base64,${newVal.image}`;
+        } else {
+            imageData.value = null;
         }
     },
     { immediate: true }
@@ -193,6 +158,4 @@ watch(
     width: 150px;
 }
 }
-
-
 </style>
