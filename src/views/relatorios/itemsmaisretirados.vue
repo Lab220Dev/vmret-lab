@@ -2,11 +2,11 @@
 import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css'
-import { ref, onMounted } from 'vue';
-import axios from '@/axios.js'
+import '@vuepic/vue-datepicker/dist/main.css';
+import { ref, onMounted, nextTick } from 'vue';
+import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
-import { toRaw } from 'vue';
+
 const store = useAuthStore();
 const toast = useToast();
 const retiradas = ref([]);
@@ -19,7 +19,7 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const show = ref(false);
-let selectedItem = ref([]);
+const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
     dm: '',
@@ -36,7 +36,7 @@ const format = (date) => {
     const year = date.getFullYear();
 
     return `${day}/${month}/${year}`;
-}
+};
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
@@ -52,7 +52,7 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        const response = await axios.post("relatorioItems/relatorio", data, {
+        const response = await axios.post('relatorioItems/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -64,25 +64,35 @@ const buscar = async () => {
     }
 };
 const onRowSelect = (event) => {
-    show.value = true
-    selectedItem = event.data.Detalhes
+    show.value = true;
+    selectedItem.value = event.data.Detalhes;
+
+    // Scrolar a tela para o grid de detalhes ao selecionar algum item
+    nextTick(() => {
+        const detailsCard = document.querySelector('.details-card');
+        if (detailsCard) {
+            detailsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
 };
+
 const voltar = () => {
     show.value = false;
     selectedItem.value = {};
 };
+
 const dt = ref(null);
 
 const generateCSV = (data) => {
     const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(row => Object.values(row).join(',')).join('\n');
+    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
     return `${headers}\n${rows}`;
 };
 
 const exportCSV = () => {
     if (Array.isArray(retiradas.value)) {
         // Agrega detalhes de cada produto
-        const detalhesAgregados = retiradas.value.flatMap(produto => {
+        const detalhesAgregados = retiradas.value.flatMap((produto) => {
             if (Array.isArray(produto.Detalhes)) {
                 return produto.Detalhes;
             } else {
@@ -107,6 +117,7 @@ const exportCSV = () => {
         console.error('retiradas.value não é um array.');
     }
 };
+
 const exportJSON = () => {
     const jsonContent = JSON.stringify(retiradas.value, null, 2);
     const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
@@ -118,6 +129,7 @@ const exportJSON = () => {
     link.click();
     document.body.removeChild(link);
 };
+
 const fetchDM = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -136,6 +148,7 @@ const fetchDM = async () => {
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
+
 const fetchIdPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -146,7 +159,6 @@ const fetchIdPlanta = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
         plantas.value = response.data.map(({ id_planta }) => ({
             label: `Planta  ${id_planta}`,
             value: id_planta
@@ -155,6 +167,7 @@ const fetchIdPlanta = async () => {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
+
 const fetchSetorDiretoria = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -173,6 +186,7 @@ const fetchSetorDiretoria = async () => {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
 };
+
 const fetchCentroCusto = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -202,7 +216,7 @@ const fetchFuncionarios = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaFuncionarios.value = response.data.map(funcionario => ({
+        ListaFuncionarios.value = response.data.map((funcionario) => ({
             label: funcionario.nome,
             value: funcionario.id_funcionario
         }));
@@ -227,63 +241,85 @@ onMounted(() => {
                 <h5 class="my-4 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
-                            optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
-                            optionValue="value" placeholder="Todos"/>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
-                            optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
-                            optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                            optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                            :enable-time-picker="false" placeholder="Selecione uma data inicial" />
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            cancelText="Cancelar"
+                            selectText="Selecionar"
+                            :enable-time-picker="false"
+                            placeholder="Selecione uma data inicial"
+                        />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar"
-                            :enable-time-picker="false" placeholder="Selecione uma data final"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            cancelText="Cancelar"
+                            selectText="Selecionar"
+                            :enable-time-picker="false"
+                            placeholder="Selecione uma data final"
+                        />
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
-                            @click="buscar" />
+                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                     </div>
-                    <div class="field lg:col-3  md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
-
                 </div>
                 <!--  datatable do relatorio -->
                 <div class="datatable-wrapper">
-                    <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
-                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover @rowSelect="onRowSelect"
-                        :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']" selectionMode="single"
-                        :tableStyle="{ width: '100%' }" ref="dt">
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="retiradas"
+                        stripedRows
+                        showGridlines
+                        paginator
+                        :rows="10"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        rowHover
+                        @rowSelect="onRowSelect"
+                        :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']"
+                        selectionMode="single"
+                        :tableStyle="{ width: '100%' }"
+                        ref="dt"
+                    >
                         <template #header>
                             <div class="flex justify-content-end">
                                 <IconField iconPosition="left">
@@ -299,26 +335,21 @@ onMounted(() => {
                         <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
                         <Column field="ProdutoSKU" sortable header="CA"></Column>
                     </DataTable>
-                    <Card v-if="show">
+                    <card v-if="show" class="details-card">
                         <template #title>Detalhes do Produto</template>
                         <template #content>
-                            <DataTable :value="selectedItem" stripedRows showGridlines paginator :rows="10"
-                                :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                            <DataTable :value="selectedItem" stripedRows showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>
                                 <Column field="Data" sortable header="Data"></Column>
-                                <Column field="Quantidade" sortable header="Quantidade">
-                                </Column>
+                                <Column field="Quantidade" sortable header="Quantidade"> </Column>
                                 <Column field="ProdutoSKU" sortable header="SKU"></Column>
                             </DataTable>
                         </template>
-                    </Card>
+                    </card>
                 </div>
-
-
             </div>
         </div>
     </div>
-
 </template>
 <style>
 .card {
