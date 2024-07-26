@@ -204,35 +204,37 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
+                <h5 class="my-4 text-2xl">Retiradas Realizadas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
+                    
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos"></Dropdown>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" placeholder="Selecione uma data inicial" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" placeholder="Selecione uma data final" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
@@ -259,7 +261,7 @@ onMounted(() => {
                         rowHover
                         :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
                         :tableStyle="{ width: '100%' }"
-                        ref="dt"
+                        ref="dt" class=""
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>

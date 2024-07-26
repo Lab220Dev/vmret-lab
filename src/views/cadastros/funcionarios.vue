@@ -472,7 +472,7 @@ const atualizarFuncionario = async () => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionários">
                 <div class="col-12">
@@ -610,10 +610,10 @@ const atualizarFuncionario = async () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
-                                <Button v-if="editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
+                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
 
-                                <Button v-if="!editVisible" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                <Button v-if="!editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">

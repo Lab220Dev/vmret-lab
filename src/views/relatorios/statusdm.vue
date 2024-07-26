@@ -87,6 +87,7 @@ const format = (date) => {
 <template>
     <div class="card vh p-fluid formgrid">
         <!-- Header com a Seleção de Dms -->
+        <h5 class="my-4 text-2xl">Status DM</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
             <Dropdown 
                 id="dm" 
@@ -107,6 +108,7 @@ const format = (date) => {
                 cancelText="Cancelar" 
                 selectText="Selecionar" 
                 :enable-time-picker="false" 
+                placeholder="Selecione uma data"
             />
         </div>
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">

@@ -227,7 +227,7 @@ const mockData = [
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <!-- inicio do tabview-->
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Setores">
@@ -242,9 +242,9 @@ const mockData = [
             <!-- fim do listar -->
             <!-- inicio do adicionar-->
             <TabPanel header="Adicionar Setor" v-model:activeIndex="active">
-                <div class="grid">
+                <div class="grid ">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="card vh">
                             <!-- inicio dos campos de texto-->
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
@@ -263,9 +263,9 @@ const mockData = [
                                 </div>
                                 <!-- inicio dos botoes -->
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarSetor" />
-                                    <Button v-if="editVisible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
-                                    <Button v-if="!editVisible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
+                                    <Button v-if="!editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
                                 </div>
                                 <!-- fim-->
                                 <div class="col-12">

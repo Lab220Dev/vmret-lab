@@ -137,7 +137,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
@@ -186,9 +186,9 @@ onMounted(() => {
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
-                                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
+                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
+                                    <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
                                 </div>
                             </form>
                         </div>

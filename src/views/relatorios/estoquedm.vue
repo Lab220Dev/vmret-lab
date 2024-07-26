@@ -27,7 +27,8 @@ onMounted(() => {
 
 <template>
     <div class="card vh ">
-        <div class="mb-5 mt-3">
+        <h5 class="my-4 text-2xl">Estoques da DM</h5>
+        <div class="my-5 mt-3">
             <Dropdown id="dm" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label" optionValue="value" placeholder="Selecione a DM" />
         </div>
 

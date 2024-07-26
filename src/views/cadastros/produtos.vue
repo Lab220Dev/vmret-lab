@@ -315,7 +315,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produtos">
                 <div class="col-12">
@@ -393,9 +393,9 @@ onMounted(async () => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
-                    <Button v-if="visible" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button v-if="!visible" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
+                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button v-if="!visible" style="width: 15%; "class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
 
                 <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">

@@ -169,31 +169,33 @@ onMounted(() => {
 <template>
     <div class="card vh p-fluid formgrid">
         <div class="form">
+            <h5 class="my-4 text-2xl">Log</h5>
         <div class="grid mt-3 mx-1 p-1">
         <!-- Header com a Seleção de Dms -->
+        
         <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="usuario">Usuário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="funcionario">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos"/>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="operacao">Operação:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
                     </div>
         <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" placeholder="Selecione uma data inicial"/>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" placeholder="Selecione uma data final"/>
                     </div>
                 </div>
                 </div>

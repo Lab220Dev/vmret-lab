@@ -139,26 +139,27 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card vh">
+    <div class="card">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
+                <h5 class="my-4 text-2xl">Fichas Retiradas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos"/>
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <div class="field datepicker lg:col-2 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                        <VueDatePicker class=" drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" placeholder="Selecione uma data"/>
                     </div>
                     <div class="field lg:col-2 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                        <VueDatePicker class="datepicker drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" placeholder="Selecione uma data"/>
                     </div>
                     <div class="field lg:col-2 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
@@ -219,9 +220,19 @@ onMounted(() => {
         </div>
     </div>
 </template>
-<style>
+<style scoped>
 .card {
     overflow-x: auto;
+    overflow: visible; /* Permite que os elementos filhos excedam os limites do pai */
+}
+
+.datepicker {
+    position: relative; /* Necessário para o posicionamento absoluto funcionar corretamente */
+}
+
+.vue-datepicker {
+    position: absolute; /* Permite que o DatePicker ultrapasse os limites do grid */
+    z-index: 1050; /* Garante que o DatePicker fique acima de outros elementos */
 }
 
 .datatable-wrapper {
@@ -237,6 +248,9 @@ onMounted(() => {
     width: 100%;
 }
 
+.vue-datepicker {
+    z-index: 1050; /* Assegura que o menu do date picker seja exibido acima de outros elementos */
+}
 @media (max-width: 580px) {
     .form .field {
         flex: 0 0 100%;
