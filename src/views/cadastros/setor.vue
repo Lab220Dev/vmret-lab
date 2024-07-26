@@ -244,7 +244,7 @@ const mockData = [
             <TabPanel header="Adicionar Setor" v-model:activeIndex="active">
                 <div class="grid ">
                     <div class="col-12">
-                        <div class="card vh">
+                        <div class="card">
                             <!-- inicio dos campos de texto-->
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
