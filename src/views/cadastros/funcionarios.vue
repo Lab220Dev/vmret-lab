@@ -85,6 +85,12 @@ const active = ref(0);
 const item = ref({});
 const loading = ref(false);
 
+const dropdown1 = ref(null);
+const dropdown2 = ref(null);
+const dropdown3 = ref(null);
+const dropdown4 = ref(null);
+const dropdown5 = ref(null);
+
 const SalvarProduto = () => {
     if (!(itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
         itemsSelecionadosFuncionario.push(selectedProduct.value);
@@ -483,6 +489,18 @@ const atualizarFuncionario = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+const closeAllDropdowns = () => {
+  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+};
+
+const handleDatepickerOpen = () => {
+  closeAllDropdowns();
+};
 </script>
 
 <template>
@@ -521,7 +539,7 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
-                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" />
+                                    <VueDatePicker v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen"/>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
@@ -543,29 +561,35 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " />
+                                    <Dropdown v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
+                                    <Dropdown v-model="funcionario.id_planta" :options="formatedPlantaOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2"/>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
+                                    <Dropdown v-model="funcionario.id_setor" :options="formatedSetorOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione o Setor" 
+                                    ref="dropdown3"/>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
+                                    <Dropdown v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4"/>
                                 </div>
                                 <div class="field lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                    <Dropdown id="status" v-model="funcionario.status" :options="status" 
+                                    optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="field lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Início:</label>
-                                        <VueDatePicker v-model="TempoInicio" time-picker disable-time-range-validation>
+                                        <VueDatePicker v-model="TempoInicio" time-picker  disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -573,7 +597,7 @@ const atualizarFuncionario = async () => {
                                     </div>
                                     <div class="field lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Fim:</label>
-                                        <VueDatePicker id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                        <VueDatePicker id="inicio" v-model="TempoFim" time-picker  disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>

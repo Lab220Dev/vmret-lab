@@ -11,6 +11,8 @@ const store = useAuthStore();
 const toast = useToast();
 const historico = ref([]);
 const dms = ref([]);
+const dropdown1 = ref(null);
+const dropdown2 = ref(null);
 const plantas = ref([]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -128,7 +130,14 @@ const fetchFuncionarios = async () => {
         console.error('Erro ao carregar usuários:', error);
     }
 };
+const closeAllDropdowns = () => {
+  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+};
 
+const handleDatepickerOpen = () => {
+  closeAllDropdowns();
+};
 onMounted(() => {
     fetchIdPlanta();
     fetchFuncionarios();
@@ -146,21 +155,27 @@ onMounted(() => {
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" 
+                        :options="plantas" optionLabel="label" optionValue="value" 
+                        ref="dropdown1"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" 
+                        :options="ListaFuncionarios" optionLabel="label" optionValue="value"
+                        ref="dropdown2" />
                     </div>
                     <div class="field lg:col-2 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" 
-                        :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" />
+                        :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
+                        @open="handleDatepickerOpen" />
                     </div>
                     <div class="field lg:col-2 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" 
-                        :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" />
+                        :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" 
+                        @open="handleDatepickerOpen"/>
                     </div>
                     <div class="field mt-4 lg:col-2 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->

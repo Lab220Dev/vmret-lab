@@ -9,6 +9,10 @@ import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
 const toast = useToast();
+const dropdown1 = ref(null);
+const dropdown2 = ref(null);
+const dropdown3 = ref(null);
+const dropdown4 = ref(null);
 const historico = ref([]);
 const dms = ref([]);
 const operacao = ref(null);
@@ -122,7 +126,7 @@ const fetchUsuario = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get ('', {
+        const response = await axios.get('', {
             user: user,
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -155,7 +159,15 @@ const fetchFuncionarios = async () => {
         console.error('Erro ao carregar usuários:', error);
     }
 };
+const closeAllDropdowns = () => {
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+};
 
+const handleDatepickerOpen = () => {
+    closeAllDropdowns();
+};
 //falta operação;//
 
 onMounted(() => {
@@ -169,33 +181,41 @@ onMounted(() => {
 <template>
     <div class="card p-fluid formgrid">
         <div class="form grid mt-3">
-        <!-- Header com a Seleção de Dms -->
-        <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" />
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="usuario">Usuário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label" optionValue="value" />
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="funcionario">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" />
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="operacao">Operação:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" />
-                    </div>
-        <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
-                    </div>
-                </div>
-        <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+            <!-- Header com a Seleção de Dms -->
+            <div class="field lg:col-4 md:col-6 sm:col-6">
+                <label for="dm">DM:</label>
+                <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value"
+                    ref="dropdown1" />
+            </div>
+            <div class="field lg:col-4 md:col-6 sm:col-6">
+                <label for="usuario">Usuário:</label>
+                <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label"
+                    optionValue="value" ref="dropdown2" />
+            </div>
+            <div class="field lg:col-4 md:col-6 sm:col-6">
+                <label for="funcionario">Funcionário:</label>
+                <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                    optionLabel="label" optionValue="value" ref="dropdown3" />
+            </div>
+            <div class="field lg:col-4 md:col-6 sm:col-6">
+                <label for="operacao">Operação:</label>
+                <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
+                    optionValue="value" ref="dropdown4" />
+            </div>
+            <div class="field lg:col-4 md:col-6 sm:col-6">
+                <label for="perfil">Data Inicial:</label>
+                <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                    :format="format" locale="pt-BR" :enable-time-picker="false" @open="handleDatepickerOpen" />
+            </div>
+            <div class="field lg:col-4 md:col-6 sm:col-6">
+                <label for="perfil">Data Final:</label>
+                <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                    :format="format" locale="pt-BR" @open="handleDatepickerOpen"
+                    :enable-time-picker="false" />
+            </div>
+        </div>
+        <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM"
+            :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="DM" header="DM"></Column>
             <Column field="Data" header="Data"></Column>
             <Column field="usuario" header="Usuário"></Column>
