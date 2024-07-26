@@ -6,10 +6,11 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
-
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const store = useAuthStore();
 const toast = useToast();
 const active = ref(0);
+const loading = ref(false);
 let plantasoptions = ref([]);
 let formatedPlantaOptions = ref([]);
 const tipoProduto = ref([
@@ -76,6 +77,7 @@ const loadProdutos = async () => {
         id_cliente: store.userIdCliente
     };
     try {
+        loading.value = true
         const response = await axios.post('/produtos/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -87,6 +89,8 @@ const loadProdutos = async () => {
         });
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -141,6 +145,7 @@ const saveProduto = async () => {
     formData.append('id_cliente', store.userIdCliente);
 
     try {
+        loading.value = true
         await axios.post('/produtos/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -155,6 +160,8 @@ const saveProduto = async () => {
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
@@ -162,6 +169,7 @@ const saveProduto = async () => {
 const deleteProduto = async () => {
     let data = { id_produto: produto.id_produto };
     try {
+        loading.value = true
         await axios.post('/produtos/deleteProduto', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -178,6 +186,8 @@ const deleteProduto = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
@@ -210,6 +220,7 @@ const updateProduto = async () => {
     }
 
     try {
+        loading.value = true
         await axios.post('/produtos/atualizar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -224,6 +235,8 @@ const updateProduto = async () => {
     } catch (error) {
         console.error('Erro ao atualizar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -413,6 +426,7 @@ onMounted(async () => {
                 </Dialog>
             </TabPanel>
         </TabView>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 

@@ -2,13 +2,19 @@
 import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted, nextTick } from 'vue';
-import axios from '@/axios.js';
+import '@vuepic/vue-datepicker/dist/main.css'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore.js';
-
+import { toRaw } from 'vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const store = useAuthStore();
 const toast = useToast();
+const dropdown1 = ref(null);
+const dropdown2 = ref(null);
+const dropdown3 = ref(null);
+const dropdown4 = ref(null);
+const dropdown5 = ref(null);
 const retiradas = ref([]);
 const dms = ref([]);
 const ListaFuncionarios = ref(null);
@@ -52,7 +58,8 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        const response = await axios.post('relatorioItems/relatorio', data, {
+        loading.value = true
+        const response = await axios.post("relatorioItems/relatorio", data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -61,6 +68,8 @@ const buscar = async () => {
         console.log(Array.isArray(retiradas.value));
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 const onRowSelect = (event) => {
@@ -224,7 +233,17 @@ const fetchFuncionarios = async () => {
         console.error('Erro ao carregar usuários:', error);
     }
 };
+const closeAllDropdowns = () => {
+  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+};
 
+const handleDatepickerOpen = () => {
+  closeAllDropdowns();
+};
 onMounted(() => {
     fetchDM();
     fetchIdPlanta();
@@ -232,6 +251,7 @@ onMounted(() => {
     fetchFuncionarios();
     fetchCentroCusto();
 });
+
 </script>
 
 <template>
@@ -243,53 +263,40 @@ onMounted(() => {
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
+                            optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
+                            optionValue="value" placeholder="Todos"ref="dropdown2"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
+                            optionValue="value" placeholder="Todos" ref="dropdown4"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker
-                            class="drop"
-                            v-model="relatorio.data_inicio"
-                            showIcon
-                            :showOnFocus="false"
-                            :format="format"
-                            locale="pt-BR"
-                            cancelText="Cancelar"
-                            selectText="Selecionar"
-                            :enable-time-picker="false"
-                            placeholder="Selecione uma data inicial"
-                        />
+                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker1"
+                            @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker
-                            class="drop"
-                            v-model="relatorio.data_final"
-                            showIcon
-                            :showOnFocus="false"
-                            :format="format"
-                            locale="pt-BR"
-                            cancelText="Cancelar"
-                            selectText="Selecionar"
-                            :enable-time-picker="false"
-                            placeholder="Selecione uma data final"
-                        />
+                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
+                            @open="handleDatepickerOpen"placeholder="Selecione uma data final"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
@@ -350,6 +357,7 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <LoadingSpinner v-if="loading" />
 </template>
 <style>
 .card {

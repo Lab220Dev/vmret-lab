@@ -9,6 +9,7 @@ import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import { isValid as validateCPF } from 'cpf-validator';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const store = useAuthStore();
 const toast = useToast();
 const selectedFile = ref(null);
@@ -82,6 +83,13 @@ const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
 const item = ref({});
+const loading = ref(false);
+
+const dropdown1 = ref(null);
+const dropdown2 = ref(null);
+const dropdown3 = ref(null);
+const dropdown4 = ref(null);
+const dropdown5 = ref(null);
 
 const SalvarProduto = () => {
     if (!(itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
@@ -147,6 +155,7 @@ const loadFuncionarios = async () => {
         id_cliente: store.userIdCliente
     };
     try {
+        loading.value = true;
         const response = await axios.post('/funcionarios/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -155,6 +164,8 @@ const loadFuncionarios = async () => {
         ListaFuncionarios.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
+    }finally {
+        loading.value = false; 
     }
 };
 
@@ -170,6 +181,7 @@ const adicionarFuncionario = async () => {
     });
     formData.append('id_cliente', store.userIdCliente);
     try {
+        loading.value = true
         const response = await axios.post('/funcionarios/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -183,6 +195,8 @@ const adicionarFuncionario = async () => {
     } catch (error) {
         console.error('Erro ao adicionar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -383,6 +397,7 @@ onMounted(() => {
 const deleteFuncionario = async () => {
     let data = { id_funcionario: funcionario.id_funcionario };
     try {
+        loading.value = true
         await axios.post('/funcionarios/deleteFuncionario', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -399,6 +414,8 @@ const deleteFuncionario = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -449,6 +466,7 @@ const atualizarFuncionario = async () => {
     });
 
     try {
+        loading.value = true       
         // Faz a requisição PUT para atualizar o funcionário
         const response = await axios.put(`/funcionarios/atualizar`, formData, {
             headers: {
@@ -467,7 +485,21 @@ const atualizarFuncionario = async () => {
         // Em caso de erro, exibe um toast de erro
         console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
+};
+
+const closeAllDropdowns = () => {
+  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+};
+
+const handleDatepickerOpen = () => {
+  closeAllDropdowns();
 };
 </script>
 
@@ -507,7 +539,7 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
-                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
+                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
@@ -529,29 +561,35 @@ const atualizarFuncionario = async () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="formatedPlantaOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="formatedSetorOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione o Setor" 
+                                    ref="dropdown3"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" 
+                                    optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" 
+                                    optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Início:</label>
-                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
+                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker  disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -559,7 +597,7 @@ const atualizarFuncionario = async () => {
                                     </div>
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Fim:</label>
-                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker  disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -707,6 +745,7 @@ const atualizarFuncionario = async () => {
                 <Button label="Sim" icon="pi pi-check" @click="deleteFuncionario" class="p-button-text" />
             </template>
         </Dialog>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 <style>

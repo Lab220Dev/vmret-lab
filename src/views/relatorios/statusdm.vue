@@ -12,6 +12,7 @@ const dms = ref([]);
 const formatedDms = ref([]);
 const selectedDM = ref('');
 const StatusDM = ref([]);
+const dropdown1 = ref(null);
 
 watch(dms, (newValue) => {
     if (newValue) {
@@ -82,6 +83,14 @@ const format = (date) => {
 
     return `${day}/${month}/${year}`;
 };
+
+const closeAllDropdowns = () => {
+  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+};
+
+const handleDatepickerOpen = () => {
+  closeAllDropdowns();
+};
 </script>
 
 <template>
@@ -97,6 +106,7 @@ const format = (date) => {
                 optionValue="value" 
                 placeholder="Selecione uma DM" 
                 class="mr-3 w-full md:w-14rem" 
+                ref="dropdown1"
             />
             <VueDatePicker 
                 class="drop w-full md:w-14rem" 
@@ -105,10 +115,10 @@ const format = (date) => {
                 :showOnFocus="false" 
                 :format="format" 
                 locale="pt-BR" 
-                cancelText="Cancelar" 
-                selectText="Selecionar" 
+                auto-apply
                 :enable-time-picker="false" 
                 placeholder="Selecione uma data"
+                @open="handleDatepickerOpen"
             />
         </div>
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
