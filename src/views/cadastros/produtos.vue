@@ -7,6 +7,7 @@ import imagePlaceholder from '@/assets/images/placeholder4.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const store = useAuthStore();
 const toast = useToast();
 const active = ref(0);
@@ -18,26 +19,27 @@ const tipoProduto = ref([
     { label: 'Insumo', value: 2 },
     { label: 'Consumivel', value: 3 }
 ]);
+
 const selectedFile = ref(null);
+const selectedSecFile = ref(null);
 const selectedInfoFile = ref(null);
-const selectedFilesSecondary = ref([]);
-const imagePrinc = ref('');
-const imageUrls = ref([]);
-const imageInfoAd = ref('');
+
+const imagePrinc = ref(imagePlaceholder);
+const imageSec = ref(imagePlaceholder);
+const imageInfo = ref(imagePlaceholder)
+
 const ListaProdutos = ref([]);
 const deleteProdutoDialog = ref(false);
 const visible = ref(false);
 
-const handleFileSelectedSecondary = (file) => {
-    selectedFilesSecondary.value.push(file);
-};
-
-const handleFilePrefSelected = (file) => {
-    selectedFile.value = file;
-};
-
-const handleFileInfoSelected = (file) => {
-    selectedInfoFile.value = file;
+const handleFileSelected = (file, type) => {
+    if (type === 'principal') {
+        selectedFile.value = file;
+    } else if (type === 'secundaria') {
+        selectedSecFile.value = file;
+    } else if (type === 'info') {
+        selectedInfoFile.value = file;
+    }
 };
 
 let produto = reactive({
@@ -61,12 +63,9 @@ const setImageIfValid = async (image, targetRef) => {
 
 const onRowSelect = async (event) => {
     produto = event.data;
-    const { imagem2, imagem3, imagem4 } = produto;
-    const filenames = [imagem2, imagem3, imagem4].filter((filename) => filename !== '');
     await setImageIfValid(produto.imagem1, imagePrinc);
-    await setImageIfValid(produto.imagemdetalhe, imageInfoAd);
-    const secondaryImages = await getImagens(filenames);
-    imageUrls.value = secondaryImages;
+    await setImageIfValid(produto.imagem2, imageSec);
+    await setImageIfValid(produto.imagemdetalhe, imageInfo);
     visible.value = true;
     active.value = 1;
     loadProdutos();
@@ -117,27 +116,21 @@ const fetchIdPlanta = async () => {
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        // const fileExtension = selectedFile.name.split('.').pop();
         const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
-    }
+    }  
 
     if (selectedInfoFile.value) {
-        // const fileExtension = selectedInfoFile.name.split('.').pop();
         const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
         formData.append('file_info', selectedFile.value);
     }
 
-    if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
-        selectedFilesSecondary.value.forEach((file, index) => {
-            const fileExtension = file.name.split('.').pop();
-            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
-
-            formData.append(`file_secundario_${index}`, file); // Adiciona o arquivo
-            formData.append(`imagem${index + 2}`, nomeArquivoSecundario); // Adiciona o nome do arquivo como um campo separado
-        });
+    if (selectedSecFile.value) {
+        const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`;
+        formData.append('imagem2', nomeArquivoSecundario);
+        formData.append('file_secundario', selectedSecFile.value);
     }
     Object.entries(produto).forEach(([key, value]) => {
         formData.append(key, value);
@@ -175,10 +168,6 @@ const deleteProduto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // const index = ListaProdutos.value.findIndex((f) => f.id_produto === produto.id_produto);
-        // if (index !== -1) {
-        //     ListaProdutos.value.splice(index, 1);
-        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
         deleteProdutoDialog.value = false;
         loadProdutos();
@@ -209,14 +198,9 @@ const updateProduto = async () => {
         formData.append('file_info', selectedInfoFile.value);
     }
 
-    if (selectedFilesSecondary.value && Array.isArray(selectedFilesSecondary.value)) {
-        selectedFilesSecondary.value.forEach((file, index) => {
-            const fileExtension = file.name.split('.').pop();
-            const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${index}.${fileExtension}`;
-
-            formData.append(`file_secundario_${index}`, file);
-            formData.append(`imagem${index + 2}`, nomeArquivoSecundario);
-        });
+    if (selectedSecFile.value) {
+        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`);
+        formData.append('file_secundario', selectedSecFile.value);
     }
 
     try {
@@ -259,32 +243,7 @@ const getImagem = async (filename) => {
     }
 };
 
-const getImagens = async (filenames) => {
-    if (!Array.isArray(filenames) || filenames.length === 0) {
-        return filenames.map(() => imagePlaceholder);
-    }
 
-    try {
-        const response = await axios.post(
-            `image/produtos/imagesAdicionais`,
-            { idcliente: store.userIdCliente, imageNames: filenames },
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
-                }
-            }
-        );
-
-        return response.data.map((imageName) => {
-            return imageName !== '' ? imageName : imagePlaceholder;
-        });
-    } catch (error) {
-        console.error('Erro ao buscar imagens:', error);
-        return filenames.map(() => imagePlaceholder);
-    }
-};
-
-/*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
@@ -310,11 +269,11 @@ const resetForm = () => {
         imagemdetalhe: ''
     };
     selectedFile.value = null;
+    selectedSecFile.value = null;
     selectedInfoFile.value = null;
-    selectedFilesSecondary.value = [];
-    // imagePrinc.value = '';
-    // imageUrls.value = [];
-    // imageInfoAd.value = '';
+    imagePrinc.value = imagePlaceholder;
+    imageSec.value = imagePlaceholder;
+    imageInfo.value = imagePlaceholder;
 };
 
 const handleRowSelection = async (event) => {
@@ -390,15 +349,15 @@ onMounted(async () => {
                                 <!-- Grid de Upload de Imagens -->
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Principal:</h4>
-                                    <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc" :multiple="false" />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'principal')" :externalImages="imagePrinc"  />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Secundária:</h4>
-                                    <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls" :multiple="true" />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'secundaria')" :externalImages="imageSec" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Informações<br />Adicionais:</h4>
-                                    <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd" :multiple="false" />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'info')" :externalImages="imageInfo"  />
                                 </div>
                             </div>
                         </div>

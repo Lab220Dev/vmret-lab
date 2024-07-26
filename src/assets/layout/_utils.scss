@@ -27,5 +27,10 @@
 }
 
 .vh {
-    height: 80vh;
+    height: 80vh !important;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll; //permite rolagem
+    overflow-x: none;
+    box-sizing: border-box;
 }
