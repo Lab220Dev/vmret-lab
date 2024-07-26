@@ -337,53 +337,53 @@ onMounted(async () => {
                     <div class="col-12">
                         <div class="card">
                             <!--form de cadastro de novo produto-->
-                            <div class="p-fluid m-0 formgrid grid p-2">
-                                <div class="field lg:col-6 md:col-6 sm:col-6">
+                            <div class="p-fluid  formgrid grid m-0 p-0">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">SKU:</label>
-                                    <InputText v-model="produto.codigo" id="codigo" type="text" class=""></InputText>
+                                    <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text" ></InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-6">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Nome:</label>
-                                    <InputText v-model="produto.nome" id="nome" type="text"></InputText>
+                                    <InputText class="my-2" v-model="produto.nome" id="nome" type="text"></InputText>
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-6">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Descrição:</label>
-                                    <Textarea v-model="produto.descricao" class="overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.descricao" class="my-2 overflow-scroll" rows="5" cols="30" />
                                 </div>
-                                <div class="field lg:col-6 md:col-6 sm:col-6">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">Especificação:</label>
-                                    <Textarea v-model="produto.especificacoes" class="overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="my-2 overflow-scroll" rows="5" cols="30" />
                                 </div>
-                                <div class="field lg:col-3 md:col-6 sm:col-6">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="tipo">Tipo:</label>
-                                    <Dropdown v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown class="my-2" v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
-                                <div class="field lg:col-3 md:col-6 sm:col-6">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="tipo">Planta:</label>
-                                    <Dropdown v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
+                                    <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
                                 </div>
-                                <div class="field med lg:col-3 md:col-6 sm:col-6">
+                                <div class="full med lg:col-6 md:col-6 sm:col-6">
                                     <label for="UndMedida">Unidade de Medida:</label>
-                                    <InputText v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
+                                    <InputText class="my-2" v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
                                 </div>
-                                <div class="field lg:col-3 md:col-6 sm:col-6">
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="vldDias">Validade:</label>
-                                    <InputNumber v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
+                                    <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
                                 </div>
                             </div>
                         </div>
                         <div class="card p-0 col-12" style="width: 100%">
                             <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
                                 <!-- Grid de Upload de Imagens -->
-                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Principal:</h4>
                                     <ImageUpload @fileSelected="handleFilePrefSelected" :externalImages="imagePrinc" :multiple="false" />
                                 </div>
-                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Imagens<br />Secundárias:</h4>
+                                <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                    <h4 class="titulo">Imagem<br />Secundária:</h4>
                                     <ImageUpload @fileSelected="handleFileSelectedSecondary" :externalImages="imageUrls" :multiple="true" />
                                 </div>
-                                <div class="field lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Informações<br />Adicionais:</h4>
                                     <ImageUpload @fileSelected="handleFileInfoSelected" :externalImages="imageInfoAd" :multiple="false" />
                                 </div>
@@ -428,7 +428,7 @@ onMounted(async () => {
     }
 }
 
-.field {
+.full {
     padding: 4.5px;
 }
 
@@ -438,7 +438,7 @@ onMounted(async () => {
 }
 
 @media (max-width: 580px) {
-    .field {
+    .full {
         flex: 0 0 100%;
         max-width: 100%;
         margin-bottom: 1rem;

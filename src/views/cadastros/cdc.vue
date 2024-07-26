@@ -148,14 +148,14 @@ onMounted(() => {
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid">
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                <div class="p-fluid formgrid grid m-0 p-0">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_centro_custo">Código:</label>
-                                        <InputText id="id_centro_custo" v-model="cdc.id_centro_custo" required />
+                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.id_centro_custo" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Centro de Custo (Nome):</label>
-                                        <InputText id="nome" v-model="cdc.nome" required />
+                                        <InputText class="my-2" id="nome" v-model="cdc.nome" required />
                                     </div>
                                 </div>
 
@@ -195,3 +195,14 @@ onMounted(() => {
         </TabView>
     </div>
 </template>
+<style>
+@media (max-width: 580px) {
+    .full {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        width: 100%;
+        margin: 1px;
+    }
+}
+</style>

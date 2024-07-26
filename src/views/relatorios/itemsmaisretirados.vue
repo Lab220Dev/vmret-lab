@@ -221,9 +221,9 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <div class="form">
-            <div class="grid mx-1 px-1">
+            <div class="grid mt-3 mx-1 px-1">
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3  md:col-6 sm:col-6">
@@ -295,7 +295,7 @@ onMounted(() => {
                         </template>
                         <template #empty> Nenhuma retirada realizada </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="quantidade_no_periodo" sortable header="Quant" class="text-center"></Column>
+                        <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
                         <Column field="ProdutoSKU" sortable header="CA"></Column>
                     </DataTable>
                     <Card v-if="show">
@@ -305,7 +305,7 @@ onMounted(() => {
                                 :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>
                                 <Column field="Data" sortable header="Data"></Column>
-                                <Column field="Quantidade" sortable header="Quant">
+                                <Column field="Quantidade" sortable header="Quantidade">
                                 </Column>
                                 <Column field="ProdutoSKU" sortable header="SKU"></Column>
                             </DataTable>

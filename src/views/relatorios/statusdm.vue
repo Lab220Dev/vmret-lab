@@ -85,7 +85,7 @@ const format = (date) => {
 </script>
 
 <template>
-    <div class="card p-fluid formgrid">
+    <div class="card vh p-fluid formgrid">
         <!-- Header com a Seleção de Dms -->
         <div class="flex mt-3 flex-row gap-3 mb-5">
             <Dropdown 
@@ -121,7 +121,39 @@ const format = (date) => {
     overflow-x: auto;
 }
 
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
 .drop {
     width: 100%;
 }
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
+}
 </style>
+

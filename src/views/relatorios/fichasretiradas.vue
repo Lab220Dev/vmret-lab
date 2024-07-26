@@ -139,7 +139,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
@@ -160,7 +160,7 @@ onMounted(() => {
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
                     </div>
-                    <div class="field mt-4 lg:col-2 md:col-6 sm:col-6">
+                    <div class="field lg:col-2 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -219,3 +219,43 @@ onMounted(() => {
         </div>
     </div>
 </template>
+<style>
+.card {
+    overflow-x: auto;
+}
+
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
+.drop {
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
+}
+</style>

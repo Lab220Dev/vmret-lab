@@ -200,7 +200,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card">
+    <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">

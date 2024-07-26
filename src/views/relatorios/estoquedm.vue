@@ -26,7 +26,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card ">
+    <div class="card vh ">
         <div class="mb-5 mt-3">
             <Dropdown id="dm" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label" optionValue="value" placeholder="Selecione a DM" />
         </div>
@@ -45,5 +45,40 @@ onMounted(() => {
 <style>
 .card {
     overflow-x: auto;
+}
+
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
+.drop {
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
 }
 </style>

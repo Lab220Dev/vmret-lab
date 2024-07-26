@@ -248,17 +248,17 @@ const mockData = [
                             <!-- inicio dos campos de texto-->
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="codigo">Código:</label>
-                                        <InputText id="codigo" v-model="setor.codigo" required />
+                                        <InputText class="my-2" id="codigo" v-model="setor.codigo" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Setor (Nome):</label>
-                                        <InputText id="nome" v-model="setor.nome" required />
+                                        <InputText class="my-2" id="nome" v-model="setor.nome" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">Centro de Custo (Nome):</label>
-                                        <InputText id="id_centro_custo" v-model="setor.centro" required />
+                                        <InputText class="my-2" id="id_centro_custo" v-model="setor.centro" required />
                                     </div>
                                 </div>
                                 <!-- inicio dos botoes -->
@@ -376,7 +376,7 @@ const mockData = [
 }
 
 @media (max-width: 580px) {
-    .field {
+    .full {
         flex: 0 0 100%;
         max-width: 100%;
         margin-bottom: 1rem;

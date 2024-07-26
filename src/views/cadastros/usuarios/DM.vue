@@ -35,33 +35,33 @@ const saveDMs = () => {
 </script>
 
 <template>
-    <div class="grid">
+    <div class="grid h-full">
         <div class="col-12">
             <div class="card">
                 <h5 class="mt-2">Novo usuário DM</h5>
-                <div class="mt-6 mx-0 p-fluid formgrid grid">
-                    <div class="field col-12">
+                <div class="mt-5 mx-0 p-fluid grid">
+                    <div class="full lg:col-12 md:col-12 sm:col-12">
                         <label for="name">DM:</label>
-                        <InputText v-model="DM.nome" id="name" type="text" />
+                        <InputText class="my-2" v-model="DM.nome" id="name" type="text" />
                     </div>
-                    <div class="field col-12 md:col-8">
+                    <div class="full lg:col-8 md:col-9 sm:col-12">
                         <label for="email">Usuário:</label>
-                        <InputText v-model="DM.usuario" id="email" />
+                        <InputText class="my-2" v-model="DM.usuario" id="email" />
                     </div>
-                    <div class="field col-12 md:col-4">
+                    <div class="full lg:col-4 md:col-3 sm:col-12">
                         <label for="status">Status:</label>
-                        <Dropdown id="status" v-model="DM.status" :options="status" optionLabel="name" placeholder="Escolha um"></Dropdown>
+                        <Dropdown class="my-2" id="status" v-model="DM.status" :options="status" optionLabel="name" placeholder="Escolha um"></Dropdown>
                     </div>
-                    <div class="field col-12 md:col-6">
+                    <div class="full lg:col-6 md:col-6 sm:col-12">
                         <label for="senha">Senha:</label>
-                        <InputText id="senha" v-model="DM.senha" type="password" />
+                        <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
                     </div>
-                    <div class="field col-12 md:col-6">
+                    <div class="full lg:col-6 md:col-6 sm:col-12">
                         <label for="senha">Confirmar Senha:</label>
-                        <InputText id="senha" v-model="DM.senha" type="password" />
+                        <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
                     </div>
 
-                    <div class="flex align-items-center mt-4 justify-content-end field col-12">
+                    <div class="flex align-items-center justify-content-end field col-12">
                         <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario" class="m-2" />
                     </div>
                 </div>
@@ -71,11 +71,22 @@ const saveDMs = () => {
                         <Column field="code" header="Code" class="col-12 md:col-6" :style="{ width: '30%' }"></Column>
                         <Column field="nome" header="Name" class="col-12 md:col-6" :style="{ width: '70%' }"></Column>
                     </DataTable>
-                    <div class="flex justify-content-end mt-4">
-                        <Button label="Adicionar" icon="pi pi-check" severity="info" @click="saveDMs" class="mx-3" />
-                    </div>
-                </div>
+                    
+                <div class="flex align-items-center justify-content-end field col-12">
+                        <Button label="Adicionar" icon="pi pi-check" severity="info" @click="saveDMs" class="full mt-4 mr-2" />
+                    </div></div>
             </div>
         </div>
     </div>
 </template>
+<style>
+@media (max-width: 580px) {
+    .full {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        width: 100%;
+        margin: 1px;
+    }
+}
+</style>

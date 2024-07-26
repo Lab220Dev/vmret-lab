@@ -167,8 +167,9 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card p-fluid formgrid">
-        <div class="form grid mt-3">
+    <div class="card vh p-fluid formgrid">
+        <div class="form">
+        <div class="grid mt-3 mx-1 p-1">
         <!-- Header com a Seleção de Dms -->
         <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
@@ -195,6 +196,7 @@ onMounted(() => {
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" cancelText="Cancelar" selectText="Selecionar" :enable-time-picker="false" />
                     </div>
                 </div>
+                </div>
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="DM" header="DM"></Column>
             <Column field="Data" header="Data"></Column>
@@ -204,3 +206,43 @@ onMounted(() => {
         </DataTable>
     </div>
 </template>
+<style>
+.card {
+    overflow-x: auto;
+}
+
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
+.drop {
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
+}
+</style>

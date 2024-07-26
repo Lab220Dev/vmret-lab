@@ -146,18 +146,18 @@ onMounted(() => {
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid">
-                                    <div class="field lg:col-12 md:col-4 sm:col-12">
+                                <div class="p-fluid formgrid grid m-0 p-0">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_funcao">Código da Função:</label>
-                                        <InputText id="id_funcao" v-model="funcao.id_funcao" required />
+                                        <InputText class="my-2" id="id_funcao" v-model="funcao.id_funcao" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-4 sm:col-12">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Função (Nome):</label>
-                                        <InputText id="nome" v-model="funcao.nome" required />
+                                        <InputText class="my-2" id="nome" v-model="funcao.nome" required />
                                     </div>
-                                    <div class="field lg:col-12 md:col-4 sm:col-12">
+                                    <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_centro_custo">Centro de Custo (Nome):</label>
-                                        <InputText id="id_centro_custo" v-model="funcao.id_centro_custo" required />
+                                        <InputText class="my-2" id="id_centro_custo" v-model="funcao.id_centro_custo" required />
                                     </div>
                                 </div>
                                 <!-- <div class="flex justify-content-between mt-5 flex-wrap">

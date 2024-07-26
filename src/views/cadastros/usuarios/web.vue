@@ -4,13 +4,13 @@ import { reactive, ref } from 'vue';
 const toast = useToast();
 
 const usuario = reactive({
-    nome:'',
-    email:'',
-    perfil:'',
-    planta:'',
-    senha:'',
-    Status:''
-})
+    nome: '',
+    email: '',
+    perfil: '',
+    planta: '',
+    senha: '',
+    Status: ''
+});
 const dropdownItems = ref([
     { name: 'Gestor', code: 'gestor' },
     { name: 'Master', code: 'master' },
@@ -24,12 +24,12 @@ const status = ref([
 ]);
 
 const plantaOptions = ref([
-    {nome:'Planta 1', code:'plt1'},
-    {nome:'Planta 2', code:'plt2'}
+    { nome: 'Planta 1', code: 'plt1' },
+    { nome: 'Planta 2', code: 'plt2' }
 ]);
-const saveUsuario = () =>{
+const saveUsuario = () => {
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB criado', life: 3000 });
-}
+};
 </script>
 
 <template>
@@ -37,40 +37,49 @@ const saveUsuario = () =>{
         <div class="col-12">
             <div class="card">
                 <h5 class="mt-2">Novo usuário Web</h5>
-                <div class=" mt-6 mx-0 p-fluid formgrid grid">
-                    <div class="field col-12">
+                <div class="mt-5 mx-0 p-fluid grid">
+                    <div class="full lg:col-12 md:col-12 sm:col-12">
                         <label for="name">Nome:</label>
-                        <InputText v-model="usuario.nome"id="name" type="text" />
+                        <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                     </div>
-                    <div class="field col-12 md:col-7">
+                    <div class="full lg:col-7 md:col-7 sm:col-12">
                         <label for="email">E-mail:</label>
-                        <InputText v-model="usuario.email"id="email" />
+                        <InputText class="my-2" v-model="usuario.email" id="email" />
                     </div>
-                    <div class="field col-12 md:col-5">
+                    <div class="full lg:col-5 md:col-5 sm:col-12">
                         <label for="senha">Senha:</label>
-                        <InputText id="senha" v-model="usuario.senha" type="password" />
+                        <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" />
                     </div>
-                    <div class="field col-12 md:col-4">
+                    <div class="full lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Perfil:</label>
-                        <Dropdown id="perfil" v-model="usuario.perfil" :options="dropdownItems" optionLabel="name"
-                            placeholder="Escolha um" ></Dropdown>
+                        <Dropdown class="my-2" id="perfil" v-model="usuario.perfil" :options="dropdownItems" optionLabel="name" placeholder="Escolha um"></Dropdown>
                     </div>
-                    <div class="field col-12 md:col-4">
+                    <div class="full lg:col-4 md:col-4 sm:col-12">
                         <label for="planta">Planta:</label>
-                        <Dropdown id="planta" v-model="usuario.planta" :options="plantaOptions" optionLabel="nome"
-                            placeholder="Escolha um" ></Dropdown>
+                        <Dropdown class="my-2" id="planta" v-model="usuario.planta" :options="plantaOptions" optionLabel="nome" placeholder="Escolha um"></Dropdown>
                     </div>
-                    
-                    <div class="field col-12 md:col-4">
-                    <label for="status">Status:</label>
-                    <Dropdown id="status" v-model="usuario.status" :options="status" optionLabel="name"
-                        placeholder="Escolha um"></Dropdown>
-                </div>
-                <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario"
-                class="mt-4 mx-3" />
-                </div>
 
+                    <div class="full lg:col-4 md:col-4 sm:col-12">
+                        <label for="status">Status:</label>
+                        <Dropdown class="my-2" id="status" v-model="usuario.status" :options="status" optionLabel="name" placeholder="Escolha um"></Dropdown>
+                    </div>
+                    <div class="flex align-items-center justify-content-end field col-12">
+                        <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario" class="full mt-2" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
+
+<style>
+@media (max-width: 580px) {
+    .full {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+        width: 100%;
+        margin: 1px;
+    }
+}
+</style>
