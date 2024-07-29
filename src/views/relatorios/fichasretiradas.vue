@@ -9,11 +9,12 @@ import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
 const toast = useToast();
+const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
-const dms = ref([]);
+const ListaFuncionarios = ref([todosOption]);;
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
-const plantas = ref([]);
+const plantas = ref([todosOption]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -37,11 +38,8 @@ const format = (date) => {
 const buscar = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        //id_dm: relatorio.value.dm,
-        id_planta: relatorio.value.id_planta,
-        //id_centro_custo: relatorio.value.id_centro_custo,
-        //id_setor: relatorio.value.id_setor,
-        id_funcionario: relatorio.value.id_funcionario,
+        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
+        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,       
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
@@ -103,10 +101,10 @@ const fetchIdPlanta = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        plantas.value = response.data.map(({ id_planta }) => ({
+        plantas.value = [todosOption, ...response.data.map(({ id_planta }) => ({
             label: `Planta  ${id_planta}`,
             value: id_planta
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao buscar opções de plantas:', error);
     }
@@ -122,10 +120,10 @@ const fetchFuncionarios = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({
+        ListaFuncionarios.value = [todosOption,...response.data.map((funcionario) => ({
             label: funcionario.nome,
             value: funcionario.id_funcionario
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     }

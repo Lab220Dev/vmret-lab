@@ -13,13 +13,11 @@ const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
 const dropdown4 = ref(null);
+const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
-const dms = ref([]);
-const operacao = ref(null);
+const dms = ref([todosOption]);
+const operacao = ref([todosOption]);
 const usuario = ref([]);
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
 const show = ref(true);
 const selectedItem = ref([]);
 const relatorio = ref({
@@ -112,10 +110,10 @@ const fetchDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = response.data.map(({ id_dm }) => ({
+        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
             label: `DM  ${id_dm}`,
             value: id_dm
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
     }

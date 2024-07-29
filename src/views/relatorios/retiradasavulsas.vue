@@ -15,11 +15,12 @@ const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 const dropdown6 = ref(null);
-const dms = ref([]);
+const todosOption = { label: 'Todos', value: null };
 const ListaFuncionarios = ref(null);
-const plantas = ref([]);
-const setor = ref([]);
-const centroCusto = ref([]);
+const dms = ref([todosOption]);
+const plantas = ref([todosOption]);
+const setor = ref([todosOption]);
+const centroCusto = ref([todosOption]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -48,11 +49,11 @@ const toISODate = (date) => {
 const buscar = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm,
-        //id_planta: relatorio.value.id_planta,
-        //id_centro_custo: relatorio.value.id_centro_custo,
-        //id_setor: relatorio.value.id_setor,
-        id_funcionario: relatorio.value.id_funcionario,
+        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
+        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
+        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
+        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
+        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
@@ -112,10 +113,10 @@ const fetchDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = response.data.map(({ id_dm }) => ({
+        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
             label: `DM  ${id_dm}`,
             value: id_dm
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
     }
@@ -131,10 +132,10 @@ const fetchIdPlanta = async () => {
             }
         });
         // usar o id_dm para acessar quais as plantas e setores estão disponiveis
-        plantas.value = response.data.map(({ id_planta }) => ({
+        plantas.value = [todosOption, ...response.data.map(({ id_planta }) => ({
             label: `Planta  ${id_planta}`,
             value: id_planta
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao buscar opções de plantas:', error);
     }
@@ -149,10 +150,10 @@ const fetchSetorDiretoria = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        setor.value = response.data.map(({ id_setor }) => ({
+        setor.value = [todosOption, ...response.data.map(({ id_setor }) => ({
             label: `Setor  ${id_setor}`,
             value: id_setor
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
@@ -167,10 +168,10 @@ const fetchCentroCusto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCusto.value = response.data.map(({ id_centro_custo }) => ({
+        centroCusto.value = [todosOption, ...response.data.map(({ id_centro_custo }) => ({
             label: `Centro de Custo  ${id_centro_custo}`,
             value: id_centro_custo
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     }
