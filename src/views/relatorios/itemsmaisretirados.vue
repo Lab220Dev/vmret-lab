@@ -10,6 +10,7 @@ import { toRaw } from 'vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const store = useAuthStore();
 const toast = useToast();
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
@@ -34,8 +35,8 @@ const relatorio = ref({
     id_centro_custo: '',
     id_setor: '',
     id_funcionario: '',
-    data_inicio: '',
-    data_final: ''
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    data_final: new Date()
 });
 const format = (date) => {
     const day = date.getDate();
@@ -66,7 +67,11 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
-        console.log(Array.isArray(retiradas.value));
+        if (retiradas.value.length === 0) {
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+        } else {
+            emptyMessage.value = '';
+        }
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     } finally {
@@ -339,7 +344,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> Nenhuma retirada realizada </template>
+                        <template #empty>{{ emptyMessage }}  </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
                         <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
                         <Column field="ProdutoSKU" sortable header="CA"></Column>

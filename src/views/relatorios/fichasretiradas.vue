@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
 const toast = useToast();
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
 const ListaFuncionarios = ref([todosOption]);;
@@ -23,8 +24,8 @@ const selectedItem = ref([]);
 const relatorio = ref({
     id_planta: '',
     id_funcionario: '',
-    data_inicio: '',
-    data_final: ''
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    data_final: new Date()
 });
 
 const format = (date) => {
@@ -50,6 +51,11 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+        if (retiradas.value.length === 0) {
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+        } else {
+            emptyMessage.value = '';
+        }
     } catch (error) {
         console.error('Erro ao buscar fichas:', error);
     }

@@ -8,6 +8,7 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 
 const store = useAuthStore();
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const retiradas = ref([]);
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
@@ -33,9 +34,8 @@ const relatorio = ref({
     id_centro_custo: '',
     id_funcionario: '',
     voucher: '',
-    data_inicio: '',
-    data_final: ''
-});
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    data_final: new Date()});
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -64,6 +64,11 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+        if (retiradas.value.length === 0) {
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+        } else {
+            emptyMessage.value = '';
+        }
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     }
@@ -310,7 +315,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> Nenhuma retirada avulsa realizada </template>
+                        <template #empty> {{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>
                         <Column field="matricula" sortable header="Matricula"></Column>

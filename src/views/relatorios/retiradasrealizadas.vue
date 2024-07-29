@@ -35,8 +35,8 @@ const relatorio = ref({
     id_centro_custo: '',
     id_setor: '',
     id_funcionario: '',
-    data_inicio: '',
-    data_final: ''
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    data_final: new Date()
 });
 const format = (date) => {
     const day = date.getDate();
@@ -70,7 +70,7 @@ const buscar = async () => {
         if (retiradas.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
-            emptyMessage.value = ''; 
+            emptyMessage.value = '';
         }
     } catch (error) {
         console.error('Erro ao buscar retiradas:', error);
@@ -287,7 +287,7 @@ onMounted(() => {
                 <!--  datatable do relatorio -->
                 <div class="datatable-wrapper">
                     <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
-                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover 
+                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
                         :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
                         :tableStyle="{ width: '100%' }" ref="dt" class="">
                         <!-- @rowSelect="onRowSelect"  -->
@@ -301,7 +301,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> {{emptyMessage}} </template>
+                        <template #empty> {{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>
                         <Column field="matricula" sortable header="Matricula"></Column>
