@@ -15,14 +15,5 @@ const instance = axios.create({
 //   return config;
 // });
 
-// Interceptor de Resposta para redirecionar em caso de 401
-// instance.interceptors.response.use(
-//   response => response,
-//   error => {
-//     if (error.response.status === 401) {
-//       router.push('/');
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+
 export default instance;
