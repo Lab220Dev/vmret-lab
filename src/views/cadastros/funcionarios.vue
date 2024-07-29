@@ -643,7 +643,7 @@ const handleDatepickerOpen = () => {
                                     </Fieldset>
                                 </div>
 
-                                <div class="full lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
+                                <div class="full mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
                                     <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl" />
                                 </div>
                             </div>

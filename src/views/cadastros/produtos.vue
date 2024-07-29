@@ -389,11 +389,14 @@ onMounted(async () => {
     </div>
 </template>
 
-<style>
+<style scoped>
 .overflow-scroll {
-    overflow: scroll;
+    overflow-y: scroll;
+    overflow-x: hidden !important;
+
     resize: none;
 }
+
 
 @media (max-width: 1024px) {
     .text-center {
