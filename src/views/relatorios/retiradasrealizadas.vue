@@ -25,6 +25,7 @@ const centroCusto = ref([todosOption]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const show = ref(true);
 const selectedItem = ref([]);
 const loading = ref(false);
@@ -66,9 +67,14 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+        if (retiradas.value.length === 0) {
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+        } else {
+            emptyMessage.value = ''; 
+        }
     } catch (error) {
         console.error('Erro ao buscar retiradas:', error);
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -200,15 +206,15 @@ const fetchFuncionarios = async () => {
     }
 };
 const closeAllDropdowns = () => {
-  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
 
 const handleDatepickerOpen = () => {
-  closeAllDropdowns();
+    closeAllDropdowns();
 };
 onMounted(() => {
     fetchDM();
@@ -226,50 +232,49 @@ onMounted(() => {
             <div class="grid mt-3 mx-1 px-1">
                 <h5 class="my-4 text-2xl">Retiradas Realizadas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-                    
+
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" 
-                        optionLabel="label" optionValue="value"  ref="dropdown1"placeholder="Todos"></Dropdown>
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
+                            optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" 
-                        optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2"/>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
+                            optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" 
-                        :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3"/>
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" 
-                        optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4"/>
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
+                            optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" 
-                        :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos"ref="dropdown5"/>
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon 
-                        :showOnFocus="false" :format="format" locale="pt-BR" auto-apply 
-                        :enable-time-picker="false" placeholder="Selecione uma data inicial" ref="datepicker1"
-                        @open="handleDatepickerOpen"/>
+                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                            :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
+                            placeholder="Selecione uma data inicial" ref="datepicker1" @open="handleDatepickerOpen" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon 
-                        :showOnFocus="false" :format="format" locale="pt-BR"auto-apply 
-                        :enable-time-picker="false" placeholder="Selecione uma data final"  ref="datepicker2"
-                        @open="handleDatepickerOpen"/>
+                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                            :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
+                            placeholder="Selecione uma data final" ref="datepicker2" @open="handleDatepickerOpen" />
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
+                            @click="buscar" />
                     </div>
 
                     <div class="field lg:col-3 md:col-6 sm:col-6">
@@ -281,19 +286,10 @@ onMounted(() => {
                 </div>
                 <!--  datatable do relatorio -->
                 <div class="datatable-wrapper">
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="retiradas"
-                        stripedRows
-                        showGridlines
-                        paginator
-                        :rows="10"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        rowHover
+                    <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
+                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover 
                         :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        :tableStyle="{ width: '100%' }"
-                        ref="dt" class=""
-                    >
+                        :tableStyle="{ width: '100%' }" ref="dt" class="">
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
                             <div class="flex justify-content-end">
@@ -305,7 +301,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> Nenhuma retirada realizada </template>
+                        <template #empty> {{emptyMessage}} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>
                         <Column field="matricula" sortable header="Matricula"></Column>
