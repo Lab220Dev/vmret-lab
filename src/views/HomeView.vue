@@ -28,8 +28,23 @@ const items = ref([
     { label: 'Remove', icon: 'pi pi-fw pi-minus' }
 ]);
 const lineOptions = ref(null);
-
+const fetchUltimos = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('/relatorioItems/ultimos', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        products.value = response.data;
+    } catch (error) {
+        console.error('Erro ao carregar lista de dms:', error);
+    }
+};
 onMounted(() => {
+    fetchUltimos();
 });
 
 const formatCurrency = (value) => {
