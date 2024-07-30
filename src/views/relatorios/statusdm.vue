@@ -50,7 +50,7 @@ const fetchDMs = async () => {
             }
         });
         dms = response.data;
-        formatedDms = dms.map((dms) => ({
+        formatedDms.value = dms.map((dms) => ({
             label: dms.nome,
             value: dms.id_maquina
         }));
@@ -68,7 +68,7 @@ const fetchSelectedDMs = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        StatusDM = response.data;
+        StatusDM.value = response.data;
     } catch (error) {
         console.error('Erro ao buscar a lista de DMs:', error);
     }
