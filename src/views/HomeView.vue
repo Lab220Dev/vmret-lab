@@ -9,6 +9,16 @@ axios.defaults.baseURL = 'http://localhost:3000/api';
 // Usa a store
 const store = useAuthStore(); // useStore é chamado aqui
 
+const canViewLastRecalls = ref(false); // controle de exibição
+
+// metodo de permissão
+const checkPermission = () => {
+  // aqui faz a verificação
+  if (store.userRole === 'Master' || store.userRole === 'manager') {
+    canViewLastRecalls.value = true; //se for verdade, mostra, do contrário não exibe e nem renderiza
+  }
+};
+
 const products = ref([]);
 const lineData = reactive({
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -60,7 +70,10 @@ const fetchUltimasRetiradas = async () => {
 };
 
 onMounted(() => {
-    fetchUltimasRetiradas();
+  checkPermission();
+  if (canViewLastRecalls.value) {
+    fetchUltimasRetiradas(); // busca só se tiver permissão
+  }
 });
 </script>
 
@@ -127,11 +140,11 @@ onMounted(() => {
                 <span class="text-500">responded</span>
             </div>
         </div>
-        <!-- Começo do componente de últimas retiradas -->
-        <div class="col-12 xl:col-6">
-            <LastRecalls :products="products" />
-        </div>
-        <!-- Fim do componente de últimas retiradas -->
+        <!-- começo do componente de últimas retiradas, só se for verdade -->
+    <div v-if="canViewLastRecalls" class="col-12 xl:col-6">
+      <LastRecalls :products="products" />
+    </div>
+    <!-- fim do componente de últimas retiradas -->
         <div class="card">
             <div class="flex justify-content-between align-items-center mb-5">
                 <h5>Best Selling Products</h5>

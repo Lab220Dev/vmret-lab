@@ -370,14 +370,45 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!--  mensagem de erro -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
-        <p>{{ dialogMessage }}</p>
-        <template #footer>
-            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
-        </template>
-    </Dialog>
+  <Dialog :visible.sync="showDialog" style="width: 20vw; height: 27vh;" :modal="true" :closable="false" >
+    <template #header>
+      <div class="dialog-header">
+        <span style="font-size: 1.5rem;">Não encontrado</span>
+        <i class="pi pi-exclamation-triangle dialog-icon" style="font-size: 2rem; margin-left: 8px;"></i>
+        
+        
+      </div>
+    </template>
+    <div class="dialog-content">
+      <p class="dialog-message">{{ dialogMessage }}</p>
+    </div>
+    <template #footer>
+      <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+    </template>
+  </Dialog>
 </template>
+
 <style>
+.dialog-header {
+    display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-icon {
+  color: #f00; /* Altere a cor conforme necessário */
+  margin-left: auto;
+}
+
+.dialog-content {
+  padding: 1rem;
+}
+
+.dialog-message {
+  text-align: justify;
+  margin: 0;
+}
+
 .card {
     overflow-x: auto;
 }
@@ -394,6 +425,8 @@ onMounted(() => {
 .drop {
     width: 100%;
 }
+
+
 
 @media (max-width: 580px) {
     .form .field {

@@ -2,6 +2,7 @@
 import { defineProps } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
+import { format } from 'date-fns';
 
 //  toast para exibir mensagens de erro ou sucesso
 const toast = useToast();
@@ -15,8 +16,8 @@ const props = defineProps({
 });
 
 //formato da data
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null;
+const formatDateTime = (date) => {
+    return date ? format(new Date(date), 'dd/MM/yyyy HH:mm') : null;
 };
 </script>
 
@@ -29,7 +30,7 @@ const toISODate = (date) => {
             <Column field="ProdutoDescricao" header="Descrição" sortable style="width: 30%"></Column>
             <Column field="Dia" header="Data e Hora" sortable style="width: 30%">
                 <template #body="slotProps">
-                    {{ toISODate(slotProps.data.Dia) }}
+                    {{ formatDateTime(slotProps.data.Dia) }}
                 </template>
             </Column>
         </DataTable>
