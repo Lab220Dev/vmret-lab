@@ -1,7 +1,15 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref, reactive } from 'vue';
+import axios from 'axios';
+import LastRecalls from '@/components/LastRecalls.vue';
+import { useAuthStore } from '@/store/authStore'; //valida o token
 
-const products = ref(null);
+axios.defaults.baseURL = 'http://localhost:3000/api';
+
+// Usa a store
+const store = useAuthStore(); // useStore é chamado aqui
+
+const products = ref([]);
 const lineData = reactive({
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
     datasets: [
@@ -28,29 +36,32 @@ const items = ref([
     { label: 'Remove', icon: 'pi pi-fw pi-minus' }
 ]);
 const lineOptions = ref(null);
-const fetchUltimos = async () => {
+
+const fetchUltimasRetiradas = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
         const response = await axios.post('/relatorioItems/ultimos', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // o token está sendo passado
             }
         });
-        products.value = response.data;
+        products.value = response.data; // Atualiza os dados do produto
     } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error);
+        if (error.response) {
+            console.error('Erro de resposta do servidor:', error.response.data);
+        } else if (error.request) {
+            console.error('Nenhuma resposta recebida:', error.request);
+        } else {
+            console.error('Erro ao configurar a requisição:', error.message);
+        }
     }
 };
+
 onMounted(() => {
-    fetchUltimos();
+    fetchUltimasRetiradas();
 });
-
-const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-};
-
 </script>
 
 <template>
@@ -116,175 +127,152 @@ const formatCurrency = (value) => {
                 <span class="text-500">responded</span>
             </div>
         </div>
-        <!--Data Table-->
+        <!-- Começo do componente de últimas retiradas -->
         <div class="col-12 xl:col-6">
-            <div class="card">
-                <h5>Recent Sales</h5>
-                <DataTable :value="products" :rows="5" :paginator="true" responsiveLayout="scroll">
-                    <Column style="width: 15%">
-                        <template #header> Image </template>
-                        <template #body="slotProps">
-                            <img :src="'demo/images/product/' + slotProps.data.image" :alt="slotProps.data.image" width="50" class="shadow-2" />
-                        </template>
-                    </Column>
-                    <Column field="name" header="Name" :sortable="true" style="width: 35%"></Column>
-                    <Column field="price" header="Price" :sortable="true" style="width: 35%">
-                        <template #body="slotProps">
-                            {{ formatCurrency(slotProps.data.price) }}
-                        </template>
-                    </Column>
-                    <Column style="width: 15%">
-                        <template #header> View </template>
-                        <template #body>
-                            <Button icon="pi pi-search" type="button" class="p-button-text"></Button>
-                        </template>
-                    </Column>
-                </DataTable>
-            </div>
-            <!--outro exemplo de painel-->
-            <div class="card">
-                <div class="flex justify-content-between align-items-center mb-5">
-                    <h5>Best Selling Products</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu2.toggle($event)"></Button>
-                        <Menu ref="menu2" :popup="true" :model="items"></Menu>
-                    </div>
-                </div>
-                <ul class="list-none p-0 m-0">
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                            <div class="mt-1 text-600">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-orange-500 h-full" style="width: 50%"></div>
-                            </div>
-                            <span class="text-orange-500 ml-3 font-medium">%50</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-cyan-500 h-full" style="width: 16%"></div>
-                            </div>
-                            <span class="text-cyan-500 ml-3 font-medium">%16</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-pink-500 h-full" style="width: 67%"></div>
-                            </div>
-                            <span class="text-pink-500 ml-3 font-medium">%67</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                            <div class="mt-1 text-600">Office</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-green-500 h-full" style="width: 35%"></div>
-                            </div>
-                            <span class="text-green-500 ml-3 font-medium">%35</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                            <div class="mt-1 text-600">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-purple-500 h-full" style="width: 75%"></div>
-                            </div>
-                            <span class="text-purple-500 ml-3 font-medium">%75</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-                        <div>
-                            <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                            <div class="mt-1 text-600">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                            <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
-                                <div class="bg-teal-500 h-full" style="width: 40%"></div>
-                            </div>
-                            <span class="text-teal-500 ml-3 font-medium">%40</span>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+            <LastRecalls :products="products" />
         </div>
-
-        <div class="col-12 xl:col-6">
-         <!--chart-->
-            <div class="card">
-                <h5>Sales Overview</h5>
-                <Chart type="line" :data="lineData" :options="lineOptions" />
-            </div>
-            <!--painel de vendas recentes-->
-            <div class="card">
-                <div class="flex align-items-center justify-content-between mb-4">
-                    <h5>Notifications</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu1.toggle($event)"></Button>
-                        <Menu ref="menu1" :popup="true" :model="items"></Menu>
-                    </div>
+        <!-- Fim do componente de últimas retiradas -->
+        <div class="card">
+            <div class="flex justify-content-between align-items-center mb-5">
+                <h5>Best Selling Products</h5>
+                <div>
+                    <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu2.toggle($event)"></Button>
+                    <Menu ref="menu2" :popup="true" :model="items"></Menu>
                 </div>
+            </div>
+            <ul class="list-none p-0 m-0">
+                <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                    <div>
+                        <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
+                        <div class="mt-1 text-600">Clothing</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 flex align-items-center">
+                        <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
+                            <div class="bg-orange-500 h-full" style="width: 50%"></div>
+                        </div>
+                        <span class="text-orange-500 ml-3 font-medium">%50</span>
+                    </div>
+                </li>
+                <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                    <div>
+                        <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
+                        <div class="mt-1 text-600">Accessories</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                        <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
+                            <div class="bg-cyan-500 h-full" style="width: 16%"></div>
+                        </div>
+                        <span class="text-cyan-500 ml-3 font-medium">%16</span>
+                    </div>
+                </li>
+                <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                    <div>
+                        <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
+                        <div class="mt-1 text-600">Accessories</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                        <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
+                            <div class="bg-pink-500 h-full" style="width: 67%"></div>
+                        </div>
+                        <span class="text-pink-500 ml-3 font-medium">%67</span>
+                    </div>
+                </li>
+                <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                    <div>
+                        <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
+                        <div class="mt-1 text-600">Office</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                        <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
+                            <div class="bg-green-500 h-full" style="width: 35%"></div>
+                        </div>
+                        <span class="text-green-500 ml-3 font-medium">%35</span>
+                    </div>
+                </li>
+                <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                    <div>
+                        <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
+                        <div class="mt-1 text-600">Accessories</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                        <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
+                            <div class="bg-purple-500 h-full" style="width: 75%"></div>
+                        </div>
+                        <span class="text-purple-500 ml-3 font-medium">%75</span>
+                    </div>
+                </li>
+                <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                    <div>
+                        <span class="text-900 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
+                        <div class="mt-1 text-600">Clothing</div>
+                    </div>
+                    <div class="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
+                        <div class="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style="height: 8px">
+                            <div class="bg-teal-500 h-full" style="width: 40%"></div>
+                        </div>
+                        <span class="text-teal-500 ml-3 font-medium">%40</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
 
-                <span class="block text-600 font-medium mb-3">TODAY</span>
-                <ul class="p-0 mx-0 mt-0 mb-4 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Richard Jones
-                            <span class="text-700">has purchased a blue t-shirt for <span class="text-blue-500">79$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-download text-xl text-orange-500"></i>
-                        </div>
-                        <span class="text-700 line-height-3">Your request for withdrawal of <span class="text-blue-500 font-medium">2500$</span> has been initiated.</span>
-                    </li>
-                </ul>
-
-                <span class="block text-600 font-medium mb-3">YESTERDAY</span>
-                <ul class="p-0 m-0 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Keyser Wick
-                            <span class="text-700">has purchased a black jacket for <span class="text-blue-500">59$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-question text-xl text-pink-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Jane Davis
-                            <span class="text-700">has posted a new questions about your product.</span>
-                        </span>
-                    </li>
-                </ul>
+    <div class="col-12 xl:col-6">
+        <!--chart-->
+        <div class="card">
+            <h5>Sales Overview</h5>
+            <Chart type="line" :data="lineData" :options="lineOptions" />
+        </div>
+        <!--painel de vendas recentes-->
+        <div class="card">
+            <div class="flex align-items-center justify-content-between mb-4">
+                <h5>Notifications</h5>
+                <div>
+                    <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu1.toggle($event)"></Button>
+                    <Menu ref="menu1" :popup="true" :model="items"></Menu>
+                </div>
             </div>
 
+            <span class="block text-600 font-medium mb-3">TODAY</span>
+            <ul class="p-0 mx-0 mt-0 mb-4 list-none">
+                <li class="flex align-items-center py-2 border-bottom-1 surface-border">
+                    <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
+                        <i class="pi pi-dollar text-xl text-blue-500"></i>
+                    </div>
+                    <span class="text-900 line-height-3"
+                        >Richard Jones
+                        <span class="text-700">has purchased a blue t-shirt for <span class="text-blue-500">79$</span></span>
+                    </span>
+                </li>
+                <li class="flex align-items-center py-2">
+                    <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
+                        <i class="pi pi-download text-xl text-orange-500"></i>
+                    </div>
+                    <span class="text-700 line-height-3">Your request for withdrawal of <span class="text-blue-500 font-medium">2500$</span> has been initiated.</span>
+                </li>
+            </ul>
+
+            <span class="block text-600 font-medium mb-3">YESTERDAY</span>
+            <ul class="p-0 m-0 list-none">
+                <li class="flex align-items-center py-2 border-bottom-1 surface-border">
+                    <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
+                        <i class="pi pi-dollar text-xl text-blue-500"></i>
+                    </div>
+                    <span class="text-900 line-height-3"
+                        >Keyser Wick
+                        <span class="text-700">has purchased a black jacket for <span class="text-blue-500">59$</span></span>
+                    </span>
+                </li>
+                <li class="flex align-items-center py-2 border-bottom-1 surface-border">
+                    <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
+                        <i class="pi pi-question text-xl text-pink-500"></i>
+                    </div>
+                    <span class="text-900 line-height-3"
+                        >Jane Davis
+                        <span class="text-700">has posted a new questions about your product.</span>
+                    </span>
+                </li>
+            </ul>
         </div>
     </div>
 </template>

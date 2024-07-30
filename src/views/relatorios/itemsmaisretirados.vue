@@ -8,6 +8,10 @@ import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore.js';
 import { toRaw } from 'vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
+const showDialog = ref(false);
+const dialogMessage = ref('');
+
 const store = useAuthStore();
 const toast = useToast();
 const dropdown1 = ref(null);
@@ -59,14 +63,18 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        loading.value = true
+        loading.value = true;
         const response = await axios.post("relatorioItems/relatorio", data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         retiradas.value = response.data;
-        console.log(Array.isArray(retiradas.value));
+        // mostra o diálogo se não houver resultados
+        if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
+            dialogMessage.value = 'Nenhum resultado encontrado para os filtros aplicados.';
+            showDialog.value = true;
+        }
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     } finally {
@@ -262,7 +270,7 @@ onMounted(() => {
             <div class="grid mt-3 mx-1 px-1">
                 <h5 class="my-4 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
-                    <!-- div de busca de informações para o relatorio -->
+                    <!-- Div de busca de informações para o relatório -->
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
@@ -271,7 +279,7 @@ onMounted(() => {
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
-                            optionValue="value" placeholder="Todos"ref="dropdown2"/>
+                            optionValue="value" placeholder="Todos" ref="dropdown2"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
@@ -298,10 +306,10 @@ onMounted(() => {
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
-                            @open="handleDatepickerOpen"placeholder="Selecione uma data final"/>
+                            @open="handleDatepickerOpen" placeholder="Selecione uma data final"/>
                     </div>
                     <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <!-- botão de filtrar -->
+                        <!-- Botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
@@ -312,7 +320,7 @@ onMounted(() => {
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
                 </div>
-                <!--  datatable do relatorio -->
+                <!-- DataTable do relatório -->
                 <div class="datatable-wrapper">
                     <DataTable
                         v-model:filters="filters"
@@ -360,6 +368,14 @@ onMounted(() => {
         </div>
     </div>
     <LoadingSpinner v-if="loading" />
+
+    <!--  mensagem de erro -->
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
+        <p>{{ dialogMessage }}</p>
+        <template #footer>
+            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+        </template>
+    </Dialog>
 </template>
 <style>
 .card {

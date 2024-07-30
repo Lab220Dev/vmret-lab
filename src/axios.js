@@ -4,7 +4,7 @@ import router from './router/router'
 //http://vmretnew.sgilab220.com.br/api
 //http://localhost:3000/api
 const instance = axios.create({
-  baseURL: 'http://vmretnew.sgilab220.com.br/api', 
+  baseURL: 'http://localhost:3000/api', 
 });
 // Interceptor de Requisição para adicionar o token Bearer
 // instance.interceptors.request.use(config => {
