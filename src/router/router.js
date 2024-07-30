@@ -122,6 +122,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/cadastros/Cliente',
+                    name: 'Cadastro de Clientes',
+                    component: () => import('@/views/cadastros/Clientes.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')
