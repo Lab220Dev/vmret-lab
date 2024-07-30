@@ -6,6 +6,12 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
+const showDialog = ref(false);
+const dialogMessage = ref('');
+
+const loading = ref(false);
 
 const store = useAuthStore();
 const emptyMessage = ref('Ainda não foi feita nenhuma busca');
@@ -58,12 +64,17 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
+        loading.value = true
         const response = await axios.post('', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         retiradas.value = response.data;
+        if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
+            dialogMessage.value = 'Nenhum resultado encontrado para os filtros aplicados.';
+            showDialog.value = true;
+        }
         if (retiradas.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
@@ -71,6 +82,8 @@ const buscar = async () => {
         }
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 const voltar = () => {
@@ -336,6 +349,15 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <LoadingSpinner v-if="loading" />
+
+    <!--  mensagem de erro -->
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
+        <p>{{ dialogMessage }}</p>
+        <template #footer>
+            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+        </template>
+    </Dialog>
 </template>
 <style>
 .card {

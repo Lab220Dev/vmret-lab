@@ -56,6 +56,7 @@ const handleFileUpload = (event) => {
 
 const removeImage = () => {
     imageData.value = null;
+    emit('fileSelected', null);
 };
 
 watch(
