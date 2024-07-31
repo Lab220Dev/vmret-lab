@@ -16,72 +16,116 @@ const router = createRouter({
                 {
                     path: '/dashboard',
                     name: 'Dashboard',
-                    component: () => import('@/views/HomeView.vue')
+                    component: () => import('@/views/HomeView.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/retiradasrealizadas',
                     name: 'retiradasrealizadas',
-                    component: () => import('@/views/relatorios/retiradasrealizadas.vue')
+                    component: () => import('@/views/relatorios/retiradasrealizadas.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/estoquedm',
                     name: 'estoquedm',
-                    component: () => import('@/views/relatorios/estoquedm.vue')
+                    component: () => import('@/views/relatorios/estoquedm.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/itemsmaisretirados',
                     name: 'itemsmaisretirados',
-                    component: () => import('@/views/relatorios/itemsmaisretirados.vue')
+                    component: () => import('@/views/relatorios/itemsmaisretirados.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/retiradasavulsas',
                     name: 'retiradasavulsas',
-                    component: () => import('@/views/relatorios/retiradasavulsas.vue')
+                    component: () => import('@/views/relatorios/retiradasavulsas.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/historicosabastecimento',
                     name: 'historicosabastecimento',
-                    component: () => import('@/views/relatorios/historicosabastecimento.vue')
+                    component: () => import('@/views/relatorios/historicosabastecimento.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/statusdm',
                     name: 'statusdm',
-                    component: () => import('@/views/relatorios/statusdm.vue')
+                    component: () => import('@/views/relatorios/statusdm.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/fichasretiradas',
                     name: 'fichasretiradas',
-                    component: () => import('@/views/relatorios/fichasretiradas.vue')
+                    component: () => import('@/views/relatorios/fichasretiradas.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/relatorios/logs',
                     name: 'logs',
-                    component: () => import('@/views/relatorios/logs.vue')
+                    component: () => import('@/views/relatorios/logs.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/cadastros/funcionarios',
                     name: 'cadastros de Funcionários',
-                    component: () => import('@/views/cadastros/funcionarios.vue')
+                    component: () => import('@/views/cadastros/funcionarios.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/cadastros/produtos',
                     name: 'cadastros de Produtos',
-                    component: () => import('@/views/cadastros/produtos.vue')
+                    component: () => import('@/views/cadastros/produtos.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/cadastros/usuarios/web',
                     name: 'Cadastro Usuario',
-                    component: () => import('@/views/cadastros/usuarios/web.vue')
+                    component: () => import('@/views/cadastros/usuarios/web.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/cadastros/usuarios/avulsa',
                     name: 'Cadastro Liberação Avulsa',
-                    component: () => import('@/views/cadastros/usuarios/Avulsa.vue')
+                    component: () => import('@/views/cadastros/usuarios/Avulsa.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/cadastros/usuarios/dm',
                     name: 'Cadastro DM',
-                    component: () => import('@/views/cadastros/usuarios/dm.vue')
+                    component: () => import('@/views/cadastros/usuarios/dm.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/cadastros/cdc',
+                    name: 'Cadastro de Centro de Custo',
+                    component: () => import('@/views/cadastros/cdc.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/cadastros/setor',
+                    name: 'cadastro de Setor',
+                    component: () => import('@/views/cadastros/setor.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/cadastros/funcao',
+                    name: 'Cadastro de Função',
+                    component: () => import('@/views/cadastros/funcao.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/cadastros/planta',
+                    name: 'Cadastro de Plantas',
+                    component: () => import('@/views/cadastros/planta.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/cadastros/Cliente',
+                    name: 'Cadastro de Clientes',
+                    component: () => import('@/views/cadastros/Clientes.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/pages/timeline',
@@ -108,4 +152,14 @@ const router = createRouter({
     ]
 });
 
+router.beforeEach((to, from, next) => {
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const token = localStorage.getItem('token');
+
+    if (requiresAuth && !token) {
+        next({ name: 'login' });
+    } else {
+        next();
+    }
+});
 export default router;

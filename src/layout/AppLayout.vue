@@ -1,6 +1,6 @@
 <script setup>
 import { computed, watch, ref } from 'vue';
-import mytopBar from './MytopBar.vue';
+import MyTopBar from './MytopBar.vue';
 import AppFooter from './AppFooter.vue';
 import MySideBar from './mysidebar.vue';
 import { useLayout } from '@/layout/composables/layout';
@@ -25,10 +25,12 @@ const containerClass = computed(() => {
         'layout-static': layoutConfig.menuMode.value === 'static',
         'layout-static-inactive': layoutState.staticMenuDesktopInactive.value && layoutConfig.menuMode.value === 'static',
         'layout-overlay-active': layoutState.overlayMenuActive.value,
+        'layout-mobile-inactive': !layoutState.staticMenuMobileActive.value,
         'layout-mobile-active': layoutState.staticMenuMobileActive.value,
         'p-ripple-disabled': layoutConfig.ripple.value === false
     };
 });
+
 const bindOutsideClickListener = () => {
     if (!outsideClickListener.value) {
         outsideClickListener.value = (event) => {
@@ -41,12 +43,14 @@ const bindOutsideClickListener = () => {
         document.addEventListener('click', outsideClickListener.value);
     }
 };
+
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 };
+
 const isOutsideClicked = (event) => {
     const sidebarEl = document.querySelector('.layout-sidebar');
     const topbarEl = document.querySelector('.layout-menu-button');
@@ -57,7 +61,7 @@ const isOutsideClicked = (event) => {
 
 <template>
     <div class="layout-wrapper" :class="containerClass">
-        <mytopBar></mytopBar>
+        <MyTopBar></MyTopBar>
         <div class="layout-sidebar">
             <MySideBar></MySideBar>
         </div>
@@ -65,7 +69,7 @@ const isOutsideClicked = (event) => {
             <div class="layout-main">
                 <router-view></router-view>
             </div>
-            <app-footer></app-footer>
+            <AppFooter></AppFooter>
         </div>
         <div class="layout-mask"></div>
     </div>

@@ -1,40 +1,65 @@
 <script setup>
-
 import { ref } from 'vue'; 
 import { useRouter } from 'vue-router'
 import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore';
+import { useCountdownStore } from '@/store/countdown';
+import LoadingModal from '@/components/LoadingModal.vue';
 
+const isLoading = ref(false);
 const router = useRouter()
 const username = ref('');
+const mail = ref('');
 const password = ref('');
 const error = ref(null);
 const forgotPassword = ref(false);
 const authStore = useAuthStore();
+const countdownStore = useCountdownStore();
 
-function resetPassword() {
-    alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br"); // função que vai abrir uma "messagebox" se a operação for concluida
-    forgotPassword.value = false;
-}
+const resetPassword = async () => {
+    isLoading.value = true;
+    error.value = '';
+    try {
+        // const response = await axios.post('/recuperar', {
+        //     email: mail.value,
+        // });
+        // if (response.status === 200) {
+        //     alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br");
+        //     forgotPassword.value = false;
+        // }
+    } catch (err) {
+        console.error(err); // Adicione um log para depuração
+        error.value = err.response?.data || 'Erro desconhecido';
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 const login = async () => {
+    isLoading.value = true;
+    error.value = '';
     try {
         const response = await axios.post('/login', {
             email: username.value,
             senha: password.value,
         });
         if (response.status === 200) {
-            authStore.login({ token: response.data.token, usuario: response.data.Usuario });
-             localStorage.setItem('usuario:', JSON.stringify(response.data.Usuario));
-            router.push({ name: 'Dashboard' });// Redirecionar para o dashboard
+            authStore.login({ token: response.data.token, usuario: response.data.Usuario, menu: response.data.items});
+            countdownStore.startCountdown(60 * 60 * 1000);
+            router.push({ name: 'Dashboard' });
         }
     } catch (err) {
-        error.value = err.response?.data?.message || err.message;
+        console.error(err); // Adicione um log para depuração
+        error.value = err.response?.data || 'Erro desconhecido';
+    } finally {
+        isLoading.value = false;
     }
 };
 </script>
 
 <template>
-    <Splitter class="flex justify-content-center align-items-center min-h-screen" style="height: 300px">
+    <LoadingModal :isLoading="isLoading" />
+    <Splitter class=" flex justify-content-center align-items-center min-h-screen" style="height: 300px">
         <SplitterPanel
             class="colunaesquerda flex-column h-screen justify-content-center align-items-center text-left m-0"
             :size="65">
@@ -46,7 +71,7 @@ const login = async () => {
                 </svg>
 
                 <div class="block justify-content-center">
-                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">VM<span
+                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span
                             class="font-bold text-blue-600 mt-0 mb-0">WEB</span></h1>
                     <H4 class="text-lg m-0">Sistema de Gerenciamento de Dispenser Machines</H4>
                 </div>
@@ -77,11 +102,11 @@ const login = async () => {
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Senha:</label>
                                 <input type="password" v-model="password" name="senha" id="senha" class="formstyle"
                                     placeholder="Digite a sua senha" autocomplete="on">
-                            </div>
+                            </div> 
+                            <div v-if="error" class="div-error"><small  class="p-error">{{ error }}</small></div>
                             <button id="btn_button"
                                 class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm"
                                 @click.prevent="login">LOGIN</button>
-                                <div v-if="error" class="error">{{ error }}</div>
                             <h6 class="mt-3 text-center">
                                 <a href="#" @click.prevent="forgotPassword = true"
                                     class="text-blue-500 font-semibold hover:text-orange-500">Esqueceu sua senha?</a>
@@ -93,9 +118,9 @@ const login = async () => {
                             <div class="form mb-3">
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
                                 <input type="email" name="reset-email" id="reset-email" class="formstyle"
-                                    placeholder="Digite o seu email" autocomplete="on">
+                                    placeholder="Digite o seu email" autocomplete="on" v-model="mail">
                             </div>
-                            <button @click="resetPassword"
+                            <button @click.prevent="resetPassword"
                                 class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm">Enviar
                                 link de recuperação</button>
                             <h6 class="mt-3 text-center">
@@ -113,9 +138,9 @@ const login = async () => {
         </SplitterPanel>
     </Splitter>
 </template>
+É um serviço de SMTP? Certo. Para enviar o email com a senha, preciso das credenciais (email e senha) junto com o provedor para que o servidor possa fazer o envio. O email que o cliente receberá será enviado a partir do endereço suporte@lab220.com.br.
 
-
-<style>
+<style scoped>
 @media (max-width: 768px) {
     .colunaesquerda {
         display: none;
@@ -161,14 +186,16 @@ const login = async () => {
 
 
 .p-splitter-gutter {
-    display: none;
+    display: none !important; /* Esconde o separador */
 }
 
-label.erro {
+.p-error {
     color: red;
-    font-weight: 450;
+    font-weight: bold;
 }
-
+.div-error {
+ margin-bottom: 1.25rem;   
+}
 .login-button {
     transition: all 0.5s ease;
     border: none;
