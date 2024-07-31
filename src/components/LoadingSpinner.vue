@@ -1,7 +1,9 @@
 <template>
     <div class="loading-overlay">
+        <div class="loading-container">
       <div class="loading-spinner"></div>
-    </div>
+      <p style="margin-top: 15px; color: #333;">Carregando... Aguarde</p>
+    </div></div>
   </template>
   
   <script setup>
@@ -9,24 +11,37 @@
   
   <style>
   .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
   }
+
+  .loading-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
   .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 6px solid rgba(0, 0, 0, 0.1);
-      border-top: 6px solid #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3b82f6;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
   }
   @keyframes spin {
       0% {

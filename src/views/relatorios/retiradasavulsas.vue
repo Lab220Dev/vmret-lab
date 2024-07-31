@@ -242,55 +242,55 @@ onMounted(() => {
                 <h5 class="my-4 text-2xl">Retiradas Avulsas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.dm" 
                         :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" 
                         ref="dropdown1"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" 
                         :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos"
                         ref="dropdown2"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" 
                         :options="setor" optionLabel="label" optionValue="value" placeholder="Todos"
                         ref="dropdown3"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Centro de Custo:</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" 
                         :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" 
                         ref="dropdown4"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" 
                         :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos"
                         ref="dropdown5"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Voucher:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" 
                         :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" 
                         ref="dropdown6"/>
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon 
                         :showOnFocus="false" :format="format" locale="pt-BR" auto-apply ref="datepicker1"
                         :enable-time-picker="false" @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon 
                         :showOnFocus="false" :format="format" locale="pt-BR"auto-apply ref="datepicker1"
                         :enable-time-picker="false" placeholder="Selecione uma data final"@open="handleDatepickerOpen"/>
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6 justify-self-end">
+                    <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12 justify-self-end">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>

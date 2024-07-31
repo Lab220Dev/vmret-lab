@@ -168,31 +168,31 @@ onMounted(() => {
                 <h5 class="my-4 text-2xl">Fichas Retiradas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" 
                         :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos"
                         ref="dropdown1"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" 
                         :options="ListaFuncionarios" optionLabel="label" optionValue="value"
                         ref="dropdown2" placeholder="Todos"/>
                     </div>
-                    <div class="field datepicker lg:col-2 md:col-6 sm:col-6">
+                    <div class="field datepicker lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class=" drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" 
                         :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
                         @open="handleDatepickerOpen" placeholder="Selecione uma data"/>
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="datepicker" v-model="relatorio.data_final" showIcon :showOnFocus="false" 
                         :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" placeholder="Selecione uma data"
                         @open="handleDatepickerOpen"/>
                     </div>
-                    <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -253,7 +253,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!--  mensagem de erro -->
-    <Dialog header="" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
+    <Dialog header="" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
