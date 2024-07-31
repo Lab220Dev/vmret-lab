@@ -15,6 +15,7 @@ const todosOption = { label: 'Todos', value: null };
 const visible = ref(false);
 const senha = ref('');
 const plantas = ref([todosOption]);
+const isAdmin = ref(false)
 const usuario = reactive({
     nome: '',
     email: '',
@@ -114,10 +115,11 @@ const fetchUsuarios = async () => {
     let data = null;
 
     if (store.userRole === "Administrador") {
-        data = ''; // Set to an empty string if the role is "Administrador"
+        data = ''; 
+        isAdmin.value=true;
     } else {
-        data = {}; // Initialize data as an empty object
-        data.id_cliente =  store.userIdCliente ; // Set the value property
+        data = {};
+        data.id_cliente =  store.userIdCliente ;
     }
     try {
         const response = await axios.post('/usuarios/listar', data, {
@@ -195,6 +197,7 @@ const resetForm = () => {
                                 <Column field="id_usuario" header="Id"></Column>
                                 <Column field="nome" header="Nome"></Column>
                                 <Column field="email" header="E-mail"></Column>
+                                <Column v-if="isAdmin" field="nome_cliente" header="Cliente"></Column>
                                 <Column field="role" header="role"></Column>
                                 <Column field="ativo" header="Ativo">
                                     <template #body="{ data }">
