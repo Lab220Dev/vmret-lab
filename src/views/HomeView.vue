@@ -1,11 +1,9 @@
 <script setup>
 import { onMounted, ref, reactive } from 'vue';
-import axios from 'axios';
+import axios from '@/axios.js';
 import LastRecalls from '@/components/LastRecalls.vue';
 import MostRecalled from '@/components/MostRecalled.vue';
 import { useAuthStore } from '@/store/authStore'; //valida o token
-
-axios.defaults.baseURL = 'http://localhost:3000/api';
 
 // Usa a store
 const store = useAuthStore(); // useStore é chamado aqui
