@@ -6,7 +6,6 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import axios from '@/axios.js'
 import { useAuthStore } from '@/store/authStore.js';
-import { toRaw } from 'vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const showDialog = ref(false);
@@ -78,7 +77,7 @@ const buscar = async () => {
         }
         // mostra o diálogo se não houver resultados
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
-            dialogMessage.value = 'Nenhum resultado encontrado para os filtros aplicados.';
+            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             showDialog.value = true;
         }
     } catch (error) {
@@ -236,7 +235,7 @@ const fetchFuncionarios = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioItems/listarFuncionario', data, {
+        const response = await axios.post('/funcionarios/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -277,52 +276,52 @@ onMounted(() => {
                 <h5 class="my-4 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Div de busca de informações para o relatório -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
                             optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
                             optionValue="value" placeholder="Todos" ref="dropdown2"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
                             optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
                             optionValue="value" placeholder="Todos" ref="dropdown4"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-6 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5"/>
+                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker1"
                             @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
                             @open="handleDatepickerOpen" placeholder="Selecione uma data final"/>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <!-- Botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
                 </div>
@@ -376,22 +375,12 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!--  mensagem de erro -->
-  <Dialog :visible.sync="showDialog" style="width: 20vw; height: 27vh;" :modal="true" :closable="false" >
-    <template #header>
-      <div class="dialog-header">
-        <span style="font-size: 1.5rem;">Não encontrado</span>
-        <i class="pi pi-exclamation-triangle dialog-icon" style="font-size: 2rem; margin-left: 8px;"></i>
-        
-        
-      </div>
-    </template>
-    <div class="dialog-content">
-      <p class="dialog-message">{{ dialogMessage }}</p>
-    </div>
-    <template #footer>
-      <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
-    </template>
-  </Dialog>
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
+        <p>{{ dialogMessage }}</p>
+        <template #footer>
+            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+        </template>
+    </Dialog>
 </template>
 
 <style>
@@ -401,10 +390,6 @@ onMounted(() => {
   justify-content: space-between;
 }
 
-.dialog-icon {
-  color: #f00; /* Altere a cor conforme necessário */
-  margin-left: auto;
-}
 
 .dialog-content {
   padding: 1rem;

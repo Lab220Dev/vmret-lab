@@ -201,11 +201,11 @@ onMounted(() => {
                     </div>
         <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" @open="handleDatepickerOpen":enable-time-picker="false" placeholder="Selecione uma data inicial"/>
+                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format"  auto-apply locale="pt-BR" @open="handleDatepickerOpen":enable-time-picker="false" placeholder="Selecione uma data inicial"/>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" @open="handleDatepickerOpen" :enable-time-picker="false" placeholder="Selecione uma data final"/>
+                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format"  auto-apply locale="pt-BR" @open="handleDatepickerOpen" :enable-time-picker="false" placeholder="Selecione uma data final"/>
                     </div>
                 </div>
                 </div>

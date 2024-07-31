@@ -21,16 +21,15 @@ const formatDateTime = (date) => {
 </script>
 
 <template>
-    <div class="card">
         <div class="header" style="display: flex;">
             <div class="title" style="display: flex; align-items: center;">
                 <h5 style="margin-right: 5px;">Últimas retiradas</h5>
             </div>
 
-            <i v-tooltip="'Limitado aos últimos 10 itens retirados'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray;"></i>
+            <i v-tooltip="'Limitado aos últimos 5 itens retirados.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray;"></i>
             
         </div>
-        <DataTable :value="props.products" :rows="5" paginator responsiveLayout="scroll">
+        <DataTable :value="props.products" :rows="5" responsiveLayout="scroll">
             <Column field="id_dm" header="Máquina" sortable style="width: 25%"></Column>
             <Column field="ProdutoSKU" header="SKU" sortable style="width: 15%"></Column>
             <Column field="ProdutoDescricao" header="Descrição" sortable style="width: 30%"></Column>
@@ -40,15 +39,7 @@ const formatDateTime = (date) => {
                 </template>
             </Column>
         </DataTable>
-    </div>
 </template>
 <style>
-    .grid {
-        margin: 0;
-    
-    }
-    .card {
-        margin-bottom: 0 !important;
-        align-content: start;
-    }
+
 </style>

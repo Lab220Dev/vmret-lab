@@ -1,11 +1,9 @@
 <script setup>
 import { onMounted, ref, reactive } from 'vue';
-import axios from 'axios';
+import axios from '@/axios.js';
 import LastRecalls from '@/components/LastRecalls.vue';
 import MostRecalled from '@/components/MostRecalled.vue';
 import { useAuthStore } from '@/store/authStore'; //valida o token
-
-axios.defaults.baseURL = 'http://localhost:3000/api';
 
 // Usa a store
 const store = useAuthStore(); // useStore é chamado aqui
@@ -104,10 +102,11 @@ onMounted(() => {
 
 <template>
     <div class="grid">
-        <!--cards-->
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12 m-0">
+        <!-- 4 cards pequenos -->
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12 mb-0">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
+                    <!--card 1-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Orders</span>
                         <div class="text-900 font-medium text-xl">152</div>
@@ -120,9 +119,10 @@ onMounted(() => {
                 <span class="text-500">since last visit</span>
             </div>
         </div>
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
+                    <!--card 2-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Revenue</span>
                         <div class="text-900 font-medium text-xl">$2.100</div>
@@ -135,9 +135,10 @@ onMounted(() => {
                 <span class="text-500">since last week</span>
             </div>
         </div>
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12">
-            <div class="card mb-0">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
+            <div class="card">
                 <div class="flex justify-content-between mb-3">
+                    <!--card 3-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Customers</span>
                         <div class="text-900 font-medium text-xl">28441</div>
@@ -150,9 +151,10 @@ onMounted(() => {
                 <span class="text-500">newly registered</span>
             </div>
         </div>
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
+                    <!--card 4-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Comments</span>
                         <div class="text-900 font-medium text-xl">152 Unread</div>
@@ -165,85 +167,42 @@ onMounted(() => {
                 <span class="text-500">responded</span>
             </div>
         </div>
-    
-        <div class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <!--chart-->
-            <div class="card">
+        <!--primeira coluna -->
+        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12 pb-0 mb-0">
+            <div class="card mb-0 dash">
                 <h5>Keep Alive</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions" />
             </div>
-        </div>
 
- <div v-if="canViewLastRecalls" class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <MostRecalled :most="most" />
- </div>
-
-        <!-- começo do componente de últimas retiradas, só se for permitido -->
-        <div v-if="canViewLastRecalls" class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <LastRecalls :products="products" />
-        </div>
-        <!-- fim do componente de últimas retiradas -->
-
-        <div class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <div class="card">
-                <div class="flex align-items-center justify-content-between mb-4">
-                    <h5>Itens com estoque baixo</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu1.toggle($event)"></Button>
-                        <Menu ref="menu1" :popup="true" :model="items"></Menu>
-                    </div>
+            <div v-if="canViewLastRecalls">
+                <div class="card mb-0">
+                    <LastRecalls :products="products" />
                 </div>
-                <span class="block text-600 font-medium mb-3">TODAY</span>
-                <ul class="p-0 mx-0 mt-0 mb-4 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Richard Jones
-                            <span class="text-700">has purchased a blue t-shirt for <span class="text-blue-500">79$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-download text-xl text-orange-500"></i>
-                        </div>
-                        <span class="text-700 line-height-3">Your request for withdrawal of <span class="text-blue-500 font-medium">2500$</span> has been initiated.</span>
-                    </li>
-                </ul>
-                <span class="block text-600 font-medium mb-3">YESTERDAY</span>
-                <ul class="p-0 m-0 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Keyser Wick
-                            <span class="text-700">has purchased a black jacket for <span class="text-blue-500">59$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-question text-xl text-pink-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Jane Davis
-                            <span class="text-700">has posted a new questions about your product.</span>
-                        </span>
-                    </li>
-                </ul>
+            </div>
+        </div>
+
+        <!--segunda coluna-->
+        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
+            <!-- falta tabela ainda para popular os itens baixos-->
+            <div class="card mb-0">
+                <div class="header" style="display: flex">
+                    <div class="title" style="display: flex; align-items: center">
+                        <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
+                    </div>
+                    <i v-tooltip="''" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+                </div>
+                <DataTable :rows="5" responsiveLayout="scroll">
+                    <Column field="ProdutoNome" header="Item" sortable style="width: 40%"></Column>
+                    <Column field="ProdutoSKU" header="SKU" sortable style="width: 30%"></Column>
+                    <Column field="TotalQuantidade" header="Quantidade" sortable style="width: 30%"></Column>
+                </DataTable>
+            </div>
+            <div class="card mb-0">
+                <div v-if="canViewLastRecalls">
+                    <MostRecalled :most="most" />
+                </div>
             </div>
         </div>
     </div>
 </template>
-<style scoped>
-.grid {
-    margin: 0;
-    
-}
-.card {
-    margin-bottom: 0 !important;
-    align-content: start;
-}
-
-</style>
+<style scoped></style>

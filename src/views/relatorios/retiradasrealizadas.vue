@@ -71,7 +71,7 @@ const buscar = async () => {
         });
         retiradas.value = response.data;
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
-            dialogMessage.value = 'Nenhum resultado encontrado para os filtros aplicados.';
+            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             showDialog.value = true;
         }
         if (retiradas.value.length === 0) {
@@ -241,56 +241,57 @@ onMounted(() => {
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
 
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
                             optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
                             optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
                             optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
                             optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
                             optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
                             placeholder="Selecione uma data inicial" ref="datepicker1" @open="handleDatepickerOpen" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
                             placeholder="Selecione uma data final" ref="datepicker2" @open="handleDatepickerOpen" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
                             @click="buscar" />
                     </div>
 
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
                 </div>
+                
                 <!--  datatable do relatorio -->
                 <div class="datatable-wrapper">
                     <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
@@ -331,7 +332,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!--  mensagem de erro -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />

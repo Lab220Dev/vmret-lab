@@ -28,8 +28,8 @@ onMounted(() => {
 <template>
     <div class="card vh ">
         <h5 class="my-4 text-2xl">Estoques da DM</h5>
-        <div class="my-2 mt-3">
-            <Dropdown id="dm" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label" optionValue="value" placeholder="Selecione a DM" />
+        <div class="my-2">
+            <Dropdown id="dm" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label" optionValue="value" placeholder="Selecione a DM" class="mb-2" />
         </div>
 
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
