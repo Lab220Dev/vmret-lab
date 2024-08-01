@@ -4,7 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
-import imagePlaceholder from '@/assets/images/placeholder4.png';
+import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';

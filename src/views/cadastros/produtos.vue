@@ -3,7 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
-import imagePlaceholder from '@/assets/images/placeholder4.png';
+import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -124,7 +124,7 @@ const saveProduto = async () => {
     if (selectedInfoFile.value) {
         const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
-        formData.append('file_info', selectedFile.value);
+        formData.append('file_info', selectedInfoFile.value);
     }
 
     if (selectedSecFile.value) {
@@ -225,7 +225,7 @@ const updateProduto = async () => {
 };
 
 const getImagem = async (filename) => {
-    if (filename === '') {
+    if (!filename) {
         return imagePlaceholder;
     }
     try {
@@ -236,12 +236,16 @@ const getImagem = async (filename) => {
         });
         if (response.status === 200) {
             const { image, mimeType } = response.data;
-            return `data:${mimeType};base64,${image}`;
+            const imageUrl = `data:${mimeType};base64,${image}`;
+            console.log('Image URL:', imageUrl);
+            return imageUrl;
         }
     } catch (error) {
+        console.error('Error fetching image:', error);
         return imagePlaceholder;
     }
 };
+
 
 
 watch(active, (newIndex, oldIndex) => {
@@ -264,8 +268,6 @@ const resetForm = () => {
         validadedias: '',
         imagem1: '',
         imagem2: '',
-        imagem3: '',
-        imagem4: '',
         imagemdetalhe: ''
     };
     selectedFile.value = null;

@@ -101,18 +101,16 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="grid">
-        <!-- 4 cards pequenos -->
-        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12 mb-0">
+    <div class="grid grid-cols-12">
+        <!--cards-->
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
-                    <!--card 1-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Orders</span>
                         <div class="text-900 font-medium text-xl">152</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round"
-                        style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
                     </div>
                 </div>
@@ -123,13 +121,11 @@ onMounted(() => {
         <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
-                    <!--card 2-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Revenue</span>
                         <div class="text-900 font-medium text-xl">$2.100</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round"
-                        style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-map-marker text-orange-500 text-xl"></i>
                     </div>
                 </div>
@@ -140,13 +136,11 @@ onMounted(() => {
         <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card">
                 <div class="flex justify-content-between mb-3">
-                    <!--card 3-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Customers</span>
                         <div class="text-900 font-medium text-xl">28441</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round"
-                        style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-inbox text-cyan-500 text-xl"></i>
                     </div>
                 </div>
@@ -157,13 +151,11 @@ onMounted(() => {
         <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
-                    <!--card 4-->
                     <div>
                         <span class="block text-500 font-medium mb-3">Comments</span>
                         <div class="text-900 font-medium text-xl">152 Unread</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-purple-100 border-round"
-                        style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-comment text-purple-500 text-xl"></i>
                     </div>
                 </div>
@@ -171,43 +163,34 @@ onMounted(() => {
                 <span class="text-500">responded</span>
             </div>
         </div>
-        <!--primeira coluna -->
-        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12 pb-0 mb-0">
-            <div class="card mb-0 dash">
+
+        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
+
+            <div class="card">
                 <h5>Keep Alive</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions" />
             </div>
 
-            <div v-if="canViewLastRecalls">
-                <div class="card mb-0">
-                    <LastRecalls :products="products" />
-                </div>
-            </div>
+            <div v-if="canViewLastRecalls" class="card"><LastRecalls :products="products" /></div>
         </div>
 
-        <!--segunda coluna-->
         <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
-            <!-- falta tabela ainda para popular os itens baixos-->
-            <div class="card mb-0">
-                <div class="header" style="display: flex">
-                    <div class="title" style="display: flex; align-items: center">
-                        <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
-                    </div>
-                    <i v-tooltip="''" class="mt-1 pi pi-info-circle"
-                        style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+
+            <div class="card">
+                <div class="title" style="display: flex; align-items: center">
+                    <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
+
+                <!-- <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i> -->
+
                 <DataTable :rows="5" responsiveLayout="scroll">
                     <Column field="ProdutoNome" header="Item" sortable style="width: 40%"></Column>
                     <Column field="ProdutoSKU" header="SKU" sortable style="width: 30%"></Column>
                     <Column field="TotalQuantidade" header="Quantidade" sortable style="width: 30%"></Column>
                 </DataTable>
             </div>
-            <div v-if="canViewLastRecalls">
-                <div class="card mb-0">
-                    <MostRecalled :most="most" />
-                </div>
-            </div>
+
+            <div v-if="canViewLastRecalls" class="card"><MostRecalled :most="most" /></div>
         </div>
     </div>
 </template>
-<style scoped></style>
