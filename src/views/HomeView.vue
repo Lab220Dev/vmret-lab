@@ -111,7 +111,8 @@ onMounted(() => {
                         <span class="block text-500 font-medium mb-3">Orders</span>
                         <div class="text-900 font-medium text-xl">152</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round"
+                        style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
                     </div>
                 </div>
@@ -127,7 +128,8 @@ onMounted(() => {
                         <span class="block text-500 font-medium mb-3">Revenue</span>
                         <div class="text-900 font-medium text-xl">$2.100</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round"
+                        style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-map-marker text-orange-500 text-xl"></i>
                     </div>
                 </div>
@@ -143,7 +145,8 @@ onMounted(() => {
                         <span class="block text-500 font-medium mb-3">Customers</span>
                         <div class="text-900 font-medium text-xl">28441</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round"
+                        style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-inbox text-cyan-500 text-xl"></i>
                     </div>
                 </div>
@@ -159,7 +162,8 @@ onMounted(() => {
                         <span class="block text-500 font-medium mb-3">Comments</span>
                         <div class="text-900 font-medium text-xl">152 Unread</div>
                     </div>
-                    <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width: 2.5rem; height: 2.5rem">
+                    <div class="flex align-items-center justify-content-center bg-purple-100 border-round"
+                        style="width: 2.5rem; height: 2.5rem">
                         <i class="pi pi-comment text-purple-500 text-xl"></i>
                     </div>
                 </div>
@@ -189,7 +193,8 @@ onMounted(() => {
                     <div class="title" style="display: flex; align-items: center">
                         <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                     </div>
-                    <i v-tooltip="''" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+                    <i v-tooltip="''" class="mt-1 pi pi-info-circle"
+                        style="cursor: pointer; font-size: 1.2em; color: gray"></i>
                 </div>
                 <DataTable :rows="5" responsiveLayout="scroll">
                     <Column field="ProdutoNome" header="Item" sortable style="width: 40%"></Column>
@@ -197,8 +202,8 @@ onMounted(() => {
                     <Column field="TotalQuantidade" header="Quantidade" sortable style="width: 30%"></Column>
                 </DataTable>
             </div>
-            <div class="card mb-0">
-                <div v-if="canViewLastRecalls">
+            <div v-if="canViewLastRecalls">
+                <div class="card mb-0">
                     <MostRecalled :most="most" />
                 </div>
             </div>

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import router from './router/router'
 
 //http://vmretnew.sgilab220.com.br/api
 //http://localhost:3000/api

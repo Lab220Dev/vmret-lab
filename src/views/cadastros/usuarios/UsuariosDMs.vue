@@ -15,7 +15,6 @@ const todosOption = { label: 'Todos', value: null };
 const visible = ref(false);
 const senha = ref('');
 const plantas = ref([todosOption]);
-const isAdmin = ref(false)
 const usuario = reactive({
     nome: '',
     email: '',
@@ -115,11 +114,10 @@ const fetchUsuarios = async () => {
     let data = null;
 
     if (store.userRole === "Administrador") {
-        data = ''; 
-        isAdmin.value=true;
+        data = ''; // Set to an empty string if the role is "Administrador"
     } else {
-        data = {};
-        data.id_cliente =  store.userIdCliente ;
+        data = {}; // Initialize data as an empty object
+        data.id_cliente =  store.userIdCliente ; // Set the value property
     }
     try {
         const response = await axios.post('/usuarios/listar', data, {
@@ -187,27 +185,19 @@ const resetForm = () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5 class="mt-2">Usuário Web</h5>
+                <h5 class="mt-2">Usuários Dispenser Machines</h5>
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar  Usuário Web">
                         <div class="col-12">
                             <DataTable :value="ListaUsuario" selectionMode="single" tableStyle="min-width: 25%"
                                 :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
                                 @rowSelect="onRowSelect" paginator :rows="10">
-                                <Column field="id_usuario" header="Id"></Column>
                                 <Column field="nome" header="Nome"></Column>
-                                <Column field="email" header="E-mail"></Column>
-                                <Column v-if="isAdmin" field="nome_cliente" header="Cliente"></Column>
-                                <Column field="role" header="role"></Column>
+                                <Column field="email" header="Login"></Column>
                                 <Column field="ativo" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi"
                                             :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
-                                    </template>
-                                </Column>
-                                <Column field="last_login" header="Último Login">
-                                    <template #body="{ data }">
-                                        {{ formatDate(new Date(data.last_login)) }}
                                     </template>
                                 </Column>
                                 <Column style="min-width: 8rem">
@@ -220,14 +210,14 @@ const resetForm = () => {
                         </div>
                     </TabPanel>
                     <TabPanel header="Adicionar Usuário Web">
-                        <h5 class="mt-2">{{ visible ? 'Editar ' : 'Novo ' }}Usuário Web</h5>
+                        <h5 class="mt-2">{{ visible ? 'Editar ' : 'Novo ' }}Usuário</h5>
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Nome:</label>
                                 <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                             </div>
                             <div class="full lg:col-7 md:col-7 sm:col-12">
-                                <label for="email">E-mail:</label>
+                                <label for="email">Login:</label>
                                 <InputText class="my-2" v-model="usuario.email" id="email" />
                             </div>
                             <div class="full lg:col-5 md:col-5 sm:col-12">
@@ -237,16 +227,6 @@ const resetForm = () => {
                             <div class="full lg:col-5 md:col-5 sm:col-12">
                                 <label for="senha">Confirme a Senha:</label>
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" />
-                            </div>
-                            <div class="full lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">Perfil:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.perfil" :options="dropdownItems"
-                                    optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
-                            </div>
-                            <div class="full lg:col-4 md:col-4 sm:col-12">
-                                <label for="planta">Planta:</label>
-                                <Dropdown class="my-2" id="planta" v-model="usuario.planta" :options="plantas"
-                                    optionLabel="label" optionValue="value" placeholder="Todos"></Dropdown>
                             </div>
 
                             <div class="full lg:col-4 md:col-4 sm:col-12">
