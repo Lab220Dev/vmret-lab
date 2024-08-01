@@ -172,7 +172,7 @@ onMounted(() => {
             </div>
         </div>
         <!--primeira coluna -->
-        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12 pb-0 mb-0">
+        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12 pb-0 mb-0" v-if="canViewLastRecalls">
             <div class="card mb-0 dash">
                 <h5>Keep Alive</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions" />
@@ -188,7 +188,7 @@ onMounted(() => {
         <!--segunda coluna-->
         <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
             <!-- falta tabela ainda para popular os itens baixos-->
-            <div class="card mb-0">
+            <div class="card mb-0" v-if="canViewLastRecalls">
                 <div class="header" style="display: flex">
                     <div class="title" style="display: flex; align-items: center">
                         <h5 style="margin-right: 5px">Itens com estoque baixo</h5>

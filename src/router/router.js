@@ -68,6 +68,24 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/relatorios/Metricasdm',
+                    name: 'Metricas da DM',
+                    component: () => import('@/views/relatorios/MetricasDM.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/PerformaceDM',
+                    name: 'Performace da DM',
+                    component: () => import('@/views/relatorios/PerformaceDM.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/PerformaceHoraDM',
+                    name: 'Performace por Hora da DM',
+                    component: () => import('@/views/relatorios/PerformaceHoraDM.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/cadastros/funcionarios',
                     name: 'cadastros de Funcionários',
                     component: () => import('@/views/cadastros/funcionarios.vue'),
@@ -142,6 +160,21 @@ const router = createRouter({
                     path: '/pages/empty',
                     name: 'empty',
                     component: () => import('@/views/pages/Empty.vue')
+                },
+                {
+                    path: '/avulso/consultastatus',
+                    name: 'Consulta Status',
+                    component: () => import('@/views/pages/Avulso/ConsultaStatus.vue')
+                },
+                {
+                    path: '/avulso/LiberacaoAvulsa',
+                    name: 'Liberação Avulsa',
+                    component: () => import('@/views/pages/Avulso/LiberacaoAvulsa.vue')
+                },
+                {
+                    path: '/pages/listaItensNaoAlocados',
+                    name: 'Lista de Itens Não Liberados',
+                    component: () => import('@/views/pages/ListaItensNaoAlocados.vue')
                 },
                 {
                     path: '/pages/crud',
