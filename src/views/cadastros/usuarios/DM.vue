@@ -3,7 +3,9 @@ import { useToast } from 'primevue/usetoast';
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const toast = useToast();
 const active = ref(0);
 const store = useAuthStore();
@@ -11,13 +13,18 @@ const loading = ref(false);
 const DM = reactive({
     nome: '',
     usuario: '',
-    senha: ''
+    senha: '',
+    cliente:''
 });
+const ListaClientes = ref([])
 const visible = ref(false);
 const status = ref([
     { name: 'Ativo', code: 'ativo' },
     { name: 'Inativo', code: 'inativo' }
 ]);
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 const confirmar = ref();
 const selectedVM = ref([]);
 const DMOptions = ref([
@@ -43,7 +50,9 @@ const onRowSelect = (event) => {
     show.value = true;
     DM.value = event.data;
 };
-
+const admin = () => {
+    return store.userRole === "Administrador";
+};
 const voltar = () => {
     active.value = 0;
     resetForm();
@@ -85,12 +94,14 @@ const formatDate = (value) => {
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
-        fetchUsuarios();
+        //fetchUsuarios();
         visible.value = false;
     }
 });
 onMounted(() => {
     fetchIdPlanta();
+    fetchCliente();
+    //admin();
     //fetchDMS();
 });
 
@@ -115,6 +126,24 @@ const fetchIdPlanta = async () => {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
+const fetchCliente = async () => {
+    loading.value = true;
+    try {
+        const response = await axios.post('/admin/cliente/listar', {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaClientes.value = response.data.map(({ id_cliente, nome }) => ({
+            label: nome,
+            value: id_cliente
+        }));
+    } catch (error) {
+        console.error('Erro ao listar plantas:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 </script>
 
 <template>
@@ -125,14 +154,24 @@ const fetchIdPlanta = async () => {
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar Dispenser Machines">
                         <div class="col-12">
-                            <DataTable :value="ListaDMS" selectionMode="single" tableStyle="min-width: 25%"
+                            <DataTable  v-model:filters="filters" :value="ListaDMS" selectionMode="single" tableStyle="min-width: 25%"
                                 :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
-                                @rowSelect="onRowSelect" paginator :rows="10">
+                                @rowSelect="onRowSelect" paginator :rows="10" :globalFilterFields="['id_DM','nome','email','nome_cliente','local','atualizado']">
+                                <template #header>
+                                    <div class="flex justify-content-end">
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
                                 <Column field="id_DM" header="Id"></Column>
                                 <Column field="nome" header="Número"></Column>
                                 <Column field="email" header="Identificação"></Column>
-                                <Column field="role" header="Cliente"></Column>
-                                <Column field="role" header="Localização"></Column>
+                                <Column field="nome_cliente" header="Cliente"></Column>
+                                <Column field="local" header="Localização"></Column>
                                 <Column field="ativo" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi"
@@ -153,12 +192,13 @@ const fetchIdPlanta = async () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel header="Adicionar Dispenser Machines">
+                    <TabPanel header="Adicionar Dispenser Machines" v-if="admin()" >
                         <h5 class="mt-2">{{ visible ? 'Editar ' : 'Nova ' }}Dispenser Machines</h5>
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
-                                <InputText class="my-2" v-model="DM.nome" id="name" type="text" />
+                                <Dropdown class="my-2" v-model="DM.cliente" :options="ListaClientes" optionLabel="label"
+                                optionValue="value" placeholder="Selecione um" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Numero da DM:</label>
@@ -242,7 +282,7 @@ const fetchIdPlanta = async () => {
                                         @click="saveDMs" />
                                     <Button style="width: 15%;"
                                         class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
-                                        icon="pi pi-trash" severity="primary" @click="active = 0" />
+                                        icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
                                 <Button v-if="!visible" style="width: 15%;"
                                     class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar"
                                     icon="pi pi-check" severity="info" @click="adicionarCliente" />

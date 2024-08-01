@@ -187,7 +187,7 @@ const resetForm = () => {
             <div class="card">
                 <h5 class="mt-2">Usuários Dispenser Machines</h5>
                 <TabView v-model:activeIndex="active">
-                    <TabPanel header="Listar  Usuário Web">
+                    <TabPanel header="Listar  Usuário DM">
                         <div class="col-12">
                             <DataTable :value="ListaUsuario" selectionMode="single" tableStyle="min-width: 25%"
                                 :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
@@ -209,7 +209,7 @@ const resetForm = () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel header="Adicionar Usuário Web">
+                    <TabPanel header="Adicionar Usuário DM">
                         <h5 class="mt-2">{{ visible ? 'Editar ' : 'Novo ' }}Usuário</h5>
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
@@ -242,7 +242,7 @@ const resetForm = () => {
                                     icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
                                 <Button style="width: 15%;"
                                     class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
-                                    icon="pi pi-trash" severity="primary" @click="voltar()" />
+                                    icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
                                     icon="pi pi-check" severity="info" @click="submitForm" />

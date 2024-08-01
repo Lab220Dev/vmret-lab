@@ -3,6 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -15,6 +16,9 @@ const ListaClientes = ref([]);
 const visible = ref(false);
 const deleteClienteDialog = ref(false);
 const item = ref({});
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 let cliente = reactive({
     nome: '',
     cpfcnpj: '',
@@ -168,9 +172,19 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Clientes">
                 <div class="col-12">
-                    <DataTable :value="ListaClientes" selectionMode="single" tableStyle="min-width: 25%"
+                    <DataTable  v-model:filters="filters" :value="ListaClientes" selectionMode="single" tableStyle="min-width: 25%"
                         :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
-                        @rowSelect="onRowSelect">
+                        @rowSelect="onRowSelect" :globalFilterFields="['id_cliente','nome','last_login']">
+                        <template #header>
+                                    <div class="flex justify-content-end">
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
                         <Column field="id_cliente" header="Id"></Column>
                         <Column field="nome" header="Nome"></Column>
                         <Column field="ativo" header="Ativo">
@@ -224,7 +238,7 @@ onMounted(() => {
                                         @click="atualizarCliente" />
                                     <Button style="width: 15%;"
                                         class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
-                                        icon="pi pi-trash" severity="primary" @click="active = 0" />
+                                        icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
                                     <Button v-if="!visible" style="width: 15%;"
                                         class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar"
                                         icon="pi pi-check" severity="info" @click="adicionarCliente" />

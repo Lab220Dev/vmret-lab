@@ -128,6 +128,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/cadastros/UsuarioDM',
+                    name: 'Cadastro de Usuarios Dispenser Machine',
+                    component: () => import('@/views/cadastros/usuarios/UsuariosDMs.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')

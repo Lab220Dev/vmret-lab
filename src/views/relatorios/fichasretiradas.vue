@@ -244,7 +244,7 @@ onMounted(() => {
                 <Card v-if="!show">
                     <template #title>{{ selectedItem.dm }}</template>
                     <template #content>
-                        <Button type="button" label="Voltar" icon="pi pi-check" severity="info" @click="voltar" />
+                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
                     </template>
                 </Card>
             </div>

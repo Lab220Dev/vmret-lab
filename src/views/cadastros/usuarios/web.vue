@@ -2,10 +2,10 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
+import { FilterMatchMode } from 'primevue/api';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+
 
 const active = ref(0);
 const store = useAuthStore();
@@ -16,7 +16,7 @@ const visible = ref(false);
 const senha = ref('');
 const plantas = ref([todosOption]);
 const isAdmin = ref(false)
-const usuario = reactive({
+let usuario = reactive({
     nome: '',
     email: '',
     perfil: '',
@@ -31,9 +31,13 @@ const dropdownItems = ref([
     { name: 'Operador', value: 'operador' },
     { name: 'Liberação Avulsa', value: 'avulsa' }
 ]);
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 const onRowSelect = (event) => {
-    show.value = true;
-    usuario.value = event.data;
+    visible.value = true;
+    usuario = event.data;
+    active.value = 1;
 };
 
 const voltar = () => {
@@ -115,11 +119,11 @@ const fetchUsuarios = async () => {
     let data = null;
 
     if (store.userRole === "Administrador") {
-        data = ''; 
-        isAdmin.value=true;
+        data = '';
+        isAdmin.value = true;
     } else {
         data = {};
-        data.id_cliente =  store.userIdCliente ;
+        data.id_cliente = store.userIdCliente;
     }
     try {
         const response = await axios.post('/usuarios/listar', data, {
@@ -174,7 +178,7 @@ onMounted(() => {
 });
 
 const resetForm = () => {
-    usuario.nome = '',
+        usuario.nome = '',
         usuario.Status = true,
         usuario.email = '',
         usuario.perfil = '',
@@ -191,9 +195,20 @@ const resetForm = () => {
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar  Usuário Web">
                         <div class="col-12">
-                            <DataTable :value="ListaUsuario" selectionMode="single" tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
-                                @rowSelect="onRowSelect" paginator :rows="10">
+                            <DataTable v-model:filters="filters" :value="ListaUsuario" selectionMode="single"
+                                tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows
+                                dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" paginator :rows="10"
+                                :globalFilterFields="['nome','email','nome_cliente','role','last_login']">
+                                <template #header>
+                                    <div class="flex justify-content-end">
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
                                 <Column field="id_usuario" header="Id"></Column>
                                 <Column field="nome" header="Nome"></Column>
                                 <Column field="email" header="E-mail"></Column>
@@ -234,7 +249,7 @@ const resetForm = () => {
                                 <label for="senha">Senha:</label>
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" />
                             </div>
-                            <div class="full lg:col-5 md:col-5 sm:col-12">
+                            <div class="full lg:col-5 md:col-5 sm:col-12" v-if="!visible">
                                 <label for="senha">Confirme a Senha:</label>
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" />
                             </div>
@@ -262,7 +277,7 @@ const resetForm = () => {
                                     icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
                                 <Button style="width: 15%;"
                                     class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
-                                    icon="pi pi-trash" severity="primary" @click="voltar()" />
+                                    icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
                                     icon="pi pi-check" severity="info" @click="submitForm" />
