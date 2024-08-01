@@ -118,7 +118,7 @@ watch(
 
 .uploaded-image {
     width: 200px;
-    height: 200px;
+    height: 150px;
     display: block;
 }
 
