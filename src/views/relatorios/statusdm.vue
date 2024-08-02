@@ -117,7 +117,7 @@ const handleDatepickerOpen = () => {
                 locale="pt-BR" 
                 auto-apply
                 :enable-time-picker="false" 
-                placeholder="Selecione uma data"
+                placeholder="Selecione uma data" teleport="body"
                 @open="handleDatepickerOpen"
             />
         </div>

@@ -163,9 +163,10 @@ onMounted(() => {
                 <span class="text-500">responded</span>
             </div>
         </div>
-        <!--primeira coluna -->
-        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12 pb-0 mb-0" v-if="canViewLastRecalls">
-            <div class="card mb-0 dash">
+
+        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
+
+            <div class="card">
                 <h5>Keep Alive</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions" />
             </div>
@@ -174,14 +175,10 @@ onMounted(() => {
         </div>
 
         <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
-            <!-- falta tabela ainda para popular os itens baixos-->
-            <div class="card mb-0" v-if="canViewLastRecalls">
-                <div class="header" style="display: flex">
-                    <div class="title" style="display: flex; align-items: center">
-                        <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
-                    </div>
-                    <i v-tooltip="''" class="mt-1 pi pi-info-circle"
-                        style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+
+            <div class="card">
+                <div class="title" style="display: flex; align-items: center">
+                    <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
 
                 <!-- <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i> -->
@@ -197,3 +194,4 @@ onMounted(() => {
         </div>
     </div>
 </template>
+

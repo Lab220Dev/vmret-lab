@@ -49,7 +49,7 @@ const handleFileUpload = (event) => {
             };
             reader.readAsDataURL(file);
         } else {
-            toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
+            toast.add({ severity: 'error', summary: 'Erro', detail:` O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
         }
     }
 };
@@ -65,7 +65,7 @@ watch(
         if (typeof newVal === 'string') {
             imageData.value = newVal;
         } else if (typeof newVal === 'object' && newVal !== null) {
-            imageData.value = `data:${newVal.mimeType};base64,${newVal.image}`;
+            imageData.value = `data:${newVal.mimeType};base64,${newVal.image}` ;
         } else {
             imageData.value = null;
         }
