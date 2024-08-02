@@ -270,13 +270,13 @@ onMounted(() => {
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
-                            placeholder="Selecione uma data inicial" ref="datepicker1" @open="handleDatepickerOpen" />
+                            placeholder="Selecione uma data inicial" teleport="body" ref="datepicker1" @open="handleDatepickerOpen" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
-                            placeholder="Selecione uma data final" ref="datepicker2" @open="handleDatepickerOpen" />
+                            placeholder="Selecione uma data final" teleport="body" ref="datepicker2" @open="handleDatepickerOpen" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->

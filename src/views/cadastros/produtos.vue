@@ -79,7 +79,7 @@ const loadProdutos = async () => {
         loading.value = true
         const response = await axios.post('/produtos/listar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization:`Bearer ${store.token}` 
             }
         });
         ListaProdutos.value = response.data;
@@ -100,12 +100,12 @@ const fetchIdPlanta = async () => {
     try {
         const response = await axios.post('produtos/listarplanta', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` 
             }
         });
         plantasoptions = response.data;
         formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
-            label: `Planta ${plantasoptions.id_planta}`,
+            label: `Planta ${plantasoptions.id_planta}` ,
             value: plantasoptions.id_planta
         }));
     } catch (error) {
@@ -116,7 +116,7 @@ const fetchIdPlanta = async () => {
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`;
+        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png` ;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
     }  
@@ -141,7 +141,7 @@ const saveProduto = async () => {
         loading.value = true
         await axios.post('/produtos/adicionar', formData, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
+                Authorization: `Bearer ${store.token}` ,
                 'Content-Type': 'multipart/form-data'
             }
         });
@@ -165,7 +165,7 @@ const deleteProduto = async () => {
         loading.value = true
         await axios.post('/produtos/deleteProduto', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` 
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
@@ -189,17 +189,17 @@ const updateProduto = async () => {
     });
 
     if (selectedFile.value) {
-        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`);
+        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png` );
         formData.append('file_principal', selectedFile.value);
     }
 
     if (selectedInfoFile.value) {
-        formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`);
+        formData.append('imagemdetalhe', ` produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`);
         formData.append('file_info', selectedInfoFile.value);
     }
 
     if (selectedSecFile.value) {
-        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`);
+        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`) ;
         formData.append('file_secundario', selectedSecFile.value);
     }
 
@@ -207,7 +207,7 @@ const updateProduto = async () => {
         loading.value = true
         await axios.post('/produtos/atualizar', formData, {
             headers: {
-                Authorization: `Bearer ${store.token}`,
+                Authorization: `Bearer ${store.token}` ,
                 'Content-Type': 'multipart/form-data'
             }
         });
@@ -231,7 +231,7 @@ const getImagem = async (filename) => {
     try {
         const response = await axios.get(`/image/produto/${store.userIdCliente}/${filename}`, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` 
             }
         });
         if (response.status === 200) {
