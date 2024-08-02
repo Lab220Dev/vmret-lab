@@ -237,7 +237,6 @@ const getImagem = async (filename) => {
         if (response.status === 200) {
             const { image, mimeType } = response.data;
             const imageUrl = `data:${mimeType};base64,${image}`;
-            console.log('Image URL:', imageUrl);
             return imageUrl;
         }
     } catch (error) {
