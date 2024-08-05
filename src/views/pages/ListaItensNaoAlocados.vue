@@ -35,8 +35,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card vh">
-        <div class="datatable-wrapper">
+    <div class="card vh ">
+        <h5 class="my-4 text-2xl">Itens não alocados</h5>
             <DataTable v-model:filters="filters" :value="itens" stripedRows showGridlines paginator :rows="10"
                 :rowsPerPageOptions="[5, 10, 20, 50]" rowHover 
                 :globalFilterFields="['ProdutoNome', 'descricao', 'ProdutoSKU']" selectionMode="single"
@@ -57,9 +57,48 @@ onMounted(() => {
                 <Column field="ProdutoSKU" sortable header="CA"></Column>
             </DataTable>
         </div>
-    </div>
+    
     
     <LoadingSpinner v-if="loading" />
 </template>
 
-<style lang="css" scoped></style>
+<style lang="css" scoped>
+.card {
+    overflow-x: auto;
+}
+
+.datatable-wrapper {
+    overflow: hidden;
+    width: 100vw;
+}
+
+.filtrar {
+    margin-top: 25px;
+}
+
+.drop {
+    width: 100%;
+}
+
+@media (max-width: 580px) {
+    .form .field {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .form .field .drop {
+        width: 100%;
+    }
+
+    .form .field .filtrar,
+    .form .field .exportar {
+        width: 100%;
+    }
+}
+
+.field {
+    white-space: nowrap;
+    text-align: left;
+}
+</style>

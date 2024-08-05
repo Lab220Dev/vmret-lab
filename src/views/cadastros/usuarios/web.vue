@@ -376,7 +376,7 @@ const resetForm = () => {
                             
 
                             <div class="flex align-items-center justify-content-end field col-12 mt-7">
-                                <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="submitForm()" />
+                                <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-refresh" severity="primary" @click="submitForm()" />
                                 <Button style="width: 30%" class="buttons flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" />
                             </div>

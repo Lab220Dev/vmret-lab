@@ -648,7 +648,7 @@ const handleDatepickerOpen = () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
+                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
                                 <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
 
                                 <Button v-if="!editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />

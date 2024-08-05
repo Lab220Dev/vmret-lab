@@ -235,7 +235,7 @@ const resetForm = () => {
                             </div>
                             <div class="flex align-items-center justify-content-end field col-12">
                                 <Button v-if="visible" style="width: 15%;"
-                                    class="buttons flex align-items-center justify-content-center m-2" label="Atualizar"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
                                     icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
                                 <Button v-if="visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Excluir"

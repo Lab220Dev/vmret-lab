@@ -8,7 +8,7 @@ const { layoutConfig } = useLayout();
 
 <template>
     <div class="layout-footer">
-        <span class="font-medium ml-2">Lab 220 v2.1.2</span>
+        <span class="font-medium ml-2">Lab 220 v2.1.3</span>
     </div>
 </template>
 <style lang="scss" scoped></style>

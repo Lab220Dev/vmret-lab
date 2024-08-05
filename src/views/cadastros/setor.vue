@@ -263,7 +263,7 @@ const mockData = [
                                 </div>
                                 <!-- inicio dos botoes -->
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
                                     <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
                                     <Button v-if="!editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
                                 </div>

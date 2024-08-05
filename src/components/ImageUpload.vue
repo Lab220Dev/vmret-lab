@@ -149,10 +149,10 @@ watch(
     margin-right: 0.5rem;
 }
 
-@media (max-width: 1030px){
+@media (max-width: 1085px){
 .uploaded-image {
     width: 150px;
-    height: 150px;
+    height: 100px;
 }
 
 .button {

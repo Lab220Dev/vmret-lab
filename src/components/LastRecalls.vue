@@ -30,10 +30,10 @@ const formatDateTime = (date) => {
             
         </div>
         <DataTable :value="props.products" :rows="5" responsiveLayout="scroll">
-            <Column field="id_dm" header="Máquina" sortable style="width: 20%"></Column>
-            <Column field="ProdutoSKU" header="SKU" sortable style="width: 15%"></Column>
-            <Column field="ProdutoDescricao" header="Descrição" sortable style="width: 30%"></Column>
-            <Column field="Dia" header="Data e Hora" sortable style="width: 35%">
+            <Column field="id_dm" header="Máquina" sortable style="width: 10%"></Column>
+            <Column field="ProdutoSKU" header="SKU" sortable style="width: 25%"></Column>
+            <Column field="ProdutoDescricao" header="Descrição" sortable style="width: 25%"></Column>
+            <Column field="Dia" header="Data e Hora" sortable style="width: 40%">
                 <template #body="slotProps">
                     {{ formatDateTime(slotProps.data.Dia) }}
                 </template>
