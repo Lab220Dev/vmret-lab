@@ -227,7 +227,7 @@ onMounted(() => {
                                         <label for="codigo">Menção Ficha Retirada:</label>
                                         <Textarea style="overflow: hidden; max-height: 200px; min-width: 500px" v-model="cliente.textoretirada" class="my-2" rows="5" cols="30" />
                                     </div>
-                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
+                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-2 md:col-4 sm:col-12">
                                         
                                         <label class="mt-3 ml-4" for="switch1">Tem integração?</label>
                                         <InputSwitch class="grid mt-3 ml-3" v-model="cliente.usarApi" inputId="switch1" />
@@ -235,10 +235,10 @@ onMounted(() => {
                                         
                                     </div>
 
-                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12"><label class="mt-3 ml-4" for="switch2">Cliente Ativo?</label><InputSwitch class="grid mt-3 ml-3" v-model="cliente.ativo" inputId="switch2" /></div>
+                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-2 md:col-4 sm:col-12"><label class="mt-3 ml-4" for="switch2">Cliente Ativo?</label><InputSwitch class="grid mt-3 ml-3" v-model="cliente.ativo" inputId="switch2" /></div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarCliente" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
                                     <Button style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
                                     <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
                                 </div>

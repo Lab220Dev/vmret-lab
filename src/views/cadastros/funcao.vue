@@ -167,7 +167,7 @@ onMounted(() => {
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- <Button label="Adicionar" type="submit" /> -->
 
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncao" />
+                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncao" />
                                     <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" />
                                     <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncao" />
                                 </div>

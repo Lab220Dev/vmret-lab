@@ -113,34 +113,34 @@ const handleDatepickerOpen = () => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Metricas da DM</h5>
+                <h5 class="my-4 text-2xl">Métricas da DM</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Div de busca de informações para o relatório -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
                             optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker1"
                             @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                             :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
                             @open="handleDatepickerOpen" placeholder="Selecione uma data final"/>
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <!-- Botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
                 </div>

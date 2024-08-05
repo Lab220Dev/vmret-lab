@@ -353,7 +353,7 @@ onMounted(() => {
 }
 
 .datatable-wrapper {
-    overflow-x: auto;
+    overflow: hidden;
     width: 100vw;
 }
 

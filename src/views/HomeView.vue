@@ -164,19 +164,19 @@ onMounted(() => {
             </div>
         </div>
 
-        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
-
-            <div class="card">
+        <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
+            <div class="card big">
                 <h5>Keep Alive</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions" />
             </div>
 
-            <div v-if="canViewLastRecalls" class="card"><LastRecalls :products="products" /></div>
+            <div v-if="canViewLastRecalls" class="card big">
+                <LastRecalls :products="products" />
+            </div>
         </div>
 
-        <div class="col-12 xl:col-6 lg:col-6 md:col-6 sm:12">
-
-            <div class="card">
+        <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
+            <div class="card big">
                 <div class="title" style="display: flex; align-items: center">
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
@@ -190,8 +190,23 @@ onMounted(() => {
                 </DataTable>
             </div>
 
-            <div v-if="canViewLastRecalls" class="card"><MostRecalled :most="most" /></div>
+            <div v-if="canViewLastRecalls" class="card big">
+                <MostRecalled :most="most" />
+            </div>
         </div>
     </div>
 </template>
+<style>
+/* @media (min-width: 980px) and (max-width:1550px) {
+    .big {
+        height: 270px !important;
+    }
+}
 
+.big {
+            flex: 1 1 100%; 
+            max-width: 100%; 
+            height: 400px; 
+            box-sizing: border-box; 
+        } */
+</style>

@@ -366,7 +366,7 @@ onMounted(async () => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
+                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" />
                     <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
                     <Button v-if="!visible" style="width: 15%; "class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
@@ -392,8 +392,7 @@ onMounted(async () => {
 
 <style scoped>
 .overflow-scroll {
-    overflow-y: scroll;
-    overflow-x: hidden !important;
+    overflow-x: auto !important;
 
     resize: none;
 }
