@@ -137,8 +137,8 @@ onMounted(() => {
             <TabPanel header="Listar Centros de Custo">
                 <div class="col-12">
                     <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        <Column field="id_centro_custo" header="Código"></Column>
-                        <Column field="nome" header="Centro de Custo (Nome)"></Column>
+                        <Column field="Codigo" header="Código"></Column>
+                        <Column field="Nome" header="Centro de Custo (Nome)"></Column>
                     </DataTable>
                 </div>
             </TabPanel>

@@ -1,12 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 
-const relatorio = ref({
-    dm: ''
-});
+import axios from '@/axios.js'
+import { useAuthStore } from '@/store/authStore.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+const dm = ref([]);
+const loading = ref(false);
 const formatedDMOptions = ref([]);
+const relatorio = ref({
+    dms:''
+})
 const dms = ref([]);
-
+const store = useAuthStore();
 const mockData = [
     { SKU: 1, produto: 'Produto 1', posicao: 'Posição 1', quantidade_atual: 'QA1', quantidade_minima: 'QM1', capacidade: 'CAP1' },
     { SKU: 2, produto: 'Produto 2', posicao: 'Posição 2', quantidade_atual: 'QA2', quantidade_minima: 'QM2', capacidade: 'CAP2' },
@@ -19,8 +24,31 @@ const mockData = [
     { SKU: 9, produto: 'Produto 9', posicao: 'Posição 9', quantidade_atual: 'QA9', quantidade_minima: 'QM9', capacidade: 'CAP1' },
     { SKU: 10, produto: 'Produto 10', posicao: 'Posição 10', quantidade_atual: 'QA10', quantidade_minima: 'QM10', capacidade: 'CAP10' }
 ];
+const todosOption = { label: 'Todos', value: null };
 
+const fetchDM = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        loading.value = true;
+        const response = await axios.post('/relatorioItems/listardm', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        dm.value = [todosOption, ...response.data.map(({ id_dm }) => ({
+            label: `DM  ${id_dm}`,
+            value: id_dm
+        }))];
+    } catch (error) {
+        console.error('Erro ao carregar lista de dms:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 onMounted(() => {
+    fetchDM();
     dms.value = mockData;
 });
 </script>
@@ -29,7 +57,8 @@ onMounted(() => {
     <div class="card vh ">
         <h5 class="my-4 text-2xl">Estoques da DM</h5>
         <div class="my-2">
-            <Dropdown id="dm" v-model="relatorio.dm" :options="formatedDMOptions" optionLabel="label" optionValue="value" placeholder="Selecione a DM" class="mb-2" />
+            <label for="dm">DM:</label>
+            <Dropdown id="dm" v-model="relatorio.dm" :options="dm" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2" />
         </div>
 
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
@@ -41,6 +70,7 @@ onMounted(() => {
             <Column field="capacidade" header="Capacidade"></Column>
         </DataTable>
     </div>
+    <LoadingSpinner v-if="loading" />
 </template>
 
 <style>

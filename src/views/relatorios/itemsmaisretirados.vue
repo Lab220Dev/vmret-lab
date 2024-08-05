@@ -163,9 +163,9 @@ const fetchDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
-            label: `DM  ${id_dm}`,
-            value: id_dm
+        dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({
+            label: `DM  ${Identificacao}`,
+            value: ID_DM
         }))];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);

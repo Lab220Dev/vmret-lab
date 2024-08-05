@@ -14,25 +14,25 @@ const toast = useToast();
 const todosOption = { label: 'Todos', value: null };
 const visible = ref(false);
 const senha = ref('');
+const senhaAlterada = ref(false);
+const SenhaBE = ref('');
+const errors = ref({});
 const plantas = ref([todosOption]);
-const usuario = reactive({
+let usuario = reactive({
     nome: '',
-    email: '',
-    perfil: '',
-    planta: '',
+    login: '',
     senha: '',
-    Status: ''
+    ativo: true,
 });
 const ListaUsuario = ref([])
-const dropdownItems = ref([
-    { name: 'Gestor', value: 'gestor' },
-    { name: 'Master', value: 'master' },
-    { name: 'Operador', value: 'operador' },
-    { name: 'Liberação Avulsa', value: 'avulsa' }
-]);
+
 const onRowSelect = (event) => {
-    show.value = true;
-    usuario.value = event.data;
+    visible.value = true;
+    usuario = event.data;
+    senha.value = usuario.senha;
+    SenhaBE.value = usuario.senha;
+    senhaAlterada.value = false; // Reseta a flag de senha alterada
+    active.value = 1;
 };
 
 const voltar = () => {
@@ -40,23 +40,49 @@ const voltar = () => {
     resetForm();
 };
 const submitForm = () => {
-    if (visible.value) {
-        atualizarUsuario();
+    if (validateForm()) {
+        if (visible.value) {
+            atualizarUsuario();
+        } else {
+            saveUsuario();
+        }
+    }
+    console.log('o validate te fodeu otario');
+};
+const validateForm = () => {
+    errors.value = {};
+    validateSenha();
+    validateEmail();
+    return Object.keys(errors.value).every((key) => errors.value[key] === null);
+};
+const validateSenha = () => {
+    if (senha.value !== usuario.senha) {
+        errors.value.senha = 'A senha NÃO é a mesma';
     } else {
-        saveUsuario();
+        errors.value.senha = null;
     }
 };
+const isSameSenha = () => {
+    return usuario.senha === SenhaBE.value;
+};
 const saveUsuario = async () => {
-    const data = {
-        ...usuario
-    };
+    let data = null;
+
+    if (store.userRole === 'Administrador') {
+        data = {};
+        data = usuario;
+    } else {
+        data = {};
+        data = usuario;
+        data.id_cliente = store.userIdCliente;
+    }
     try {
-        const response = await axios.post('/usuario/adicionar', data, {
+        const response = await axios.post('/UDM/adicionar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB criado', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 });
 
         fetchUsuarios();
         active.value = 0;
@@ -73,8 +99,11 @@ const atualizarUsuario = async () => {
     const data = {
         ...usuario
     };
+    if (isSameSenha()) {
+        delete data.senha;
+    }
     try {
-        const response = await axios.post('/usuario/atualizar', data, {
+        const response = await axios.post('/UDM/atualizar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -96,7 +125,7 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/usuarios/listarPlanta', data, {
+        const response = await axios.post('/plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -120,7 +149,7 @@ const fetchUsuarios = async () => {
         data.id_cliente =  store.userIdCliente ; // Set the value property
     }
     try {
-        const response = await axios.post('/usuarios/listar', data, {
+        const response = await axios.post('/UDM/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -193,7 +222,7 @@ const resetForm = () => {
                                 :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
                                 @rowSelect="onRowSelect" paginator :rows="10">
                                 <Column field="nome" header="Nome"></Column>
-                                <Column field="email" header="Login"></Column>
+                                <Column field="login" header="Login"></Column>
                                 <Column field="ativo" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi"
@@ -218,25 +247,27 @@ const resetForm = () => {
                             </div>
                             <div class="full lg:col-7 md:col-7 sm:col-12">
                                 <label for="email">Login:</label>
-                                <InputText class="my-2" v-model="usuario.email" id="email" />
+                                <InputText class="my-2" v-model="usuario.login" id="email" />
                             </div>
                             <div class="full lg:col-5 md:col-5 sm:col-12">
                                 <label for="senha">Senha:</label>
-                                <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha"/>
+                                <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
                             <div class="full lg:col-5 md:col-5 sm:col-12">
                                 <label for="senha">Confirme a Senha:</label>
-                                <InputText class="my-2" id="senha" v-model="senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha"/>
+                                <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
 
                             <div class="full lg:col-4 md:col-4 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch2">Usuario Ativo?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="usuario.status" inputId="switch2" />
+                                <InputSwitch class="grid mt-3 ml-3" v-model="usuario.ativo" inputId="switch2" />
                             </div>
                             <div class="flex align-items-center justify-content-end field col-12">
                                 <Button v-if="visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Atualizar"
-                                    icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
+                                    icon="pi pi-refresh" severity="primary" @click="atualizarUsuario" />
                                 <Button v-if="visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
                                     icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
