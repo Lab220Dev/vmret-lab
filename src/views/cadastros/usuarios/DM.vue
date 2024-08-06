@@ -102,7 +102,7 @@ onMounted(() => {
     fetchIdPlanta();
     fetchCliente();
     //admin();
-    //fetchDMS();
+    fetchDMS();
 });
 
 const resetForm = () => {

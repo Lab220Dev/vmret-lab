@@ -17,6 +17,9 @@ const senha = ref('');
 const senhaAlterada = ref(false);
 const SenhaBE = ref('');
 const errors = ref({});
+const deleteUsuarioDialog = ref(false);
+const item = ref({});
+
 const plantas = ref([todosOption]);
 let usuario = reactive({
     nome: '',
@@ -47,12 +50,10 @@ const submitForm = () => {
             saveUsuario();
         }
     }
-    console.log('o validate te fodeu otario');
 };
 const validateForm = () => {
     errors.value = {};
     validateSenha();
-    validateEmail();
     return Object.keys(errors.value).every((key) => errors.value[key] === null);
 };
 const validateSenha = () => {
@@ -62,6 +63,9 @@ const validateSenha = () => {
         errors.value.senha = null;
     }
 };
+const selectedVM = ref([]);
+const DMOptions = ref([]);
+const ListaDMS = ref([]);
 const isSameSenha = () => {
     return usuario.senha === SenhaBE.value;
 };
@@ -85,8 +89,7 @@ const saveUsuario = async () => {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 });
 
         fetchUsuarios();
-        active.value = 0;
-        resetForm();
+        visible.value= true;
     } catch (error) {
         console.error('Erro ao adicionar Usuario:', error);
     } finally {
@@ -161,6 +164,29 @@ const fetchUsuarios = async () => {
         loading.value = false; // Desativando loading
     }
 };
+const fetchDMS = async () => {
+    loading.value = true;
+    let data = null;
+
+    if (store.userRole === "Administrador") {
+        data = ''; 
+    } else {
+        data = {}; 
+        data.id_cliente =  store.userIdCliente ; 
+    }
+    try {
+        const response = await axios.post('/DM/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaDMS.value = response.data;
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 const formatDate = (value) => {
     if (!value) {
         return '';
@@ -198,10 +224,34 @@ watch(active, (newIndex, oldIndex) => {
 onMounted(() => {
     fetchIdPlanta();
     fetchUsuarios();
+    fetchDMS();
 });
+const deleteUsuariodes = (itm) => {
+    item.value = itm;
+    deleteUsuarioDialog.value = true;
+};
+const deleteUsuario = async (item) => {
+    loading.value = true;
+    let data = { id: item.id };
+    try {
+        await axios.post('/UDM/deletar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Ciente Deletada', life: 3000 });
+        deleteUsuarioDialog.value = false;
+        fetchUsuarios();
+        active.value =0;
 
+    } catch {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 const resetForm = () => {
-    usuario.nome = '',
+        usuario.nome = '',
         usuario.Status = true,
         usuario.email = '',
         usuario.perfil = '',
@@ -232,7 +282,7 @@ const resetForm = () => {
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                            @click="deleteUsuario(slotProps.data)" />
+                                            @click="deleteUsuariodes(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -270,7 +320,7 @@ const resetForm = () => {
                                     icon="pi pi-refresh" severity="primary" @click="atualizarUsuario" />
                                 <Button v-if="visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
-                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                    icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
                                 <Button style="width: 15%;"
                                     class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
                                     icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
@@ -279,6 +329,17 @@ const resetForm = () => {
                                     icon="pi pi-check" severity="info" @click="submitForm" />
                             </div>
                         </div>
+                        <div class="col-12" v-if="visible">
+                            <DataTable v-model:selection="selectedVM" :value="ListaDMS" dataKey="code"
+                                tableStyle="width:100% min-width: 50rem" :size="small">
+                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                                <Column field="ID_DM" header="Id Maquina" class="col-12 md:col-6" :style="{ width: '30%' }">
+                                </Column>
+                                <Column field="Identificacao" header="Nome" class="col-12 md:col-6" :style="{ width: '70%' }">
+                                </Column>
+                            </DataTable>
+                        </div>
+                        
                     </TabPanel>
                 </TabView>
                 <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px"
@@ -291,7 +352,7 @@ const resetForm = () => {
                             ?</span>
                     </div>
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false"
+                        <Button label="Não" icon="pi pi-times" @click="deleteUsuarioDialog = false"
                             class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteUsuario(item)" class="p-button-text" />
                     </template>
