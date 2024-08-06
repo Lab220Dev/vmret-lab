@@ -8,6 +8,69 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
+// Gerar relatório
+import { jsPDF } from "jspdf";
+import 'jspdf-autotable';
+
+const generatePDF = () => {
+    const doc = new jsPDF();
+    
+     // Configurar cor do fundo
+     doc.setFillColor(255, 255, 255); // Branco
+    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F'); // Preencher fundo
+
+    // Configurar cor do texto e bordas
+    doc.setTextColor(0, 0, 0); // Preto
+    doc.setDrawColor(0, 0, 0); // Preto
+
+    doc.setFillColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 14, 10);
+
+    doc.setFontSize(16);
+    doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', 14, 20);
+
+    doc.setFontSize(12); //tamanho do texto
+    doc.text(`Testando a geração de arquivo com tabelas`, 14, 30)
+     doc.text(`NOME: ${selectedItem.value.id_funcionario || 'Nome do funcionário'}`, 14, 35);
+    // doc.text(`N° DE REGISTRO: ${selectedItem.value.numero_registro || 'Número de registro'}`, 14, 40);
+    // doc.text(`DATA DE ADMISSÃO: ${selectedItem.value.data_admissao || 'Data de admissão'}`, 14, 50);
+    // doc.text(`FUNÇÃO: ${selectedItem.value.funcao || 'Função do funcionário'}`, 14, 60);
+    // doc.text(`SEÇÃO: ${selectedItem.value.secao || 'Seção'}`, 14, 70);
+
+    const tableColumn = ["DT RETIRADA", "QUANT", "UNID", "DESCRIÇÃO DO EQUIPAMENTO", "N° DO C.A", "AUTENTICAÇÃO"]; //tentativa de tabela
+    const tableRows = retiradas.value.map(item => [
+        item.dataRetirada || '',
+        item.quantidade || '',
+        item.descricao || '',
+        item.numeroCA || '',
+        item.autenticacao || ''
+    ]);
+
+    doc.autoTable(tableColumn, tableRows, { startY: 80,
+    theme: 'grid',
+    styles: {
+            fillColor: [255, 255, 255], // Fundo das células branco
+            textColor: [0, 0, 0], // Texto preto
+            lineColor: [0, 0, 0], // Cor das linhas
+            lineWidth: 0.25 // Largura das linhas
+        },
+        headStyles: {
+            fillColor: [255, 255, 255], // Fundo do cabeçalho preto
+            textColor: [0, 0, 0], // Texto do cabeçalho branco
+            lineWidth: 0.25
+        },
+        alternateRowStyles: {
+            fillColor: [240, 240, 240], // Cor alternativa para linhas
+        }
+ });
+
+    doc.text('______________________________________', 14, doc.autoTable.previous.finalY + 20);
+    doc.text('Assinatura do funcionário', 14, doc.autoTable.previous.finalY + 30);
+
+    doc.save('LAB220 - Sistema de Gerenciamento de Vending Machines.pdf');
+};
+
 const showDialog = ref(false);
 const dialogMessage = ref('');
 
@@ -21,6 +84,7 @@ const historico = ref([]);
 const ListaFuncionarios = ref([todosOption]);;
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
+const retiradas = ref([]);
 const plantas = ref([todosOption]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -52,7 +116,7 @@ const buscar = async () => {
     };
     try {
         loading.value = true
-        const response = await axios.post('', data, {
+        const response = await axios.post('relatorios/gerarficha', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -63,12 +127,22 @@ const buscar = async () => {
         } else {
             emptyMessage.value = '';
         }
+        // Aqui você define o selectedItem com o nome do funcionário
+        if (relatorio.value.id_funcionario) {
+            const funcionario = ListaFuncionarios.value.find(f => f.value === relatorio.value.id_funcionario);
+            selectedItem.value = {
+                nome: funcionario ? funcionario.label : 'Nome do funcionário'
+            };
+        }
     } catch (error) {
         console.error('Erro ao buscar fichas:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
-    
+}; 
+
+const toISODate = (date) => {
+    return date.toISOString().split('T')[0];
 };
 
 const voltar = () => {
@@ -78,34 +152,6 @@ const voltar = () => {
 
 const dt = ref(null);
 
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
-};
-
-const exportCSV = () => {
-    const csvContent = generateCSV(retiradas.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'FichasRetiradas.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-const exportJSON = () => {
-    const jsonContent = JSON.stringify(retiradas.value, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'FichasRetiradas.json');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
 
 const fetchIdPlanta = async () => {
     const data = {
@@ -194,53 +240,12 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-2 lg:col-4 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="filtrar" type="button" label="Gerar Ficha" icon="pi pi-download" severity="info" @click="generatePDF" />
                     </div>
 
-                    <!-- <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
-                    </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
-                    </div> -->
+                    
                 </div>
-                <!--  datatable do relatorio -->
-                <!-- <div class="datatable-wrapper"> -->
-                    <!-- <DataTable
-                        v-model:filters="filters"
-                        :value="retiradas"
-                        stripedRows
-                        showGridlines
-                        paginator
-                        :rows="10"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        rowHover
-                        :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        :tableStyle="{ width: '100%' }"
-                        ref="dt"
-                    >
-                        
-                        <template #header>
-                            <div class="flex justify-content-end">
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                </IconField>
-                            </div>
-                        </template>
-                        <template #empty> Nenhuma retirada realizada </template>
-                        <Column field="ID_DM" sortable header="DM"></Column>
-                        <Column field="Dia" sortable header="Data"></Column>
-                        <Column field="matricula" sortable header="Matricula"></Column>
-                        <Column field="nome" sortable header="Nome"></Column>
-                        <Column field="email" sortable header="E-mail"></Column>
-                        <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
-                        <Column field="ProdutoSKU" sortable header="CA"></Column>
-                    </DataTable> -->
-                <!-- </div> -->
+                
                 <Card v-if="!show">
                     <template #title>{{ selectedItem.dm }}</template>
                     <template #content>

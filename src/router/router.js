@@ -80,6 +80,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/relatorios/devolucoes',
+                    name: 'Devoluções',
+                    component: () => import('@/views/relatorios/devolucoes.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/relatorios/PerformaceHoraDM',
                     name: 'Performace por Hora da DM',
                     component: () => import('@/views/relatorios/PerformaceHoraDM.vue'),

@@ -214,35 +214,45 @@ onMounted(() => {
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
-                                    <div class="full lg:col-6 md:col-12 sm:col-12">
+                                    <div class="full mt-5 xl:col-6 lg:col-12 md:col-12 sm:col-12">
                                         <div class=""><label for="id_planta">Nome:</label> <InputText class="my-2" id="id_planta" v-model="cliente.nome" required /></div>
 
                                         <div class="mt-4">
                                             <label for="cpfcnpj">CNPJ/CPF:</label>
                                             <InputText class="my-2" id="cpfcnpj" v-model="cliente.cpfcnpj" required />
                                         </div>
+
+                                        <div class="flex justify-center mt-5">
+                                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                                <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
+                                                <div class="grid mt-3">
+                                                    <InputSwitch class="mr-2" v-model="cliente.usarApi" inputId="switch1" />
+                                                    <span class="ml-2">{{ cliente.usarApi ? 'Sim' : 'Não' }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                                <label class="mt-0 text-nowrap" for="switch2">Cliente Ativo?</label>
+                                                <div class="grid mt-3">
+                                                    <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
+                                                    <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div class="full lg:col-6 md:col-6 sm:col-6">
+                                    <div class="full xl:col-6 lg:col-12 md:col-12 sm:col-12">
                                         <label for="codigo">Menção Ficha Retirada:</label>
-                                        <Textarea style="overflow: hidden; max-height: 200px; min-width: 500px" v-model="cliente.textoretirada" class="my-2" rows="5" cols="30" />
-                                    </div>
-                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-2 md:col-4 sm:col-12">
-                                        
-                                        <label class="mt-3 ml-4" for="switch1">Tem integração?</label>
-                                        <InputSwitch class="grid mt-3 ml-3" v-model="cliente.usarApi" inputId="switch1" />
-                                        
-                                        
+                                        <Textarea style="overflow: hidden; height: 100%; min-width: 200px; width: 100%" v-model="cliente.textoretirada" class="my-2" rows="5" cols="30" />
                                     </div>
 
-                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-2 md:col-4 sm:col-12"><label class="mt-3 ml-4" for="switch2">Cliente Ativo?</label><InputSwitch class="grid mt-3 ml-3" v-model="cliente.ativo" inputId="switch2" /></div>
-                                </div>
-                                <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
-                                    <Button style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-6 md:col-4 sm:col-6"></div>
                                 </div>
                             </form>
+                        </div>
+                        <div class="mr-1 mt-8 grid justify-content-end">
+                            <Button v-if="visible" style="width: 25%; min-width:100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                            <Button style="width: 25%; min-width:100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
+                            <Button v-if="!visible" style="width: 25%; min-width:100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
                         </div>
                     </div>
                 </div>
