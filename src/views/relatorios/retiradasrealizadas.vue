@@ -33,9 +33,9 @@ const show = ref(true);
 const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
-    dm: '',
+    id_dm: '',
     id_planta: '',
-    id_centro_custo: '',
+    ID_CentroCusto: '',
     id_setor: '',
     id_funcionario: '',
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -120,19 +120,18 @@ const exportJSON = () => {
     document.body.removeChild(link);
 };
 const fetchDM = async () => {
-    const params = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('/relatorioRetiRe/listardm', {
-            params: params,
+        const response = await axios.post('/relatorioRetiRe/listardm',data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
-            label: `DM  ${id_dm}`,
-            value: id_dm
+        dms.value = [todosOption, ...response.data.map(({ ID_DM ,Identificacao}) => ({
+            label: `DM  ${Identificacao}`,
+            value: ID_DM
         }))];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
@@ -143,14 +142,14 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarplanta', data, {
+        const response = await axios.post('plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         // usar o id_dm para acessar quais as plantas e setores estão disponiveis
-        plantas.value = [todosOption, ...response.data.map(({ id_planta }) => ({
-            label: `Planta  ${id_planta}`,
+        plantas.value = [todosOption, ...response.data.map(({ nome,id_planta }) => ({
+            label: `Planta  ${nome}`,
             value: id_planta
         }))];
     } catch (error) {
@@ -162,13 +161,13 @@ const fetchSetorDiretoria = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarsetor', data, {
+        const response = await axios.post('Setor/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        setor.value = [todosOption, ...response.data.map(({ id_setor }) => ({
-            label: `Setor  ${id_setor}`,
+        setor.value = [todosOption, ...response.data.map(({ id_setor,nome }) => ({
+            label: `Setor  ${nome}`,
             value: id_setor
         }))];
     } catch (error) {
@@ -180,14 +179,14 @@ const fetchCentroCusto = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarcentrocusto', data, {
+        const response = await axios.post('cdc/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCusto.value = [todosOption, ...response.data.map(({ id_centro_custo }) => ({
-            label: `Centro de Custo  ${id_centro_custo}`,
-            value: id_centro_custo
+        centroCusto.value = [todosOption, ...response.data.map(({ ID_CentroCusto,Nome }) => ({
+            label: `Centro de Custo  ${Nome}`,
+            value: ID_CentroCusto
         }))];
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
@@ -204,10 +203,10 @@ const fetchFuncionarios = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({
+        ListaFuncionarios.value = [todosOption, ...response.data.map((funcionario) => ({
             label: funcionario.nome,
             value: funcionario.id_funcionario
-        }));
+        }))];
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     }
@@ -243,8 +242,8 @@ onMounted(() => {
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
-                            optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
+                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label"
+                        optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
@@ -253,7 +252,7 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto"
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto"
                             optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
