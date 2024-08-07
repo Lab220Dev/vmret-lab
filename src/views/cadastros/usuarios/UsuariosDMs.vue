@@ -291,38 +291,46 @@ const resetForm = () => {
                     <TabPanel header="Adicionar Usuário DM">
                         <h5 class="mt-2">{{ visible ? 'Editar ' : 'Novo ' }}Usuário</h5>
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <div class="full lg:col-12 md:col-12 sm:col-12">
+
+                            <div class="full xl:col-8 lg:col-8 md:col-8 sm:col-12">
                                 <label for="name">Nome:</label>
                                 <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                             </div>
-                            <div class="full lg:col-7 md:col-7 sm:col-12">
-                                <label for="email">Login:</label>
-                                <InputText class="my-2" v-model="usuario.login" id="email" />
-                            </div>
-                            <div class="full lg:col-5 md:col-5 sm:col-12">
+                            
+                            <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="senha">Senha:</label>
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha"/>
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-                            <div class="full lg:col-5 md:col-5 sm:col-12">
+                    
+                            <div class="full xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                <label for="email">Login:</label>
+                                <InputText class="my-2" v-model="usuario.login" id="email" />
+                            </div>
+                            
+                            <div class="full xl:col-2 flex flex-column align-items-center m-0 lg:col-2 md:col-2 sm:col-12">
+                                <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
+                                <div class="grid mt-3">
+                                    <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
+                                    <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
+                                </div>
+                            </div>
+
+                            <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="senha">Confirme a Senha:</label>
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha"/>
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-
-                            <div class="full lg:col-4 md:col-4 sm:col-12">
-                                <label class="mt-3 ml-4" for="switch2">Usuario Ativo?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="usuario.ativo" inputId="switch2" />
-                            </div>
+                            
                             <div class="flex align-items-center justify-content-end field col-12">
                                 <Button v-if="visible" style="width: 15%;"
-                                    class="buttons flex align-items-center justify-content-center m-2" label="Atualizar"
-                                    icon="pi pi-refresh" severity="primary" @click="atualizarUsuario" />
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
+                                    icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
                                 <Button v-if="visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
                                     icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
                                 <Button style="width: 15%;"
-                                    class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
+                                    class="buttons flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
                                     icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
@@ -364,7 +372,7 @@ const resetForm = () => {
 </template>
 
 <style>
-@media (max-width: 580px) {
+@media (max-width: 780px) {
     .full {
         flex: 0 0 100%;
         max-width: 100%;
