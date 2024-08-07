@@ -42,6 +42,7 @@ const loadPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
+    loading.value = true
     try {
         const response = await axios.post('/plantas/listar', data, {
             headers: {
@@ -51,6 +52,8 @@ const loadPlanta = async () => {
         ListaPlanta.value = response.data;
     } catch (error) {
         console.error('Erro ao listar plantas:', error);
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -59,6 +62,7 @@ const adicionarPlanta = async () => {
         id_cliente: store.userIdCliente,
         ...planta
     };
+    loading.value = true
     try {
         const response = await axios.post('/plantas/adicionar', data, {
             headers: {
@@ -70,11 +74,14 @@ const adicionarPlanta = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar planta:', error);
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
 const deletePlanta = async () => {
     let data = { id_planta: planta.id_planta };
+    loading.value = true
     try {
         await axios.post('/planta/deletePlanta', data, {
             headers: {
@@ -88,6 +95,8 @@ const deletePlanta = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
+    }finally {
+        loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
@@ -97,6 +106,7 @@ const atualizarPlanta = async () => {
         id_cliente: store.userIdCliente,
         ...planta
     };
+    loading.value = true
     try {
         const response = await axios.post('/plantas/atualizar', data, {
             headers: {
@@ -108,6 +118,8 @@ const atualizarPlanta = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao atualizar Plantas:', error);
+    }finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -213,6 +225,7 @@ onMounted(() => {
                 </div>
             </TabPanel>
         </TabView>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
