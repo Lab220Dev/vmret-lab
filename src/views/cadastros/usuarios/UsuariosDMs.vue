@@ -14,25 +14,28 @@ const toast = useToast();
 const todosOption = { label: 'Todos', value: null };
 const visible = ref(false);
 const senha = ref('');
+const senhaAlterada = ref(false);
+const SenhaBE = ref('');
+const errors = ref({});
+const deleteUsuarioDialog = ref(false);
+const item = ref({});
+
 const plantas = ref([todosOption]);
-const usuario = reactive({
+let usuario = reactive({
     nome: '',
-    email: '',
-    perfil: '',
-    planta: '',
+    login: '',
     senha: '',
-    Status: ''
+    ativo: true,
 });
 const ListaUsuario = ref([])
-const dropdownItems = ref([
-    { name: 'Gestor', value: 'gestor' },
-    { name: 'Master', value: 'master' },
-    { name: 'Operador', value: 'operador' },
-    { name: 'Liberação Avulsa', value: 'avulsa' }
-]);
+
 const onRowSelect = (event) => {
-    show.value = true;
-    usuario.value = event.data;
+    visible.value = true;
+    usuario = event.data;
+    senha.value = usuario.senha;
+    SenhaBE.value = usuario.senha;
+    senhaAlterada.value = false; // Reseta a flag de senha alterada
+    active.value = 1;
 };
 
 const voltar = () => {
@@ -40,27 +43,53 @@ const voltar = () => {
     resetForm();
 };
 const submitForm = () => {
-    if (visible.value) {
-        atualizarUsuario();
-    } else {
-        saveUsuario();
+    if (validateForm()) {
+        if (visible.value) {
+            atualizarUsuario();
+        } else {
+            saveUsuario();
+        }
     }
 };
+const validateForm = () => {
+    errors.value = {};
+    validateSenha();
+    return Object.keys(errors.value).every((key) => errors.value[key] === null);
+};
+const validateSenha = () => {
+    if (senha.value !== usuario.senha) {
+        errors.value.senha = 'A senha NÃO é a mesma';
+    } else {
+        errors.value.senha = null;
+    }
+};
+const selectedVM = ref([]);
+const DMOptions = ref([]);
+const ListaDMS = ref([]);
+const isSameSenha = () => {
+    return usuario.senha === SenhaBE.value;
+};
 const saveUsuario = async () => {
-    const data = {
-        ...usuario
-    };
+    let data = null;
+
+    if (store.userRole === 'Administrador') {
+        data = {};
+        data = usuario;
+    } else {
+        data = {};
+        data = usuario;
+        data.id_cliente = store.userIdCliente;
+    }
     try {
-        const response = await axios.post('/usuario/adicionar', data, {
+        const response = await axios.post('/UDM/adicionar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB criado', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 });
 
         fetchUsuarios();
-        active.value = 0;
-        resetForm();
+        visible.value= true;
     } catch (error) {
         console.error('Erro ao adicionar Usuario:', error);
     } finally {
@@ -73,8 +102,11 @@ const atualizarUsuario = async () => {
     const data = {
         ...usuario
     };
+    if (isSameSenha()) {
+        delete data.senha;
+    }
     try {
-        const response = await axios.post('/usuario/atualizar', data, {
+        const response = await axios.post('/UDM/atualizar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -96,7 +128,7 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/usuarios/listarPlanta', data, {
+        const response = await axios.post('/plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -120,12 +152,35 @@ const fetchUsuarios = async () => {
         data.id_cliente =  store.userIdCliente ; // Set the value property
     }
     try {
-        const response = await axios.post('/usuarios/listar', data, {
+        const response = await axios.post('/UDM/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         ListaUsuario.value = response.data;
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
+const fetchDMS = async () => {
+    loading.value = true;
+    let data = null;
+
+    if (store.userRole === "Administrador") {
+        data = ''; 
+    } else {
+        data = {}; 
+        data.id_cliente =  store.userIdCliente ; 
+    }
+    try {
+        const response = await axios.post('/DM/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaDMS.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     } finally {
@@ -169,10 +224,34 @@ watch(active, (newIndex, oldIndex) => {
 onMounted(() => {
     fetchIdPlanta();
     fetchUsuarios();
+    fetchDMS();
 });
+const deleteUsuariodes = (itm) => {
+    item.value = itm;
+    deleteUsuarioDialog.value = true;
+};
+const deleteUsuario = async (item) => {
+    loading.value = true;
+    let data = { id: item.id };
+    try {
+        await axios.post('/UDM/deletar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Ciente Deletada', life: 3000 });
+        deleteUsuarioDialog.value = false;
+        fetchUsuarios();
+        active.value =0;
 
+    } catch {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 const resetForm = () => {
-    usuario.nome = '',
+        usuario.nome = '',
         usuario.Status = true,
         usuario.email = '',
         usuario.perfil = '',
@@ -193,7 +272,7 @@ const resetForm = () => {
                                 :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
                                 @rowSelect="onRowSelect" paginator :rows="10">
                                 <Column field="nome" header="Nome"></Column>
-                                <Column field="email" header="Login"></Column>
+                                <Column field="login" header="Login"></Column>
                                 <Column field="ativo" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi"
@@ -203,7 +282,7 @@ const resetForm = () => {
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                            @click="deleteUsuario(slotProps.data)" />
+                                            @click="deleteUsuariodes(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -218,28 +297,30 @@ const resetForm = () => {
                             </div>
                             <div class="full lg:col-7 md:col-7 sm:col-12">
                                 <label for="email">Login:</label>
-                                <InputText class="my-2" v-model="usuario.email" id="email" />
+                                <InputText class="my-2" v-model="usuario.login" id="email" />
                             </div>
                             <div class="full lg:col-5 md:col-5 sm:col-12">
                                 <label for="senha">Senha:</label>
-                                <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha"/>
+                                <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
                             <div class="full lg:col-5 md:col-5 sm:col-12">
                                 <label for="senha">Confirme a Senha:</label>
-                                <InputText class="my-2" id="senha" v-model="senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha"/>
+                                <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
 
                             <div class="full lg:col-4 md:col-4 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch2">Usuario Ativo?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="usuario.status" inputId="switch2" />
+                                <InputSwitch class="grid mt-3 ml-3" v-model="usuario.ativo" inputId="switch2" />
                             </div>
                             <div class="flex align-items-center justify-content-end field col-12">
                                 <Button v-if="visible" style="width: 15%;"
-                                    class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
-                                    icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Atualizar"
+                                    icon="pi pi-refresh" severity="primary" @click="atualizarUsuario" />
                                 <Button v-if="visible" style="width: 15%;"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
-                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                    icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
                                 <Button style="width: 15%;"
                                     class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
                                     icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
@@ -248,6 +329,17 @@ const resetForm = () => {
                                     icon="pi pi-check" severity="info" @click="submitForm" />
                             </div>
                         </div>
+                        <div class="col-12" v-if="visible">
+                            <DataTable v-model:selection="selectedVM" :value="ListaDMS" dataKey="code"
+                                tableStyle="width:100% min-width: 50rem" :size="small">
+                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                                <Column field="ID_DM" header="Id Maquina" class="col-12 md:col-6" :style="{ width: '30%' }">
+                                </Column>
+                                <Column field="Identificacao" header="Nome" class="col-12 md:col-6" :style="{ width: '70%' }">
+                                </Column>
+                            </DataTable>
+                        </div>
+                        
                     </TabPanel>
                 </TabView>
                 <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px"
@@ -260,7 +352,7 @@ const resetForm = () => {
                             ?</span>
                     </div>
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false"
+                        <Button label="Não" icon="pi pi-times" @click="deleteUsuarioDialog = false"
                             class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteUsuario(item)" class="p-button-text" />
                     </template>
