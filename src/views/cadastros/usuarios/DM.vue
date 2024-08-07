@@ -115,7 +115,6 @@ const cancelDelete = () => {
 };
 const fetchItemDM = async () =>{
     loading.value = true
-
     try {
         const data = {
             id_dm : DM.ID_DM

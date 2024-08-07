@@ -3,6 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -11,6 +12,7 @@ const ListaPlanta = ref([]);
 const visible = ref(false);
 const integracao = ref(false);
 const deletePlantaDialog = ref(false);
+const loading = ref(false);
 
 let planta = reactive({
     nome: '',
@@ -142,6 +144,7 @@ onMounted(() => {
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
                     <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <template #empty> Nenhuma Planta adicionada. </template>
                         <Column field="id_planta" header="Planta de Custo"></Column>
                         <Column field="nome" header="Planta (Nome)"></Column>
                     </DataTable>
@@ -155,7 +158,7 @@ onMounted(() => {
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_planta">Código:</label>
-                                        <InputText class="my-2" id="id_planta" v-model="planta.id_planta" required />
+                                        <InputText class="my-2" id="id_planta" v-model="planta.codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Planta (Nome):</label>
