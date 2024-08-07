@@ -58,7 +58,7 @@ onMounted(() => {
         <h5 class="my-4 text-2xl">Estoques da DM</h5>
         <div class="my-2">
             <label for="dm">DM:</label>
-            <Dropdown id="dm" v-model="relatorio.dm" :options="dm" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2" />
+            <Dropdown id="dm" v-model="relatorio.dm" :options="dm" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-1" />
         </div>
 
         <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
