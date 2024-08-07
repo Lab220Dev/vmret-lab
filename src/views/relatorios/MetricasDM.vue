@@ -33,7 +33,7 @@ const fetchDMs = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms = response.data;
+        dms.value = response.data;
         formatedDms.value = dms.map((dms) => ({
             label: dms.nome,
             value: dms.id_maquina

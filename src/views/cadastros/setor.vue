@@ -4,6 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { useAuthStore } from '@/store/authStore.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -20,17 +21,18 @@ const integracao = ref(false);
 const item = ref({});
 const selectedProduct = ref({});
 const itemsSelecionadosSetor = ref([]);
+const todosOption = { label: 'Todos', value: null };
+const centroCusto = ref([todosOption]);
+const loading = ref(false);
 
 let setor = reactive({
     codigo: '',
     nome: '',
-    centro: ''
+    id_centro_custo: ''
 });
 
 const onRowSelect = (event) => {
-    setor.codigo = event.data.codigo;
-    setor.nome = event.data.nome;
-    setor.centro = event.data.centro;
+setor = event.data;
     active.value = 1;
     editVisible.value = true;
 };
@@ -44,18 +46,21 @@ const submitForm = () => {
 };
 
 const loadSetor = async () => {
-    const mockData = {
+    const data = {
         id_cliente: store.userIdCliente
     };
+    loading.value = true;
     try {
-        // const response = await axios.post('/setor/listar', data, {
-        //     headers: {
-        //         Authorization: `Bearer ${store.token}`
-        //     }
-        // });
-        ListaSetor.value = mockData;
+        const response = await axios.post('/Setor/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaSetor.value = response.data;
     } catch (error) {
-        console.error('Erro ao buscar Setores:', error);
+        console.error('Erro ao listar Funções e Diretorias:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -64,8 +69,9 @@ const adicionarSetor = async () => {
         id_cliente: store.userIdCliente,
         ...setor
     };
+    loading.value = true;
     try {
-        const response = await axios.post('/setor/adicionar', data, {
+        const response = await axios.post('/Setor/adicionar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -74,36 +80,41 @@ const adicionarSetor = async () => {
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao adicionar um Setor:', error);
+        console.error('Erro ao adicionar Funções e Diretorias:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 
 const deleteSetor = async () => {
     let data = { id_setor: setor.id_setor };
+    loading.value = true;
     try {
-        await axios.post('/setor/deleteSetor', data, {
+        await axios.post('/Setor/deletar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Função Deletada', life: 3000 });
         deleteSetorDialog.value = false;
         loadSetor();
         active.value = 0;
         resetForm();
     } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o setor.', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a função', life: 3000 });
+    } finally {
+        loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
 
 const atualizarSetor = async () => {
+    loading.value = true;
     const data = {
-        id_cliente: store.userIdCliente,
         ...setor
     };
     try {
-        const response = await axios.post('/setor/atualizar', data, {
+        const response = await axios.post('/Setor/atualizar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -112,10 +123,32 @@ const atualizarSetor = async () => {
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao atualizar Setor:', error);
+        console.error('Erro ao atualizar Funções e Diretorias:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
-
+const loadCentroCusto = async () => {
+    loading.value = true;
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('/cdc/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        centroCusto.value = [todosOption, ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+            label: `Centro  ${Nome}`,
+            value: ID_CentroCusto
+        }))];
+    } catch (error) {
+        console.error('Erro ao listar centros de custo:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -129,7 +162,7 @@ watch(active, (newIndex, oldIndex) => {
 const resetForm = () => {
     setor.codigo = '';
     setor.nome = '';
-    setor.centro = '';
+    setor.id_centro_custo = '';
     integracao.value = false;
 };
 
@@ -139,7 +172,7 @@ const handleRowSelection = async (event) => {
 
 onMounted(() => {
     loadSetor();
-    dms.value = mockData;
+    loadCentroCusto();
 });
 
 const atualizarProdutoSetor = async () => {
@@ -192,38 +225,6 @@ const SalvarProduto = () => {
     }
 };
 
-/* dados mockados */
-const dms = ref([]);
-
-//itens relacionados ao centro de custo
-const ItensSetor = ref([
-    { sku: 123, quantidade: 1 },
-    { sku: 647, quantidade: 1 },
-    { sku: 563, quantidade: 1 },
-    { sku: 436, quantidade: 1 },
-    { sku: 279, quantidade: 1 }
-]);
-
-const ItensSetorAdm = ref([
-    { name: 'Post-it', sku: 98374, quantidade: 0 },
-    { name: 'caderno', sku: 827642, quantidade: 0 },
-    { name: 'corretivo', sku: 7462, quantidade: 0 },
-    { name: 'clipe de papel', sku: 2978264, quantidade: 0 }
-]);
-
-//tabela de dados
-const mockData = [
-    { codigo: 1, nome: 'Setor 1', centro: 'Centro 1' },
-    { codigo: 2, nome: 'Setor 2', centro: 'Centro 2' },
-    { codigo: 3, nome: 'Setor 3', centro: 'Centro 3' },
-    { codigo: 4, nome: 'Setor 4', centro: 'Centro 4' },
-    { codigo: 5, nome: 'Setor 5', centro: 'Centro 5' },
-    { codigo: 6, nome: 'Setor 6', centro: 'Centro 6' },
-    { codigo: 7, nome: 'Setor 7', centro: 'Centro 7' },
-    { codigo: 8, nome: 'Setor 8', centro: 'Centro 8' },
-    { codigo: 9, nome: 'Setor 9', centro: 'Centro 9' },
-    { codigo: 10, nome: 'Setor 10', centro: 'Centro 10' }
-];
 </script>
 
 <template>
@@ -232,10 +233,11 @@ const mockData = [
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Setores">
                 <div class="col-12">
-                    <DataTable :value="dms" stripedRows selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" dataKey="codigo" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable :value="ListaSetor" stripedRows selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" dataKey="codigo" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <template #empty> Nenhuma Setor adicionada. </template>
                         <Column field="codigo" header="Código"></Column>
                         <Column field="nome" header="Setor (Nome)"></Column>
-                        <Column field="centro" header="Centro de Custo"></Column>
+                        <Column field="id_centro_custo" header="Centro de Custo"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
@@ -258,7 +260,9 @@ const mockData = [
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">Centro de Custo (Nome):</label>
-                                        <InputText class="my-2" id="id_centro_custo" v-model="setor.centro" required />
+                                        <Dropdown class="drop" v-model="setor.id_centro_custo"
+                                            :options="centroCusto" optionLabel="label" optionValue="value"
+                                            placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <!-- inicio dos botoes -->
@@ -347,6 +351,7 @@ const mockData = [
             </TabPanel>
             <!-- fim do adicionar-->
         </TabView>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
