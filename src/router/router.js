@@ -183,9 +183,9 @@ const router = createRouter({
                     component: () => import('@/views/pages/ListaItensNaoAlocados.vue')
                 },
                 {
-                    path: '/pages/crud',
-                    name: 'crud',
-                    component: () => import('@/views/pages/Crud.vue')
+                    path: '/cadastros/Termo',
+                    name: 'Termo de compromisso - Ficha Retirada',
+                    component: () => import('@/views/pages/Termo.vue')
                 },
             ]
         },
