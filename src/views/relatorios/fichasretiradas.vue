@@ -5,12 +5,14 @@ import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted } from 'vue';
 import axios from '@/axios.js';
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 // Gerar relatório
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
 
 const showDialog = ref(false);
 const dialogMessage = ref('');
@@ -39,29 +41,6 @@ const relatorio = ref({
     data_final: new Date()
 });
 
-// const gerarRelatorioPDF = async () => {
-//     const data = {
-//         id_cliente: store.userIdCliente
-//     };
-
-//     try {
-//         const response = await axios.post('fichasretiradas/gerarPDF', data, {
-//             responseType: 'blob', // Importante para o download do PDF
-//             headers: {
-//                 Authorization: `Bearer ${store.token}`
-//             }
-//         });
-
-//         const blob = new Blob([response.data], { type: 'application/pdf' });
-//         const link = document.createElement('a');
-//         link.href = window.URL.createObjectURL(blob);
-//         link.download = 'Fichas Retiradas.pdf';
-//         link.click();
-//     } catch (error) {
-//         console.error('Erro ao gerar relatório PDF:', error);
-//     }
-// };
-
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -70,61 +49,70 @@ const format = (date) => {
     return `${day}/${month}/${year}`;
 };
 
-const buscar = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final)
-    };
-    try {
-        loading.value = true;
-        const response = await axios.post('fichasRetiradas/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        retiradas.value = response.data;
-        if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
-            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-            showDialog.value = true;
-        }
-        if (retiradas.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-        } else {
-            emptyMessage.value = '';
-        }
-    } catch (error) {
-        console.error('Erro ao buscar fichas:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-
-const generatePDF = () => {
+const generatePDF = async () => {
     console.log('Gerando PDF para:', selectedItem.value); // Verifica o conteúdo de selectedItem
 
-    const doc = new jsPDF();
+    if (!selectedItem.value || !selectedItem.value.nome) {
+        console.error('Nome do funcionário não encontrado!');
+        return;
+    }
+
+    const id_cliente = store.userIdCliente; // Supondo que o ID do cliente está disponível no store
+    const textoFicha = await fetchTextoFicha(id_cliente);
+
+    const doc = new jsPDF('l');
 
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
     doc.setTextColor(0, 0, 0);
     doc.setDrawColor(0, 0, 0);
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
+    doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 165, 200);
 
-    doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 14, 10);
-    doc.setFontSize(16);
-    doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', 14, 20);
+    doc.setFontSize(14);
+    doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', doc.internal.pageSize.width / 2, 20, { align: 'center' });
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
 
-    // Adicione este log para verificar o nome
-    console.log('Nome do funcionário:', selectedItem.value.nome);
+    doc.setDrawColor(0, 0, 0); // Cor da borda
+    doc.setLineWidth(0.25); // Largura da linha
+    doc.rect(14, 30, 270, 6); // Desenha o retângulo da linha 1
 
-    // Certifique-se de que selectedItem.value.nome existe e é uma string
-    doc.text(`NOME: ${selectedItem.value.nome ? selectedItem.value.nome : 'Nome do funcionário'}`, 14, 35);
+    // Texto Linha 1
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NOME:',15, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${selectedItem.value.nome || 'Nome do funcionário'}`, 32, 35);
+    doc.setFont('helvetica', 'bold');
+    doc.text('N° DE REGISTRO: ',107, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${selectedItem.value.numero_registro || 'Número de registro'}`, 145, 35);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DATA DE ADMISSÃO: ',205, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${selectedItem.value.data_admissao || 'Data de admissão'}`, 250, 35);
+
+    // Linha 2
+    doc.rect(14, 36, 270, 6); // Desenha o retângulo da linha 2
+
+    // Texto Linha 2
+    doc.setFont('helvetica', 'bold');
+    doc.text('FUNÇÃO:', 15, 41);
+    doc.setFont('helvetica', 'normal');
+    doc.text(` ${selectedItem.value.funcao || 'Função do funcionário'}`, 36, 41);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SETOR:', 170, 41);
+    doc.setFont('helvetica', 'normal');
+    doc.text(` ${selectedItem.value.secao || 'Seção'}`, 187, 41);
+
+
+    doc.setFontSize(11);
+    const text = `1- Se o equipamento for danificado ou inutilizado por emprego inadequado, mau uso, negligência ou extravio, a empresa me fornecerá novo equipamento e cobrará o valor de um equipamento da mesma marca ou equivalente ao da praça.\n2- Em caso de dano, inutilização ou extravio do equipamento deverei comunicar imediatamente ao setor competente.\n3- Terminando os serviços ou no caso de rescisão do contrato de trabalho, devolverei o equipamento completo e em perfeito estado de conservação, considerando-se o tempo do uso do mesmo, ao setor competente.\n4- Estando os equipamentos em minha posse, estarei sujeito a inspeções sem prévio aviso.\n${textoFicha}`;
+
+    doc.text(text, 14, 50, { maxWidth: 270 });
 
     const tableColumn = ['DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
     const tableRows = retiradas.value.map((item) => [item.dataRetirada || '', item.quantidade || '', item.descricao || '', item.numeroCA || '', item.autenticacao || '']);
@@ -132,7 +120,7 @@ const generatePDF = () => {
     autoTable(doc, {
         head: [tableColumn],
         body: tableRows,
-        startY: 50,
+        startY: 80,
         theme: 'grid',
         styles: {
             fillColor: [255, 255, 255],
@@ -161,9 +149,10 @@ const generatePDF = () => {
         }
     });
 
-    doc.text('______________________________________', 14, doc.autoTable.previous.finalY + 20);
-    doc.text('Assinatura do funcionário', 14, doc.autoTable.previous.finalY + 30);
-    doc.save('LAB220 - Sistema de Gerenciamento de Vending Machines.pdf');
+    doc.setFontSize(14);
+    doc.text('______________________________________', 14, doc.autoTable.previous.finalY + 30);
+    doc.text('Assinatura do funcionário', 14, doc.autoTable.previous.finalY + 50);
+    doc.save(`LAB220 - ${selectedItem.value.nome || 'Funcionario'}.pdf`);
 };
 
 const toISODate = (date) => {
@@ -177,12 +166,31 @@ const voltar = () => {
 
 const dt = ref(null);
 
+
+const fetchTextoFicha = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('/fichasretiradas/relatorio', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        return response.data[0]?.TextoFicha || "Nada encontrado"; 
+    } catch (error) {
+        console.error('Erro ao buscar texto da ficha:', error);
+        return;
+    
+    }
+};
+
 const fetchIdPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarplanta', data, {
+        const response = await axios.post('plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -210,11 +218,33 @@ const fetchFuncionarios = async () => {
             }
         });
         ListaFuncionarios.value = response.data.map((funcionario) => ({
-            label: funcionario.nome,
-            value: funcionario.id_funcionario
+            label: funcionario.id_funcionario,
+            value: funcionario.nome
         }));
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
+    }
+};
+
+const onFuncionarioChange = async (event) => {
+    const id_funcionario = event.value;
+    if (id_funcionario) {
+        try {
+            const response = await axios.post(`/funcionarios/listar/`, {
+                headers: {
+                    Authorization: `Bearer ${store.token}`
+                }
+            });
+            selectedItem.value = response.data.map((funcionario) => ({
+                label: funcionario.nome,
+                value: funcionario.id_funcionario
+            }));
+            console.log('Funcionário selecionado:', selectedItem.value);
+        } catch (error) {
+            console.error('Erro ao buscar dados do funcionário:', error);
+        }
+    } else {
+        selectedItem.value = {};
     }
 };
 
@@ -239,14 +269,13 @@ onMounted(() => {
             <div class="grid mt-3 mx-1 px-1">
                 <h5 class="my-4 text-2xl">Fichas Retiradas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-                    <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" />
+                        <Dropdown @change="onFuncionarioChange()" class="drop" v-model="selectedItem.nome" :options="ListaFuncionarios" optionLabel="value" optionValue="value" ref="dropdown2" placeholder="Todos" />
                     </div>
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
@@ -281,13 +310,7 @@ onMounted(() => {
                         />
                     </div>
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Gerar Ficha" icon="pi pi-download" severity="info" @click="generatePDF" />
-                    </div>
-
-                    <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" label="Buscar" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
                 </div>
 
@@ -302,7 +325,6 @@ onMounted(() => {
     </div>
     <LoadingSpinner v-if="loading" />
 
-    <!--  mensagem de erro -->
     <Dialog header="" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
