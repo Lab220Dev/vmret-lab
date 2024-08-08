@@ -1,8 +1,8 @@
 <template>
-
-  <!--   <div class="quill-editor-container">
+  <div class="quill-editor-container">
     <div ref="editor" class="quill-editor"></div>
-  </div> -->
+  </div>
+  <!--  -->
 </template>
 
 <script setup>
