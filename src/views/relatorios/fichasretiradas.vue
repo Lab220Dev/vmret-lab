@@ -5,14 +5,14 @@ import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted } from 'vue';
 import axios from '@/axios.js';
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { parse } from 'date-fns'; //converte a data para o pdf
 
 // Gerar relatório
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
 
 const showDialog = ref(false);
 const dialogMessage = ref('');
@@ -33,7 +33,14 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const show = ref(true);
-const selectedItem = ref([]);
+const selectedItem = ref({
+    nome: '',
+    matricula: '',
+    data_admissao: '',
+    funcao: '',
+    setor: ''
+});
+
 const relatorio = ref({
     id_planta: '',
     id_funcionario: '',
@@ -42,117 +49,13 @@ const relatorio = ref({
 });
 
 const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
-};
-
-const generatePDF = async () => {
-    console.log('Gerando PDF para:', selectedItem.value); // Verifica o conteúdo de selectedItem
-
-    if (!selectedItem.value || !selectedItem.value.nome) {
-        console.error('Nome do funcionário não encontrado!');
-        return;
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        return 'Data inválida';  
     }
-
-    const id_cliente = store.userIdCliente; // Supondo que o ID do cliente está disponível no store
-    const textoFicha = await fetchTextoFicha(id_cliente);
-
-    const doc = new jsPDF('l');
-
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
-    doc.setTextColor(0, 0, 0);
-    doc.setDrawColor(0, 0, 0);
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 165, 200);
-
-    doc.setFontSize(14);
-    doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', doc.internal.pageSize.width / 2, 20, { align: 'center' });
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-
-    doc.setDrawColor(0, 0, 0); // Cor da borda
-    doc.setLineWidth(0.25); // Largura da linha
-    doc.rect(14, 30, 270, 6); // Desenha o retângulo da linha 1
-
-    // Texto Linha 1
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('NOME:',15, 35);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedItem.value.nome || 'Nome do funcionário'}`, 32, 35);
-    doc.setFont('helvetica', 'bold');
-    doc.text('N° DE REGISTRO: ',107, 35);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedItem.value.numero_registro || 'Número de registro'}`, 145, 35);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DATA DE ADMISSÃO: ',205, 35);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedItem.value.data_admissao || 'Data de admissão'}`, 250, 35);
-
-    // Linha 2
-    doc.rect(14, 36, 270, 6); // Desenha o retângulo da linha 2
-
-    // Texto Linha 2
-    doc.setFont('helvetica', 'bold');
-    doc.text('FUNÇÃO:', 15, 41);
-    doc.setFont('helvetica', 'normal');
-    doc.text(` ${selectedItem.value.funcao || 'Função do funcionário'}`, 36, 41);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SETOR:', 170, 41);
-    doc.setFont('helvetica', 'normal');
-    doc.text(` ${selectedItem.value.secao || 'Seção'}`, 187, 41);
-
-
-    doc.setFontSize(11);
-    const text = `1- Se o equipamento for danificado ou inutilizado por emprego inadequado, mau uso, negligência ou extravio, a empresa me fornecerá novo equipamento e cobrará o valor de um equipamento da mesma marca ou equivalente ao da praça.\n2- Em caso de dano, inutilização ou extravio do equipamento deverei comunicar imediatamente ao setor competente.\n3- Terminando os serviços ou no caso de rescisão do contrato de trabalho, devolverei o equipamento completo e em perfeito estado de conservação, considerando-se o tempo do uso do mesmo, ao setor competente.\n4- Estando os equipamentos em minha posse, estarei sujeito a inspeções sem prévio aviso.\n${textoFicha}`;
-
-    doc.text(text, 14, 50, { maxWidth: 270 });
-
-    const tableColumn = ['DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
-    const tableRows = retiradas.value.map((item) => [item.dataRetirada || '', item.quantidade || '', item.descricao || '', item.numeroCA || '', item.autenticacao || '']);
-
-    autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        startY: 80,
-        theme: 'grid',
-        styles: {
-            fillColor: [255, 255, 255],
-            textColor: [0, 0, 0],
-            lineColor: [0, 0, 0],
-            lineWidth: 0.25,
-            fontSize: 10
-        },
-        headStyles: {
-            fillColor: [220, 220, 220],
-            textColor: [0, 0, 0],
-            fontStyle: 'bold',
-            lineWidth: 0.25,
-            halign: 'center'
-        },
-        alternateRowStyles: {
-            fillColor: [245, 245, 245]
-        },
-        columnStyles: {
-            0: { cellWidth: 25 },
-            1: { cellWidth: 20 },
-            2: { cellWidth: 20 },
-            3: { cellWidth: 70 },
-            4: { cellWidth: 30 },
-            5: { cellWidth: 30 }
-        }
-    });
-
-    doc.setFontSize(14);
-    doc.text('______________________________________', 14, doc.autoTable.previous.finalY + 30);
-    doc.text('Assinatura do funcionário', 14, doc.autoTable.previous.finalY + 50);
-    doc.save(`LAB220 - ${selectedItem.value.nome || 'Funcionario'}.pdf`);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 };
 
 const toISODate = (date) => {
@@ -164,24 +67,28 @@ const voltar = () => {
     selectedItem.value = {};
 };
 
-const dt = ref(null);
-
-
-const fetchTextoFicha = async () => {
+const fetchRelatorio = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente,
+        id_funcionario: relatorio.value.id_funcionario || null,
+        data_inicio: toISODate(relatorio.value.data_inicio),
+        data_final: toISODate(relatorio.value.data_final)
     };
+
     try {
-        const response = await axios.post('/fichasretiradas/relatorio', data, {
+        const response = await axios.post('fichasretiradas/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        return response.data[0]?.TextoFicha || "Nada encontrado"; 
+
+        if (response.data) {
+            retiradas.value = response.data;
+        } else {
+            console.error('Erro ao buscar relatório: Dados não encontrados');
+        }
     } catch (error) {
-        console.error('Erro ao buscar texto da ficha:', error);
-        return;
-    
+        console.error('Erro ao buscar relatório:', error);
     }
 };
 
@@ -230,21 +137,179 @@ const onFuncionarioChange = async (event) => {
     const id_funcionario = event.value;
     if (id_funcionario) {
         try {
-            const response = await axios.post(`/funcionarios/listar/`, {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
+            const response = await axios.post(
+                `/funcionarios/listar`,
+                {
+                    id_cliente: store.userIdCliente
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${store.token}`
+                    }
                 }
-            });
-            selectedItem.value = response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_funcionario
-            }));
-            console.log('Funcionário selecionado:', selectedItem.value);
+            );
+            const funcionario = response.data.find((f) => f.id_funcionario === id_funcionario);
+            if (funcionario) {
+                selectedItem.value = {
+                    nome: funcionario.nome,
+                    matricula: funcionario.matricula,
+                    data_admissao: funcionario.data_admissao,
+                    funcao: funcionario.id_funcao,
+                    setor: funcionario.id_setor
+                };
+            }
         } catch (error) {
             console.error('Erro ao buscar dados do funcionário:', error);
         }
     } else {
         selectedItem.value = {};
+    }
+};
+
+// const checkDataBeforeGeneratingPDF = () => {
+//     console.log('Nome:', selectedItem.value.nome);
+//     console.log('Matrícula:', selectedItem.value.matricula);
+//     console.log('Data de Admissão:', selectedItem.value.data_admissao);
+//     console.log('Função:', selectedItem.value.funcao);
+//     console.log('Setor:', selectedItem.value.setor);
+// };
+
+const generatePDF = async () => {
+    if (!selectedItem.value.nome) {
+        showDialog.value = true;
+        dialogMessage.value = 'Por favor, selecione um funcionário.';
+        return;
+    }
+
+    // checkDataBeforeGeneratingPDF();
+
+    await fetchRelatorio();
+
+    const id_cliente = store.userIdCliente;
+    const textoFicha = await TextoFicha(id_cliente);
+
+    const doc = new jsPDF('l');
+
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 14, 200);
+
+    doc.setFontSize(14);
+    doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', doc.internal.pageSize.width / 2, 20, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+
+    doc.setDrawColor(0, 0, 0); // Cor da borda
+    doc.setLineWidth(0.25); // Largura da linha
+    doc.rect(14, 30, 270, 6); //  o retângulo da linha 1
+
+    // Texto Linha 1
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('NOME:', 15, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${selectedItem.value.nome || ''}`, 30, 35);
+    doc.setFont('helvetica', 'bold');
+    doc.text('N° DE REGISTRO:', 107, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${selectedItem.value.matricula || ''}`, 145, 35);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DATA DE ADMISSÃO:', 203, 35);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${selectedItem.value.data_admissao ? new Date(selectedItem.value.data_admissao).toLocaleDateString('pt-BR') : ''}`, 248, 35);
+
+    // Linha 2
+    doc.rect(14, 36, 270, 6); // o retângulo da linha 2
+
+    // Texto Linha 2
+    doc.setFont('helvetica', 'bold');
+    doc.text('FUNÇÃO:', 15, 41);
+    doc.setFont('helvetica', 'normal');
+    doc.text(` ${selectedItem.value.funcao || ''}`, 36, 41);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SETOR:', 107, 41);
+    doc.setFont('helvetica', 'normal');
+    doc.text(` ${selectedItem.value.setor || ''}`, 123, 41);
+
+    doc.setFontSize(11);
+    const text = `${textoFicha}`;
+
+    doc.text(text, 14, 55, { maxWidth: 270 });
+
+    const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
+
+    const tableRows = retiradas.value.map((item) => {
+        try {
+            const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date());
+            const formattedDate = format(parsedDate, 'dd/MM/yyyy - HH:mm');
+            return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+        } catch (error) {
+            console.error('Error parsing date:', error);
+            return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+        }
+    });
+
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        width: 270,
+        startY: 85,
+        theme: 'grid',
+        styles: {
+            fillColor: [255, 255, 255],
+            textColor: [0, 0, 0],
+            lineColor: [0, 0, 0],
+            lineWidth: 0.25,
+            fontSize: 10
+        },
+        headStyles: {
+            fillColor: [220, 220, 220],
+            textColor: [0, 0, 0],
+            fontStyle: 'bold',
+            lineWidth: 0.25,
+            halign: 'center'
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 245]
+        },
+        columnStyles: {
+            0: { cellWidth: 30 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 20 },
+            3: { cellWidth: 20 },
+            4: { cellWidth: 70 },
+            5: { cellWidth: 50 }
+        }
+    });
+
+    doc.setFontSize(12);
+    doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
+    doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
+    doc.save(`LAB220 - ${selectedItem.value.nome || 'Funcionario'}.pdf`);
+};
+
+const TextoFicha = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('fichasretiradas/textoFicha', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        return (
+            response.data[0]?.TextoFicha ||
+            '1- Se o equipamento for danificado ou inutilizado por emprego inadequado, mau uso, negligência ou extravio, a empresa me fornecerá novo equipamento e cobrará o valor de um equipamento da mesma marca ou equivalente ao da praça.\n2- Em caso de dano, inutilização ou extravio do equipamento deverei comunicar imediatamente ao setor competente.\n3- Terminando os serviços ou no caso de rescisão do contrato de trabalho, devolverei o equipamento completo e em perfeito estado de conservação, considerando-se o tempo do uso do mesmo, ao setor competente.\n4- Estando os equipamentos em minha posse, estarei sujeito a inspeções sem prévio aviso.'
+        );
+    } catch (error) {
+        console.error('Erro ao buscar texto da ficha:', error);
+        return;
     }
 };
 
@@ -275,7 +340,7 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown @change="onFuncionarioChange()" class="drop" v-model="selectedItem.nome" :options="ListaFuncionarios" optionLabel="value" optionValue="value" ref="dropdown2" placeholder="Todos" />
+                        <Dropdown @change="onFuncionarioChange($event)" class="drop" v-model="selectedItem.nome" :options="ListaFuncionarios" optionLabel="value" optionValue="value" ref="dropdown2" placeholder="Todos" />
                     </div>
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
