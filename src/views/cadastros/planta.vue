@@ -59,6 +59,7 @@ const loadPlanta = async () => {
 
 const adicionarPlanta = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...planta
     };
@@ -103,6 +104,7 @@ const deletePlanta = async () => {
 
 const atualizarPlanta = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...planta
     };

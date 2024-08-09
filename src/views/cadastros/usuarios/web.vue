@@ -78,7 +78,10 @@ const deletUsuariodes = (itm) => {
 };
 const deleteUsuario = async (item) => {
     loading.value = true;
-    let data = { id_usuario: item.id_usuario };
+    let data = { id_usuario: item.id_usuario ,
+        id_usuario: store.userId
+
+    };
     try {
         const response = await axios.post('/usuarios/deletar', data, {
             headers: {
@@ -116,10 +119,14 @@ const saveUsuario = async () => {
     if (store.userRole === 'Administrador') {
         data = {};
         data = usuario;
+        data.id_ususario = store.userId;
+
     } else {
         data = {};
         data = usuario;
         data.id_cliente = store.userIdCliente;
+        data.id_ususario = store.userId;
+
     }
     try {
         const response = await axios.post('/usuarios/adicionar', data, {
@@ -142,7 +149,9 @@ const saveUsuario = async () => {
 const atualizarUsuario = async () => {
     loading.value = true;
     const data = {
-        ...usuario
+        ...usuario,
+        id_usuario: store.userId
+
     };
     if (isSameSenha()) {
         delete data.senha;

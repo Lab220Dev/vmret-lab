@@ -160,7 +160,11 @@ const saveProduto = async () => {
 };
 
 const deleteProduto = async () => {
-    let data = { id_produto: produto.id_produto };
+    let data = { 
+        id_produto: produto.id_produto,
+        id_usuario:store.userId,
+        id_cliente:store.userIdCliente
+     };
     try {
         loading.value = true
         await axios.post('/produtos/deleteProduto', data, {

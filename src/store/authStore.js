@@ -43,6 +43,9 @@ export const useAuthStore = defineStore('auth', {
     userIdCliente: (state) => {
       return state.usuario.id_cliente;
     },
+    userId: (state) => {
+      return state.usuario.id_usuario;
+    },
     menuItems: (state) => {
       return state.menu;
     },

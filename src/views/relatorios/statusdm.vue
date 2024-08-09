@@ -48,7 +48,8 @@ const fetchDM = async () => {
 const KeepAlive = async () =>{
     if(relatorio.id_dm || relatorio.dia){
         const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId
     };
     try {
         const response = await axios.post('/SDM/relatorio', data, {

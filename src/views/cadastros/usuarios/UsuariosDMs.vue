@@ -75,10 +75,12 @@ const saveUsuario = async () => {
     if (store.userRole === 'Administrador') {
         data = {};
         data = usuario;
+        data.id_ususario = store.userId;
     } else {
         data = {};
         data = usuario;
         data.id_cliente = store.userIdCliente;
+        data.id_ususario = store.userId;
     }
     try {
         const response = await axios.post('/UDM/adicionar', data, {
@@ -100,7 +102,8 @@ const saveUsuario = async () => {
 const atualizarUsuario = async () => {
     loading.value = true;
     const data = {
-        ...usuario
+        ...usuario,
+        id_usuario: store.userId
     };
     if (isSameSenha()) {
         delete data.senha;
@@ -232,7 +235,9 @@ const deleteUsuariodes = (itm) => {
 };
 const deleteUsuario = async (item) => {
     loading.value = true;
-    let data = { id: item.id };
+    let data = { id: item.id,
+                 id_usuario: store.userId
+    };
     try {
         await axios.post('/UDM/deletar', data, {
             headers: {

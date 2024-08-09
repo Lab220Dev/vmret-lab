@@ -91,7 +91,10 @@ const confirmDelete = async () => {
     try {
         const response = await axios.post(
             '/DM/deleteItem',
-            { id_item: selectedItem.value.id_item },
+            { id_item: selectedItem.value.id_item,
+                id_usuario: store.userId
+
+             },
             {
                 headers: {
                     Authorization: `Bearer ${store.token}`
@@ -202,6 +205,7 @@ const listarProduto = async () => {
 };
 const adicioanrProduto = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...produtoSelecionado.value,
         id_dm: DM.ID_DM

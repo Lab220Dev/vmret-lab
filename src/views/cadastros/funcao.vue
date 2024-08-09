@@ -56,6 +56,7 @@ const loadFuncao = async () => {
 };
 const adicionarFuncao = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...funcao
     };
@@ -77,7 +78,9 @@ const adicionarFuncao = async () => {
 };
 
 const deleteFuncao = async () => {
-    let data = { id_funcao: funcao.id_funcao };
+    let data = { id_funcao: funcao.id_funcao ,
+        id_usuario: store.userId
+    };
     loading.value = true;
     try {
         await axios.post('/funcao/deletar', data, {

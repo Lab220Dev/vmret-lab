@@ -37,6 +37,7 @@ const relatorioDM = async () => {
     loading.value = true;
     const data = {
         id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
         ...relatorio.value
     };
     try {

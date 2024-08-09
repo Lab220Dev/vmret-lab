@@ -51,6 +51,7 @@ const loadCentroCusto = async () => {
 const adicionarCentro = async () => {
     const data = {
         id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
         ...cdc
     };
     try {
@@ -68,7 +69,10 @@ const adicionarCentro = async () => {
 };
 
 const deleteCentro = async () => {
-    let data = { id_centro_custo: cdc.id_centro_custo };
+    let data = { 
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        id_centro_custo: cdc.id_centro_custo };
     try {
         await axios.post('/cdc/deleteCentro', data, {
             headers: {
@@ -92,6 +96,7 @@ const deleteCentro = async () => {
 
 const atualizarCDC = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...cdc
     };

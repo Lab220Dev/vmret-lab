@@ -42,7 +42,8 @@ const submitForm = () => {
 };
 const adicionarCliente = async () => {
     const data = {
-        ...cliente
+        ...cliente,
+        id_usuario: store.userId
     };
     loading.value = true;
     try {
@@ -66,7 +67,9 @@ const deleteClientedes = (itm) => {
 };
 const deleteCliente = async (item) => {
     loading.value = true;
-    let data = { id_cliente: item.id_cliente };
+    let data = { id_cliente: item.id_cliente ,
+        id_usuario: store.userId
+    };
     try {
         await axios.post('/admin/cliente/delete', data, {
             headers: {
@@ -85,6 +88,7 @@ const deleteCliente = async (item) => {
 const atualizarCliente = async () => {
     loading.value = true;
     const data = {
+        id_usuario: store.userId,
         id_cliente: cliente.id_cliente,
         ...cliente
     };

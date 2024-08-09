@@ -57,6 +57,7 @@ const toISODate = (date) => {
 
 const buscar = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
         id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,

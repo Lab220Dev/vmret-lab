@@ -180,6 +180,7 @@ const adicionarFuncionario = async () => {
         formData.append(key, value);
     });
     formData.append('id_cliente', store.userIdCliente);
+    formData.append('id_usuario', store.userId);
     try {
         loading.value = true
         const response = await axios.post('/funcionarios/adicionar', formData, {
@@ -395,7 +396,7 @@ onMounted(() => {
 });
 
 const deleteFuncionario = async () => {
-    let data = { id_funcionario: funcionario.id_funcionario };
+    let data = { id_funcionario: funcionario.id_funcionario ,id_usuario:store.userId};
     try {
         loading.value = true
         await axios.post('/funcionarios/deleteFuncionario', data, {
@@ -464,6 +465,7 @@ const atualizarFuncionario = async () => {
     Object.entries(funcionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
+    formData.append('id_usuario', store.userId);
 
     try {
         loading.value = true       
