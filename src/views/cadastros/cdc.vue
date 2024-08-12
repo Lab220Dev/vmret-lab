@@ -13,8 +13,9 @@ const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
 
 let cdc = reactive({
-    nome: '',
-    id_centro_custo: ''
+    Nome: '',
+    Codigo:'',
+    ID_CentroCusto: ''
 });
 
 const onRowSelect = async (event) => {
@@ -72,7 +73,7 @@ const deleteCentro = async () => {
     let data = { 
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
-        id_centro_custo: cdc.id_centro_custo };
+        ID_CentroCusto: cdc.ID_CentroCusto };
     try {
         await axios.post('/cdc/deleteCentro', data, {
             headers: {
@@ -124,7 +125,7 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    (cdc.nome = ''), (cdc.codigo = ''), (cdc.id_centro_custo = '');
+    (cdc.Nome = ''), (cdc.Codigo = ''), (cdc.ID_CentroCusto = '');
 };
 
 const handleRowSelection = async (event) => {
@@ -156,11 +157,11 @@ onMounted(() => {
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_centro_custo">Código:</label>
-                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.id_centro_custo" required />
+                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Centro de Custo (Nome):</label>
-                                        <InputText class="my-2" id="nome" v-model="cdc.nome" required />
+                                        <InputText class="my-2" id="nome" v-model="cdc.Nome" required />
                                     </div>
                                 </div>
 
