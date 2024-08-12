@@ -287,10 +287,17 @@ const generatePDF = async () => {
         }
     });
 
+
+    doc.setFontSize(12);
+    doc.text('Data:', 30, doc.autoTable.previous.finalY + 30);
+    doc.text('_______/_______/_______', 40, doc.autoTable.previous.finalY + 30); // Linha para o campo de data
+
     doc.setFontSize(12);
     doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
     doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
     doc.save(`LAB220 - ${selectedItem.value.nome || 'Funcionario'}.pdf`);
+
+
 };
 
 const TextoFicha = async () => {
