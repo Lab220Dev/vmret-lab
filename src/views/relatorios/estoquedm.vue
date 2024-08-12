@@ -48,7 +48,7 @@ const relatorioDM = async () => {
         });
         EstoqueDM.value = response.data;
     }catch (error) {
-        console.error('Erro ao gerata o Relatorio de Estoque das DMS:', error);
+        console.error('Erro ao gerar o Relatorio de Estoque das DMS:', error);
     } finally {
         loading.value = false; 
     }

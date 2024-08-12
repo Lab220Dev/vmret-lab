@@ -43,7 +43,7 @@ const router = createRouter({
                     component: () => import('@/views/relatorios/retiradasavulsas.vue'),
                     meta: { requiresAuth: true }
                 },
-                {
+                                {
                     path: '/relatorios/historicosabastecimento',
                     name: 'historicosabastecimento',
                     component: () => import('@/views/relatorios/historicosabastecimento.vue'),
@@ -168,14 +168,14 @@ const router = createRouter({
                     component: () => import('@/views/pages/Empty.vue')
                 },
                 {
-                    path: '/avulso/consultastatus',
+                    path: '/relatorios/ConsultaStatus',
                     name: 'Consulta Status',
-                    component: () => import('@/views/pages/Avulso/ConsultaStatus.vue')
+                    component: () => import('@/views/relatorios/ConsultaStatus.vue')
                 },
                 {
-                    path: '/avulso/LiberacaoAvulsa',
+                    path: '/cadastros/LiberacaoAvulsa',
                     name: 'Liberação Avulsa',
-                    component: () => import('@/views/pages/Avulso/LiberacaoAvulsa.vue')
+                    component: () => import('@/views/cadastros/LiberacaoAvulsa.vue')
                 },
                 {
                     path: '/pages/listaItensNaoAlocados',
