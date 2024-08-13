@@ -11,6 +11,7 @@ const store = useAuthStore();
 const toast = useToast();
 const ListaSetor = ref([]);
 const ListaItensSetor = ref([]);
+const ItensSetor = ref([]);
 const itemDialog = ref(false);
 const ListaItensSelecionados = ref([]);
 const deleteSetorDialog = ref(false);
@@ -30,11 +31,16 @@ let setor = reactive({
     nome: '',
     id_centro_custo: ''
 });
-
+const produtoSelecionado = ref({
+    id_produto:'',
+    quantidade:''
+});
 const onRowSelect = (event) => {
 setor = event.data;
     active.value = 1;
     editVisible.value = true;
+    fetchProdutoSetor();
+    fetchListaItemSetor();
 };
 
 const submitForm = () => {
@@ -149,6 +155,25 @@ const loadCentroCusto = async () => {
         loading.value = false; // Desativando loading
     }
 };
+const fetchListaItemSetor = async () => {
+    loading.value = true;
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_setor: setor.id_setor
+    };
+    try {
+        const response = await axios.post('/setor/itensdisponiveissetor', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ItensSetor.value = response.data;
+    } catch (error) {
+        console.error('Erro ao listar centros de custo:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -205,23 +230,31 @@ const fetchProdutoSetor = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaItensSetor.value = response.data;
+        ListaItensSetor.value = response.data.map(({ id_produto,nome }) => ({
+                label: nome,
+                value: id_produto
+            }));
     } catch (error) {
         console.error('Erro ao recuperar os produtos do setor:', error);
     }
 };
 
-const SalvarProduto = () => {
-    if (!(itemsSelecionadosSetor.sku === selectedProduct.value.sku)) {
-        itemsSelecionadosSetor.push(selectedProduct.value);
-        selectedProduct.value = {};
-        visible.value = false;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Adicionado', life: 3000 });
-    } else {
-        itemsSelecionadosSetor[findIndexById(item.value.sku)] = item.value;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Item atualizado', life: 3000 });
-        item.value = {};
-        itemDialog.value = false;
+const SalvarProduto = async () => {
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_usuario:store.userId,
+        id_produto:produtoSelecionado.value.id_produto,
+        quantidade:produtoSelecionado.value.quantidade,
+        ...setor
+    };
+    try {
+        const response = await axios.post('/setor/additem', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao recuperar os produtos do setor:', error);
     }
 };
 
@@ -241,13 +274,10 @@ const SalvarProduto = () => {
                     </DataTable>
                 </div>
             </TabPanel>
-            <!-- fim do listar -->
-            <!-- inicio do adicionar-->
             <TabPanel header="Adicionar Setor" v-model:activeIndex="active">
                 <div class="grid ">
                     <div class="col-12">
                         <div class="card">
-                            <!-- inicio dos campos de texto-->
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
@@ -265,21 +295,20 @@ const SalvarProduto = () => {
                                             placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
-                                <!-- inicio dos botoes -->
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
                                     <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
                                     <Button v-if="!editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
                                 </div>
-                                <!-- fim-->
                                 <div class="col-12">
                                     <TabView v-if="editVisible">
                                         <TabPanel header="Itens Disponíveis para o Setor">
                                             <Button class="my-3" @click="visible = true" label="Adicionar" />
-                                            <DataTable class="" :value="ItensSetorAdm" stripedRows dataKey="sku" v-model="setor.itemsSelecionadosSetor">
+                                            <DataTable class="" :value="ItensSetor" stripedRows dataKey="sku" v-model="setor.itemsSelecionadosSetor">
                                                 <Column field="sku" header="SKU"></Column>
-                                                <Column field="quantidade" header="Quantidade"></Column>
-                                                <Column field="prazo" header="Prazo"></Column>
+                                                <Column field="nome" header="nome"></Column>
+                                                <Column field="qtd_limite" header="Quantidade"></Column>
+                                                <Column field="dias" header="Prazo"></Column>
                                             </DataTable>
                                         </TabPanel>
                                     </TabView>
@@ -306,11 +335,11 @@ const SalvarProduto = () => {
                                         <div class="grid">
                                             <div class="col-12">
                                                 <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                                                <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
+                                                <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaItensSetor"optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                                             </div>
                                             <div class="col-12">
                                                 <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
-                                                <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                                                <InputNumber id="Quantidade" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                                             </div>
                                         </div>
                                         <div class="flex justify-content-end gap-2">
@@ -349,7 +378,6 @@ const SalvarProduto = () => {
                     </div>
                 </div>
             </TabPanel>
-            <!-- fim do adicionar-->
         </TabView>
         <LoadingSpinner v-if="loading" />
     </div>
