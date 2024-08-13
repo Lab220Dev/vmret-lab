@@ -97,8 +97,7 @@ const confirmDelete = async () => {
     try {
         const response = await axios.post(
             '/DM/deleteItem',
-            {
-                id_item: selectedItem.value.id_item,
+           
             {
                 id_item: selectedItem.value.id_item,
                 id_usuario: store.userId
