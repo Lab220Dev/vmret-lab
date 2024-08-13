@@ -12,7 +12,7 @@ const active = ref(0);
 const store = useAuthStore();
 const loading = ref(false);
 let DM = reactive({
-    Ativo: '',
+    Ativo: false,
     Chave: '',
     ClienteID: '',
     ClienteNome: '',
@@ -22,7 +22,7 @@ let DM = reactive({
     ID_DM: '',
     IDcliente: '',
     Identificacao: '',
-    Integracao: '',
+    Integracao: false,
     Numero: '',
     OP_Biometria: '',
     OP_Facial: '',
@@ -30,8 +30,10 @@ let DM = reactive({
     URL: '',
     Updated: '',
     UserID: '',
-    Versao: ''
+    Versao: '',
+    Devolucao: false
 });
+const operador = ref(false);
 const show = ref(false);
 const showDialogDVM = ref(false);
 const showDialogDItem = ref(false);
@@ -91,10 +93,11 @@ const confirmDelete = async () => {
     try {
         const response = await axios.post(
             '/DM/deleteItem',
-            { id_item: selectedItem.value.id_item,
+            {
+                id_item: selectedItem.value.id_item,
                 id_usuario: store.userId
 
-             },
+            },
             {
                 headers: {
                     Authorization: `Bearer ${store.token}`
@@ -123,7 +126,9 @@ const fetchItemDM = async () => {
     loading.value = true;
     try {
         const data = {
-            id_dm: DM.ID_DM
+            id_dm: DM.ID_DM,
+            id_cliente: store.userIdCliente,
+            id_usuario: store.userId
         };
         const response = await axios.post('/DM/listaritens', data, {
             headers: {
@@ -144,12 +149,85 @@ const handleRowSelection = async (event) => {
 
 const onRowSelect = async (event) => {
     DM = event.data;
+    visible.value = true;
     if (!admin()) {
         show.value = true;
         fetchItemDM();
         listarProduto();
+        operador.value = true;
     } else {
         active.value = 1;
+    }
+};
+
+const adicionarDM = async () => {
+    const data = {
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        ...DM
+    };
+    loading.value = true
+    try {
+        const response = await axios.post('/DM/adicionar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        fetchDMS();
+        active.value = 0;
+        resetDMForm();
+    } catch (error) {
+        console.error('Erro ao adicionar planta:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
+
+const deleteDM = async (item) => {
+    let data = {
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        ID_DM: item.ID_DM
+    };
+    loading.value = true
+    try {
+        await axios.post('/DM/delete', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
+        fetchDMS();
+    } catch (error) {
+        if (error.response && (error.response.status === 500 || error.response.status === 401)) {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a DM.', life: 3000 });
+        }
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+    active.value = 0;
+};
+
+const atualizarDM = async () => {
+    const data = {
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        ...DM
+    };
+    loading.value = true
+    try {
+        const response = await axios.post('/DM/atualizar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        fetchDMS();
+        active.value = 0;
+        resetDMForm();
+    } catch (error) {
+        console.error('Erro ao atualizar Plantas:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 const admin = () => {
@@ -228,8 +306,8 @@ const adicioanrProduto = async () => {
 };
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
-        //fetchUsuarios();
+        resetDMForm();
+        fetchDMS();
         visible.value = false;
     }
 });
@@ -238,7 +316,28 @@ onMounted(() => {
     fetchCliente();
     fetchDMS();
 });
-
+const resetDMForm = () => {
+    DM.Ativo = '';
+    DM.Chave = '';
+    DM.ClienteID = '';
+    DM.ClienteNome = '';
+    DM.Created = '';
+    DM.Enviada = '';
+    DM.ID_CR_Usuario = '';
+    DM.ID_DM = '';
+    DM.IDcliente = '';
+    DM.Identificacao = '';
+    DM.Integracao = '';
+    DM.Numero = '';
+    DM.OP_Biometria = '';
+    DM.OP_Facial = '';
+    DM.OP_Senha = '';
+    DM.URL = '';
+    DM.Updated = '';
+    DM.UserID = '';
+    DM.Versao = '';
+    DM.Devolucao = '';
+};
 const resetProdutoSelecionado = () => {
     produtoSelecionado.value = {
         id_produto: '',
@@ -288,6 +387,7 @@ const fetchCliente = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
 </script>
 
 <template>
@@ -298,20 +398,11 @@ const fetchCliente = async () => {
                 <TabView v-model:activeIndex="active" v-if="!show">
                     <TabPanel header="Listar Dispenser Machines">
                         <div class="col-12">
-                            <DataTable
-                                v-model:filters="filters"
-                                :value="ListaDMS"
-                                selectionMode="single"
-                                tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
-                                stripedRows
-                                dataKey="id"
-                                :metaKeySelection="false"
-                                @rowSelect="handleRowSelection"
-                                paginator
+                            <DataTable v-model:filters="filters" :value="ListaDMS" selectionMode="single"
+                                tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows
+                                dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection" paginator
                                 :rows="10"
-                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']"
-                            >
+                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']">
                                 <template #header>
                                     <div class="flex justify-content-end">
                                         <IconField iconPosition="left">
@@ -329,7 +420,8 @@ const fetchCliente = async () => {
                                 <Column field="local" header="Localização"></Column>
                                 <Column field="Ativo" header="Ativo">
                                     <template #body="{ data }">
-                                        <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
+                                        <i class="pi"
+                                            :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
                                     </template>
                                 </Column>
                                 <Column field="Updated" header="Atualizado">
@@ -339,7 +431,8 @@ const fetchCliente = async () => {
                                 </Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                            @click="deleteDM(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -350,19 +443,22 @@ const fetchCliente = async () => {
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
-                                <Dropdown class="my-2" v-model="DM.cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                <Dropdown class="my-2" v-model="DM.IDcliente" :options="ListaClientes"
+                                    optionLabel="label" optionValue="value" placeholder="Selecione um" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Numero da DM:</label>
-                                <InputText class="my-2" v-model="DM.usuario" id="email" />
+                                <InputText class="my-2" v-model="DM.Numero" id="email" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Identificação da DM:</label>
-                                <InputText class="my-2" v-model="DM.usuario" id="email" />
+                                <InputText class="my-2" v-model="DM.Identificacao" id="email" />
                             </div>
                             <div class="full lg:col-12 md:col-4 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch2">DM Ativo?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.status" inputId="switch2" />
+                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Ativo" inputId="switch2" />
+                                <label class="mt-3 ml-4" for="switch3">DM Aceita Devolução?</label>
+                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Devolucao" inputId="switch3" />
                             </div>
                         </div>
                         <h5 class="mt-2">Opções de DM</h5>
@@ -378,21 +474,22 @@ const fetchCliente = async () => {
                                     <label for="cracha" class="ml-2"> Crachá </label>
                                 </div>
                                 <div class="checkbox-items m-2 flex align-items-center">
-                                    <Checkbox v-model="DM.biometria" inputId="Biometria" value="Biometria" :binary="true" />
+                                    <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" value="Biometria"
+                                        :binary="true" />
                                     <label for="Biometria" class="ml-2"> Biometria </label>
                                 </div>
                                 <div class="checkbox-items m-2 flex align-items-center">
-                                    <Checkbox v-model="DM.facial" inputId="Facial" value="Facial" :binary="true" />
+                                    <Checkbox v-model="DM.OP_Facial" inputId="Facial" value="Facial" :binary="true" />
                                     <label for="Facial" class="ml-2"> Rec. Facial </label>
                                 </div>
                             </div>
                             <div class="full lg:col-12 md:col-4 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Mob" inputId="switch3" />
+                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
                             </div>
                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                 <label for="senha">UserID API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
                             </div>
                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                 <label for="senha">Senha API:</label>
@@ -400,59 +497,36 @@ const fetchCliente = async () => {
                             </div>
                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                 <label for="senha">IdCliente API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
                             </div>
                             <div class="full lg:col-6 md:col-6 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.textoretirada" class="my-2 overflow-scroll" rows="5" cols="30" />
-                            </div>
-                            <div class="flex align-items-center justify-content-end field col-12">
-                                <Button label="Salvar" icon="pi pi-check" severity="info" @click="saveUsuario" class="m-2" />
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-scroll" rows="5" cols="30" />
                             </div>
                         </div>
                         <h5 class="mt-2">Controladoras</h5>
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <Button label="Adicionar Controladoras" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
-                        </div>
-                        <div class="col-12">
-                            <DataTable v-model:selection="selectedVM" :value="DMOptions" dataKey="code" tableStyle="width:100% min-width: 50rem" :size="small">
-                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                                <Column field="code" header="Code" class="col-12 md:col-6" :style="{ width: '30%' }"> </Column>
-                                <Column field="nome" header="Name" class="col-12 md:col-6" :style="{ width: '70%' }"> </Column>
-                            </DataTable>
-
-                            <div class="flex align-items-center justify-content-end field col-12">
-                                <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="saveDMs" />
-                                <Button style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                                <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
-                            </div>
+                            <Button label="Adicionar Controladoras" icon="pi pi-check" severity="info"
+                                @click="adicionarDM" class="full mt-4 mr-2" />
                         </div>
                     </TabPanel>
                 </TabView>
-                <div class="card" v-if="show">
+                <div class="card" v-if="operador">
                     <h5 class="mt-2">Itens da DM</h5>
                     <Button class="m-1" label="Adicionar Itens" @click="showDialogProduto = true" />
                     <div class="mt-5 mx-0 p-fluid grid">
                         <div class="lg:col-12 md:col-12 sm:col-12">
-                            <DataTable
-                                :value="ListaItens"
-                                selectionMode="single"
-                                tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
-                                stripedRows
-                                dataKey="id"
-                                :metaKeySelection="false"
-                                @rowSelect="handleRowSelection"
-                                paginator
-                                :rows="10"
-                            >
+                            <DataTable :value="ListaItens" selectionMode="single" tableStyle="min-width: 25%"
+                                :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
+                                @rowSelect="handleRowSelection" paginator :rows="10">
                                 <Column field="SKU" header="SKU"></Column>
                                 <Column field="Nome_Produto" header="Produto"></Column>
                                 <Column field="Posicao" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
                                 <Column field="QTD" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                            @click="deleteItem(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -463,28 +537,34 @@ const fetchCliente = async () => {
             </div>
         </div>
     </div>
-    <Dialog header="Adicionar Produto" :visible.sync="showDialogProduto" style="width: 30vw" :modal="true" :closable="false">
+    <Dialog header="Adicionar Produto" :visible.sync="showDialogProduto" style="width: 30vw" :modal="true"
+        :closable="false">
         <div class="card">
             <div class="col-12 grid">
                 <div class="">
                     <label for="Produto" class="font-semibold col-4">Produto: </label>
-                    <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaProdutos" optionLabel="label"
+                        optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="my-5">
                     <label for="Porta" class="font-semibold w-6rem col-4">Porta: </label>
-                    <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="col-3 ml-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="col-3 ml-3"
+                        autocomplete="off" :min="1" :max="999" />
                 </div>
                 <div class="mb-5">
                     <label for="Controladora" class="font-semibold w-6rem col-4 pr-0">Controladora: </label>
-                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="col-3"
+                        autocomplete="off" :min="1" :max="999" />
                 </div>
                 <div class="mb-5">
                     <label for="Mola" class="font-semibold w-6rem col-4">Motor 1: </label>
-                    <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="col-3" autocomplete="off"
+                        :min="1" :max="999" />
                 </div>
                 <div class="">
                     <label for="Mola2" class="font-semibold w-6rem col-4">Motor 2: </label>
-                    <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="col-3" autocomplete="off"
+                        :min="1" :max="999" />
                 </div>
             </div>
         </div>
