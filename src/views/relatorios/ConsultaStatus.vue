@@ -71,54 +71,58 @@ onMounted(() => {
     <div class="card vh">
         <h5 class="my-4 text-2xl">Consultar Liberações Avulsas</h5>
         <div class="my-2">
-            <div class="card flex align-items-center justify-content-between">
-    <!-- Radio Buttons no início -->
-    <div class="flex align-items-center">
-        <label for="liberAv" class="ml-2">Filtrar por:</label>
-        <div v-for="option in liberAv" :key="option.value" class="flex align-items-center">
-            <RadioButton v-model="integracao" :inputId="option.value" name="searchOption" :value="option.value" class="ml-4" />
-            <label :for="option.value" class="ml-2">{{ option.label }}</label>
-        </div>
-    </div>
-
-    <!-- Conditional Inputs no final -->
-    <div class="flex align-items-center">
-        <div v-if="integracao === '1'" class="ml-4 flex align-items-center">
-            <label for="userid" class="mr-2">Informe a matrícula:</label>
-            <InputText id="userid" v-model="userid" required />
-        </div>
-        <div v-if="integracao === '2'" class="ml-4 flex align-items-center">
-            <label for="userid" class="mr-2">Informe o voucher:</label>
-            <InputText id="userid" v-model="userid" required />
-        </div>
-        <div class="ml-4 flex align-items-center ">
-                        <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" label="Filtrar" icon="pi pi-search" severity="info"
-                            @click="buscar" />
+            <div class="card">
+                <!-- Container principal com duas colunas -->
+                <div class="grid p-4">
+                    <!-- Coluna 1: Filtrar por e Radio Buttons -->
+                    <div class="col-12 lg:col-6 md:col-12 align-items-center mb-3 lg:mb-0">
+                        <label for="liberAv" class="mr-3">Filtrar por:</label>
+                        <div class="flex flex-wrap">
+                            <div v-for="option in liberAv" :key="option.value" class="flex align-items-center mt-2 mr-4">
+                                <RadioButton v-model="integracao" :inputId="option.value" name="searchOption" :value="option.value" />
+                                <label :for="option.value" class="ml-2">{{ option.label }}</label>
+                            </div>
+                        </div>
                     </div>
-    </div>
-</div>
-        </div>
 
-            <DataTable class="mt-2" value="LiberacaoAvulsa" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
-                <Column field="status" header="Status"></Column>
-                <Column field="voucher" header="Voucher"></Column>
-                <Column field="matricula" header="Matrícula"></Column>
-                <Column field="nome" header="Nome"></Column>
-                <Column field="dataliberacao" header="Data da Liberação"></Column>
-                <Column field="nome2" header="Liberado por"></Column>
-                <Column field="token" header="Token"></Column>
-                <Column field="dataret" header="Data de retirada"></Column>
-                <Column field="dm" header="DM"></Column>
-                <Column field="compartimento" header="Compartimento"></Column>
-            </DataTable>
+                    <!-- Coluna 2: Inputs condicionais e botão Filtrar -->
+                    <div class="col-12 lg:col-6 md:col-12 flex flex-column lg:flex-row align-items-center">
+                        <div class="flex-1 mb-3 lg:mb-0">
+                            <div v-if="integracao === '1'" class="align-items-center">
+                                <label for="userid" class="mr-2">Informe a matrícula:</label>
+                                <InputText id="userid" v-model="userid" class="w-full lg:w-auto mt-2" style="min-width: 100px" required />
+                            </div>
+                            <div v-if="integracao === '2'" class="align-items-center">
+                                <label for="userid" class="mr-2">Informe o voucher:</label>
+                                <InputText id="userid" v-model="userid" class="w-full lg:w-auto mt-2" style="min-width: 100px" required />
+                            </div>
+                        </div>
+                        <Button class="ml-0 lg:ml-3 mt-4 w-full lg:w-auto" style="min-width: 160px" type="button" label="Filtrar" icon="pi pi-search" severity="info" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <DataTable class="mt-2" value="LiberacaoAvulsa" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+            <Column field="status" header="Status"></Column>
+            <Column field="voucher" header="Voucher"></Column>
+            <Column field="matricula" header="Matrícula"></Column>
+            <Column field="nome" header="Nome"></Column>
+            <Column field="dataliberacao" header="Data da Liberação"></Column>
+            <Column field="nome2" header="Liberado por"></Column>
+            <Column field="token" header="Token"></Column>
+            <Column field="dataret" header="Data de retirada"></Column>
+            <Column field="dm" header="DM"></Column>
+            <Column field="compartimento" header="Compartimento"></Column>
+        </DataTable>
         <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
-<style>
+<style scoped>
 .card {
     overflow-x: auto;
+    padding: 1rem;
+    position: relative;
 }
 
 .datatable-wrapper {
@@ -129,6 +133,27 @@ onMounted(() => {
 .drop {
     width: 100%;
 }
+
+/* @media (max-width: 1024px) {
+    .card .flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card .flex.align-items-center {
+        width: 100%;
+    }
+
+    .card .flex.align-items-center .ml-4 {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+
+    .card .flex.align-items-center label {
+        width: 100%;
+        text-align: left;
+    }
+} */
 
 @media (max-width: 580px) {
     .form .field {

@@ -20,9 +20,6 @@ const selectedDM = ref('');
 const StatusDM = ref([]);
 const dropdown1 = ref(null);
 
-
-
-
 onMounted(() => {
     fetchDM();
 });
@@ -37,35 +34,38 @@ const fetchDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({
-            label: `DM  ${Identificacao}`,
-            value: ID_DM
-        }))];
+        dms.value = [
+            todosOption,
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                label: `${Identificacao}`,
+                value: ID_DM
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
-const KeepAlive = async () =>{
-    if(relatorio.id_dm || relatorio.dia){
+const KeepAlive = async () => {
+    if (relatorio.id_dm || relatorio.dia) {
         const data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId
-    };
-    try {
-        const response = await axios.post('/SDM/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
+            id_cliente: store.userIdCliente,
+            id_usuario: store.userId
+        };
+        try {
+            const response = await axios.post('/SDM/relatorio', data, {
+                headers: {
+                    Authorization: `Bearer ${store.token}`
+                }
+            });
+            StatusDM.value = response.data;
+            if (StatusDM.value.length === 0) {
+                emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             }
-        });
-        StatusDM.value = response.data;
-        if (StatusDM.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-        } 
-    } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error);
+        } catch (error) {
+            console.error('Erro ao carregar lista de dms:', error);
+        }
     }
-    }
-}
+};
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -90,18 +90,26 @@ const handleDatepickerOpen = () => {
         <!-- Header com a Seleção de Dms -->
         <h5 class="my-4 text-2xl">Status DM</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value"
-                placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" ref="dropdown1" />
-            <VueDatePicker class="drop w-full md:w-14rem" v-model="relatorio.dia" showIcon :showOnFocus="false"
-                :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" placeholder="Selecione uma data"
-                teleport="body" @open="handleDatepickerOpen" />
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" ref="dropdown1" />
+            <VueDatePicker
+                class="drop w-full md:w-14rem"
+                v-model="relatorio.dia"
+                showIcon
+                :showOnFocus="false"
+                :format="format"
+                locale="pt-BR"
+                auto-apply
+                :enable-time-picker="false"
+                placeholder="Selecione uma data"
+                teleport="body"
+                @open="handleDatepickerOpen"
+            />
         </div>
-        <DataTable :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM"
-            :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+        <DataTable :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <template #empty> {{ emptyMessage }} </template>
             <Column field="DM" header="DM"></Column>
-            <Column field="Data" header="Data"></Column>
-        </DataTable>
+            <Column field="Data" header="Data"></Column> </DataTable
+        ><LoadingSpinner v-if="loading" />
     </div>
 </template>
 

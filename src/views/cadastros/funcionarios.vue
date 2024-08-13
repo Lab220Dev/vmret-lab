@@ -164,8 +164,8 @@ const loadFuncionarios = async () => {
         ListaFuncionarios.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
-    }finally {
-        loading.value = false; 
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -182,7 +182,7 @@ const adicionarFuncionario = async () => {
     formData.append('id_cliente', store.userIdCliente);
     formData.append('id_usuario', store.userId);
     try {
-        loading.value = true
+        loading.value = true;
         const response = await axios.post('/funcionarios/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -196,7 +196,7 @@ const adicionarFuncionario = async () => {
     } catch (error) {
         console.error('Erro ao adicionar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -396,9 +396,9 @@ onMounted(() => {
 });
 
 const deleteFuncionario = async () => {
-    let data = { id_funcionario: funcionario.id_funcionario ,id_usuario:store.userId};
+    let data = { id_funcionario: funcionario.id_funcionario, id_usuario: store.userId };
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/funcionarios/deleteFuncionario', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -415,7 +415,7 @@ const deleteFuncionario = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -468,7 +468,7 @@ const atualizarFuncionario = async () => {
     formData.append('id_usuario', store.userId);
 
     try {
-        loading.value = true       
+        loading.value = true;
         // Faz a requisição PUT para atualizar o funcionário
         const response = await axios.put(`/funcionarios/atualizar`, formData, {
             headers: {
@@ -487,21 +487,21 @@ const atualizarFuncionario = async () => {
         // Em caso de erro, exibe um toast de erro
         console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
 
 const closeAllDropdowns = () => {
-  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
 
 const handleDatepickerOpen = () => {
-  closeAllDropdowns();
+    closeAllDropdowns();
 };
 </script>
 
@@ -517,7 +517,7 @@ const handleDatepickerOpen = () => {
                 </div>
             </TabPanel>
 
-            <TabPanel header="Adicionar Funcionário">
+            <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
@@ -541,7 +541,7 @@ const handleDatepickerOpen = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
-                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen"/>
+                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
@@ -563,35 +563,29 @@ const handleDatepickerOpen = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="formatedPlantaOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2"/>
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="formatedSetorOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione o Setor" 
-                                    ref="dropdown3"/>
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4"/>
+                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" 
-                                    optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Início:</label>
-                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker  disable-time-range-validation>
+                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -599,7 +593,7 @@ const handleDatepickerOpen = () => {
                                     </div>
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Fim:</label>
-                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker  disable-time-range-validation>
+                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -650,10 +644,10 @@ const handleDatepickerOpen = () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
-                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
+                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
 
-                                <Button v-if="!editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
@@ -784,7 +778,6 @@ const handleDatepickerOpen = () => {
 .buttons {
     width: 100px;
 }
-
 
 @media (max-width: 580px) {
     .full {

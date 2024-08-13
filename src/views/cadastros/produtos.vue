@@ -26,7 +26,7 @@ const selectedInfoFile = ref(null);
 
 const imagePrinc = ref(imagePlaceholder);
 const imageSec = ref(imagePlaceholder);
-const imageInfo = ref(imagePlaceholder)
+const imageInfo = ref(imagePlaceholder);
 
 const ListaProdutos = ref([]);
 const deleteProdutoDialog = ref(false);
@@ -76,10 +76,10 @@ const loadProdutos = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        loading.value = true
+        loading.value = true;
         const response = await axios.post('/produtos/listar', data, {
             headers: {
-                Authorization:`Bearer ${store.token}` 
+                Authorization: `Bearer ${store.token}`
             }
         });
         ListaProdutos.value = response.data;
@@ -88,7 +88,7 @@ const loadProdutos = async () => {
         });
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -100,12 +100,12 @@ const fetchIdPlanta = async () => {
     try {
         const response = await axios.post('produtos/listarplanta', data, {
             headers: {
-                Authorization: `Bearer ${store.token}` 
+                Authorization: `Bearer ${store.token}`
             }
         });
         plantasoptions = response.data;
         formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
-            label: `Planta ${plantasoptions.id_planta}` ,
+            label: `Planta ${plantasoptions.id_planta}`,
             value: plantasoptions.id_planta
         }));
     } catch (error) {
@@ -116,10 +116,10 @@ const fetchIdPlanta = async () => {
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png` ;
+        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
-    }  
+    }
 
     if (selectedInfoFile.value) {
         const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`;
@@ -138,10 +138,10 @@ const saveProduto = async () => {
     formData.append('id_cliente', store.userIdCliente);
 
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/produtos/adicionar', formData, {
             headers: {
-                Authorization: `Bearer ${store.token}` ,
+                Authorization: `Bearer ${store.token}`,
                 'Content-Type': 'multipart/form-data'
             }
         });
@@ -153,23 +153,23 @@ const saveProduto = async () => {
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
 
 const deleteProduto = async () => {
-    let data = { 
+    let data = {
         id_produto: produto.id_produto,
-        id_usuario:store.userId,
-        id_cliente:store.userIdCliente
-     };
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente
+    };
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/produtos/deleteProduto', data, {
             headers: {
-                Authorization: `Bearer ${store.token}` 
+                Authorization: `Bearer ${store.token}`
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
@@ -179,7 +179,7 @@ const deleteProduto = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
     active.value = 0;
@@ -193,7 +193,7 @@ const updateProduto = async () => {
     });
 
     if (selectedFile.value) {
-        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png` );
+        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`);
         formData.append('file_principal', selectedFile.value);
     }
 
@@ -203,15 +203,15 @@ const updateProduto = async () => {
     }
 
     if (selectedSecFile.value) {
-        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`) ;
+        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`);
         formData.append('file_secundario', selectedSecFile.value);
     }
 
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/produtos/atualizar', formData, {
             headers: {
-                Authorization: `Bearer ${store.token}` ,
+                Authorization: `Bearer ${store.token}`,
                 'Content-Type': 'multipart/form-data'
             }
         });
@@ -223,7 +223,7 @@ const updateProduto = async () => {
     } catch (error) {
         console.error('Erro ao atualizar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -235,7 +235,7 @@ const getImagem = async (filename) => {
     try {
         const response = await axios.get(`/image/produto/${store.userIdCliente}/${filename}`, {
             headers: {
-                Authorization: `Bearer ${store.token}` 
+                Authorization: `Bearer ${store.token}`
             }
         });
         if (response.status === 200) {
@@ -248,8 +248,6 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
 };
-
-
 
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -309,15 +307,15 @@ onMounted(async () => {
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
+            <TabPanel :header="visible ? 'Editar Produto' : 'Adicionar Produto'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
                             <!--form de cadastro de novo produto-->
-                            <div class="p-fluid  formgrid grid m-0 p-0">
+                            <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">SKU:</label>
-                                    <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text" ></InputText>
+                                    <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text"></InputText>
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Nome:</label>
@@ -354,7 +352,7 @@ onMounted(async () => {
                                 <!-- Grid de Upload de Imagens -->
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Principal:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'principal')" :externalImages="imagePrinc"  />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'principal')" :externalImages="imagePrinc" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Secundária:</h4>
@@ -362,7 +360,7 @@ onMounted(async () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Informações<br />Adicionais:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'info')" :externalImages="imageInfo"  />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'info')" :externalImages="imageInfo" />
                                 </div>
                             </div>
                         </div>
@@ -370,9 +368,9 @@ onMounted(async () => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" />
-                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button v-if="!visible" style="width: 15%; "class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" />
+                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button v-if="!visible" style="width: 15%" class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
 
                 <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
@@ -400,7 +398,6 @@ onMounted(async () => {
 
     resize: none;
 }
-
 
 @media (max-width: 1024px) {
     .text-center {

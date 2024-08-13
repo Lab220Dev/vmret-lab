@@ -2,9 +2,9 @@
 import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css'
+import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import axios from '@/axios.js'
+import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
@@ -64,7 +64,7 @@ const buscar = async () => {
     };
     try {
         loading.value = true;
-        const response = await axios.post("relatorioItems/relatorio", data, {
+        const response = await axios.post('relatorioItems/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -163,110 +163,32 @@ const fetchDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
-            label: `DM  ${id_dm}`,
-            value: id_dm
-        }))];
+        dms.value = [
+            todosOption,
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                label: `${Identificacao}`,
+                value: ID_DM
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
 
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('relatorioItems/listarPlanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
-        plantas.value = [todosOption, ...response.data.map(({ id_planta }) => ({
-            label: `Planta  ${id_planta}`,
-            value: id_planta
-        }))];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('relatorioItems/listarSetor', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        setor.value = [todosOption, ...response.data.map(({ id_setor }) => ({
-            label: `Setor  ${id_setor}`,
-            value: id_setor
-        }))];
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('relatorioItems/listarCdC', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [todosOption, ...response.data.map(({ id_centro_custo }) => ({
-            label: `Centro de Custo  ${id_centro_custo}`,
-            value: id_centro_custo
-        }))];
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
-
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({
-            label: funcionario.nome,
-            value: funcionario.id_funcionario
-        }));
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
 const closeAllDropdowns = () => {
-  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
 
 const handleDatepickerOpen = () => {
-  closeAllDropdowns();
+    closeAllDropdowns();
 };
 onMounted(() => {
     fetchDM();
-    fetchIdPlanta();
-    fetchSetorDiretoria();
-    fetchFuncionarios();
-    fetchCentroCusto();
 });
-
 </script>
 
 <template>
@@ -278,22 +200,41 @@ onMounted(() => {
                     <!-- Div de busca de informações para o relatório -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
-                            optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker1"
-                            @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            :enable-time-picker="false"
+                            auto-apply
+                            ref="datepicker1"
+                            @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data inicial"
+                        />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
-                            @open="handleDatepickerOpen" placeholder="Selecione uma data final"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            :enable-time-picker="false"
+                            auto-apply
+                            ref="datepicker2"
+                            @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data final"
+                        />
                     </div>
-                    
+
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -304,9 +245,8 @@ onMounted(() => {
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
-                   
-                        <!-- Botão de filtrar -->
-                    
+
+                    <!-- Botão de filtrar -->
                 </div>
                 <!-- DataTable do relatório -->
                 <div class="datatable-wrapper">
@@ -335,7 +275,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty>{{ emptyMessage }}  </template>
+                        <template #empty>{{ emptyMessage }} </template>
                         <Column field="ProdutoNome" sortable header="DM"></Column>
                         <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
                     </DataTable>
@@ -368,18 +308,17 @@ onMounted(() => {
 <style>
 .dialog-header {
     display: flex;
-  align-items: center;
-  justify-content: space-between;
+    align-items: center;
+    justify-content: space-between;
 }
 
-
 .dialog-content {
-  padding: 1rem;
+    padding: 1rem;
 }
 
 .dialog-message {
-  text-align: justify;
-  margin: 0;
+    text-align: justify;
+    margin: 0;
 }
 
 .card {
@@ -398,8 +337,6 @@ onMounted(() => {
 .drop {
     width: 100%;
 }
-
-
 
 @media (max-width: 580px) {
     .form .field {

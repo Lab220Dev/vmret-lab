@@ -21,12 +21,7 @@ const libOptions = ref([
     { nome: 'DM 2', code: 'plt2' }
 ]);
 
-const molaOptions = ref([
-    { mp: 'Mola 1' },
-    { mp: 'Mola 2' },
-    { mp: 'Porta 1' },
-    { mp: 'Porta 2' }
-]);
+const molaOptions = ref([{ mp: 'Mola 1' }, { mp: 'Mola 2' }, { mp: 'Porta 1' }, { mp: 'Porta 2' }]);
 
 const saveLiberacao = () => {
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Liberação registrada', life: 3000 });
@@ -62,7 +57,7 @@ const saveLiberacao = () => {
                         <Dropdown class="my-2" id="mp" v-model="libAvulsa.mp" :options="molaOptions" optionLabel="mp" :disabled="!libAvulsa.dm" placeholder="Selecione uma Mola ou Porta"></Dropdown>
                         <!-- <InputText class="my-2" v-model="libAvulsa.mp" id="mp" /> -->
                     </div>
-                    
+
                     <div class="full lg:col-4 md:col-6 sm:col-12">
                         <label for="prazo">Prazo de Retirada:</label>
                         <AutoComplete class="my-2" disabled placeholder="11/11/1111" />

@@ -5,12 +5,15 @@ import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const dialogMessage = ref('');
 const selectedItem = ref(null);
 const toast = useToast();
 const active = ref(0);
 const store = useAuthStore();
 const loading = ref(false);
+const isEdit = ref(false); // Adicionado para controlar o estado de edição
+
 let DM = reactive({
     Ativo: '',
     Chave: '',
@@ -32,6 +35,7 @@ let DM = reactive({
     UserID: '',
     Versao: ''
 });
+
 const show = ref(false);
 const showDialogDVM = ref(false);
 const showDialogDItem = ref(false);
@@ -54,11 +58,11 @@ const produtoSelecionado = ref({
 const ListaDMS = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const plantas = ref([todosOption]);
+
 const fetchDMS = async () => {
     loading.value = true;
     let data = null;
-
-    if (admin) {
+    if (admin()) {
         data = '';
     } else {
         data = {};
@@ -77,6 +81,7 @@ const fetchDMS = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
 const deleteItem = async (item) => {
     dialogMessage.value = `Você tem certeza que deseja excluir o item ${item.Nome_Produto}?`;
     showDialogDItem.value = true;
@@ -91,10 +96,10 @@ const confirmDelete = async () => {
     try {
         const response = await axios.post(
             '/DM/deleteItem',
-            { id_item: selectedItem.value.id_item,
+            {
+                id_item: selectedItem.value.id_item,
                 id_usuario: store.userId
-
-             },
+            },
             {
                 headers: {
                     Authorization: `Bearer ${store.token}`
@@ -119,6 +124,7 @@ const cancelDelete = () => {
     showDialogDItem.value = false;
     selectedItem.value = null;
 };
+
 const fetchItemDM = async () => {
     loading.value = true;
     try {
@@ -138,12 +144,9 @@ const fetchItemDM = async () => {
     }
 };
 
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
-
 const onRowSelect = async (event) => {
-    DM = event.data;
+    DM = { ...event.data }; // Popula o objeto DM com os dados do item selecionado
+    isEdit.value = true; // Muda o estado para edição
     if (!admin()) {
         show.value = true;
         fetchItemDM();
@@ -152,36 +155,33 @@ const onRowSelect = async (event) => {
         active.value = 1;
     }
 };
+
 const admin = () => {
     return store.userRole === 'Administrador';
 };
+
 const formatDate = (value) => {
     if (!value) {
         return '';
     }
-
     try {
         const date = new Date(value);
-
         if (isNaN(date)) {
             throw new Error('Data inválida');
         }
-
-        // Ajustar a data para o fuso horário local
         const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-
         const day = String(localDate.getDate()).padStart(2, '0');
         const month = String(localDate.getMonth() + 1).padStart(2, '0');
         const year = localDate.getFullYear();
         const hours = String(localDate.getHours()).padStart(2, '0');
         const minutes = String(localDate.getMinutes()).padStart(2, '0');
-
         return `${day}/${month}/${year} ${hours}:${minutes}`;
     } catch (error) {
         console.error('Erro ao formatar data:', error);
         return 'Data inválida';
     }
 };
+
 const listarProduto = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -203,7 +203,8 @@ const listarProduto = async () => {
         loading.value = false; // Desativando loading
     }
 };
-const adicioanrProduto = async () => {
+
+const adicionarProduto = async () => {
     const data = {
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
@@ -226,18 +227,56 @@ const adicioanrProduto = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+const resetForm = () => {
+    DM = {
+        Ativo: '',
+        Chave: '',
+        ClienteID: '',
+        ClienteNome: '',
+        Created: '',
+        Enviada: '',
+        ID_CR_Usuario: '',
+        ID_DM: '',
+        IDcliente: '',
+        Identificacao: '',
+        Integracao: '',
+        Numero: '',
+        OP_Biometria: '',
+        OP_Facial: '',
+        OP_Senha: '',
+        URL: '',
+        Updated: '',
+        UserID: '',
+        Versao: ''
+    };
+    produtoSelecionado.value = {
+        id_produto: '',
+        Porta: '',
+        Motor1: '',
+        Motor2: '',
+        Controladora: ''
+    };
+    isEdit.value = false; // Reseta o estado para adição
+    // Adicione qualquer outra lógica necessária para resetar o formulário
+};
+
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
-        //fetchUsuarios();
+        resetForm(); // Adiciona a chamada para resetar o formulário
         visible.value = false;
     }
 });
+
 onMounted(() => {
     fetchIdPlanta();
     fetchCliente();
     fetchDMS();
 });
+
+const handleRowSelection = async (event) => {
+    await onRowSelect(event);
+};
 
 const resetProdutoSelecionado = () => {
     produtoSelecionado.value = {
@@ -270,20 +309,25 @@ const fetchIdPlanta = async () => {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
+
 const fetchCliente = async () => {
     loading.value = true;
     try {
-        const response = await axios.post('/admin/cliente/listar', {
-            headers: {
-                Authorization: `Bearer ${store.token}`
+        const response = await axios.post(
+            '/admin/cliente',
+            {},
+            {
+                headers: {
+                    Authorization: `Bearer ${store.token}`
+                }
             }
-        });
-        ListaClientes.value = response.data.map(({ id_cliente, nome }) => ({
-            label: nome,
-            value: id_cliente
+        );
+        ListaClientes.value = response.data.map((cliente) => ({
+            label: cliente.Nome,
+            value: cliente.id_cliente
         }));
     } catch (error) {
-        console.error('Erro ao listar plantas:', error);
+        console.error('Erro ao carregar clientes:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -345,8 +389,7 @@ const fetchCliente = async () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel header="Adicionar Dispenser Machines" v-if="admin()">
-                        <h5 class="mt-2">{{ visible ? 'Editar ' : 'Nova ' }}Dispenser Machines</h5>
+                    <TabPanel :header="isEdit ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'" v-if="admin()">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
@@ -491,7 +534,7 @@ const fetchCliente = async () => {
 
         <div class="flex justify-content-end gap-2">
             <Button type="button" label="Cancelar" severity="secondary" @click="showDialogProduto = false"></Button>
-            <Button type="button" label="Adicionar" @click="adicioanrProduto"></Button>
+            <Button type="button" label="Adicionar" @click="adicionarProduto"></Button>
         </div>
     </Dialog>
     <Dialog header="Deletar Item" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false">

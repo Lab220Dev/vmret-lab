@@ -32,7 +32,7 @@ let setor = reactive({
 });
 
 const onRowSelect = (event) => {
-setor = event.data;
+    setor = event.data;
     active.value = 1;
     editVisible.value = true;
 };
@@ -139,10 +139,13 @@ const loadCentroCusto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCusto.value = [todosOption, ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-            label: `Centro  ${Nome}`,
-            value: ID_CentroCusto
-        }))];
+        centroCusto.value = [
+            todosOption,
+            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+                label: `Centro  ${Nome}`,
+                value: ID_CentroCusto
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao listar centros de custo:', error);
     } finally {
@@ -224,7 +227,6 @@ const SalvarProduto = () => {
         itemDialog.value = false;
     }
 };
-
 </script>
 
 <template>
@@ -243,8 +245,8 @@ const SalvarProduto = () => {
             </TabPanel>
             <!-- fim do listar -->
             <!-- inicio do adicionar-->
-            <TabPanel header="Adicionar Setor" v-model:activeIndex="active">
-                <div class="grid ">
+            <TabPanel :header="editVisible ? 'Editar Setor' : 'Adicionar Setor'" v-model:activeIndex="active">
+                <div class="grid">
                     <div class="col-12">
                         <div class="card">
                             <!-- inicio dos campos de texto-->
@@ -260,16 +262,14 @@ const SalvarProduto = () => {
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">Centro de Custo (Nome):</label>
-                                        <Dropdown class="drop" v-model="setor.id_centro_custo"
-                                            :options="centroCusto" optionLabel="label" optionValue="value"
-                                            placeholder="Todos" ref="dropdown3" />
+                                        <Dropdown class="drop" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <!-- inicio dos botoes -->
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
-                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
-                                    <Button v-if="!editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
+                                    <Button v-if="!editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
                                 </div>
                                 <!-- fim-->
                                 <div class="col-12">
