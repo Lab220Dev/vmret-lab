@@ -17,6 +17,7 @@ const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
 const dms = ref([todosOption]);
 const operacao = ref([todosOption]);
+const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
 const show = ref(true);
 const selectedItem = ref([]);
@@ -47,12 +48,12 @@ const buscar = async () => {
         id_dm: relatorio.value.dm,
         id_usuario: relatorio.value.id_usuario,
         id_funcionario: relatorio.value.id_funcionario,
-        id_operacao: relatorio.value.id_operacao,
+        operacao: relatorio.value.id_operacao,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        const response = await axios.post('', data, {
+        const response = await axios.post('/Log/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -100,19 +101,18 @@ const generateCSV = (data) => {
 // };
 
 const fetchDM = async () => {
-    const params = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('', {
-            params: params,
+        const response = await axios.post('/DM/listar',data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
-            label: `DM  ${id_dm}`,
-            value: id_dm
+        dms.value = [todosOption, ...response.data.map(({ ID_DM,Identificacao }) => ({
+            label: Identificacao,
+            value: ID_DM
         }))];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
@@ -120,17 +120,16 @@ const fetchDM = async () => {
 };
 
 const fetchUsuario = async () => {
-    const user = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('', {
-            user: user,
+        const response = await axios.post('/UDM/listar',data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = response.data.map(({ id_usuario }) => ({
+        usuario.value = response.data.map(({ id_usuario }) => ({
             label: `Usuario  ${id_usuario}`,
             value: id_usuario
         }));
