@@ -14,7 +14,7 @@ const deleteCentroDialog = ref(false);
 
 let cdc = reactive({
     Nome: '',
-    Codigo:'',
+    Codigo: '',
     ID_CentroCusto: ''
 });
 
@@ -70,10 +70,11 @@ const adicionarCentro = async () => {
 };
 
 const deleteCentro = async () => {
-    let data = { 
+    let data = {
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
-        ID_CentroCusto: cdc.ID_CentroCusto };
+        ID_CentroCusto: cdc.ID_CentroCusto
+    };
     try {
         await axios.post('/cdc/deleteCentro', data, {
             headers: {
@@ -148,8 +149,7 @@ onMounted(() => {
                     </DataTable>
                 </div>
             </TabPanel>
-
-            <TabPanel header="Adicionar Centro de Custo" v-model:activeIndex="active">
+            <TabPanel :header="visible ? 'Editar Centro de Custo' : 'Adicionar Centro de Custo'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
@@ -172,9 +172,9 @@ onMounted(() => {
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- <Button label="Adicionar" type="submit" /> -->
 
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCDC" />
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCentro" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCDC" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCentro" />
                                 </div>
                                 <!-- </div> -->
                             </form>

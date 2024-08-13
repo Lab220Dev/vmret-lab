@@ -42,7 +42,7 @@ const loadPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
-    loading.value = true
+    loading.value = true;
     try {
         const response = await axios.post('/plantas/listar', data, {
             headers: {
@@ -52,7 +52,7 @@ const loadPlanta = async () => {
         ListaPlanta.value = response.data;
     } catch (error) {
         console.error('Erro ao listar plantas:', error);
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -63,7 +63,7 @@ const adicionarPlanta = async () => {
         id_cliente: store.userIdCliente,
         ...planta
     };
-    loading.value = true
+    loading.value = true;
     try {
         const response = await axios.post('/plantas/adicionar', data, {
             headers: {
@@ -75,14 +75,14 @@ const adicionarPlanta = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar planta:', error);
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
 
 const deletePlanta = async () => {
     let data = { id_planta: planta.id_planta };
-    loading.value = true
+    loading.value = true;
     try {
         await axios.post('/planta/deletePlanta', data, {
             headers: {
@@ -96,7 +96,7 @@ const deletePlanta = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
     active.value = 0;
@@ -108,7 +108,7 @@ const atualizarPlanta = async () => {
         id_cliente: store.userIdCliente,
         ...planta
     };
-    loading.value = true
+    loading.value = true;
     try {
         const response = await axios.post('/plantas/atualizar', data, {
             headers: {
@@ -120,7 +120,7 @@ const atualizarPlanta = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao atualizar Plantas:', error);
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -135,6 +135,7 @@ watch(active, (newIndex, oldIndex) => {
 
 const resetForm = () => {
     planta.nome = '';
+    planta.codigo = '';
     planta.id_planta = '';
     planta.clienteid = '';
     planta.senha = '';
@@ -164,7 +165,7 @@ onMounted(() => {
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel header="Adicionar Planta" v-model:activeIndex="active">
+            <TabPanel :header="visible ? 'Editar Planta' : 'Adicionar Planta'">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
@@ -203,9 +204,9 @@ onMounted(() => {
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" />
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
                                 </div>
                             </form>
                         </div>
@@ -265,5 +266,4 @@ onMounted(() => {
         margin: 1px;
     }
 }
-
 </style>

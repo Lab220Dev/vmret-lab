@@ -50,7 +50,7 @@ const relatorio = ref({
 
 const format = (date) => {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
-        return 'Data inválida';  
+        return 'Data inválida';
     }
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -287,7 +287,6 @@ const generatePDF = async () => {
         }
     });
 
-
     doc.setFontSize(12);
     doc.text('Data:', 30, doc.autoTable.previous.finalY + 30);
     doc.text('_______/_______/_______', 40, doc.autoTable.previous.finalY + 30); // Linha para o campo de data
@@ -296,8 +295,6 @@ const generatePDF = async () => {
     doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
     doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
     doc.save(`LAB220 - ${selectedItem.value.nome || 'Funcionario'}.pdf`);
-
-
 };
 
 const TextoFicha = async () => {

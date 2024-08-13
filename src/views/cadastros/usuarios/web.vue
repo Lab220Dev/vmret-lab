@@ -78,10 +78,7 @@ const deletUsuariodes = (itm) => {
 };
 const deleteUsuario = async (item) => {
     loading.value = true;
-    let data = { id_usuario: item.id_usuario ,
-        id_usuario: store.userId
-
-    };
+    let data = { id_usuario: item.id_usuario, id_usuario: store.userId };
     try {
         const response = await axios.post('/usuarios/deletar', data, {
             headers: {
@@ -120,13 +117,11 @@ const saveUsuario = async () => {
         data = {};
         data = usuario;
         data.id_ususario = store.userId;
-
     } else {
         data = {};
         data = usuario;
         data.id_cliente = store.userIdCliente;
         data.id_ususario = store.userId;
-
     }
     try {
         const response = await axios.post('/usuarios/adicionar', data, {
@@ -151,7 +146,6 @@ const atualizarUsuario = async () => {
     const data = {
         ...usuario,
         id_usuario: store.userId
-
     };
     if (isSameSenha()) {
         delete data.senha;
@@ -278,7 +272,7 @@ onMounted(() => {
 });
 
 const resetForm = () => {
-    (usuario.nome = ''), (usuario.Status = true), (usuario.email = ''), (usuario.perfil = ''), (usuario.planta = ''), (usuario.senha = ''), (senha.value = ''); // Reset senha confirmada
+    (usuario.nome = ''), (usuario.Status = true), (usuario.email = ''), (usuario.perfil = ''), (usuario.id_planta = ''), (usuario.senha = ''), (senha.value = ''); // Reset senha confirmada
     senhaAlterada.value = false; // Reset flag de senha alterada
 };
 </script>
@@ -338,8 +332,8 @@ const resetForm = () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel header="Adicionar Usuário Web">
-                        <h5 class="mt-4">{{ visible ? 'Editar Usuário Web' : '' }}</h5>
+                    <TabPanel :header="visible ? 'Editar Usuário Web' : 'Adicionar Usuário Web'">
+                        <!-- <h5 class="mt-4">{{ visible ? 'Editar Usuário Web' : '' }}</h5> -->
                         <div class="mt-3 mx-0 p-fluid grid">
                             <div class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Nome:</label>
@@ -355,15 +349,15 @@ const resetForm = () => {
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-<div class="full xl:col-3 lg:col-3 md:col-3 sm:col-12">
+                            <div class="full xl:col-3 lg:col-3 md:col-3 sm:col-12">
                                 <label for="senha" class="text-nowrap">Confirme a Senha:</label>
-                                <InputText class="my-2 " id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
+                                <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
 
                             <div v-if="isAdmin" class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
-                                    <label for="perfil">Cliente:</label>
-                                    <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                <label for="perfil">Cliente:</label>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
                             </div>
 
                             <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
@@ -382,7 +376,6 @@ const resetForm = () => {
                                 <label for="planta">Planta:</label>
                                 <Dropdown class="my-2" id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos"></Dropdown>
                             </div>
-                            
 
                             <div class="flex align-items-center justify-content-end field col-12 mt-7">
                                 <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm()" />
@@ -419,8 +412,10 @@ const resetForm = () => {
         width: 100%;
         margin: 1px;
     }
-    .buttons{width:50% !important ;}
-} 
+    .buttons {
+        width: 50% !important ;
+    }
+}
 
 .switch-wrapper {
     display: inline-flex;

@@ -36,7 +36,7 @@ const produtoSelecionado = ref({
     quantidade:''
 });
 const onRowSelect = (event) => {
-setor = event.data;
+    setor = event.data;
     active.value = 1;
     editVisible.value = true;
     fetchProdutoSetor();
@@ -145,10 +145,32 @@ const loadCentroCusto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCusto.value = [todosOption, ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-            label: `Centro  ${Nome}`,
-            value: ID_CentroCusto
-        }))];
+        centroCusto.value = [
+            todosOption,
+            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+                label: `Centro  ${Nome}`,
+                value: ID_CentroCusto
+            }))
+        ];
+    } catch (error) {
+        console.error('Erro ao listar centros de custo:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
+const fetchListaItemSetor = async () => {
+    loading.value = true;
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_setor: setor.id_setor
+    };
+    try {
+        const response = await axios.post('/setor/itensdisponiveissetor', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ItensSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao listar centros de custo:', error);
     } finally {
@@ -257,7 +279,6 @@ const SalvarProduto = async () => {
         console.error('Erro ao recuperar os produtos do setor:', error);
     }
 };
-
 </script>
 
 <template>
@@ -274,6 +295,10 @@ const SalvarProduto = async () => {
                     </DataTable>
                 </div>
             </TabPanel>
+            <!-- fim do listar -->
+            <!-- inicio do adicionar-->
+            <TabPanel :header="editVisible ? 'Editar Setor' : 'Adicionar Setor'" v-model:activeIndex="active">
+                <div class="grid">
             <TabPanel header="Adicionar Setor" v-model:activeIndex="active">
                 <div class="grid ">
                     <div class="col-12">
@@ -290,15 +315,13 @@ const SalvarProduto = async () => {
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">Centro de Custo (Nome):</label>
-                                        <Dropdown class="drop" v-model="setor.id_centro_custo"
-                                            :options="centroCusto" optionLabel="label" optionValue="value"
-                                            placeholder="Todos" ref="dropdown3" />
+                                        <Dropdown class="drop" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
-                                    <Button v-if="editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
-                                    <Button v-if="!editVisible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
+                                    <Button v-if="!editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
                                 </div>
                                 <div class="col-12">
                                     <TabView v-if="editVisible">

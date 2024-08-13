@@ -1,8 +1,8 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
+import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import axios from '@/axios.js'
+import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const store = useAuthStore();
@@ -14,32 +14,34 @@ const relatorio = ref({
     data_final: new Date()
 });
 
+const loading = ref(false);
 const dms = ref([]);
 const formatedDms = ref([]);
 const dropdown1 = ref(null);
 
-
 onMounted(() => {
-    fetchDMs();
+    fetchDMS();
 });
 
-const fetchDMs = async () => {
+const fetchDMS = async () => {
+    loading.value = true;
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('relatorios/listarDms', data, {
+        const response = await axios.post('/Estoque/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = response.data;
-        formatedDms.value = dms.map((dms) => ({
-            label: dms.nome,
-            value: dms.id_maquina
+        dms.value = response.data.map(({ ID_DM, Numero }) => ({
+            label: `${Numero}`,
+            value: ID_DM
         }));
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao listar DMS:', error);
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -118,20 +120,39 @@ const handleDatepickerOpen = () => {
                     <!-- Div de busca de informações para o relatório -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
-                            optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker1"
-                            @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            :enable-time-picker="false"
+                            auto-apply
+                            ref="datepicker1"
+                            @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data inicial"
+                        />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" :enable-time-picker="false" auto-apply ref="datepicker2"
-                            @open="handleDatepickerOpen" placeholder="Selecione uma data final"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            :enable-time-picker="false"
+                            auto-apply
+                            ref="datepicker2"
+                            @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data final"
+                        />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <!-- Botão de filtrar -->
@@ -146,17 +167,10 @@ const handleDatepickerOpen = () => {
                 </div>
                 <!-- DataTable do relatório -->
                 <div class="datatable-wrapper">
-                    <DataTable
-                        :value="dms"
-                        stripedRows
-                        showGridlines
-                        rowHover
-                        :tableStyle="{ width: '100%' }"
-                        ref="dt"
-                    >
+                    <DataTable :value="dms" stripedRows showGridlines rowHover :tableStyle="{ width: '100%' }" ref="dt">
                         <Column field="total" sortable header="Item"></Column>
                         <Column field="total" sortable header="Quantidade" class="text-center"></Column>
-                </DataTable>
+                    </DataTable>
                 </div>
             </div>
         </div>
@@ -170,7 +184,6 @@ const handleDatepickerOpen = () => {
     align-items: center;
     justify-content: space-between;
 }
-
 
 .dialog-content {
     padding: 1rem;
@@ -197,8 +210,6 @@ const handleDatepickerOpen = () => {
 .drop {
     width: 100%;
 }
-
-
 
 @media (max-width: 580px) {
     .form .field {
