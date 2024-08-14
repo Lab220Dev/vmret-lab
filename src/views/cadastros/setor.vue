@@ -177,25 +177,7 @@ const fetchListaItemSetor = async () => {
         loading.value = false; // Desativando loading
     }
 };
-const fetchListaItemSetor = async () => {
-    loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_setor: setor.id_setor
-    };
-    try {
-        const response = await axios.post('/setor/itensdisponiveissetor', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ItensSetor.value = response.data;
-    } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
+
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -298,8 +280,6 @@ const SalvarProduto = async () => {
             <!-- fim do listar -->
             <!-- inicio do adicionar-->
             <TabPanel :header="editVisible ? 'Editar Setor' : 'Adicionar Setor'" v-model:activeIndex="active">
-                <div class="grid">
-            <TabPanel header="Adicionar Setor" v-model:activeIndex="active">
                 <div class="grid ">
                     <div class="col-12">
                         <div class="card">

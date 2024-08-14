@@ -12,15 +12,18 @@ const toast = useToast();
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
-const dropdown4 = ref(null);
 const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
 const dms = ref([todosOption]);
-const operacao = ref([todosOption]);
+const operacao = ref([
+    { label: 'Todos', value: null },
+    { label: 'Insert', value: 'INSERT' },
+    { label: 'Update', value: 'UPDATE' },
+    { label: 'Delete', value: 'DELETE' },
+]);
+
 const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
-const show = ref(true);
-const selectedItem = ref([]);
 const relatorio = ref({
     dm: '',
     id_usuario: '',
@@ -64,53 +67,18 @@ const buscar = async () => {
     }
 };
 
-const voltar = () => {
-    show.value = true;
-    selectedItem.value = {};
-};
-
-const dt = ref(null);
-
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
-};
-
-// const exportCSV = () => {
-//     const csvContent = generateCSV(historico.value);
-//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-//     const link = document.createElement('a');
-//     const url = URL.createObjectURL(blob);
-//     link.setAttribute('href', url);
-//     link.setAttribute('download', 'HistoricoAbastecimento.csv');
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-// };
-// const exportJSON = () => {
-//     const jsonContent = JSON.stringify(historico.value, null, 2);
-//     const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-//     const link = document.createElement('a');
-//     const url = URL.createObjectURL(blob);
-//     link.setAttribute('href', url);
-//     link.setAttribute('download', 'HistoricoAbastecimento.json');
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-// };
 
 const fetchDM = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/DM/listar',data, {
+        const response = await axios.post('/DM/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ ID_DM,Identificacao }) => ({
+        dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({
             label: Identificacao,
             value: ID_DM
         }))];
@@ -124,13 +92,13 @@ const fetchUsuario = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/UDM/listar',data, {
+        const response = await axios.post('/usuarios/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        usuario.value = response.data.map(({ id_usuario }) => ({
-            label: `Usuario  ${id_usuario}`,
+        usuario.value = response.data.map(({ id_usuario,nome }) => ({
+            label: nome,
             value: id_usuario
         }));
     } catch (error) {
@@ -165,7 +133,6 @@ const closeAllDropdowns = () => {
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
-//falta operação;//
 
 onMounted(() => {
     fetchDM();
@@ -183,60 +150,49 @@ onMounted(() => {
 
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="dm">DM:</label>
-                    <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                    <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value"
+                        placeholder="Todos" ref="dropdown1" />
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="usuario">Usuário:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
+                        optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="funcionario">Funcionário:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
+                    <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                        optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
+                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
+                        optionValue="value" placeholder="Todos" />
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
-                    <VueDatePicker
-                        class="drop"
-                        v-model="relatorio.data_inicio"
-                        showIcon
-                        :showOnFocus="false"
-                        :format="format"
-                        auto-apply
-                        locale="pt-BR"
-                        @open="handleDatepickerOpen"
-                        :enable-time-picker="false"
-                        teleport="body"
-                        placeholder="Selecione uma data inicial"
-                    />
+                    <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
+                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Final:</label>
-                    <VueDatePicker
-                        class="drop"
-                        v-model="relatorio.data_final"
-                        showIcon
-                        :showOnFocus="false"
-                        :format="format"
-                        auto-apply
-                        locale="pt-BR"
-                        @open="handleDatepickerOpen"
-                        :enable-time-picker="false"
-                        teleport="body"
-                        placeholder="Selecione uma data final"
-                    />
+                    <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
+                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
+                </div>
+                <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
+                        @click="buscar" />
                 </div>
             </div>
         </div>
-        <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+        <DataTable :value="historico" stripedRows showGridlines paginator :rows="10" dataKey="DM"
+            :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="DM" header="DM"></Column>
-            <Column field="Data" header="Data"></Column>
-            <Column field="usuario" header="Usuário"></Column>
+            <Column field="Dia" header="Data"></Column>
+            <Column field="ID_Usuario" header="Usuário"></Column>
             <Column field="funcionario" header="Funcionário"></Column>
-            <Column field="operacao" header="Operação"></Column>
+            <Column field="Operacao" header="Operação"></Column>
         </DataTable>
     </div>
 </template>
