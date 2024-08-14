@@ -33,13 +33,7 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const show = ref(true);
-const selectedItem = ref({
-    nome: '',
-    matricula: '',
-    data_admissao: '',
-    funcao: '',
-    setor: ''
-});
+const selectedItem = ref({});
 
 const relatorio = ref({
     id_planta: '',
@@ -125,54 +119,14 @@ const fetchFuncionarios = async () => {
             }
         });
         ListaFuncionarios.value = response.data.map((funcionario) => ({
-            label: funcionario.id_funcionario,
-            value: funcionario.nome
+            label: funcionario.nome, 
+            value: funcionario 
         }));
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     }
 };
 
-const onFuncionarioChange = async (event) => {
-    const id_funcionario = event.value;
-    if (id_funcionario) {
-        try {
-            const response = await axios.post(
-                `/funcionarios/listar`,
-                {
-                    id_cliente: store.userIdCliente
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${store.token}`
-                    }
-                }
-            );
-            const funcionario = response.data.find((f) => f.id_funcionario === id_funcionario);
-            if (funcionario) {
-                selectedItem.value = {
-                    nome: funcionario.nome,
-                    matricula: funcionario.matricula,
-                    data_admissao: funcionario.data_admissao,
-                    funcao: funcionario.id_funcao,
-                    setor: funcionario.id_setor
-                };
-            }
-        } catch (error) {
-            console.error('Erro ao buscar dados do funcionário:', error);
-        }
-    } else {
-        selectedItem.value = {};
-    }
-};
-
-// const checkDataBeforeGeneratingPDF = () => {
-//     console.log('Nome:', selectedItem.value.nome);
-//     console.log('Matrícula:', selectedItem.value.matricula);
-//     console.log('Data de Admissão:', selectedItem.value.data_admissao);
-//     console.log('Função:', selectedItem.value.funcao);
-//     console.log('Setor:', selectedItem.value.setor);
-// };
 
 const generatePDF = async () => {
     if (!selectedItem.value.nome) {
@@ -230,11 +184,11 @@ const generatePDF = async () => {
     doc.setFont('helvetica', 'bold');
     doc.text('FUNÇÃO:', 15, 41);
     doc.setFont('helvetica', 'normal');
-    doc.text(` ${selectedItem.value.funcao || ''}`, 36, 41);
+    doc.text(` ${selectedItem.value.id_funcao || ''}`, 36, 41);
     doc.setFont('helvetica', 'bold');
     doc.text('SETOR:', 107, 41);
     doc.setFont('helvetica', 'normal');
-    doc.text(` ${selectedItem.value.setor || ''}`, 123, 41);
+    doc.text(` ${selectedItem.value.id_setor || ''}`, 123, 41);
 
     doc.setFontSize(11);
     const text = `${textoFicha}`;
@@ -344,7 +298,7 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown @change="onFuncionarioChange($event)" class="drop" v-model="selectedItem.nome" :options="ListaFuncionarios" optionLabel="value" optionValue="value" ref="dropdown2" placeholder="Todos" />
+                        <Dropdown class="drop" v-model="selectedItem" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" />
                     </div>
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
