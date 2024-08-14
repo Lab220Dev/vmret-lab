@@ -163,7 +163,7 @@ const loadFuncionarios = async () => {
         });
         ListaFuncionarios.value = response.data;
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+        console.error('Erro ao carregar funcionários:', error);
     } finally {
         loading.value = false;
     }

@@ -69,38 +69,34 @@ onMounted(() => {
 
 <template>
     <div class="card vh">
-        <h5 class="my-4 text-2xl">Consultar Liberações Avulsas</h5>
-        <div class="my-2">
-            <div class="card">
+        <h5 class="my-4 mx-3">Consultar Status de Liberações Avulsas</h5>
+            <div class="card ">
                 <!-- Container principal com duas colunas -->
-                <div class="grid p-4">
+                <div class="grid ">
                     <!-- Coluna 1: Filtrar por e Radio Buttons -->
-                    <div class="col-12 lg:col-6 md:col-12 align-items-center mb-3 lg:mb-0">
-                        <label for="liberAv" class="mr-3">Filtrar por:</label>
+                    <div class=" lg:col-6 md:col-12 sm:col-12 align-items-center">
+                        <label for="liberAv" class="ml-3 mt-3">Filtrar por:</label>
                         <div class="flex flex-wrap">
-                            <div v-for="option in liberAv" :key="option.value" class="flex align-items-center mt-2 mr-4">
-                                <RadioButton v-model="integracao" :inputId="option.value" name="searchOption" :value="option.value" />
+                            <div v-for="option in liberAv" :key="option.value" class="flex align-items-center mt-3 ml-4">
+                                <RadioButton v-model="integracao" :inputId="option.value"  class="ml-4" name="searchOption" :value="option.value" />
                                 <label :for="option.value" class="ml-2">{{ option.label }}</label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Coluna 2: Inputs condicionais e botão Filtrar -->
-                    <div class="col-12 lg:col-6 md:col-12 flex flex-column lg:flex-row align-items-center">
-                        <div class="flex-1 mb-3 lg:mb-0">
-                            <div v-if="integracao === '1'" class="align-items-center">
-                                <label for="userid" class="mr-2">Informe a matrícula:</label>
-                                <InputText id="userid" v-model="userid" class="w-full lg:w-auto mt-2" style="min-width: 100px" required />
-                            </div>
-                            <div v-if="integracao === '2'" class="align-items-center">
-                                <label for="userid" class="mr-2">Informe o voucher:</label>
-                                <InputText id="userid" v-model="userid" class="w-full lg:w-auto mt-2" style="min-width: 100px" required />
-                            </div>
-                        </div>
-                        <Button class="ml-0 lg:ml-3 mt-4 w-full lg:w-auto" style="min-width: 160px" type="button" label="Filtrar" icon="pi pi-search" severity="info" />
-                    </div>
-                </div>
-            </div>
+                    <div class="lg:col-6 md:col-12 flex-column lg:flex-row align-items-center justify-content-end flex">
+    <div class="mb-3 lg:mb-0">
+        <div v-if="integracao === '1'" class="align-items-center">
+            <label for="userid" class="mr-2">Informe a matrícula:</label>
+            <InputText id="userid" v-model="userid" class="my-2 w-full" required />
+        </div>
+        <div v-if="integracao === '2'" class="align-items-center">
+            <label for="userid" class="mr-2">Informe o voucher:</label>
+            <InputText id="userid" v-model="userid" class="my-2 w-full" required />
+        </div>
+    </div>
+    <Button class="mt-3 w-20rem ml-2" style="width: 160px" type="button" label="Filtrar" icon="pi pi-search" severity="info" />
+</div>
         </div>
         <DataTable class="mt-2" value="LiberacaoAvulsa" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="status" header="Status"></Column>
@@ -115,6 +111,7 @@ onMounted(() => {
             <Column field="compartimento" header="Compartimento"></Column>
         </DataTable>
         <LoadingSpinner v-if="loading" />
+    </div>
     </div>
 </template>
 

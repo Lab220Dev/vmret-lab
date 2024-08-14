@@ -99,8 +99,6 @@ const confirmDelete = async () => {
             '/DM/deleteItem',
             {
                 id_item: selectedItem.value.id_item,
-            {
-                id_item: selectedItem.value.id_item,
                 id_usuario: store.userId
             },
             {

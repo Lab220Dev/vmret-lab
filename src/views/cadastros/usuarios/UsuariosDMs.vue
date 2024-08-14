@@ -75,12 +75,12 @@ const saveUsuario = async () => {
     if (store.userRole === 'Administrador') {
         data = {};
         data = usuario;
-        data.id_ususario = store.userId;
+        data.id_usuario = store.userId;
     } else {
         data = {};
         data = usuario;
         data.id_cliente = store.userIdCliente;
-        data.id_ususario = store.userId;
+        data.id_usuario = store.userId;
     }
     try {
         const response = await axios.post('/UDM/adicionar', data, {

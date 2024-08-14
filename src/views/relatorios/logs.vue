@@ -100,21 +100,20 @@ const generateCSV = (data) => {
 // };
 
 const fetchDM = async () => {
-    const params = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('', {
-            params: params,
+        const response = await axios.post('/relatorioRetiRe/listardm', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         dms.value = [
             todosOption,
-            ...response.data.map(({ id_dm }) => ({
-                label: `DM  ${id_dm}`,
-                value: id_dm
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                label: `${Identificacao}`,
+                value: ID_DM
             }))
         ];
     } catch (error) {
