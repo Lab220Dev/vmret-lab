@@ -337,7 +337,7 @@ const setTempo = (tempoRef, isoString) => {
 
 const validateForm = () => {
     errors.value = {};
-    cpfvalidate();
+    validateCPF();
     validateEmail();
     return Object.keys(errors.value).length === 0;
 };
