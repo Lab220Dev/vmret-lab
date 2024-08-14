@@ -163,7 +163,7 @@ const loadFuncionarios = async () => {
         });
         ListaFuncionarios.value = response.data;
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+        console.error('Erro ao carregar funcionários:', error);
     } finally {
         loading.value = false;
     }
@@ -337,7 +337,7 @@ const setTempo = (tempoRef, isoString) => {
 
 const validateForm = () => {
     errors.value = {};
-    validateCPF();
+    cpfvalidate();
     validateEmail();
     return Object.keys(errors.value).length === 0;
 };

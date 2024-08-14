@@ -108,7 +108,6 @@ const submitForm = () => {
             saveUsuario();
         }
     }
-    console.log('o validate te fodeu otario');
 };
 const saveUsuario = async () => {
     let data = null;

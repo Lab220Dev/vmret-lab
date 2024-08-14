@@ -186,7 +186,7 @@ onMounted(() => {
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">
-                                    Você tem certeza que deseja deletar esse centro de custo? <b>{{ cdc.id_centro_custo }}</b> - <b>{{ cdc.nome }}</b> ?</span
+                                    Você tem certeza que deseja deletar o centro de custo <b>{{ cdc.Codigo }}</b> - <b>{{ cdc.Nome }}</b> ?</span
                                 >
                             </div>
 
