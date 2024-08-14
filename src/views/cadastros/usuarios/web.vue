@@ -78,7 +78,7 @@ const deletUsuariodes = (itm) => {
 };
 const deleteUsuario = async (item) => {
     loading.value = true;
-    let data = { id_usuario: item.id_usuario, id_usuario: store.userId };
+    let data = { id_usuario_delete: item.id_usuario, id_usuario:store.userId, id_cliente:store.userIdCliente};
     try {
         const response = await axios.post('/usuarios/deletar', data, {
             headers: {
