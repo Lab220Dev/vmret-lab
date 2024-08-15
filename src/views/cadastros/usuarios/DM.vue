@@ -209,6 +209,9 @@ const deleteDM = async (item) => {
     }
     active.value = 0;
 };
+const handleRowSelection = async (event) => {
+    await onRowSelect(event);
+};
 
 const atualizarDM = async () => {
     const data = {
