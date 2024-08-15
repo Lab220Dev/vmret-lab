@@ -216,8 +216,8 @@ onMounted(() => {
                         <div class="card">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
-                                    <div class="full mt-5 xl:col-6 lg:col-12 md:col-12 sm:col-12">
-                                        <div class=""><label for="id_planta">Nome:</label> <InputText class="my-2" id="id_planta" v-model="cliente.nome" required /></div>
+                                    <div class="full mt-5 lg:col-12 md:col-12 sm:col-12">
+                                        <div ><label for="id_planta">Nome:</label> <InputText class="my-2" id="id_planta" v-model="cliente.nome" required /></div>
 
                                         <div class="mt-4">
                                             <label for="cpfcnpj">CNPJ/CPF:</label>
@@ -241,13 +241,6 @@ onMounted(() => {
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div class="full xl:col-6 lg:col-12 md:col-12 sm:col-12">
-                                        <label for="codigo">Menção Ficha Retirada:</label>
-                                        <Textarea style="overflow: hidden; height: 100%; min-width: 200px; width: 100%" v-model="cliente.textoretirada" class="my-2" rows="5" cols="30" />
-                                    </div>
-
-                                    <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-6 md:col-4 sm:col-6"></div>
                                 </div>
                             </form>
                         </div>

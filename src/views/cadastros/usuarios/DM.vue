@@ -49,6 +49,7 @@ const ListaItens = ref([]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+const usarApi = ref(false);
 const produtoSelecionado = ref({
     id_produto: '',
     Porta: '',
@@ -97,7 +98,7 @@ const confirmDelete = async () => {
     try {
         const response = await axios.post(
             '/DM/deleteItem',
-           
+
             {
                 id_item: selectedItem.value.id_item,
                 id_usuario: store.userId
@@ -407,7 +408,7 @@ const fetchCliente = async () => {
     loading.value = true;
     try {
         const response = await axios.post(
-            '/admin/cliente',
+            '/admin/cliente/listar',
             {},
             {
                 headers: {
@@ -416,8 +417,9 @@ const fetchCliente = async () => {
             }
         );
         ListaClientes.value = response.data.map((cliente) => ({
-            label: cliente.Nome,
-            value: cliente.id_cliente
+            label: cliente.nome,
+            value: cliente.id_cliente,
+            usar_api: cliente.usar_api 
         }));
     } catch (error) {
         console.error('Erro ao carregar clientes:', error);
@@ -425,7 +427,17 @@ const fetchCliente = async () => {
         loading.value = false; // Desativando loading
     }
 };
-
+watch(
+    () => DM.IDcliente,
+    (newClienteId) => {
+        const selectedClient = ListaClientes.value.find(client => client.value === newClienteId);
+        if (selectedClient) {
+            usarApi.value = selectedClient.usar_api; 
+        } else {
+            usarApi.value = false;
+    }
+}
+);
 </script>
 
 <template>
@@ -476,7 +488,8 @@ const fetchCliente = async () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel :header="isEdit ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'" v-if="admin()">
+                    <TabPanel :header="isEdit ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'"
+                        v-if="admin()">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
@@ -520,27 +533,31 @@ const fetchCliente = async () => {
                                     <label for="Facial" class="ml-2"> Rec. Facial </label>
                                 </div>
                             </div>
-                            <div class="full lg:col-12 md:col-4 sm:col-12">
-                                <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
-                            </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                <label for="senha">UserID API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
-                            </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                <label for="senha">Senha API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
-                            </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                <label for="senha">IdCliente API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
-                            </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-6">
-                                <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-scroll" rows="5" cols="30" />
-                            </div>
                         </div>
+                        
+                        <div v-if="usarApi" class="mt-5 mx-0 p-fluid grid" >
+                                <div class="full lg:col-12 md:col-4 sm:col-12">
+                                    <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
+                                    <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
+                                </div>
+                                <div class="full lg:col-6 md:col-6 sm:col-12">
+                                    <label for="senha">UserID API:</label>
+                                    <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
+                                </div>
+                                <div class="full lg:col-6 md:col-6 sm:col-12">
+                                    <label for="senha">Senha API:</label>
+                                    <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
+                                </div>
+                                <div class="full lg:col-6 md:col-6 sm:col-12">
+                                    <label for="senha">IdCliente API:</label>
+                                    <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
+                                </div>
+                                <div class="full lg:col-6 md:col-6 sm:col-6">
+                                    <label for="codigo">Senha Chave:</label>
+                                    <Textarea v-model="DM.Chave" class="my-2 overflow-scroll" rows="5" cols="30" />
+                                </div>
+
+                            </div>
                         <h5 class="mt-2">Controladoras</h5>
                         <div class="mt-5 mx-0 p-fluid grid">
                             <Button label="Adicionar Controladoras" icon="pi pi-check" severity="info"
