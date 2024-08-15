@@ -61,7 +61,7 @@ onMounted(() => {
 
 <template>
     <div class="card vh">
-        <h5 class="my-4 ml-2 text-2xl">Estoques da DM</h5>
+        <h5 class="my-4 ml-2 text-2xl">Estoque da DM</h5>
         <div class="my-2">
             <label for="dm" class="">DM:</label>
             <Dropdown id="dm" v-model="relatorio.dms" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
