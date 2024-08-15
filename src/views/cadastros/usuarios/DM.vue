@@ -12,7 +12,6 @@ const toast = useToast();
 const active = ref(0);
 const store = useAuthStore();
 const loading = ref(false);
-const isEdit = ref(false); // Adicionado para controlar o estado de edição
 
 let DM = reactive({
     Ativo: false,
@@ -168,7 +167,7 @@ const adicionarDM = async () => {
         id_cliente: store.userIdCliente,
         ...DM
     };
-    loading.value = true
+    loading.value = true;
     try {
         const response = await axios.post('/DM/adicionar', data, {
             headers: {
@@ -191,7 +190,7 @@ const deleteDM = async (item) => {
         id_cliente: store.userIdCliente,
         ID_DM: item.ID_DM
     };
-    loading.value = true
+    loading.value = true;
     try {
         await axios.post('/DM/delete', data, {
             headers: {
@@ -219,7 +218,7 @@ const atualizarDM = async () => {
         id_cliente: store.userIdCliente,
         ...DM
     };
-    loading.value = true
+    loading.value = true;
     try {
         const response = await axios.post('/DM/atualizar', data, {
             headers: {
@@ -394,7 +393,7 @@ const fetchCliente = async () => {
         ListaClientes.value = response.data.map((cliente) => ({
             label: cliente.nome,
             value: cliente.id_cliente,
-            usar_api: cliente.usar_api 
+            usar_api: cliente.usar_api
         }));
     } catch (error) {
         console.error('Erro ao carregar clientes:', error);
@@ -405,13 +404,13 @@ const fetchCliente = async () => {
 watch(
     () => DM.IDcliente,
     (newClienteId) => {
-        const selectedClient = ListaClientes.value.find(client => client.value === newClienteId);
+        const selectedClient = ListaClientes.value.find((client) => client.value === newClienteId);
         if (selectedClient) {
-            usarApi.value = selectedClient.usar_api; 
+            usarApi.value = selectedClient.usar_api;
         } else {
             usarApi.value = false;
+        }
     }
-}
 );
 </script>
 
@@ -423,11 +422,20 @@ watch(
                 <TabView v-model:activeIndex="active" v-if="!show">
                     <TabPanel header="Listar Dispenser Machines">
                         <div class="col-12">
-                            <DataTable v-model:filters="filters" :value="ListaDMS" selectionMode="single"
-                                tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows
-                                dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection" paginator
+                            <DataTable
+                                v-model:filters="filters"
+                                :value="ListaDMS"
+                                selectionMode="single"
+                                tableStyle="min-width: 25%"
+                                :rowsPerPageOptions="[5, 10, 20, 50]"
+                                stripedRows
+                                dataKey="id"
+                                :metaKeySelection="false"
+                                @rowSelect="onRowSelect"
+                                paginator
                                 :rows="10"
-                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']">
+                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']"
+                            >
                                 <template #header>
                                     <div class="flex justify-content-end">
                                         <IconField iconPosition="left">
@@ -445,8 +453,7 @@ watch(
                                 <Column field="local" header="Localização"></Column>
                                 <Column field="Ativo" header="Ativo">
                                     <template #body="{ data }">
-                                        <i class="pi"
-                                            :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
+                                        <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
                                     </template>
                                 </Column>
                                 <Column field="Updated" header="Atualizado">
@@ -456,20 +463,17 @@ watch(
                                 </Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                            @click="deleteDM(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteDM(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel :header="isEdit ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'"
-                        v-if="admin()">
+                    <TabPanel :header="visible ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'" v-if="admin()">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
-                                <Dropdown class="my-2" v-model="DM.IDcliente" :options="ListaClientes"
-                                    optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                <Dropdown class="my-2" v-model="DM.IDcliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Numero da DM:</label>
@@ -479,64 +483,72 @@ watch(
                                 <label for="email">Identificação da DM:</label>
                                 <InputText class="my-2" v-model="DM.Identificacao" id="email" />
                             </div>
-                            <div class="full lg:col-12 md:col-4 sm:col-12">
-                                <label class="mt-3 ml-4" for="switch2">DM Ativo?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Ativo" inputId="switch2" />
-                                <label class="mt-3 ml-4" for="switch3">DM Aceita Devolução?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Devolucao" inputId="switch3" />
-                            </div>
-                        </div>
-                        <h5 class="mt-2">Opções de DM</h5>
-                        <div class="mt-5 mx-0 p-fluid grid">
-                            <label for="fim"></label>
-                            <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
-                                <div class="checkbox-items m-2 flex align-items-end">
-                                    <Checkbox v-model="DM.voucher" inputId="Voucher" value="Voucher" :binary="true" />
-                                    <label for="Voucher" class="ml-2"> Voucher </label>
-                                </div>
-                                <div class="checkbox-items m-2 flex align-items-center">
-                                    <Checkbox v-model="DM.cracha" inputId="cracha" value="cracha" :binary="true" />
-                                    <label for="cracha" class="ml-2"> Crachá </label>
-                                </div>
-                                <div class="checkbox-items m-2 flex align-items-center">
-                                    <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" value="Biometria"
-                                        :binary="true" />
-                                    <label for="Biometria" class="ml-2"> Biometria </label>
-                                </div>
-                                <div class="checkbox-items m-2 flex align-items-center">
-                                    <Checkbox v-model="DM.OP_Facial" inputId="Facial" value="Facial" :binary="true" />
-                                    <label for="Facial" class="ml-2"> Rec. Facial </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div v-if="usarApi" class="mt-5 mx-0 p-fluid grid" >
-                                <div class="full lg:col-12 md:col-4 sm:col-12">
-                                    <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
-                                    <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-12">
-                                    <label for="senha">UserID API:</label>
-                                    <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-12">
-                                    <label for="senha">Senha API:</label>
-                                    <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-12">
-                                    <label for="senha">IdCliente API:</label>
-                                    <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="codigo">Senha Chave:</label>
-                                    <Textarea v-model="DM.Chave" class="my-2 overflow-scroll" rows="5" cols="30" />
-                                </div>
 
+                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                <label class="mt-0 text-nowrap" for="switch2">DM ativa?</label>
+                                <div class="grid mt-3">
+                                    <InputSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
+                                    <span class="ml-2">{{ DM.Ativo ? 'Sim' : 'Não' }}</span>
+                                </div>
                             </div>
-                        <h5 class="mt-2">Controladoras</h5>
+                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                <label class="mt-0 text-nowrap" for="switch3">DM aceita devolução?</label>
+                                <div class="grid mt-3">
+                                    <InputSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
+                                    <span class="ml-2">{{ DM.Devolucao ? 'Sim' : 'Não' }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <panel header="Opções de DM" class="mt-4">
+                            <div class="mt-5 mx-0 p-fluid grid">
+                                <label for="fim"></label>
+                                <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
+                                    <div class="checkbox-items m-2 flex align-items-end">
+                                        <Checkbox v-model="DM.voucher" inputId="Voucher" value="Voucher" :binary="true" />
+                                        <label for="Voucher" class="ml-2"> Voucher </label>
+                                    </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.cracha" inputId="cracha" value="cracha" :binary="true" />
+                                        <label for="cracha" class="ml-2"> Crachá </label>
+                                    </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" value="Biometria" :binary="true" />
+                                        <label for="Biometria" class="ml-2"> Biometria </label>
+                                    </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" value="Facial" :binary="true" />
+                                        <label for="Facial" class="ml-2"> Rec. Facial </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </panel>
+
+                        <div v-if="usarApi" class="mt-5 mx-0 p-fluid grid">
+                            <div class="full lg:col-12 md:col-4 sm:col-12">
+                                <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
+                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
+                            </div>
+                            <div class="full lg:col-6 md:col-6 sm:col-12">
+                                <label for="senha">UserID API:</label>
+                                <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
+                            </div>
+                            <div class="full lg:col-6 md:col-6 sm:col-12">
+                                <label for="senha">Senha API:</label>
+                                <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
+                            </div>
+                            <div class="full lg:col-6 md:col-6 sm:col-12">
+                                <label for="senha">IdCliente API:</label>
+                                <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
+                            </div>
+                            <div class="full lg:col-6 md:col-6 sm:col-6">
+                                <label for="codigo">Senha Chave:</label>
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-scroll" rows="5" cols="30" />
+                            </div>
+                        </div>
+                        <!-- <h5 class="mt-6">Controladoras</h5> -->
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <Button label="Adicionar Controladoras" icon="pi pi-check" severity="info"
-                                @click="adicionarDM" class="full mt-4 mr-2" />
+                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
                         </div>
                     </TabPanel>
                 </TabView>
@@ -545,17 +557,25 @@ watch(
                     <Button class="m-1" label="Adicionar Itens" @click="showDialogProduto = true" />
                     <div class="mt-5 mx-0 p-fluid grid">
                         <div class="lg:col-12 md:col-12 sm:col-12">
-                            <DataTable :value="ListaItens" selectionMode="single" tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
-                                @rowSelect="handleRowSelection" paginator :rows="10">
+                            <DataTable
+                                :value="ListaItens"
+                                selectionMode="single"
+                                tableStyle="min-width: 25%"
+                                :rowsPerPageOptions="[5, 10, 20, 50]"
+                                stripedRows
+                                dataKey="id"
+                                :metaKeySelection="false"
+                                @rowSelect="handleRowSelection"
+                                paginator
+                                :rows="10"
+                            >
                                 <Column field="SKU" header="SKU"></Column>
                                 <Column field="Nome_Produto" header="Produto"></Column>
                                 <Column field="Posicao" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
                                 <Column field="QTD" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                            @click="deleteItem(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
@@ -567,41 +587,49 @@ watch(
             </div>
         </div>
     </div>
-    <Dialog header="Adicionar Produto" :visible.sync="showDialogProduto" style="width: 30vw" :modal="true"
-        :closable="false">
+    <Dialog class="box" header="Adicionar Produto" :visible.sync="showDialogProduto" style="width: 25vw" :modal="true" :closable="false">
         <div class="card">
-            <div class="col-12 grid">
-                <div class="">
-                    <label for="Produto" class="font-semibold col-4">Produto: </label>
-                    <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaProdutos" optionLabel="label"
-                        optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+            <div class="grid">
+                <div class="lg:col-4 md:col-4 flex align-items-center">
+                    <label for="Produto" class="font-semibold">Produto:</label>
                 </div>
-                <div class="my-5">
-                    <label for="Porta" class="font-semibold w-6rem col-4">Porta: </label>
-                    <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="col-3 ml-3"
-                        autocomplete="off" :min="1" :max="999" />
+                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto"  />
                 </div>
-                <div class="mb-5">
-                    <label for="Controladora" class="font-semibold w-6rem col-4 pr-0">Controladora: </label>
-                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="col-3"
-                        autocomplete="off" :min="1" :max="999" />
+
+                <div class="lg:col-4 md:col-4 flex align-items-center">
+                    <label for="Porta" class="font-semibold">Porta:</label>
                 </div>
-                <div class="mb-5">
-                    <label for="Mola" class="font-semibold w-6rem col-4">Motor 1: </label>
-                    <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="col-3" autocomplete="off"
-                        :min="1" :max="999" />
+                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                    <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
                 </div>
-                <div class="">
-                    <label for="Mola2" class="font-semibold w-6rem col-4">Motor 2: </label>
-                    <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="col-3" autocomplete="off"
-                        :min="1" :max="999" />
+
+                <div class="lg:col-4 md:col-4 flex align-items-center">
+                    <label for="Controladora" class="font-semibold">Controladora:</label>
+                </div>
+                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
+                </div>
+
+                <div class="lg:col-4 md:col-4 flex align-items-center">
+                    <label for="Mola" class="font-semibold">Motor 1:</label>
+                </div>
+                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                    <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
+                </div>
+
+                <div class="lg:col-4 md:col-4 flex align-items-center">
+                    <label for="Mola2" class="font-semibold">Motor 2:</label>
+                </div>
+                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                    <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
         </div>
 
-        <div class="flex justify-content-end gap-2">
+        <div class="flex justify-content-end gap-2 mt-4">
             <Button type="button" label="Cancelar" severity="secondary" @click="showDialogProduto = false"></Button>
-            <Button type="button" label="Adicionar" @click="adicionarProduto"></Button>
+            <Button type="button" label="Salvar" @click="adicionarProduto"></Button>
         </div>
     </Dialog>
     <Dialog header="Deletar Item" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false">
@@ -618,7 +646,7 @@ watch(
         </template>
     </Dialog>
 </template>
-<style>
+<style scoped>
 @media (max-width: 580px) {
     .full {
         flex: 0 0 100%;
@@ -627,5 +655,13 @@ watch(
         width: 100%;
         margin: 1px;
     }
+.caixa {
+    width: 100px;}
 }
+
+.card {
+    overflow: hidden; /* Ensure content doesn't overflow */
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
 </style>

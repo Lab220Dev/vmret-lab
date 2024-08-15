@@ -290,7 +290,7 @@ onMounted(() => {
     <div class="card">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Fichas Retiradas</h5>
+                <h5 class="my-4 text-2xl">Fichas de Retiradas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
