@@ -457,15 +457,19 @@ const resetForm = () => {
 const atualizarFuncionario = async () => {
     const formData = new FormData();
 
-    // Adiciona a foto se houver uma selecionada
     if (selectedFile.value) {
-        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
-        formData.append('foto', nomeArquivo);
+        const fileExtension = selectedFile.value.name.split('.').pop();  // Obtém a extensão do arquivo
+        const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
+        
+        formData.append('foto', nomeArquivo);  // Adiciona o novo nome do arquivo ao FormData
         formData.append('file', selectedFile.value);
+        formData.append('remove_old_photo', true);
+    } else {
+        formData.append('foto', funcionario.nomearquivo);
     }
+    const { foto, ...restOfFuncionario } = funcionario;
 
-    // Adiciona os dados do funcionário
-    Object.entries(funcionario).forEach(([key, value]) => {
+    Object.entries(restOfFuncionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
     formData.append('id_usuario', store.userId);
