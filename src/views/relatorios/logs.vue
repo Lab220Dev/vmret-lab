@@ -146,27 +146,18 @@ onMounted(() => {
         <div class="form">
             <h5 class="my-4 text-2xl">Log</h5>
             <div class="grid mt-3 mx-1 p-1">
-                <!-- Header com a Seleção de Dms -->
-
-                <div class="field lg:col-4 md:col-6 sm:col-6">
-                    <label for="dm">DM:</label>
-                    <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value"
-                        placeholder="Todos" ref="dropdown1" />
-                </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="usuario">Usuário:</label>
                     <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
-                    <label for="funcionario">Funcionário:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                        optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
-                </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
                     <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
                         optionValue="value" placeholder="Todos" />
+                </div>
+                <div class="field lg:col-4 md:col-6 sm:col-6">
+
                 </div>
                 <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
@@ -188,10 +179,9 @@ onMounted(() => {
         </div>
         <DataTable :value="historico" stripedRows showGridlines paginator :rows="10" dataKey="DM"
             :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
-            <Column field="DM" header="DM"></Column>
             <Column field="Dia" header="Data"></Column>
             <Column field="ID_Usuario" header="Usuário"></Column>
-            <Column field="funcionario" header="Funcionário"></Column>
+            <Column field="Log_Web" header="Resumo"></Column>
             <Column field="Operacao" header="Operação"></Column>
         </DataTable>
     </div>

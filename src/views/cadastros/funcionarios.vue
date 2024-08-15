@@ -339,6 +339,7 @@ const validateForm = () => {
     errors.value = {};
     cpfvalidate();
     validateEmail();
+    console.log(errors.value)
     return Object.keys(errors.value).length === 0;
 };
 
@@ -360,12 +361,14 @@ const cpfvalidate = () => {
     }
 };
 const handleSubmit = () => {
+    console.log(validateForm())
     if (validateForm()) {
         if (editVisible.value) {
             atualizarFuncionario();
         } else {
             adicionarFuncionario();
         }
+        console.log("não passou do validate")
     }
 };
 
@@ -510,7 +513,8 @@ const handleDatepickerOpen = () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionários">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
                         <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
@@ -525,7 +529,8 @@ const handleDatepickerOpen = () => {
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-8 md:col-6 sm:col-12">
                                     <label for="name">Nome:</label>
-                                    <InputText class="my-2" v-model="funcionario.nome" id="name" type="text"></InputText>
+                                    <InputText class="my-2" v-model="funcionario.nome" id="name" type="text">
+                                    </InputText>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="matricula">Matrícula:</label>
@@ -541,51 +546,68 @@ const handleDatepickerOpen = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
-                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
+                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon
+                                        :showOnFocus="false" :format="format" locale="pt-BR" auto-apply
+                                        :enable-time-picker="false" @open="handleDatepickerOpen" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
+                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99"
+                                        :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="rg">RG:</label>
-                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
+                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*"
+                                        :unmask="true" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="ctps">CTPS:</label>
-                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" />
+                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999"
+                                        :unmask="true" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="email">E-mail:</label>
-                                    <InputText class="my-2" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
+                                    <InputText class="my-2" id="email" v-model="funcionario.email"
+                                        :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo"
+                                        :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value"
+                                        placeholder="Selecione Um " ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta"
+                                        :options="formatedPlantaOptions" optionLabel="label" optionValue="value"
+                                        placeholder="Selecione a Planta" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="formatedSetorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" ref="dropdown3" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor"
+                                        :options="formatedSetorOptions" optionLabel="label" optionValue="value"
+                                        placeholder="Selecione o Setor" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_funcao"
+                                        :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value"
+                                        placeholder="Selecione a Função" ref="dropdown4" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status"
+                                        optionLabel="label" optionValue="value" placeholder="Escolha um"
+                                        ref="dropdown5"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Início:</label>
-                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
+                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker
+                                            disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -593,46 +615,51 @@ const handleDatepickerOpen = () => {
                                     </div>
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Fim:</label>
-                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker
+                                            disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
                                         </VueDatePicker>
                                     </div>
 
-                                    <Fieldset
-                                        legend="Selecione os dias que o funcionário poderá retirar os
-                                        Itens:"
-                                        class="p-1 lg:col-12 md:col-12 sm:col-12"
-                                    >
+                                    <Fieldset legend="Selecione os dias que o funcionário poderá retirar os
+                                        Itens:" class="p-1 lg:col-12 md:col-12 sm:col-12">
                                         <label for="fim"></label>
                                         <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
                                             <div class="checkbox-items m-2 flex align-items-end">
-                                                <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
+                                                <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
+                                                    value="Segunda" :binary="true" />
                                                 <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
+                                                <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
+                                                    value="Terca" :binary="true" />
                                                 <label for="Terca" class="ml-2"> Terça-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
+                                                <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
+                                                    value="Quarta" :binary="true" />
                                                 <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
+                                                <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
+                                                    value="Quinta" :binary="true" />
                                                 <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
+                                                <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
+                                                    value="Sexta" :binary="true" />
                                                 <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
+                                                <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
+                                                    value="Sabado" :binary="true" />
                                                 <label for="Sabado" class="ml-2"> Sábado </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
+                                                <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
+                                                    value="Domingo" :binary="true" />
                                                 <label for="Domingo" class="ml-2"> Domingo</label>
                                             </div>
                                         </div>
@@ -644,16 +671,23 @@ const handleDatepickerOpen = () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="editVisible" style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="ATT"
+                                    icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
+                                <Button v-if="editVisible" style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
+                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
 
-                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                <Button v-if="!editVisible" style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
+                                    icon="pi pi-check" severity="info" @click="adicionarFuncionario()" />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class="" :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
+                                        <DataTable class="" :value="ItensSetorDev" stripedRows dataKey="sku"
+                                            v-model="funcionario.itemsSelecionadosSetor">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
@@ -663,14 +697,17 @@ const handleDatepickerOpen = () => {
                                     <TabPanel header="Itens do Funcionario">
                                         <Button class="m-1" label="Adicionar Itens" @click="visible = true" />
                                         <!--data table que exibe os items adicionados-->
-                                        <DataTable class="mt-3" :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem" stripedRows dataKey="sku">
+                                        <DataTable class="mt-3" :value="itemsSelecionadosFuncionario"
+                                            tableStyle="min-width: 50rem" stripedRows dataKey="sku">
                                             <Column field="name" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
-                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
-                                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2"
+                                                        @click="editItem(slotProps.data)" />
+                                                    <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                                        @click="confirmDeleteProduct(slotProps.data)" />
                                                 </template>
                                             </Column>
                                         </DataTable>
@@ -682,7 +719,8 @@ const handleDatepickerOpen = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true"
+            class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -704,11 +742,13 @@ const handleDatepickerOpen = () => {
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name"
+                        placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3"
+                        autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -720,21 +760,20 @@ const handleDatepickerOpen = () => {
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="item"
-                    >Você tem certeza que quer deletar o Item <b>{{ item.name }}</b> ?</span
-                >
+                <span v-if="item">Você tem certeza que quer deletar o Item <b>{{ item.name }}</b> ?</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />
                 <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
             </template>
         </Dialog>
-        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px"
+            :modal="true" :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
-                    Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{ funcionario.nome }}</b> ?</span
-                >
+                    Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{
+                        funcionario.nome }}</b> ?</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
@@ -759,7 +798,8 @@ const handleDatepickerOpen = () => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block; /* Garantir que o label se comporte corretamente dentro de um grid */
+    display: block;
+    /* Garantir que o label se comporte corretamente dentro de um grid */
 }
 
 .checkbox-container {
@@ -767,8 +807,10 @@ const handleDatepickerOpen = () => {
 }
 
 .checkbox-items {
-    width: 40%; /* Metade da largura do contêiner para duas colunas */
-    margin-bottom: 10px; /* Espaçamento entre as linhas */
+    width: 40%;
+    /* Metade da largura do contêiner para duas colunas */
+    margin-bottom: 10px;
+    /* Espaçamento entre as linhas */
 }
 
 .nested-grid {
