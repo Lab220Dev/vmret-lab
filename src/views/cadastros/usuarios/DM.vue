@@ -307,38 +307,6 @@ const adicionarProduto = async () => {
     }
 };
 
-const resetForm = () => {
-    DM = {
-        Ativo: '',
-        Chave: '',
-        ClienteID: '',
-        ClienteNome: '',
-        Created: '',
-        Enviada: '',
-        ID_CR_Usuario: '',
-        ID_DM: '',
-        IDcliente: '',
-        Identificacao: '',
-        Integracao: '',
-        Numero: '',
-        OP_Biometria: '',
-        OP_Facial: '',
-        OP_Senha: '',
-        URL: '',
-        Updated: '',
-        UserID: '',
-        Versao: ''
-    };
-    produtoSelecionado.value = {
-        id_produto: '',
-        Porta: '',
-        Motor1: '',
-        Motor2: '',
-        Controladora: ''
-    };
-    isEdit.value = false; // Reseta o estado para adição
-    // Adicione qualquer outra lógica necessária para resetar o formulário
-};
 
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -375,6 +343,10 @@ const resetDMForm = () => {
     DM.Versao = '';
     DM.Devolucao = '';
 };
+const voltar = () =>{
+    show.value = false;
+    operador.value = false;
+}
 const resetProdutoSelecionado = () => {
     produtoSelecionado.value = {
         id_produto: '',
@@ -589,6 +561,7 @@ watch(
                             </DataTable>
                         </div>
                     </div>
+                    <Button class="m-1" label="Voltar" @click="voltar()" />
                 </div>
                 <LoadingSpinner v-if="loading" />
             </div>
