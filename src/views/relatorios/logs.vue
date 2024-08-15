@@ -180,9 +180,10 @@ onMounted(() => {
         <DataTable :value="historico" stripedRows showGridlines paginator :rows="10" dataKey="DM"
             :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="Dia" header="Data"></Column>
+            <Column field="Operacao" header="Operação"></Column>
             <Column field="ID_Usuario" header="Usuário"></Column>
             <Column field="Log_Web" header="Resumo"></Column>
-            <Column field="Operacao" header="Operação"></Column>
+            <Column field="Resultado" header="Resultado"></Column>
         </DataTable>
     </div>
 </template>
