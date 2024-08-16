@@ -359,7 +359,7 @@ const resetForm = () => {
     </div>
 </template>
 
-<style>
+<style scoped>
 @media (max-width: 780px) {
     .full {
         flex: 0 0 100%;

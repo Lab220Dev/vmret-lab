@@ -224,8 +224,8 @@ onMounted(() => {
                                             <InputText class="my-2" id="cpfcnpj" v-model="cliente.cpfcnpj" required />
                                         </div>
 
-                                        <div class="flex justify-center mt-5">
-                                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                        <div class="input justify-items-center mt-5">
+                                            <div class=" full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                                 <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
                                                 <div class="grid mt-3">
                                                     <InputSwitch class="mr-2" v-model="cliente.usarApi" inputId="switch1" />
@@ -269,4 +269,11 @@ onMounted(() => {
     </div>
 </template>
 
-<style lang="scss" scoped></style>
+
+<style lang="scss" scoped>
+@media (min-width: 768px)
+{ .input {
+    display: flex;
+}
+}
+</style>

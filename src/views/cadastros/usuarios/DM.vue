@@ -161,6 +161,10 @@ const onRowSelect = async (event) => {
     }
 };
 
+const handleRowSelection = async (event) => {
+    await onRowSelect(event);
+};
+
 const adicionarDM = async () => {
     const data = {
         id_usuario: store.userId,
@@ -524,26 +528,26 @@ watch(
                             </div>
                         </panel>
 
-                        <div v-if="usarApi" class="mt-5 mx-0 p-fluid grid">
-                            <div class="full lg:col-12 md:col-4 sm:col-12">
+                        <div v-if="usarApi" class="mt-5 mx-auto p-fluid grid">
+                            <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
                                 <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
                             </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-12">
+                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">UserID API:</label>
                                 <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
                             </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-12">
+                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">Senha API:</label>
                                 <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
                             </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-12">
+                            <div class="full lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">IdCliente API:</label>
                                 <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
                             </div>
-                            <div class="full lg:col-6 md:col-6 sm:col-6">
+                            <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-scroll" rows="5" cols="30" />
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full" rows="2" cols="30" />
                             </div>
                         </div>
                         <!-- <h5 class="mt-6">Controladoras</h5> -->
@@ -587,41 +591,41 @@ watch(
             </div>
         </div>
     </div>
-    <Dialog class="box" header="Adicionar Produto" :visible.sync="showDialogProduto" style="width: 25vw" :modal="true" :closable="false">
-        <div class="card">
+    <Dialog class="" header="Adicionar Produto" :visible.sync="showDialogProduto" :modal="true" :closable="false">
+        <div class="box card">
             <div class="grid">
-                <div class="lg:col-4 md:col-4 flex align-items-center">
+                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Produto" class="font-semibold">Produto:</label>
                 </div>
-                <div class="lg:col-8 md:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto"  />
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" />
                 </div>
 
-                <div class="lg:col-4 md:col-4 flex align-items-center">
+                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Porta" class="font-semibold">Porta:</label>
                 </div>
-                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
                 </div>
 
-                <div class="lg:col-4 md:col-4 flex align-items-center">
+                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Controladora" class="font-semibold">Controladora:</label>
                 </div>
-                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
                 </div>
 
-                <div class="lg:col-4 md:col-4 flex align-items-center">
+                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Mola" class="font-semibold">Motor 1:</label>
                 </div>
-                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
                 </div>
 
-                <div class="lg:col-4 md:col-4 flex align-items-center">
+                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Mola2" class="font-semibold">Motor 2:</label>
                 </div>
-                <div class="lg:col-8 md:col-8 flex justify-content-end">
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
@@ -647,7 +651,7 @@ watch(
     </Dialog>
 </template>
 <style scoped>
-@media (max-width: 580px) {
+@media (max-width: 768px) {
     .full {
         flex: 0 0 100%;
         max-width: 100%;
@@ -655,13 +659,25 @@ watch(
         width: 100%;
         margin: 1px;
     }
-.caixa {
-    width: 100px;}
+    .box {
+        width: 50vw;
+    }
+}
+
+@media (min-width: 769px) {
+    .box {
+        width: 40vw;
+    }
+}
+
+@media (min-width: 900px) {
+    .box {
+        width: 30vw;
+    }
 }
 
 .card {
     overflow: hidden; /* Ensure content doesn't overflow */
     box-sizing: border-box; /* Include padding and border in element's total width and height */
 }
-
 </style>

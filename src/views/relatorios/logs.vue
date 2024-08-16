@@ -146,32 +146,29 @@ onMounted(() => {
         <div class="form">
             <h5 class="my-4 text-2xl">Log</h5>
             <div class="grid mt-3 mx-1 p-1">
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-2 md:col-6 sm:col-6">
                     <label for="usuario">Usuário:</label>
                     <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-2 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
                     <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
                         optionValue="value" placeholder="Todos" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
-
-                </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
                     <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">Data Final:</label>
                     <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-2 md:col-6 sm:col-6">
                     <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
                         @click="buscar" />
                 </div>
@@ -187,7 +184,7 @@ onMounted(() => {
         </DataTable>
     </div>
 </template>
-<style>
+<style scoped>
 .card {
     overflow-x: auto;
 }
