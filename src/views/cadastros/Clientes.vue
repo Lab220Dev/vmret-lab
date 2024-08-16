@@ -23,7 +23,7 @@ let cliente = reactive({
     nome: '',
     cpfcnpj: '',
     ativo: true,
-    usarApi: false,
+    usar_api: false,
     textoretirada: ''
 });
 const onRowSelect = (event) => {
@@ -69,7 +69,7 @@ const deleteCliente = async (item) => {
     loading.value = true;
     let data = { id_cliente: item.id_cliente, id_usuario: store.userId };
     try {
-        await axios.post('/admin/cliente/delete', data, {
+        await axios.post('/admin/cliente/deletar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -113,7 +113,7 @@ watch(active, (newIndex, oldIndex) => {
     }
 });
 const resetForm = () => {
-    (cliente.nome = ''), (cliente.cpfcnpj = ''), (cliente.ativo = true), (cliente.created = new Date()), (cliente.usarApi = false), (cliente.textoretirada = '');
+    (cliente.nome = ''), (cliente.cpfcnpj = ''), (cliente.ativo = true), (cliente.created = new Date()), (cliente.usar_api = false), (cliente.textoretirada = '');
 };
 const loadCliente = async () => {
     loading.value = true;
@@ -229,7 +229,7 @@ onMounted(() => {
                                                 <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
                                                 <div class="grid mt-3">
                                                     <InputSwitch class="mr-2" v-model="cliente.usarApi" inputId="switch1" />
-                                                    <span class="ml-2">{{ cliente.usarApi ? 'Sim' : 'Não' }}</span>
+                                                    <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
                                                 </div>
                                             </div>
                                             <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
