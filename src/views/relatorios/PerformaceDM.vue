@@ -392,7 +392,7 @@ onMounted(() => {
     </Dialog>
 </template>
 
-<style>
+<style scoped>
 .dialog-header {
     display: flex;
     align-items: center;

@@ -161,6 +161,10 @@ const onRowSelect = async (event) => {
     }
 };
 
+const handleRowSelection = async (event) => {
+    await onRowSelect(event);
+};
+
 const adicionarDM = async () => {
     const data = {
         id_usuario: store.userId,
@@ -535,7 +539,7 @@ watch(
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 20px;" inputClass="w-full" rows="2" cols="30" />
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full" rows="2" cols="30" />
                             </div>
                         </div>
                         <!-- <h5 class="mt-6">Controladoras</h5> -->
@@ -585,7 +589,7 @@ watch(
                     <label for="Produto" class="font-semibold">Produto:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto"  />
+                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" />
                 </div>
 
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
@@ -649,22 +653,22 @@ watch(
     .box {
         width: 50vw;
     }
-    
 }
 
-@media (min-width:769px){
+@media (min-width: 769px) {
     .box {
         width: 40vw;
-    }}
+    }
+}
 
-@media (min-width:900px){
+@media (min-width: 900px) {
     .box {
         width: 30vw;
-    }}
+    }
+}
 
 .card {
     overflow: hidden; /* Ensure content doesn't overflow */
     box-sizing: border-box; /* Include padding and border in element's total width and height */
 }
-
 </style>
