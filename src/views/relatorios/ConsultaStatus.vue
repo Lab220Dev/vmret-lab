@@ -141,16 +141,16 @@ onMounted(() => {
                 <Column field="compartimento" header="Compartimento"></Column>
             </DataTable>
             <LoadingSpinner v-if="loading" />
-            <Dialog :header="`Alterar Prazo de Retirada: ${selectedItem.nome}`" v-model:visible="modalVisible" modal>
-    <div v-if="selectedItem">
-        <label for="novoPrazo">Novo Prazo:</label>
-        <InputText id="novoPrazo" v-model="novoPrazo" class="w-full mt-2" />
-    </div>
-    <div class="mt-4">
-        <Button label="Salvar" @click="salvar" />
-        <Button label="Cancelar" class="p-button-secondary" @click="fechar" />
-    </div>
-</Dialog>
+            <Dialog :header="selectedItem ? `Alterar Prazo de Retirada: ${selectedItem.nome}` : 'Alterar Prazo de Retirada'" v-model:visible="modalVisible" modal>
+                <div v-if="selectedItem">
+                    <label for="novoPrazo">Novo Prazo:</label>
+                    <InputText id="novoPrazo" v-model="novoPrazo" class="w-full mt-2" />
+                </div>
+                <div class="mt-4">
+                    <Button label="Salvar" @click="salvar" />
+                    <Button label="Cancelar" class="p-button-secondary" @click="fechar" />
+                </div>
+            </Dialog>
         </div>
     </div>
 </template>
