@@ -64,7 +64,7 @@ const loadSetor = async () => {
         });
         ListaSetor.value = response.data;
     } catch (error) {
-        console.error('Erro ao listar Funções e Diretorias:', error);
+        console.error('Erro ao listar Setores:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -82,11 +82,13 @@ const adicionarSetor = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor salvo com sucesso', life: 3000 });
         loadSetor();
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao adicionar Funções e Diretorias:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao salvar setor', life: 3000 });
+        console.error('Erro ao adicionar Setores:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -101,13 +103,13 @@ const deleteSetor = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Função Deletada', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
         deleteSetorDialog.value = false;
         loadSetor();
         active.value = 0;
         resetForm();
     } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a função', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o setor', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -125,11 +127,13 @@ const atualizarSetor = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Atualizado', life: 3000 });
         loadSetor();
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao atualizar Funções e Diretorias:', error);
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar setor', life: 3000 });
+        console.error('Erro ao atualizar Setores:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -172,7 +176,7 @@ const fetchListaItemSetor = async () => {
         });
         ItensSetor.value = response.data;
     } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
+        console.error('Erro ao listar itens:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -246,21 +250,31 @@ const fetchProdutoSetor = async () => {
 const SalvarProduto = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        id_usuario:store.userId,
-        id_produto:produtoSelecionado.value.id_produto,
-        quantidade:produtoSelecionado.value.quantidade,
+        id_usuario: store.userId,
+        id_produto: produtoSelecionado.value.id_produto,
+        quantidade: produtoSelecionado.value.quantidade,
         ...setor
     };
+    loading.value = true;
     try {
         const response = await axios.post('/setor/additem', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        fetchListaItemSetor();
+        visible.value = false; 
+        resetForm(); 
+        toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
+        console.log('Resposta do servidor:', response.data);
     } catch (error) {
-        console.error('Erro ao recuperar os produtos do setor:', error);
+        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
+    } finally {
+        loading.value = false;
     }
 };
+
 </script>
 
 <template>
@@ -270,7 +284,7 @@ const SalvarProduto = async () => {
             <TabPanel header="Listar Setores">
                 <div class="col-12">
                     <DataTable :value="ListaSetor" stripedRows selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" dataKey="codigo" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        <template #empty> Nenhuma Setor adicionada. </template>
+                        <template #empty> Nenhum setor adicionado. </template>
                         <Column field="codigo" header="Código"></Column>
                         <Column field="nome" header="Setor (Nome)"></Column>
                         <Column field="id_centro_custo" header="Centro de Custo"></Column>

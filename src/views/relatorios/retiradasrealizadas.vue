@@ -51,6 +51,7 @@ const format = (date) => {
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
+
 const buscar = async () => {
     const data = {
         id_usuario: store.userId,
@@ -86,6 +87,7 @@ const buscar = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
 const voltar = () => {
     show.value = true;
     selectedItem.value = {};
