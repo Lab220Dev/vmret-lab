@@ -187,6 +187,11 @@ const router = createRouter({
                     name: 'Termo de compromisso - Ficha Retirada',
                     component: () => import('@/views/pages/Termo.vue')
                 },
+                {
+                    path: '/cadastros/Importacao',
+                    name: 'Importação de dados',
+                    component: () => import('@/views/pages/Importacao.vue')
+                },
             ]
         },
         {
