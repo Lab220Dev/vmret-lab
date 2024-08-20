@@ -46,7 +46,7 @@ const nextValues = reactive({
 const maxControladoras = {
     '2018': 10,
     '2023': 90,
-    '2024': Infinity // Se não há limite, podemos usar Infinity
+    '2024': Infinity
 };
 const countControladoras = (tipo) => {
     return controladoras.value.filter(controladora => controladora.tipo === tipo).length;
@@ -451,7 +451,6 @@ const updateTipoControladora = (index, tipo) => {
             detail: `Você atingiu o limite máximo de controladoras ${tipo}`,
             life: 3000
         });
-        // Remover o card vazio se o limite for atingido
         controladoras.value.splice(index, 1);
         return;
     }
@@ -477,6 +476,10 @@ const updateTipoControladora = (index, tipo) => {
         };
         nextValues['2024'].placa++;
     }
+};
+
+const removeControladora = (index) => {
+    controladoras.value.splice(index, 1);
 };
 </script>
 
@@ -617,6 +620,10 @@ const updateTipoControladora = (index, tipo) => {
                                 <Dropdown v-model="controladora.tipo" :options="tipoControladoras"
                                     placeholder="Selecione o tipo de Controladora"
                                     @change="updateTipoControladora(index, controladora.tipo)" />
+
+                                <!-- Botão de Remoção -->
+                                <Button icon="pi pi-trash" label="Remover" class="p-button-danger"
+                                    @click="removeControladora(index)" />
 
                                 <!-- Controladora 2018 -->
                                 <div v-if="controladora.tipo === '2018'">
