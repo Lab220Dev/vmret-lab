@@ -52,11 +52,14 @@ const libMock = ref([
 
 const relatorioLA = async () => {
     loading.value = true;
+
     const data = {
         id_cliente: store.userIdCliente,
         id_usuario: store.userId,
-        ...relatorio.value
+        tipo_filtro: integracao.value, // Tipo de filtro (1 para Matrícula, 2 para Voucher)
+        valor_filtro: userid.value // Valor do filtro (matrícula ou voucher)
     };
+
     try {
         const response = await axios.post('/Estoque/relatorio', data, {
             headers: {
@@ -70,6 +73,7 @@ const relatorioLA = async () => {
         loading.value = false;
     }
 };
+
 
 const selectedItem = ref(null);
 
@@ -125,7 +129,7 @@ onMounted(() => {
                             <InputText id="userid" v-model="userid" class="my-2 w-full" required />
                         </div>
                     </div>
-                    <Button class="mt-3 w-20rem ml-2" style="width: 160px" type="button" label="Filtrar" icon="pi pi-search" severity="info" />
+                    <Button class="mt-3 w-20rem ml-2" style="width: 160px" type="button" label="Filtrar" icon="pi pi-search" severity="info" @click="libMock" />
                 </div>
             </div>
             <DataTable class="mt-2" selectionMode="single" :value="libMock" stripedRows showGridlines paginator :rows="10" dataKey="SKU" @row-select="handleRowSelection" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
