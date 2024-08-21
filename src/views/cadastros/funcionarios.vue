@@ -16,21 +16,18 @@ const selectedFile = ref(null);
 const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
-
+const todosOption = { label: 'Todos', value: null };
 const errors = ref({});
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
 ]);
 const imageUrl = ref(null);
-let centroCustooptions = ref([]);
-let SetorDiretoriaoptions = ref([]);
+let centroCusto  = ref([]);
+let setor = ref([]);
 let hieraquiaoptions = ref([]);
-let plantasoptions = ref([]);
-let formatedCentroCustoOptions = ref([]);
-let formatedSetorOptions = ref([]);
 let formatedHierarquiaOptions = ref([]);
-let formatedPlantaOptions = ref([]);
+let plantas  = ref([]);
 let funcionario = reactive({
     id_funcionario: '',
     matricula: '',
@@ -61,19 +58,6 @@ let funcionario = reactive({
 const editVisible = ref(false);
 const selectedProduct = ref([]);
 const itemsSelecionadosFuncionario = ref([]);
-const ItensSetorDev = ref([
-    { name: 'Mouse', sku: 123, quantidade: 1 },
-    { name: 'Teclado', sku: 647, quantidade: 1 },
-    { name: 'Microfone', sku: 563, quantidade: 1 },
-    { name: 'Fone de ouvido', sku: 436, quantidade: 1 },
-    { name: 'Cabo USB', sku: 279, quantidade: 1 }
-]);
-const ItensSetorAdm = ref([
-    { name: 'Post-it', sku: 98374, quantidade: 0 },
-    { name: 'caderno', sku: 827642, quantidade: 0 },
-    { name: 'corretivo', sku: 7462, quantidade: 0 },
-    { name: 'clipe de papel', sku: 2978264, quantidade: 0 }
-]);
 const arquivo = ref(null);
 const ListaFuncionarios = ref([]);
 const itemDialog = ref(false);
@@ -206,16 +190,18 @@ const fetchCentroCusto = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarcentrocusto', data, {
+        const response = await axios.post('cdc/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCustooptions = response.data;
-        formatedCentroCustoOptions = centroCustooptions.map((centroCustooptions) => ({
-            label: `Centro de Custo ${centroCustooptions.id_centro_custo}`,
-            value: centroCustooptions.id_centro_custo
-        }));
+        centroCusto.value = [
+            todosOption,
+            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+                label: `Centro de Custo  ${Nome}`,
+                value: ID_CentroCusto
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     }
@@ -226,16 +212,18 @@ const fetchSetorDiretoria = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarsetor', data, {
+        const response = await axios.post('Setor/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        SetorDiretoriaoptions = response.data;
-        formatedSetorOptions = SetorDiretoriaoptions.map((SetorDiretoriaoptions) => ({
-            label: `Setor ${SetorDiretoriaoptions.id_setor}`,
-            value: SetorDiretoriaoptions.id_setor
-        }));
+        setor.value = [
+            todosOption,
+            ...response.data.map(({ id_setor, nome }) => ({
+                label: `Setor  ${nome}`,
+                value: id_setor
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
@@ -265,16 +253,19 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarplanta', data, {
+        const response = await axios.post('plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        plantasoptions = response.data;
-        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
-            label: `Planta ${plantasoptions.id_planta}`,
-            value: plantasoptions.id_planta
-        }));
+        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
+        plantas.value = [
+            todosOption,
+            ...response.data.map(({ nome, id_planta }) => ({
+                label: `Planta  ${nome}`,
+                value: id_planta
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar opções de plantas:', error);
     }
@@ -579,19 +570,19 @@ const handleDatepickerOpen = () => {
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
                                     <Dropdown class="my-2" v-model="funcionario.id_centro_custo"
-                                        :options="formatedCentroCustoOptions" optionLabel="label" optionValue="value"
+                                        :options="centroCusto" optionLabel="label" optionValue="value"
                                         placeholder="Selecione Um " ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
                                     <Dropdown class="my-2" v-model="funcionario.id_planta"
-                                        :options="formatedPlantaOptions" optionLabel="label" optionValue="value"
+                                        :options="plantas" optionLabel="label" optionValue="value"
                                         placeholder="Selecione a Planta" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
                                     <Dropdown class="my-2" v-model="funcionario.id_setor"
-                                        :options="formatedSetorOptions" optionLabel="label" optionValue="value"
+                                        :options="setor" optionLabel="label" optionValue="value"
                                         placeholder="Selecione o Setor" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
