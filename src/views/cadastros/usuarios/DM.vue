@@ -35,7 +35,7 @@ let DM = reactive({
     Versao: '',
     Devolucao: false
 });
-const controladoras = ref([]);
+const Controladoras = ref([]);
 const tipoControladoras = ['2018', '2023', '2024'];
 
 const nextValues = reactive({
@@ -49,7 +49,7 @@ const maxControladoras = {
     '2024': Infinity
 };
 const countControladoras = (tipo) => {
-    return controladoras.value.filter(controladora => controladora.tipo === tipo).length;
+    return Controladoras.value.filter(controladora => controladora.tipo === tipo).length;
 };
 const operador = ref(false);
 const show = ref(false);
@@ -59,6 +59,7 @@ const showDialogProduto = ref(false);
 const ListaProdutos = ref([]);
 const ListaProdutosFiltradp = ref([]);
 const ListaClientes = ref([]);
+const selectedClient = ref(null);
 const visible = ref(false);
 const ListaItens = ref([]);
 const filters = ref({
@@ -168,11 +169,30 @@ const fetchItemDM = async () => {
 const onRowSelect = async (event) => {
     DM = event.data;
     visible.value = true;
+    Controladoras.value = DM.Controladoras.map(controladora => ({
+        tipo: controladora.Tipo_Controladora,
+        dados: {
+            placa: controladora.Placa,
+            dip: controladora.DIP,
+            andar: controladora.Andar ? controladora.Andar.split(',').map(Number) : [],
+            posicao: controladora.Posicao ? controladora.Posicao.split(',').map(Number) : [],
+            motor: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola1 || '',
+            motor2: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola2 || '',
+            checkboxes: controladora.Tipo_Controladora === '2018' ? (controladora.Mola1 ? controladora.Mola1.split(',').map(Number) : []) : []
+        }
+    }));
+
+    selectedClient.value = {
+        id_cliente: DM.IDcliente,
+        nome_cliente: DM.ClienteNome
+    };
+
     if (!admin()) {
         show.value = true;
         fetchItemDM();
         listarProduto();
         operador.value = true;
+
     } else {
         active.value = 1;
     }
@@ -180,10 +200,12 @@ const onRowSelect = async (event) => {
 
 
 const adicionarDM = async () => {
+    DM.IDcliente = selectedClient.value.id_cliente;
+    DM.ClienteNome = selectedClient.value.nome_cliente;
     const data = {
         id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...DM
+        ...DM,
+        Controladoras: Controladoras.value
     };
     loading.value = true;
     try {
@@ -196,7 +218,7 @@ const adicionarDM = async () => {
         active.value = 0;
         resetDMForm();
     } catch (error) {
-        console.error('Erro ao adicionar planta:', error);
+        console.error('Erro ao adicionar DM:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -233,8 +255,15 @@ const handleRowSelection = async (event) => {
 const atualizarDM = async () => {
     const data = {
         id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...DM
+        IDcliente: selectedClient.value.id_cliente,
+        ClienteNome: selectedClient.value.nome_cliente,
+        ...DM,
+        Controladoras: Controladoras.value.map(controladora => {
+            if (!controladora.ID) {
+                controladora.ID = null;
+            }
+            return controladora;
+        })
     };
     loading.value = true;
     try {
@@ -247,9 +276,9 @@ const atualizarDM = async () => {
         active.value = 0;
         resetDMForm();
     } catch (error) {
-        console.error('Erro ao atualizar Plantas:', error);
+        console.error('Erro ao atualizar DM:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
 const admin = () => {
@@ -359,7 +388,7 @@ const resetDMForm = () => {
     DM.UserID = '';
     DM.Versao = '';
     DM.Devolucao = '';
-    controladoras.value = [];
+    Controladoras.value = [];
     nextValues['2018'].placa = 12;
     nextValues['2023'].dip = 2;
     nextValues['2024'].placa = 101;
@@ -414,7 +443,10 @@ const fetchCliente = async () => {
         );
         ListaClientes.value = response.data.map((cliente) => ({
             label: cliente.nome,
-            value: cliente.id_cliente,
+            value: {
+                id_cliente: cliente.id_cliente,
+                nome_cliente: cliente.nome
+            },
             usar_api: cliente.usar_api
         }));
     } catch (error) {
@@ -436,7 +468,8 @@ watch(
 );
 
 const addControladora = () => {
-    controladoras.value.push({
+    Controladoras.value.push({
+        ID: null,
         tipo: '',
         dados: {}
     });
@@ -451,26 +484,26 @@ const updateTipoControladora = (index, tipo) => {
             detail: `Você atingiu o limite máximo de controladoras ${tipo}`,
             life: 3000
         });
-        controladoras.value.splice(index, 1);
+        Controladoras.value.splice(index, 1);
         return;
     }
 
-    controladoras.value[index].tipo = tipo;
+    Controladoras.value[index].tipo = tipo;
     if (tipo === '2018') {
-        controladoras.value[index].dados = {
+        Controladoras.value[index].dados = {
             placa: nextValues['2018'].placa,
             checkboxes: []
         };
         nextValues['2018'].placa++;
     } else if (tipo === '2023') {
-        controladoras.value[index].dados = {
+        Controladoras.value[index].dados = {
             dip: nextValues['2023'].dip,
             andar: [],
             posicao: []
         };
         nextValues['2023'].dip++;
     } else if (tipo === '2024') {
-        controladoras.value[index].dados = {
+        Controladoras.value[index].dados = {
             placa: nextValues['2024'].placa,
             motor: ''
         };
@@ -479,7 +512,7 @@ const updateTipoControladora = (index, tipo) => {
 };
 
 const removeControladora = (index) => {
-    controladoras.value.splice(index, 1);
+    Controladoras.value.splice(index, 1);
 };
 </script>
 
@@ -535,7 +568,7 @@ const removeControladora = (index) => {
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
-                                <Dropdown class="my-2" v-model="DM.IDcliente" :options="ListaClientes"
+                                <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes"
                                     optionLabel="label" optionValue="value" placeholder="Selecione um" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
@@ -615,7 +648,7 @@ const removeControladora = (index) => {
                         </div>
                         <div>
                             <Button label="Adicionar Controladora" @click="addControladora" />
-                            <div v-for="(controladora, index) in controladoras" :key="index" class="card">
+                            <div v-for="(controladora, index) in Controladoras" :key="index" class="card">
                                 <h5>Controladora {{ index + 1 }}</h5>
                                 <Dropdown v-model="controladora.tipo" :options="tipoControladoras"
                                     placeholder="Selecione o tipo de Controladora"
@@ -625,59 +658,68 @@ const removeControladora = (index) => {
                                 <Button icon="pi pi-trash" label="Remover" class="p-button-danger"
                                     @click="removeControladora(index)" />
 
-                                <!-- Controladora 2018 -->
-                                <div v-if="controladora.tipo === '2018'">
-                                    <div class="field">
-                                        <label>Placa</label>
-                                        <InputText v-model="controladora.dados.placa" disabled />
-                                    </div>
-                                    <div class="field">
-                                        <label>Selecionar opções</label>
-                                        <div v-for="i in 10" :key="i">
-                                            <Checkbox v-model="controladora.dados.checkboxes" :value="i" />
-                                            <label>{{ i }}</label>
+                                <!<!-- Controladora 2018 -->
+                                    <div v-if="controladora.tipo === '2018'">
+                                        <div class="field">
+                                            <label>Placa</label>
+                                            <InputText v-model="controladora.dados.placa" disabled />
+                                        </div>
+                                        <div class="field">
+                                            <label>Selecionar opções</label>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 10" :key="i" class="checkbox-item">
+                                                    <Checkbox v-model="controladora.dados.checkboxes" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Controladora 2023 -->
-                                <div v-if="controladora.tipo === '2023'">
-                                    <div class="field">
-                                        <label>DIP</label>
-                                        <InputText v-model="controladora.dados.dip" disabled />
-                                    </div>
-                                    <div class="field">
-                                        <h6>Andar</h6>
-                                        <div v-for="i in 6" :key="i">
-                                            <Checkbox v-model="controladora.dados.andar" :value="i" />
-                                            <label>{{ i }}</label>
+                                    <!-- Controladora 2023 -->
+                                    <div v-if="controladora.tipo === '2023'">
+                                        <div class="field">
+                                            <label>DIP</label>
+                                            <InputText v-model="controladora.dados.dip" disabled />
+                                        </div>
+                                        <div class="field">
+                                            <h4>Andar</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 6" :key="i" class="checkbox-item">
+                                                    <Checkbox v-model="controladora.dados.andar" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <h4>Posição</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 15" :key="i" class="checkbox-item">
+                                                    <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="field">
-                                        <h6>Posição</h6>
-                                        <div v-for="i in 15" :key="i">
-                                            <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                            <label>{{ i }}</label>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Controladora 2024 -->
-                                <div v-if="controladora.tipo === '2024'">
-                                    <div class="field">
-                                        <label>Placa</label>
-                                        <InputText v-model="controladora.dados.placa" disabled />
+                                    <!-- Controladora 2024 -->
+                                    <div v-if="controladora.tipo === '2024'">
+                                        <div class="field">
+                                            <label>Placa</label>
+                                            <InputText v-model="controladora.dados.placa" disabled />
+                                        </div>
+                                        <div class="field">
+                                            <label>Motor</label>
+                                            <InputText v-model="controladora.dados.motor" />
+                                        </div>
                                     </div>
-                                    <div class="field">
-                                        <label>Motor</label>
-                                        <InputText v-model="controladora.dados.motor" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
+
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="adicionarDM"
-                                class="full mt-4 mr-2" />
+                            <Button v-if="!visible" label="Salvar" icon="pi pi-check" severity="info"
+                                @click="adicionarDM" class="full mt-4 mr-2" />
+                            <Button v-if="visible" label="Salvar" icon="pi pi-check" severity="info"
+                                @click="atualizarDM" class="full mt-4 mr-2" />
                         </div>
                     </TabPanel>
                 </TabView>
@@ -804,5 +846,17 @@ const removeControladora = (index) => {
     /* Ensure content doesn't overflow */
     box-sizing: border-box;
     /* Include padding and border in element's total width and height */
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 </style>
