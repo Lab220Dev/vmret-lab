@@ -1,240 +1,207 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { marked } from 'marked';
+import axios from 'axios';
+import { useAuthStore } from '@/store/authStore.js';
 
 const toast = useToast();
-
-const apiKey = ref('sua-api-key-aqui');
+const store = useAuthStore();
+const apiKey = ref('');
 const isApiKeyVisible = ref(false);
-const selectedTopic = ref(null);
 
-const topics = [
-  { 
-    name: 'Retiradas', 
-    description: marked(`**Exemplo de como acessar o relatório de retiradas.** O corpo da requisição deve incluir opcionalmente os campos:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-- **id_funcionario**: Pode ser encontrado na aba "Lista de Funcionários".
-- **data_inicio** e **data_fim**: Período desejado para o relatório.
-
-Todos os campos são opcionais. Se nenhum campo for enviado, o sistema retornará um JSON com todos os dados disponíveis.`),
-    requestBody: `{
-  "id_dm": "1234",
-  "id_funcionario": "5678",
-  "data_inicio": "2023-01-01",
-  "data_fim": "2023-01-31"
-}` 
-  },
-  { 
-    name: 'Status', 
-    description: marked(`**Exemplo de como acessar o relatório de status.** O corpo da requisição pode opcionalmente incluir:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-- **data**: A data para o status específico.
-
-Ambos os campos são opcionais. Se nenhum for enviado, o sistema retornará o status atual de todas as máquinas.`),
-    requestBody: `{
-  "id_dm": "1234",
-  "data": "2023-01-15"
-}` 
-  },
-  { 
-    name: 'Estoque', 
-    description: marked(`**Exemplo de como acessar o relatório de estoque.** O corpo da requisição deve incluir:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-
-Esse campo é obrigatório para consultar o estoque de uma máquina específica.`),
-    requestBody: `{
-  "id_dm": "1234"
-}` 
-  },
-  { 
-    name: 'Devolução', 
-    description: marked(`**Exemplo de como acessar o relatório de devolução.** O corpo da requisição deve incluir opcionalmente os campos:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-- **id_funcionario**: Pode ser encontrado na aba "Lista de Funcionários".
-- **data_inicio** e **data_fim**: Período desejado para o relatório.
-
-Todos os campos são opcionais. Se nenhum for enviado, o sistema retornará um JSON com todas as devoluções disponíveis.`),
-    requestBody: `{
-  "id_dm": "1234",
-  "id_funcionario": "5678",
-  "data_inicio": "2023-01-01",
-  "data_fim": "2023-01-31"
-}` 
-  }
-];
+async function fetchApiKey() {
+    try {
+        const response = await axios.post('/key/recuperar', 
+        { 
+            id_cliente: store.userIdCliente 
+        }, 
+        {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });  
+        
+        apiKey.value = response.data.apiKey;
+    } catch (error) {
+        console.error('Erro ao recuperar API key:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível recuperar a API key', life: 3000 });
+    }
+}
 
 function toggleApiKeyVisibility() {
-  isApiKeyVisible.value = !isApiKeyVisible.value;
+    isApiKeyVisible.value = !isApiKeyVisible.value;
 }
 
 function copyToClipboard() {
-  navigator.clipboard.writeText(apiKey.value);
-  toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API copiada!', life: 3000 });
+    navigator.clipboard.writeText(apiKey.value);
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API copiada!', life: 3000 });
 }
 
-function selectTopic(topic) {
-  selectedTopic.value = topic;
-}
+onMounted(() => {
+    fetchApiKey();
+});
 </script>
 
 <template>
-  <div class="card">
-    <h2>Sua Chave de API</h2>
-    
-    <!-- Input com a API Key ofuscada -->
-    <InputText 
-      :type="isApiKeyVisible ? 'text' : 'password'" 
-      v-model="apiKey" 
-      readonly 
-      style="width: 100%; margin-bottom: 1rem;" 
-    />
-
-    <!-- Botões para copiar e alternar visibilidade -->
-    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-      <Button label="Copiar Chave" icon="pi pi-copy" @click="copyToClipboard" />
-      <Button 
-        :label="isApiKeyVisible ? 'Ocultar Chave' : 'Mostrar Chave'" 
-        :icon="isApiKeyVisible ? 'pi pi-eye-slash' : 'pi pi-eye'" 
-        @click="toggleApiKeyVisibility" 
-      />
-    </div>
-
-    <!-- Lista de Tópicos -->
-    <ul>
-      <li v-for="topic in topics" :key="topic.name" @click="selectTopic(topic)" style="cursor: pointer;">
-        <strong>{{ topic.name }}</strong>
-      </li>
-    </ul>
-
-    <!-- Exemplo de Uso da API com Abas para Diferentes Linguagens -->
-    <div v-if="selectedTopic" style="margin-top: 1rem;">
-      <h3>{{ selectedTopic.name }}</h3>
-      <p v-html="selectedTopic.description"></p>
+    <div class="card">
+      <h2>Sua Chave de API</h2>
       
+      <InputText 
+        :type="isApiKeyVisible ? 'text' : 'password'" 
+        v-model="apiKey" 
+        readonly 
+        style="width: 100%; margin-bottom: 1rem;" 
+      />
+  
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+        <Button label="Copiar Chave" icon="pi pi-copy" @click="copyToClipboard" />
+        <Button 
+          :label="isApiKeyVisible ? 'Ocultar Chave' : 'Mostrar Chave'" 
+          :icon="isApiKeyVisible ? 'pi pi-eye-slash' : 'pi pi-eye'" 
+          @click="toggleApiKeyVisibility" 
+        />
+      </div>
+  
       <TabView>
-        <!-- Tab para Axios (JavaScript) -->
-        <TabPanel header="JavaScript (Axios)">
-          <pre><code>
-axios.post('/api/{{ selectedTopic.name.toLowerCase() }}', {{ selectedTopic.requestBody }}, {
-  headers: {
-    'x-api-key': apiKey.value
+        <!-- Aba para Estoque -->
+        <TabPanel header="Estoque (JavaScript - Axios)">
+          <p>
+            Exemplo de como acessar o relatório de estoque usando JavaScript e Axios.
+            O corpo da requisição deve incluir os campos:
+            <strong>id_dm</strong> (obrigatório).
+          </p>
+          <pre>
+  <code class="language-javascript">
+  axios.post('/api/Estoque/relatorio', {
+      id_dm: 123 // ID da DM (obrigatório)
+  }, {
+      headers: {
+          'x-api-key': 'apikey'
+      }
+  })
+  .then(response => {
+      console.log(response.data);
+  })
+  .catch(error => {
+      console.error('Erro:', error);
+  });
+  </code>
+          </pre>
+        </TabPanel>
+  
+        <!-- Aba para Status -->
+        <TabPanel header="Status (C#)">
+          <p>
+            Exemplo de como acessar o relatório de status usando C#. O corpo da requisição deve incluir os campos:
+            <strong>id_dm</strong> (opcional) e <strong>data</strong> (opcional).
+          </p>
+          <pre>
+  <code class="language-csharp">
+  using System;
+  using System.Net.Http;
+  using System.Text;
+  using System.Threading.Tasks;
+  
+  class Program
+  {
+      static async Task Main()
+      {
+          using (var client = new HttpClient())
+          {
+              client.DefaultRequestHeaders.Add("x-api-key", "apikey");
+  
+              var jsonContent = new StringContent("{\"id_dm\":\"123\",\"data\":\"2024-01-01\"}", Encoding.UTF8, "application/json");
+  
+              var response = await client.PostAsync("/api/SDM/relatorio", jsonContent);
+              response.EnsureSuccessStatusCode();
+  
+              var responseBody = await response.Content.ReadAsStringAsync();
+              Console.WriteLine(responseBody);
+          }
+      }
   }
-})
-.then(response => {
-  console.log(response.data);
-})
-.catch(error => {
-  console.error('Erro:', error);
-});
-          </code></pre>
+  </code>
+          </pre>
         </TabPanel>
-
-        <!-- Tab para C# -->
-        <TabPanel header="C#">
-          <pre><code>
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-
-class Program
-{
-    static async Task Main()
-    {
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Add("x-api-key", "{{ apiKey.value }}");
-
-            var jsonContent = new StringContent("{{ selectedTopic.requestBody }}", Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("https://api.exemplo.com/{{ selectedTopic.name.toLowerCase() }}", jsonContent);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseBody);
-        }
-    }
-}
-          </code></pre>
+  
+        <!-- Aba para Retiradas -->
+        <TabPanel header="Retiradas (Java)">
+          <p>
+            Exemplo de como acessar o relatório de retiradas usando Java. O corpo da requisição deve incluir os campos:
+            <strong>id_dm</strong> (obrigatório), <strong>id_funcionario</strong> (opcional), <strong>data_inicio</strong> e <strong>data_fim</strong> (opcional).
+          </p>
+          <pre>
+  <code class="language-java">
+  import java.net.URI;
+  import java.net.http.HttpClient;
+  import java.net.http.HttpRequest;
+  import java.net.http.HttpResponse;
+  import java.net.http.HttpRequest.BodyPublishers;
+  import java.net.http.HttpResponse.BodyHandlers;
+  
+  public class Main {
+      public static void main(String[] args) throws Exception {
+          HttpClient client = HttpClient.newHttpClient();
+          String json = "{\"id_dm\":\"123\",\"id_funcionario\":\"456\",\"data_inicio\":\"2024-01-01\",\"data_fim\":\"2024-01-31\"}";
+  
+          HttpRequest request = HttpRequest.newBuilder()
+              .uri(URI.create("/api/relatorioRetiRe/relatorio"))
+              .header("x-api-key", "apikey")
+              .header("Content-Type", "application/json")
+              .POST(BodyPublishers.ofString(json))
+              .build();
+  
+          HttpResponse&lt;String&gt; response = client.send(request, BodyHandlers.ofString());
+  
+          System.out.println(response.body());
+      }
+  }
+  </code>
+          </pre>
         </TabPanel>
-
-        <!-- Tab para Java -->
-        <TabPanel header="Java">
-          <pre><code>
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.io.OutputStream;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
-public class Main {
-    public static void main(String[] args) {
-        try {
-            URL url = new URL("https://api.exemplo.com/{{ selectedTopic.name.toLowerCase() }}");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("x-api-key", "{{ apiKey.value }}");
-            conn.setRequestProperty("Content-Type", "application/json");
-
-            String jsonInputString = "{{ selectedTopic.requestBody }}";
-
-            conn.setDoOutput(true);
-            try(OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-                os.write(input, 0, input.length);           
-            }
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
-            StringBuffer content = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            conn.disconnect();
-
-            System.out.println(content.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-          </code></pre>
+  
+        <!-- Aba para Devoluções -->
+        <TabPanel header="Devoluções (JavaScript - Axios)">
+          <p>
+            Exemplo de como acessar o relatório de devoluções usando JavaScript e Axios.
+            O corpo da requisição deve incluir os campos:
+            <strong>id_dm</strong> (obrigatório), <strong>id_funcionario</strong> (opcional), <strong>data_inicio</strong> e <strong>data_fim</strong> (opcional).
+          </p>
+          <pre>
+  <code class="language-javascript">
+  axios.post('/api/devolucao/relatorio', {
+      id_dm: 123, // ID da DM (obrigatório)
+      id_funcionario: 456, // ID do funcionário (opcional)
+      data_inicio: '2024-01-01', // Data de início (opcional)
+      data_fim: '2024-01-31' // Data de fim (opcional)
+  }, {
+      headers: {
+          'x-api-key': 'apikey'
+      }
+  })
+  .then(response => {
+      console.log(response.data);
+  })
+  .catch(error => {
+      console.error('Erro:', error);
+  });
+  </code>
+          </pre>
         </TabPanel>
       </TabView>
     </div>
-  </div>
-</template>
-
+  </template>
+  
+  
 <style scoped>
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  background-color: #f4f4f4;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-li:hover {
-  background-color: #e0e0e0;
-}
-
 pre {
-  background-color: #333;
-  color: #fff;
-  padding: 1rem;
-  border-radius: 4px;
-  overflow-x: auto;
+    background-color: #f4f4f4;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+code {
+    font-family: monospace;
 }
 </style>
