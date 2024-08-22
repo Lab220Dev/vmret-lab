@@ -168,6 +168,16 @@ const router = createRouter({
                     component: () => import('@/views/pages/Empty.vue')
                 },
                 {
+                    path: '/endpoints/entrada',
+                    name: 'Endpoints de Entrada',
+                    component: () => import('@/views/pages/Entradas.vue')
+                },
+                {
+                    path: '/endpoints/saida',
+                    name: 'Endpoints de Saida',
+                    component: () => import('@/views/pages/Saida.vue')
+                },
+                {
                     path: '/relatorios/ConsultaStatus',
                     name: 'Consulta Status',
                     component: () => import('@/views/relatorios/ConsultaStatus.vue')

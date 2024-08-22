@@ -182,10 +182,15 @@ const onRowSelect = async (event) => {
         }
     }));
 
-    selectedClient.value = {
-        id_cliente: DM.IDcliente,
-        nome_cliente: DM.ClienteNome
-    };
+    // Atualize o selectedClient com base na DM selecionada
+    const client = ListaClientes.value.find(client => client.value.id_cliente === DM.IDcliente);
+    if (client) {
+        selectedClient.value = client.value; // Atualiza selectedClient com os dados corretos
+        usarApi.value = client.value.usar_api; // Atualiza usarApi baseado no cliente selecionado
+    } else {
+        selectedClient.value = null;
+        usarApi.value = false;
+    }
 
     if (!admin()) {
         show.value = true;
@@ -445,7 +450,8 @@ const fetchCliente = async () => {
             label: cliente.nome,
             value: {
                 id_cliente: cliente.id_cliente,
-                nome_cliente: cliente.nome
+                nome_cliente: cliente.nome,
+                usar_api: cliente.usar_api
             },
             usar_api: cliente.usar_api
         }));
@@ -458,9 +464,10 @@ const fetchCliente = async () => {
 watch(
     () => DM.IDcliente,
     (newClienteId) => {
-        const selectedClient = ListaClientes.value.find((client) => client.value === newClienteId);
-        if (selectedClient) {
-            usarApi.value = selectedClient.usar_api;
+        const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
+        if (client) {
+            selectedClient.value = client.value; // Atualiza selectedClient com o cliente selecionado
+            usarApi.value = client.value.usar_api; // Atualiza usarApi com base no cliente selecionado
         } else {
             usarApi.value = false;
         }
@@ -570,6 +577,7 @@ const removeControladora = (index) => {
                                 <label for="name">Cliente:</label>
                                 <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes"
                                     optionLabel="label" optionValue="value" placeholder="Selecione um" />
+
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Numero da DM:</label>
@@ -623,7 +631,7 @@ const removeControladora = (index) => {
                             </div>
                         </panel>
 
-                        <div v-if="usarApi" class="mt-5 mx-auto p-fluid grid">
+                        <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
                             <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
                                 <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
