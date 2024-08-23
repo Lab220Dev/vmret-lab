@@ -1,6 +1,6 @@
 {
     "name": "Lab220RetiradaV2",
-    "version": "2.1.17",
+    "version": "2.1.18",
     "scripts": {
         "prebuild": "npm version patch --no-git-tag-version && node update-version.js",
         "dev": "vite",
@@ -21,6 +21,7 @@
         "jspdf-autotable": "^3.8.2",
         "marked": "^14.0.0",
         "mssql": "^11.0.1",
+        "papaparse": "^5.4.1",
         "pdfkit": "^0.15.0",
         "pinia": "^2.1.7",
         "pinia-plugin-persistedstate": "^3.2.1",
