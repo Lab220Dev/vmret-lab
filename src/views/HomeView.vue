@@ -3,18 +3,20 @@ import { onMounted, ref, reactive } from 'vue';
 import axios from '@/axios.js';
 import LastRecalls from '@/components/LastRecalls.vue';
 import MostRecalled from '@/components/MostRecalled.vue';
-import { useAuthStore } from '@/store/authStore'; //valida o token
+import { useAuthStore } from '@/store/authStore'; // Importa a store
+import { useToast } from 'primevue/usetoast'; // Importa o toast
 
 // Usa a store
-const store = useAuthStore(); // useStore é chamado aqui
+const store = useAuthStore();
+const toast = useToast(); // Inicializa o toast
 
-const canViewLastRecalls = ref(false); // controle de exibição
+const canViewLastRecalls = ref(false); // Controle de exibição
 
-// metodo de permissão
+// Método de permissão
 const checkPermission = () => {
-    // aqui faz a verificação
+    // Verifica a permissão do usuário
     if (store.userRole === 'Master' || store.userRole === 'Operador') {
-        canViewLastRecalls.value = true; //se for verdade, mostra, do contrário não exibe e nem renderiza
+        canViewLastRecalls.value = true; // Se for permitido, exibe os componentes
     }
 };
 
@@ -52,12 +54,8 @@ const fetchUltimasRetiradas = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioItems/ultimos', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // o token está sendo passado
-            }
-        });
-        products.value = response.data; // Atualiza os dados do produto
+        const response = await axios.post('/relatorioItems/ultimos', data);
+        products.value = response.data; // Atualiza os dados dos produtos
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -74,12 +72,8 @@ const fetchMaisRetirados = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioItems/listarMaisRet', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // o token está sendo passado
-            }
-        });
-        most.value = response.data; // Atualiza os dados do produto
+        const response = await axios.post('/relatorioItems/listarMaisRet', data);
+        most.value = response.data; // Atualiza os dados dos produtos mais retirados
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -92,13 +86,25 @@ const fetchMaisRetirados = async () => {
 };
 
 onMounted(() => {
+    // Exibe o toast se houver uma mensagem global
+    if (store.getGlobalMessage) { // Usando o getter
+        toast.add({
+            severity: 'warn',
+            summary: 'Acesso Negado',
+            detail: store.getGlobalMessage,
+            life: 3000
+        });
+        
+        // Limpa a mensagem global após exibir o toast
+        store.clearGlobalMessage();
+    }
+
     checkPermission();
     if (canViewLastRecalls.value) {
         fetchUltimasRetiradas();
-        fetchMaisRetirados(); // busca só se tiver permissão
+        fetchMaisRetirados(); // Busca só se tiver permissão
     }
 });
-
 const estoquebaixo = ref([
   { ProdutoNome: 'Produto 1', ProdutoSKU: 'SKU001', TotalQuantidade: 10 },
   { ProdutoNome: 'Produto 2', ProdutoSKU: 'SKU002', TotalQuantidade: 15 },
@@ -204,6 +210,7 @@ const estoquebaixo = ref([
         </div>
     </div>
 </template>
+
 <style>
 .grid-container {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Ajusta o número de colunas automaticamente */
