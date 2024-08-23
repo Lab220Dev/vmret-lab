@@ -1,17 +1,39 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { marked } from 'marked';
+import axios from '@/axios.js';
+import { useAuthStore } from '@/store/authStore'; // Certifique-se de importar a store corretamente
 
 const toast = useToast();
+const store = useAuthStore(); // Inicializa a store
 
-const apiKey = ref('sua-api-key-aqui');
+const apiKey = ref('');
 const isApiKeyVisible = ref(false);
 const selectedTopic = ref(null);
 
+// Função para recuperar a chave da API
+const fetchApiKey = async () => {
+  try {
+    const data = {
+      id_cliente: store.userIdCliente // Acessa o id_cliente da store
+    };
+    const response = await axios.post('/key/recuperar', data); // Usando POST para enviar o id_cliente no body
+    apiKey.value = response.data.apiKey; // Assumindo que a resposta contém um campo apiKey
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API carregada com sucesso!', life: 3000 });
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível recuperar a chave da API.', life: 3000 });
+  }
+};
+
+// Chama a função para buscar a chave da API quando o componente for montado
+onMounted(() => {
+  fetchApiKey();
+});
+
 const topics = [
-  { 
-    name: 'Retiradas', 
+  {
+    name: 'Retiradas',
     description: marked(`**Exemplo de como acessar o relatório de retiradas.** O corpo da requisição deve incluir opcionalmente os campos:
 
 - **id_dm**: Pode ser encontrado na aba "Lista de DM".
@@ -27,8 +49,8 @@ Todos os campos são opcionais. Se nenhum campo for enviado, o sistema retornar�
 }`,
     apiUrl: 'http://vmretnew.sgilab220.com.br/api/relatorioRetiRe/relatorio'
   },
-  { 
-    name: 'Status', 
+  {
+    name: 'Status',
     description: marked(`**Exemplo de como acessar o relatório de status.** O corpo da requisição pode opcionalmente incluir:
 
 - **id_dm**: Pode ser encontrado na aba "Lista de DM".
@@ -41,8 +63,8 @@ Ambos os campos são opcionais. Se nenhum for enviado, o sistema retornará o st
 }`,
     apiUrl: 'http://vmretnew.sgilab220.com.br/api/SDM/relatorio'
   },
-  { 
-    name: 'Estoque', 
+  {
+    name: 'Estoque',
     description: marked(`**Exemplo de como acessar o relatório de estoque.** O corpo da requisição deve incluir:
 
 - **id_dm**: Pode ser encontrado na aba "Lista de DM".
@@ -53,8 +75,8 @@ Esse campo é obrigatório para consultar o estoque de uma máquina específica.
 }`,
     apiUrl: 'http://vmretnew.sgilab220.com.br/api/Estoque/relatorio'
   },
-  { 
-    name: 'Devolução', 
+  {
+    name: 'Devolução',
     description: marked(`**Exemplo de como acessar o relatório de devolução.** O corpo da requisição deve incluir opcionalmente os campos:
 
 - **id_dm**: Pode ser encontrado na aba "Lista de DM".
@@ -89,23 +111,16 @@ function selectTopic(topic) {
 <template>
   <div class="card">
     <h2>Sua Chave de API</h2>
-    
+
     <!-- Input com a API Key ofuscada -->
-    <InputText 
-      :type="isApiKeyVisible ? 'text' : 'password'" 
-      v-model="apiKey" 
-      readonly 
-      style="width: 100%; margin-bottom: 1rem;" 
-    />
+    <InputText :type="isApiKeyVisible ? 'text' : 'password'" v-model="apiKey" readonly
+      style="width: 100%; margin-bottom: 1rem;" />
 
     <!-- Botões para copiar e alternar visibilidade -->
     <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
       <Button label="Copiar Chave" icon="pi pi-copy" @click="copyToClipboard" />
-      <Button 
-        :label="isApiKeyVisible ? 'Ocultar Chave' : 'Mostrar Chave'" 
-        :icon="isApiKeyVisible ? 'pi pi-eye-slash' : 'pi pi-eye'" 
-        @click="toggleApiKeyVisibility" 
-      />
+      <Button :label="isApiKeyVisible ? 'Ocultar Chave' : 'Mostrar Chave'"
+        :icon="isApiKeyVisible ? 'pi pi-eye-slash' : 'pi pi-eye'" @click="toggleApiKeyVisibility" />
     </div>
 
     <!-- Lista de Tópicos -->
@@ -119,7 +134,7 @@ function selectTopic(topic) {
     <div v-if="selectedTopic" style="margin-top: 1rem;">
       <h3>{{ selectedTopic.name }}</h3>
       <p v-html="selectedTopic.description"></p>
-      
+
       <TabView>
         <!-- Tab para Axios (JavaScript) -->
         <TabPanel header="JavaScript (Axios)">
