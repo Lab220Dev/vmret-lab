@@ -7,6 +7,7 @@ import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import MenuSelector from '@/components/MenuSelector.vue';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -16,6 +17,10 @@ const ListaClientes = ref([]);
 const visible = ref(false);
 const deleteClienteDialog = ref(false);
 const item = ref({});
+const selectedPerfil = ref(null);
+const selectedMenus = ref([]);
+const selectedSubmenus = ref([]);
+const selectedSubsubmenus = ref([]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -26,6 +31,12 @@ let cliente = reactive({
     usar_api: false,
     textoretirada: ''
 });
+const perfilOptions = [
+    { label: "Master", value: 1 },
+    { label: "Operador", value: 3 },
+    { label: "Avulso", value: 4 }
+];
+
 const onRowSelect = (event) => {
     cliente = event.data;
     active.value = 1;
@@ -158,6 +169,25 @@ const formatDate = (value) => {
         return 'Data inválida';
     }
 };
+const salvarConfiguracoes = () => {
+    // Lógica para salvar configurações
+    console.log("Salvando configurações...");
+};
+const submitMenu = async () => {
+    const data = {
+        id_cliente: cliente.id_cliente,
+        perfil: selectedPerfil.value,
+        menus: selectedMenus.value,
+        submenus: selectedSubmenus.value
+    };
+
+    try {
+        await axios.post('/admin/cliente/salvar', data);
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Dados salvos com sucesso', life: 3000 });
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar dados', life: 3000 });
+    }
+};
 onMounted(() => {
     loadCliente();
 });
@@ -168,18 +198,10 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Clientes">
                 <div class="col-12">
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="ListaClientes"
-                        selectionMode="single"
-                        tableStyle="min-width: 25%"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        stripedRows
-                        dataKey="id"
-                        :metaKeySelection="false"
-                        @rowSelect="onRowSelect"
-                        :globalFilterFields="['id_cliente', 'nome', 'last_login']"
-                    >
+                    <DataTable v-model:filters="filters" :value="ListaClientes" selectionMode="single"
+                        tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="onRowSelect"
+                        :globalFilterFields="['id_cliente', 'nome', 'last_login']">
                         <template #header>
                             <div class="flex justify-content-end">
                                 <IconField iconPosition="left">
@@ -194,7 +216,8 @@ onMounted(() => {
                         <Column field="nome" header="Nome"></Column>
                         <Column field="ativo" header="Ativo">
                             <template #body="{ data }">
-                                <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
+                                <i class="pi"
+                                    :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                             </template>
                         </Column>
                         <Column field="last_login" header="Último Login">
@@ -204,7 +227,8 @@ onMounted(() => {
                         </Column>
                         <Column style="min-width: 8rem">
                             <template #body="slotProps">
-                                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                    @click="deleteClientedes(slotProps.data)" />
                             </template>
                         </Column>
                     </DataTable>
@@ -217,7 +241,9 @@ onMounted(() => {
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full mt-5 lg:col-12 md:col-12 sm:col-12">
-                                        <div ><label for="id_planta">Nome:</label> <InputText class="my-2" id="id_planta" v-model="cliente.nome" required /></div>
+                                        <div><label for="id_planta">Nome:</label>
+                                            <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
+                                        </div>
 
                                         <div class="mt-4">
                                             <label for="cpfcnpj">CNPJ/CPF:</label>
@@ -225,40 +251,66 @@ onMounted(() => {
                                         </div>
 
                                         <div class="input justify-items-center mt-5">
-                                            <div class=" full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                            <div
+                                                class=" full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                                 <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
                                                 <div class="grid mt-3">
-                                                    <InputSwitch class="mr-2" v-model="cliente.usarApi" inputId="switch1" />
+                                                    <InputSwitch class="mr-2" v-model="cliente.usarApi"
+                                                        inputId="switch1" />
                                                     <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
                                                 </div>
                                             </div>
-                                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                            <div
+                                                class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                                 <label class="mt-0 text-nowrap" for="switch2">Cliente Ativo?</label>
                                                 <div class="grid mt-3">
-                                                    <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
+                                                    <InputSwitch class="mr-2" v-model="cliente.ativo"
+                                                        inputId="switch2" />
                                                     <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="card" v-if="visible">
+                                            <!-- Seleção de Perfil -->
+                                            <Dropdown v-model="selectedPerfil" :options="perfilOptions"
+                                                optionLabel="label" optionValue="value"
+                                                placeholder="Selecione um Perfil"
+                                                />
+                                                <!-- Seção de Seleção de Menu -->
+                                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
+                                                    v-model:selectedMenus="selectedMenus"
+                                                    v-model:selectedSubmenus="selectedSubmenus"
+                                                    v-model:selectedSubsubmenus="selectedSubsubmenus" />
+
+                                                <!-- Botão para Salvar -->
+                                                <Button label="Salvar Configurações" @click="salvarConfiguracoes" />
                                         </div>
                                     </div>
                                 </div>
                             </form>
                         </div>
                         <div class="mr-1 mt-8 grid justify-content-end">
-                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
-                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                            <Button v-if="visible" style="width: 25%; min-width: 100px"
+                                class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar"
+                                icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                            <Button style="width: 25%; min-width: 100px"
+                                class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
+                                icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
+                            <Button v-if="!visible" style="width: 25%; min-width: 100px"
+                                class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar"
+                                icon="pi pi-check" severity="info" @click="adicionarCliente" />
                         </div>
                     </div>
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true" :closable="false">
+        <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true"
+            :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
-                    Você tem certeza que deseja deletar o Cliente <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b> ?</span
-                >
+                    Você tem certeza que deseja deletar o Cliente <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b>
+                    ?</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
@@ -271,9 +323,9 @@ onMounted(() => {
 
 
 <style lang="scss" scoped>
-@media (min-width: 768px)
-{ .input {
-    display: flex;
-}
+@media (min-width: 768px) {
+    .input {
+        display: flex;
+    }
 }
 </style>
