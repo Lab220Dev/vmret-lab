@@ -44,7 +44,7 @@ const nextValues = reactive({
     '2024': { placa: 101 }
 });
 const maxControladoras = {
-    '2018': 10,
+    '2018': 16,
     '2023': 90,
     '2024': Infinity
 };
@@ -73,10 +73,31 @@ const produtoSelecionado = ref({
     Motor2: '',
     Controladora: ''
 });
-
+const controladoraOptions = ref([]);
+const checkboxOptions = ref([]);
+const dipOptions = ref([]);
+const andarOptions = ref([]);
+const posicaoOptions = ref([]);
+const motorOptions = ref([]);
 const ListaDMS = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const plantas = ref([todosOption]);
+
+const handleControladoraChange = () => {
+    const selectedControladora = Controladoras.value.find(c => c.tipo === produtoSelecionado.value.Controladora);
+
+    if (!selectedControladora) return;
+
+    if (produtoSelecionado.value.Controladora === '2018') {
+        checkboxOptions.value = selectedControladora.dados.checkboxes.map(cb => ({ label: cb, value: cb }));
+    } else if (produtoSelecionado.value.Controladora === '2023') {
+        dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
+        andarOptions.value = selectedControladora.dados.andar.map(a => ({ label: a, value: a }));
+        posicaoOptions.value = selectedControladora.dados.posicao.map(p => ({ label: p, value: p }));
+    } else if (produtoSelecionado.value.Controladora === '2024') {
+        motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
+    }
+};
 
 const fetchDMS = async () => {
     loading.value = true;
@@ -169,7 +190,24 @@ const fetchItemDM = async () => {
 const onRowSelect = async (event) => {
     DM = event.data;
     visible.value = true;
-    Controladoras.value = DM.Controladoras.map(controladora => ({
+
+    mapControladoras(DM);
+    configurarClienteSelecionado(DM);
+    configurarVisibilidade();
+};
+const configurarClienteSelecionado = (dm) => {
+    const client = ListaClientes.value.find(client => client.value.id_cliente === dm.IDcliente);
+    if (client) {
+        selectedClient.value = client.value;
+        usarApi.value = client.value.usar_api;
+    } else {
+        selectedClient.value = null;
+        usarApi.value = false;
+    }
+};
+const mapControladoras = (dm) => {
+    Controladoras.value = dm.Controladoras.map(controladora => ({
+        id: controladora.ID,  
         tipo: controladora.Tipo_Controladora,
         dados: {
             placa: controladora.Placa,
@@ -182,28 +220,75 @@ const onRowSelect = async (event) => {
         }
     }));
 
-    // Atualize o selectedClient com base na DM selecionada
-    const client = ListaClientes.value.find(client => client.value.id_cliente === DM.IDcliente);
-    if (client) {
-        selectedClient.value = client.value; // Atualiza selectedClient com os dados corretos
-        usarApi.value = client.value.usar_api; // Atualiza usarApi baseado no cliente selecionado
-    } else {
-        selectedClient.value = null;
-        usarApi.value = false;
+    ajustarContagemInicial();
+};
+const preencherControladoraOptions = () => {
+    controladoraOptions.value = Controladoras.value.map(controladora => {
+        const id = controladora.id || 'N/A'; // Usando o ID da controladora diretamente
+        return {
+            label: `ID: ${id}, Tipo: ${controladora.tipo}`,
+            value: controladora.tipo
+        };
+    });
+};
+const ajustarContagemInicial = () => {
+    const placasExistentes = Controladoras.value
+        .filter(controladora => controladora.tipo === '2018')
+        .map(controladora => controladora.dados.placa);
+
+    if (placasExistentes.length > 0) {
+        nextValues['2018'].placa = Math.max(...placasExistentes) + 1;
     }
 
+    const dipsExistentes = Controladoras.value
+        .filter(controladora => controladora.tipo === '2023')
+        .map(controladora => controladora.dados.dip);
+
+    if (dipsExistentes.length > 0) {
+        nextValues['2023'].dip = Math.max(...dipsExistentes) + 1;
+    }
+
+    const placas2024Existentes = Controladoras.value
+        .filter(controladora => controladora.tipo === '2024')
+        .map(controladora => controladora.dados.placa);
+
+    if (placas2024Existentes.length > 0) {
+        nextValues['2024'].placa = Math.max(...placas2024Existentes) + 1;
+    }
+};
+const preencherOpcoesControladoras = () => {
+    // Limpa as opções anteriores
+    checkboxOptions.value = [];
+    dipOptions.value = [];
+    andarOptions.value = [];
+    posicaoOptions.value = [];
+    motorOptions.value = [];
+
+    // Itera sobre as controladoras para preencher as opções com base no tipo
+    Controladoras.value.forEach(controladora => {
+        if (controladora.tipo === '2018') {
+            checkboxOptions.value.push(...controladora.dados.checkboxes);
+        } else if (controladora.tipo === '2023') {
+            dipOptions.value.push(controladora.dados.dip);
+            andarOptions.value.push(...controladora.dados.andar);
+            posicaoOptions.value.push(...controladora.dados.posicao);
+        } else if (controladora.tipo === '2024') {
+            motorOptions.value.push(controladora.dados.motor);
+        }
+    });
+};
+const configurarVisibilidade = () => {
     if (!admin()) {
         show.value = true;
         fetchItemDM();
         listarProduto();
+        preencherOpcoesControladoras();
+        preencherControladoraOptions();
         operador.value = true;
-
     } else {
         active.value = 1;
     }
 };
-
-
 const adicionarDM = async () => {
     DM.IDcliente = selectedClient.value.id_cliente;
     DM.ClienteNome = selectedClient.value.nome_cliente;
@@ -243,7 +328,7 @@ const deleteDM = async (item) => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
-        fetchDMS();
+        await fetchDMS();
     } catch (error) {
         if (error.response && (error.response.status === 500 || error.response.status === 401)) {
             toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a DM.', life: 3000 });
@@ -483,7 +568,12 @@ const addControladora = () => {
 };
 
 const updateTipoControladora = (index, tipo) => {
+    //tipo = tipo.toString();
     const count = countControladoras(tipo);
+    const controladora = Controladoras.value[index];
+    const tipoAnterior = controladora.tipo;
+    console.log(`Controladora ${index} tipo:`, tipo);
+    console.log(`Dados da controladora:`, controladora.dados);
     if (count >= maxControladoras[tipo]) {
         toast.add({
             severity: 'warn',
@@ -495,29 +585,41 @@ const updateTipoControladora = (index, tipo) => {
         return;
     }
 
-    Controladoras.value[index].tipo = tipo;
+    // Se o tipo é o mesmo que o anterior, não faça nada
     if (tipo === '2018') {
-        Controladoras.value[index].dados = {
-            placa: nextValues['2018'].placa,
-            checkboxes: []
+        controladora.dados = {
+            placa: controladora.dados.placa || nextValues['2018'].placa,
+            checkboxes: controladora.dados.checkboxes || []
         };
-        nextValues['2018'].placa++;
+        if (!controladora.dados.placa) {
+            nextValues['2018'].placa++;
+        }
     } else if (tipo === '2023') {
-        Controladoras.value[index].dados = {
-            dip: nextValues['2023'].dip,
-            andar: [],
-            posicao: []
+        controladora.dados = {
+            dip: controladora.dados.dip || nextValues['2023'].dip,
+            andar: controladora.dados.andar || [],
+            posicao: controladora.dados.posicao || []
         };
-        nextValues['2023'].dip++;
+        if (!controladora.dados.dip) {
+            nextValues['2023'].dip++;
+        }
     } else if (tipo === '2024') {
-        Controladoras.value[index].dados = {
-            placa: nextValues['2024'].placa,
-            motor: ''
+        controladora.dados = {
+            placa: controladora.dados.placa || nextValues['2024'].placa,
+            motor: controladora.dados.motor || ''
         };
-        nextValues['2024'].placa++;
+        if (!controladora.dados.placa) {
+            nextValues['2024'].placa++;
+        }
     }
+
 };
 
+const selectAllCheckboxes = (index) => {
+    if (Controladoras.value[index].tipo === '2018') {
+        Controladoras.value[index].dados.checkboxes = Array.from({ length: 10 }, (_, i) => i + 1);
+    }
+};
 const removeControladora = (index) => {
     Controladoras.value.splice(index, 1);
 };
@@ -675,6 +777,7 @@ const removeControladora = (index) => {
                                         <div class="field">
                                             <label>Selecionar opções</label>
                                             <div class="checkbox-group">
+                                                <Button label="Selecionar Todos" @click="selectAllCheckboxes(index)" />
                                                 <div v-for="i in 10" :key="i" class="checkbox-item">
                                                     <Checkbox v-model="controladora.dados.checkboxes" :value="i" />
                                                     <label>{{ i }}</label>
@@ -768,7 +871,67 @@ const removeControladora = (index) => {
                     <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos"
                         optionLabel="label" optionValue="value" placeholder="Selecione um produto" />
                 </div>
+                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                    <label for="Controladora" class="font-semibold">Controladora:</label>
+                </div>
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions"
+                        @change="handleControladoraChange" placeholder="Selecione uma controladora" />
+                </div>
+                <!-- Exibir campos dependendo do tipo de controladora -->
+                <template v-if="produtoSelecionado.Controladora === '2018'">
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="checkboxes" class="font-semibold">Mola1 (Checkboxes):</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="checkboxOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione Mola1" />
+                    </div>
+                </template>
 
+                <template v-if="produtoSelecionado.Controladora === '2023'">
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Dip" class="font-semibold">DIP:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                    </div>
+
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Andar" class="font-semibold">Andar:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione o andar" />
+                    </div>
+
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Posicao" class="font-semibold">Posição:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
+                    </div>
+                </template>
+
+                <template v-if="produtoSelecionado.Controladora === '2024'">
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Motor" class="font-semibold">Motor:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
+                    </div>
+                </template>
+                <!-- <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="w-full"
+                        autocomplete="off" :min="1" :max="999" />
+                </div>
+                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" :options="Controladoras.value"
+                    optionLabel="dados.placa" optionValue="dados.placa" placeholder="Selecione uma controladora" />
+            </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Porta" class="font-semibold">Porta:</label>
                 </div>
@@ -776,15 +939,6 @@ const removeControladora = (index) => {
                     <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="w-full" autocomplete="off"
                         :min="1" :max="999" />
                 </div>
-
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Controladora" class="font-semibold">Controladora:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="w-full"
-                        autocomplete="off" :min="1" :max="999" />
-                </div>
-
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Mola" class="font-semibold">Motor 1:</label>
                 </div>
@@ -799,7 +953,7 @@ const removeControladora = (index) => {
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="w-full" autocomplete="off"
                         :min="1" :max="999" />
-                </div>
+                </div> -->
             </div>
         </div>
 

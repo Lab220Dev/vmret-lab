@@ -132,32 +132,33 @@ const saveProduto = async () => {
         formData.append('imagem2', nomeArquivoSecundario);
         formData.append('file_secundario', selectedSecFile.value);
     }
+
     Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, value);
+        formData.append(key, typeof value === 'string' ? value : String(value)); // Garante que todos os valores sejam strings
     });
     formData.append('id_cliente', store.userIdCliente);
 
     try {
         loading.value = true;
-        await axios.post('/produtos/adicionar', formData, {
+        const response = await axios.post('/produtos/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
                 'Content-Type': 'multipart/form-data'
             }
         });
-
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
-        active.value = 0;
         resetForm();
+        active.value = 0;
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o produto', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
+        active.value = 0; // Mude a aba para listar produtos
     }
-    active.value = 0;
 };
+
 
 const deleteProduto = async () => {
     let data = {

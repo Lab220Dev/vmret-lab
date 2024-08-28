@@ -1,34 +1,38 @@
 <template>
     <div>
-        <h4>Selecione os Menus:</h4>
-        <div v-for="(menu, index) in filteredMenus" :key="index" class="menu-checkbox">
-            <Checkbox v-model="selectedMenus" :value="menu.name" />
-            <label>{{ menu.name }}</label>
-
-            <!-- Exibir Submenus -->
-            <div v-if="selectedMenus.includes(menu.name)" class="submenu-checkbox">
-                <div v-for="submenu in menu.submenus" :key="submenu.name">
-                    <Checkbox v-model="selectedSubmenus" :value="submenu.name" />
-                    <label>{{ submenu.name }}</label>
-
-                    <!-- Exibir Submenus de Submenus -->
-                    <div v-if="selectedSubmenus.includes(submenu.name)" class="subsubmenu-checkbox">
-                        <div v-for="subsubmenu in submenu.subsubmenus" :key="subsubmenu.name">
-                            <Checkbox v-model="selectedSubsubmenus" :value="subsubmenu.name" />
-                            <label>{{ subsubmenu.name }}</label>
-                        </div>
-                    </div>
-                </div>
+      <h4>Selecione os Menus:</h4>
+      <Button @click="toggleSelectAll(true)">Selecionar Todos</Button>
+      <Button @click="toggleSelectAll(false)">Desselecionar Todos</Button>
+      <div v-for="(menu, index) in filteredMenus" :key="index" class="menu-checkbox">
+        <Checkbox v-model="selectedMenus" :value="menu.name" />
+        <label>{{ menu.name }}</label>
+  
+        <!-- Exibir Submenus -->
+        <div v-if="selectedMenus.includes(menu.name)" class="submenu-checkbox">
+          <div v-for="submenu in menu.submenus" :key="submenu.name">
+            <Checkbox v-model="selectedSubmenus" :value="submenu.name" />
+            <label>{{ submenu.name }}</label>
+  
+            <!-- Exibir Submenus de Submenus -->
+            <div v-if="selectedSubmenus.includes(submenu.name)" class="subsubmenu-checkbox">
+              <div v-for="subsubmenu in submenu.subsubmenus" :key="subsubmenu.name">
+                <Checkbox v-model="selectedSubsubmenus" :value="subsubmenu.name" />
+                <label>{{ subsubmenu.name }}</label>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-</template>
+  </template>
+  
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 
 const props = defineProps({
-    selectedPerfil: Number,
+  selectedPerfil: Number,
+  initialMenus: Array 
 });
 
 const selectedMenus = ref([]);
@@ -165,26 +169,45 @@ const menus = {
         }
     ]
 };
-console.log('selectedPerfil:', props.selectedPerfil);
-const filteredMenus = computed(() => {
-    // Logando os menus filtrados para verificar se estão sendo retornados corretamente
-    const result = menus[props.selectedPerfil] || [];
-    console.log('filteredMenus:', result);
-    return result;
+
+const filteredMenus = computed(() => menus[props.selectedPerfil] || []);
+
+// Função para inicializar seleções baseadas nos menus recebidos
+onMounted(() => {
+  if (props.initialMenus) {
+    props.initialMenus.forEach(menu => {
+      if (!selectedMenus.value.includes(menu.name)) {
+        selectedMenus.value.push(menu.name);
+        menu.submenus?.forEach(submenu => {
+          selectedSubmenus.value.push(submenu.name);
+          submenu.subsubmenus?.forEach(subsubmenu => {
+            selectedSubsubmenus.value.push(subsubmenu.name);
+          });
+        });
+      }
+    });
+  }
 });
+
+const toggleSelectAll = (selectAll) => {
+  selectedMenus.value = selectAll ? filteredMenus.value.map(menu => menu.name) : [];
+  selectedSubmenus.value = selectAll 
+    ? filteredMenus.value.flatMap(menu => menu.submenus.map(submenu => submenu.name)) 
+    : [];
+  selectedSubsubmenus.value = selectAll 
+    ? filteredMenus.value.flatMap(menu => menu.submenus.flatMap(submenu => submenu.subsubmenus.map(subsubmenu => subsubmenu.name))) 
+    : [];
+};
 
 const emits = defineEmits(['update:selectedMenus', 'update:selectedSubmenus', 'update:selectedSubsubmenus']);
 
 watch([selectedMenus, selectedSubmenus, selectedSubsubmenus], () => {
-    console.log('selectedMenus:', selectedMenus.value);
-    console.log('selectedSubmenus:', selectedSubmenus.value);
-    console.log('selectedSubsubmenus:', selectedSubsubmenus.value);
-
-    emits('update:selectedMenus', selectedMenus.value);
-    emits('update:selectedSubmenus', selectedSubmenus.value);
-    emits('update:selectedSubsubmenus', selectedSubsubmenus.value);
+  emits('update:selectedMenus', selectedMenus.value);
+  emits('update:selectedSubmenus', selectedSubmenus.value);
+  emits('update:selectedSubsubmenus', selectedSubsubmenus.value);
 }, { deep: true });
 </script>
+
 
 <style scoped>
 .menu-checkbox,

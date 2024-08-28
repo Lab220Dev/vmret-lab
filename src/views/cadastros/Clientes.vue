@@ -41,7 +41,15 @@ const onRowSelect = (event) => {
     cliente = event.data;
     active.value = 1;
     visible.value = true;
-    loadCliente();
+    selectedMenus.value = cliente.value.menus.map(menu => menu.label) || [];
+    selectedSubmenus.value = cliente.value.menus.flatMap(menu =>
+        menu.items.map(submenu => submenu.label)
+    ) || [];
+    selectedSubsubmenus.value = cliente.value.menus.flatMap(menu =>
+        menu.items.flatMap(submenu =>
+            submenu.items.map(subsubmenu => subsubmenu.label)
+        )
+    ) || [];
 };
 
 const submitForm = () => {
@@ -136,11 +144,7 @@ const submitMenu = async () => {
 
     loading.value = true;
     try {
-        await axios.post('/admin/cliente/salvarMenus', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await axios.post('/admin/cliente/salvarMenus', data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações de menu salvas com sucesso.', life: 3000 });
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações de menu.', life: 3000 });
@@ -153,11 +157,7 @@ const submitMenu = async () => {
 const loadCliente = async () => {
     loading.value = true;
     try {
-        const response = await axios.post('/admin/cliente/listar', {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/admin/cliente/listarComMenu');
         ListaClientes.value = response.data;
     } catch (error) {
         console.error('Erro ao listar clientes:', error);
@@ -294,24 +294,24 @@ onMounted(() => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="card" v-if="visible">
-                                            <!-- Seleção de Perfil -->
-                                            <Dropdown v-model="selectedPerfil" :options="perfilOptions"
-                                                optionLabel="label" optionValue="value"
-                                                placeholder="Selecione um Perfil"
-                                                />
-                                                <!-- Seção de Seleção de Menu -->
-                                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
-                                                    v-model:selectedMenus="selectedMenus"
-                                                    v-model:selectedSubmenus="selectedSubmenus"
-                                                    v-model:selectedSubsubmenus="selectedSubsubmenus" />
 
-                                                <!-- Botão para Salvar -->
-                                                <Button label="Salvar Configurações" @click="submitMenu" />
-                                        </div>
                                     </div>
                                 </div>
                             </form>
+                            <div class="card" v-if="visible">
+                                <!-- Seleção de Perfil -->
+                                <Dropdown v-model="selectedPerfil" :options="perfilOptions" optionLabel="label"
+                                    optionValue="value" placeholder="Selecione um Perfil" />
+                                <!-- Seção de Seleção de Menu -->
+                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
+                                    :initialMenus="cliente.menus" 
+                                    correta v-model:selectedMenus="selectedMenus"
+                                    v-model:selectedSubmenus="selectedSubmenus"
+                                    v-model:selectedSubsubmenus="selectedSubsubmenus" />
+
+                                <!-- Botão para Salvar -->
+                                <Button label="Salvar Configurações" @click="" />
+                            </div>
                         </div>
                         <div class="mr-1 mt-8 grid justify-content-end">
                             <Button v-if="visible" style="width: 25%; min-width: 100px"
@@ -334,8 +334,7 @@ onMounted(() => {
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
                     Você tem certeza que deseja deletar o Cliente <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b>
-                    ?</span
-                >
+                    ?</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteClienteDialog = false" class="p-button-text" />
@@ -354,4 +353,3 @@ onMounted(() => {
     }
 }
 </style>
-
