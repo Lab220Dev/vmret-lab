@@ -47,15 +47,15 @@ const menus = {
                 {
                     name: "Retiradas e Devoluções",
                     subsubmenus: [{ name: "Retiradas Realizadas" },
-                     { name: "Itens Mais Retirados" }, 
-                     { name: "Retirada Avulsas por Exceções/Voucher" }, 
-                     { name: "Fichas de Retiradas" }, 
-                     { name: "Devoluções" }]
+                    { name: "Itens Mais Retirados" },
+                    { name: "Retirada Avulsas por Exceções/Voucher" },
+                    { name: "Fichas de Retiradas" },
+                    { name: "Devoluções" }]
                 },
                 {
                     name: "Operacional",
-                    subsubmenus: [{ name: "Histórico de Abastecimento" }, 
-                    { name: "Status DM" }, 
+                    subsubmenus: [{ name: "Histórico de Abastecimento" },
+                    { name: "Status DM" },
                     { name: "Log" }]
                 }
             ]
@@ -101,9 +101,9 @@ const menus = {
                 {
                     name: "Usuários",
                     subsubmenus: [
-                    { name: "Usuário WEB" }, 
-                    { name: "Usuários DMs" }, 
-                    { name: "Liberação Avulsa" }]
+                        { name: "Usuário WEB" },
+                        { name: "Usuários DMs" },
+                        { name: "Liberação Avulsa" }]
                 },
                 {
                     name: "Centros de Custo"
@@ -125,33 +125,61 @@ const menus = {
     ],
     3: [ // Operador
         {
-            name: "Operações",
+            name: "Relátorios",
             submenus: [
-                { name: "Operação A" },
-                { name: "Operação B" }
+                {
+                    name: "Estoque",
+                    subsubmenus: [{ name: "Estoque da DM" }]
+                },
+                {
+                    name: "Operacional",
+                    subsubmenus: [{ name: "Status da DM" }]
+                },
+                {
+                    name: "Retiradas e Devoluções",
+                    subsubmenus: [{ name: "Retiradas Realizadas" },
+                    { name: "Itens Mais Retirados" },
+                    { name: "Devoluções" },]
+                }
             ]
-        }
+        }, {
+            name: "Dispenser Machines",
+            submenus: [
+                { name: "Lista de Itens não Alocados" },
+                { name: "Lista de DMs" }
+            ]
+        }, {
+            name: "Produtos",
+            submenus: [
+                { name: "Lista de Produtos" }
+            ]
+        },
         // Outros menus para Operador
     ],
     4: [ // Avulso
         {
-            name: "Serviços",
-            submenus: [
-                { name: "Serviço A" },
-                { name: "Serviço B" }
-            ]
+            name: "Liberação Avulsa"
+        },
+        {
+            name: "Consultar Status de Liberação Avulsa"
         }
-        // Outros menus para Avulso
     ]
 };
-
+console.log('selectedPerfil:', props.selectedPerfil);
 const filteredMenus = computed(() => {
-    return menus[props.selectedPerfil] || [];
+    // Logando os menus filtrados para verificar se estão sendo retornados corretamente
+    const result = menus[props.selectedPerfil] || [];
+    console.log('filteredMenus:', result);
+    return result;
 });
 
 const emits = defineEmits(['update:selectedMenus', 'update:selectedSubmenus', 'update:selectedSubsubmenus']);
 
 watch([selectedMenus, selectedSubmenus, selectedSubsubmenus], () => {
+    console.log('selectedMenus:', selectedMenus.value);
+    console.log('selectedSubmenus:', selectedSubmenus.value);
+    console.log('selectedSubsubmenus:', selectedSubsubmenus.value);
+
     emits('update:selectedMenus', selectedMenus.value);
     emits('update:selectedSubmenus', selectedSubmenus.value);
     emits('update:selectedSubsubmenus', selectedSubsubmenus.value);

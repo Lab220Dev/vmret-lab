@@ -5,9 +5,8 @@ import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import MenuSelector from '@/components/MenuSelector.vue';
+import { format } from 'date-fns'; // Certifique-se de que você está importando 'format' corretamente
 
 const active = ref(0);
 const store = useAuthStore();
@@ -31,6 +30,7 @@ let cliente = reactive({
     usar_api: false,
     textoretirada: ''
 });
+
 const perfilOptions = [
     { label: "Master", value: 1 },
     { label: "Operador", value: 3 },
@@ -51,6 +51,7 @@ const submitForm = () => {
         adicionarCliente();
     }
 };
+
 const adicionarCliente = async () => {
     const data = {
         ...cliente,
@@ -58,24 +59,53 @@ const adicionarCliente = async () => {
     };
     loading.value = true;
     try {
-        const response = await axios.post('/admin/cliente/adicionar', data, {
+        await axios.post('/admin/cliente/adicionar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado com sucesso!', life: 3000 });
         loadCliente();
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao adicionar Clientes:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar cliente.', life: 3000 });
+        console.error('Erro ao adicionar cliente:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
+
+const atualizarCliente = async () => {
+    const data = {
+        id_usuario: store.userId,
+        id_cliente: cliente.id_cliente,
+        ...cliente
+    };
+    loading.value = true;
+    try {
+        await axios.post('/admin/cliente/atualizar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado com sucesso!', life: 3000 });
+        loadCliente();
+        active.value = 0;
+        resetForm();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar cliente.', life: 3000 });
+        console.error('Erro ao atualizar cliente:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
 const deleteClientedes = (itm) => {
     item.value = itm;
     deleteClienteDialog.value = true;
 };
+
 const deleteCliente = async (item) => {
     loading.value = true;
     let data = { id_cliente: item.id_cliente, id_usuario: store.userId };
@@ -85,47 +115,41 @@ const deleteCliente = async (item) => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Ciente Deletada', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado com sucesso.', life: 3000 });
         deleteClienteDialog.value = false;
         loadCliente();
     } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar cliente.', life: 3000 });
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
-const atualizarCliente = async () => {
-    loading.value = true;
+
+const submitMenu = async () => {
     const data = {
-        id_usuario: store.userId,
         id_cliente: cliente.id_cliente,
-        ...cliente
+        perfil: selectedPerfil.value,
+        menus: selectedMenus.value,
+        submenus: selectedSubmenus.value,
+        subsubmenus: selectedSubsubmenus.value // Inclui sub-submenus
     };
+
+    loading.value = true;
     try {
-        const response = await axios.post('/admin/cliente/atualizar', data, {
+        await axios.post('/admin/cliente/salvarMenus', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        loadCliente();
-        active.value = 0;
-        resetForm();
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações de menu salvas com sucesso.', life: 3000 });
     } catch (error) {
-        console.error('Erro ao atualizar Plantas:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações de menu.', life: 3000 });
+        console.error('Erro ao salvar menus:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
-watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
-        loadCliente();
-        visible.value = false;
-    }
-});
-const resetForm = () => {
-    (cliente.nome = ''), (cliente.cpfcnpj = ''), (cliente.ativo = true), (cliente.created = new Date()), (cliente.usar_api = false), (cliente.textoretirada = '');
-};
+
 const loadCliente = async () => {
     loading.value = true;
     try {
@@ -136,10 +160,20 @@ const loadCliente = async () => {
         });
         ListaClientes.value = response.data;
     } catch (error) {
-        console.error('Erro ao listar plantas:', error);
+        console.error('Erro ao listar clientes:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
+};
+
+const resetForm = () => {
+    cliente = reactive({
+        nome: '',
+        cpfcnpj: '',
+        ativo: true,
+        usar_api: false,
+        textoretirada: ''
+    });
 };
 
 const formatDate = (value) => {
@@ -169,25 +203,15 @@ const formatDate = (value) => {
         return 'Data inválida';
     }
 };
-const salvarConfiguracoes = () => {
-    // Lógica para salvar configurações
-    console.log("Salvando configurações...");
-};
-const submitMenu = async () => {
-    const data = {
-        id_cliente: cliente.id_cliente,
-        perfil: selectedPerfil.value,
-        menus: selectedMenus.value,
-        submenus: selectedSubmenus.value
-    };
 
-    try {
-        await axios.post('/admin/cliente/salvar', data);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Dados salvos com sucesso', life: 3000 });
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar dados', life: 3000 });
+watch(active, (newIndex, oldIndex) => {
+    if (newIndex !== oldIndex && newIndex === 0) {
+        resetForm();
+        loadCliente();
+        visible.value = false;
     }
-};
+});
+
 onMounted(() => {
     loadCliente();
 });
@@ -255,7 +279,7 @@ onMounted(() => {
                                                 class=" full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                                 <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
                                                 <div class="grid mt-3">
-                                                    <InputSwitch class="mr-2" v-model="cliente.usarApi"
+                                                    <InputSwitch class="mr-2" v-model="cliente.usar_api"
                                                         inputId="switch1" />
                                                     <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
                                                 </div>
@@ -283,7 +307,7 @@ onMounted(() => {
                                                     v-model:selectedSubsubmenus="selectedSubsubmenus" />
 
                                                 <!-- Botão para Salvar -->
-                                                <Button label="Salvar Configurações" @click="salvarConfiguracoes" />
+                                                <Button label="Salvar Configurações" @click="submitMenu" />
                                         </div>
                                     </div>
                                 </div>
@@ -310,10 +334,11 @@ onMounted(() => {
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
                     Você tem certeza que deseja deletar o Cliente <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b>
-                    ?</span>
+                    ?</span
+                >
             </div>
             <template #footer>
-                <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
+                <Button label="Não" icon="pi pi-times" @click="deleteClienteDialog = false" class="p-button-text" />
                 <Button label="Sim" icon="pi pi-check" @click="deleteCliente(item)" class="p-button-text" />
             </template>
         </Dialog>
@@ -329,3 +354,4 @@ onMounted(() => {
     }
 }
 </style>
+
