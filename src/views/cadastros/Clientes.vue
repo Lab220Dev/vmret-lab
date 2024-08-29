@@ -17,9 +17,8 @@ const visible = ref(false);
 const deleteClienteDialog = ref(false);
 const item = ref({});
 const selectedPerfil = ref(null);
-const selectedMenus = ref([]);
-const selectedSubmenus = ref([]);
-const selectedSubsubmenus = ref([]);
+const structuredMenus = ref([]); // Novo ref para armazenar a estrutura hierárquica dos menus
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -38,18 +37,10 @@ const perfilOptions = [
 ];
 
 const onRowSelect = (event) => {
-    cliente = event.data;
+    cliente = reactive({ ...event.data });
     active.value = 1;
     visible.value = true;
-    selectedMenus.value = cliente.value.menus.map(menu => menu.label) || [];
-    selectedSubmenus.value = cliente.value.menus.flatMap(menu =>
-        menu.items.map(submenu => submenu.label)
-    ) || [];
-    selectedSubsubmenus.value = cliente.value.menus.flatMap(menu =>
-        menu.items.flatMap(submenu =>
-            submenu.items.map(subsubmenu => subsubmenu.label)
-        )
-    ) || [];
+    structuredMenus.value = cliente.menus || []; // Ajuste conforme o formato dos dados
 };
 
 const submitForm = () => {
@@ -133,13 +124,15 @@ const deleteCliente = async (item) => {
     }
 };
 
+// Função atualizada para enviar a estrutura hierárquica de menus
 const submitMenu = async () => {
+    const simpleStructuredMenus = JSON.parse(JSON.stringify(structuredMenus.value.value));
+    console.log("Structured Menus Before Submission:", simpleStructuredMenus);
+    console.log("Structured Menus:", structuredMenus.value);
     const data = {
         id_cliente: cliente.id_cliente,
         perfil: selectedPerfil.value,
-        menus: selectedMenus.value,
-        submenus: selectedSubmenus.value,
-        subsubmenus: selectedSubsubmenus.value // Inclui sub-submenus
+        menus: simpleStructuredMenus // Enviando a estrutura hierárquica de menus
     };
 
     loading.value = true;
@@ -174,6 +167,7 @@ const resetForm = () => {
         usar_api: false,
         textoretirada: ''
     });
+    structuredMenus.value = []; // Limpar a estrutura de menus ao resetar o formulário
 };
 
 const formatDate = (value) => {
@@ -302,15 +296,15 @@ onMounted(() => {
                                 <!-- Seleção de Perfil -->
                                 <Dropdown v-model="selectedPerfil" :options="perfilOptions" optionLabel="label"
                                     optionValue="value" placeholder="Selecione um Perfil" />
-                                <!-- Seção de Seleção de Menu -->
-                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
-                                    :initialMenus="cliente.menus" 
-                                    correta v-model:selectedMenus="selectedMenus"
-                                    v-model:selectedSubmenus="selectedSubmenus"
-                                    v-model:selectedSubsubmenus="selectedSubsubmenus" />
 
-                                <!-- Botão para Salvar -->
-                                <Button label="Salvar Configurações" @click="" />
+                                <!-- Seção de Seleção de Menu -->
+                                <MenuSelector v-if="selectedPerfil"
+                                    :selectedPerfil="selectedPerfil"
+                                    :initialMenus="structuredMenus.value"
+                                    @update:structuredMenus="structuredMenus.value = $event" />
+
+                                <!-- Botão para Salvar Configurações -->
+                                <Button label="Salvar Configurações" @click="submitMenu" />
                             </div>
                         </div>
                         <div class="mr-1 mt-8 grid justify-content-end">
@@ -344,12 +338,3 @@ onMounted(() => {
         <LoadingSpinner v-if="loading" />
     </div>
 </template>
-
-
-<style lang="scss" scoped>
-@media (min-width: 768px) {
-    .input {
-        display: flex;
-    }
-}
-</style>
