@@ -924,36 +924,6 @@ const removeControladora = (index) => {
                             optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
                     </div>
                 </template>
-                <!-- <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="w-full"
-                        autocomplete="off" :min="1" :max="999" />
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" :options="Controladoras.value"
-                    optionLabel="dados.placa" optionValue="dados.placa" placeholder="Selecione uma controladora" />
-            </div>
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Porta" class="font-semibold">Porta:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="w-full" autocomplete="off"
-                        :min="1" :max="999" />
-                </div>
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Mola" class="font-semibold">Motor 1:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="w-full" autocomplete="off"
-                        :min="1" :max="999" />
-                </div>
-
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Mola2" class="font-semibold">Motor 2:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="w-full" autocomplete="off"
-                        :min="1" :max="999" />
-                </div> -->
             </div>
         </div>
 
