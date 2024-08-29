@@ -4,9 +4,11 @@ import { useToast } from 'primevue/usetoast';
 import { marked } from 'marked';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore'; // Certifique-se de importar a store corretamente
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const toast = useToast();
 const store = useAuthStore(); // Inicializa a store
+const loading = ref(false);
 
 const apiKey = ref('');
 const isApiKeyVisible = ref(false);
@@ -15,6 +17,7 @@ const selectedTopic = ref(null);
 // Função para recuperar a chave da API
 const fetchApiKey = async () => {
   try {
+    loading.value = true;
     const data = {
       id_cliente: store.userIdCliente // Acessa o id_cliente da store
     };
@@ -23,6 +26,8 @@ const fetchApiKey = async () => {
     toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API carregada com sucesso!', life: 3000 });
   } catch (error) {
     toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível recuperar a chave da API.', life: 3000 });
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -141,7 +146,7 @@ function selectTopic(topic) {
           <pre><code>
 axios.post('{{ selectedTopic.apiUrl }}', {{ selectedTopic.requestBody }}, {
   headers: {
-    'x-api-key': apiKey.value
+    'x-api-key': apiKey
   }
 })
 .then(response => {
@@ -167,7 +172,7 @@ class Program
     {
         using (var client = new HttpClient())
         {
-            client.DefaultRequestHeaders.Add("x-api-key", "{{ apiKey.value }}");
+            client.DefaultRequestHeaders.Add("x-api-key", "apiKey");
 
             var jsonContent = new StringContent("{{ selectedTopic.requestBody }}", Encoding.UTF8, "application/json");
 
@@ -197,7 +202,7 @@ public class Main {
             URL url = new URL("{{ selectedTopic.apiUrl }}");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("x-api-key", "{{ apiKey.value }}");
+            conn.setRequestProperty("x-api-key", "apiKey");
             conn.setRequestProperty("Content-Type", "application/json");
 
             String jsonInputString = "{{ selectedTopic.requestBody }}";
@@ -226,9 +231,30 @@ public class Main {
 }
           </code></pre>
         </TabPanel>
+
+        <!-- Tab para cURL -->
+        <TabPanel header="cURL">
+          <pre><code>
+curl -X POST "{{ selectedTopic.apiUrl }}" -H "x-api-key:  apiKey" -H "Content-Type: application/json" -d '{{ selectedTopic.requestBody }}'
+          </code></pre>
+        </TabPanel>
+
+        <!-- Tab para Postman -->
+        <TabPanel header="Postman">
+          <pre><code>
+POST {{ selectedTopic.apiUrl }}
+Headers:
+  x-api-key:  apiKey
+  Content-Type: application/json
+Body (raw JSON):
+{{ selectedTopic.requestBody }}
+          </code></pre>
+        </TabPanel>
       </TabView>
     </div>
   </div>
+  <LoadingSpinner v-if="loading" />
+
 </template>
 
 <style scoped>
