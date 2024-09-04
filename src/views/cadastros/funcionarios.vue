@@ -77,19 +77,6 @@ const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 
-const SalvarProduto = () => {
-    if (!(itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
-        itemsSelecionadosFuncionario.push(selectedProduct.value);
-        selectedProduct.value = {};
-        visible.value = false;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Adicionado', life: 3000 });
-    } else {
-        itemsSelecionadosFuncionario[findIndexById(item.value.sku)] = item.value;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Item atualizado', life: 3000 });
-        item.value = {};
-        itemDialog.value = false;
-    }
-};
 
 const format = (date) => {
     const day = date.getDate();
@@ -101,41 +88,19 @@ const format = (date) => {
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
 
-const onRowSelect = (event) => {
+const onRowSelect = async (event) => {
     funcionario = event.data;
+    ListaProdutoFuncionario.value = funcionario.itens;
     setTempo(TempoInicio, funcionario.hora_inicial);
     setTempo(TempoFim, funcionario.hora_final);
-    getImagem(funcionario.foto);
+    await fetchItensSetor( funcionario.id_setor);
+    await getImagem(funcionario.foto);
     active.value = 1;
     editVisible.value = true;
 };
-const editItem = (itm) => {
-    item.value = { ...itm };
-    itemDialog.value = true;
-};
-const findIndexById = (sku) => {
-    let index = 0;
-    for (let i = 0; i < itemsSelecionadosFuncionario.length; i++) {
-        if (itemsSelecionadosFuncionario[i].sku === sku) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-};
-const confirmDeleteProduct = (itm) => {
-    item.value = itm;
-    deleteProductDialog.value = true;
-};
-const deleteProduct = () => {
-    const remover = itemsSelecionadosFuncionario.findIndex((itm) => itm.sku === item.value.sku);
-    if (remover !== -1) {
-        itemsSelecionadosFuncionario.splice(remover, 1);
-    }
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Deletado', life: 3000 });
-    item.value = {};
-    deleteProductDialog.value = false;
-};
+
+
+
 const loadFuncionarios = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -209,36 +174,28 @@ const fetchCentroCusto = async () => {
     }
 };
 
-const fetchItensFuncionario = async (id_funcionario) => {
-    const data = {
-        id_cliente: id_funcionario
-    };
-    try {
-        const response = await axios.post('funcionarios/listarItensFuncionario', data);
-
-    } catch (error) {
-        
-    }
-};
 const adicionarItensFuncionario = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        itens: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/adicionarItensFuncionario', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
+        const response = await axios.post('setor/additem', data);
+    
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
+    }
+};
+
+const fetchItensSetor = async (id_setor) => {
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_setor: id_setor
+    };
+    try {
+        const response = await axios.post('Setor/itensdisponiveissetor', data);
+       ListaItemsSetor.value = response.data;
+    } catch (error) {
+        console.error('Erro ao buscar setores/diretorias:', error);
     }
 };
 const fetchSetorDiretoria = async () => {
@@ -262,7 +219,6 @@ const fetchSetorDiretoria = async () => {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
 };
-
 const fetchHieraquiaOptions = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -710,8 +666,7 @@ const handleDatepickerOpen = () => {
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class="" :value="ListaItemsSetor" stripedRows dataKey="sku"
-                                            v-model="funcionario.itemsSelecionadosSetor">
+                                        <DataTable class="" :value="ListaItemsSetor" stripedRows dataKey="sku">
                                             <Column field="nome" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="qtd_limite" header="Quantidade"></Column>
