@@ -74,7 +74,7 @@ const produtoSelecionado = ref({
     Controladora: ''
 });
 const controladoraOptions = ref([]);
-const checkboxOptions = ref([]);
+const molasOptions = ref([]); // Substituição de checkboxOptions
 const dipOptions = ref([]);
 const andarOptions = ref([]);
 const posicaoOptions = ref([]);
@@ -89,7 +89,7 @@ const handleControladoraChange = () => {
     if (!selectedControladora) return;
 
     if (produtoSelecionado.value.Controladora === '2018') {
-        checkboxOptions.value = selectedControladora.dados.checkboxes.map(cb => ({ label: cb, value: cb }));
+        molasOptions.value = selectedControladora.dados.molas.map(mola => ({ label: mola, value: mola }));
     } else if (produtoSelecionado.value.Controladora === '2023') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
         andarOptions.value = selectedControladora.dados.andar.map(a => ({ label: a, value: a }));
@@ -196,10 +196,10 @@ const onRowSelect = async (event) => {
     configurarVisibilidade();
 };
 const configurarClienteSelecionado = (dm) => {
-    const client = ListaClientes.value.find(client => client.value.id_cliente === dm.IDcliente);
+    const client = ListaClientes.value.find(client => client.value.id_cliente === dm.ID_Cliente);
     if (client) {
         selectedClient.value = client.value;
-        usarApi.value = client.value.usar_api;
+        usarApi.value = client.value.usar_api ?? false;
     } else {
         selectedClient.value = null;
         usarApi.value = false;
@@ -212,11 +212,11 @@ const mapControladoras = (dm) => {
         dados: {
             placa: controladora.Placa,
             dip: controladora.DIP,
-            andar: controladora.Andar ? controladora.Andar.split(',').map(Number) : [],
-            posicao: controladora.Posicao ? controladora.Posicao.split(',').map(Number) : [],
+            andar: Array.isArray(controladora.Andar) ? controladora.Andar.map(Number) : (controladora.Andar ? controladora.Andar.split(',').map(Number) : []),
+            posicao: Array.isArray(controladora.Posicao) ? controladora.Posicao.map(Number) : (controladora.Posicao ? controladora.Posicao.split(',').map(Number) : []),
+            molas: Array.isArray(controladora.Mola1) ? controladora.Mola1.map(Number) : (controladora.Mola1 ? controladora.Mola1.split(',').map(Number) : []),
             motor: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola1 || '',
-            motor2: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola2 || '',
-            checkboxes: controladora.Tipo_Controladora === '2018' ? (controladora.Mola1 ? controladora.Mola1.split(',').map(Number) : []) : []
+            motor2: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola2 || ''
         }
     }));
 
@@ -232,20 +232,24 @@ const preencherControladoraOptions = () => {
     });
 };
 const ajustarContagemInicial = () => {
-    const placasExistentes = Controladoras.value
+    const placasExistentes2018 = Controladoras.value
         .filter(controladora => controladora.tipo === '2018')
         .map(controladora => controladora.dados.placa);
 
-    if (placasExistentes.length > 0) {
-        nextValues['2018'].placa = Math.max(...placasExistentes) + 1;
+    if (placasExistentes2018.length > 0) {
+        nextValues['2018'].placa = Math.max(...placasExistentes2018) + 1;
+    } else {
+        nextValues['2018'].placa = 12; // Valor inicial caso não haja nenhuma
     }
 
-    const dipsExistentes = Controladoras.value
+    const dipsExistentes2023 = Controladoras.value
         .filter(controladora => controladora.tipo === '2023')
         .map(controladora => controladora.dados.dip);
 
-    if (dipsExistentes.length > 0) {
-        nextValues['2023'].dip = Math.max(...dipsExistentes) + 1;
+    if (dipsExistentes2023.length > 0) {
+        nextValues['2023'].dip = Math.max(...dipsExistentes2023) + 1;
+    } else {
+        nextValues['2023'].dip = 2; // Valor inicial caso não haja nenhuma
     }
 
     const placas2024Existentes = Controladoras.value
@@ -254,20 +258,21 @@ const ajustarContagemInicial = () => {
 
     if (placas2024Existentes.length > 0) {
         nextValues['2024'].placa = Math.max(...placas2024Existentes) + 1;
+    } else {
+        nextValues['2024'].placa = 101; // Valor inicial caso não haja nenhuma
     }
 };
+
 const preencherOpcoesControladoras = () => {
-    // Limpa as opções anteriores
-    checkboxOptions.value = [];
+    molasOptions.value = []; 
     dipOptions.value = [];
     andarOptions.value = [];
     posicaoOptions.value = [];
     motorOptions.value = [];
 
-    // Itera sobre as controladoras para preencher as opções com base no tipo
     Controladoras.value.forEach(controladora => {
         if (controladora.tipo === '2018') {
-            checkboxOptions.value.push(...controladora.dados.checkboxes);
+            molasOptions.value.push(...controladora.dados.molas); 
         } else if (controladora.tipo === '2023') {
             dipOptions.value.push(controladora.dados.dip);
             andarOptions.value.push(...controladora.dados.andar);
@@ -547,14 +552,14 @@ const fetchCliente = async () => {
     }
 };
 watch(
-    () => DM.IDcliente,
+    () => DM.ID_Cliente, 
     (newClienteId) => {
         const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
         if (client) {
             selectedClient.value = client.value; // Atualiza selectedClient com o cliente selecionado
-            usarApi.value = client.value.usar_api; // Atualiza usarApi com base no cliente selecionado
+            usarApi.value = client.value.usar_api ?? false; // Verifica se usar_api é nulo e define como false
         } else {
-            usarApi.value = false;
+            usarApi.value = false; // Define usarApi como false se o cliente não for encontrado
         }
     }
 );
@@ -568,12 +573,9 @@ const addControladora = () => {
 };
 
 const updateTipoControladora = (index, tipo) => {
-    //tipo = tipo.toString();
     const count = countControladoras(tipo);
     const controladora = Controladoras.value[index];
-    const tipoAnterior = controladora.tipo;
-    console.log(`Controladora ${index} tipo:`, tipo);
-    console.log(`Dados da controladora:`, controladora.dados);
+
     if (count >= maxControladoras[tipo]) {
         toast.add({
             severity: 'warn',
@@ -585,39 +587,23 @@ const updateTipoControladora = (index, tipo) => {
         return;
     }
 
-    // Se o tipo é o mesmo que o anterior, não faça nada
     if (tipo === '2018') {
-        controladora.dados = {
-            placa: controladora.dados.placa || nextValues['2018'].placa,
-            checkboxes: controladora.dados.checkboxes || []
-        };
-        if (!controladora.dados.placa) {
-            nextValues['2018'].placa++;
-        }
+        controladora.dados.placa = nextValues['2018'].placa++;
+        controladora.dados.molas = controladora.dados.molas || [];
     } else if (tipo === '2023') {
-        controladora.dados = {
-            dip: controladora.dados.dip || nextValues['2023'].dip,
-            andar: controladora.dados.andar || [],
-            posicao: controladora.dados.posicao || []
-        };
-        if (!controladora.dados.dip) {
-            nextValues['2023'].dip++;
-        }
+        controladora.dados.dip = nextValues['2023'].dip++;
+        controladora.dados.andar = controladora.dados.andar || [];
+        controladora.dados.posicao = controladora.dados.posicao || [];
     } else if (tipo === '2024') {
-        controladora.dados = {
-            placa: controladora.dados.placa || nextValues['2024'].placa,
-            motor: controladora.dados.motor || ''
-        };
-        if (!controladora.dados.placa) {
-            nextValues['2024'].placa++;
-        }
+        controladora.dados.placa = nextValues['2024'].placa++;
+        controladora.dados.motor = controladora.dados.motor || '';
     }
-
 };
 
-const selectAllCheckboxes = (index) => {
+
+const selectAllMolas = (index) => {
     if (Controladoras.value[index].tipo === '2018') {
-        Controladoras.value[index].dados.checkboxes = Array.from({ length: 10 }, (_, i) => i + 1);
+        Controladoras.value[index].dados.molas = Array.from({ length: 10 }, (_, i) => i + 1);
     }
 };
 const removeControladora = (index) => {
@@ -772,14 +758,15 @@ const removeControladora = (index) => {
                                     <div v-if="controladora.tipo === '2018'">
                                         <div class="field">
                                             <label>Placa</label>
-                                            <InputText v-model="controladora.dados.placa" disabled />
+                                            <InputText v-model="controladora.dados.placa" />
                                         </div>
                                         <div class="field">
-                                            <label>Selecionar opções</label>
+                                            <label>Selecionar molas</label>
+                                            <label>{{controladora.dados.molas}}</label>
                                             <div class="checkbox-group">
-                                                <Button label="Selecionar Todos" @click="selectAllCheckboxes(index)" />
+                                                <Button label="Selecionar Todos" @click="selectAllMolas(index)" />
                                                 <div v-for="i in 10" :key="i" class="checkbox-item">
-                                                    <Checkbox v-model="controladora.dados.checkboxes" :value="i" />
+                                                    <Checkbox v-model="controladora.dados.molas" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
@@ -790,7 +777,7 @@ const removeControladora = (index) => {
                                     <div v-if="controladora.tipo === '2023'">
                                         <div class="field">
                                             <label>DIP</label>
-                                            <InputText v-model="controladora.dados.dip" disabled />
+                                            <InputText v-model="controladora.dados.dip" />
                                         </div>
                                         <div class="field">
                                             <h4>Andar</h4>
@@ -816,7 +803,7 @@ const removeControladora = (index) => {
                                     <div v-if="controladora.tipo === '2024'">
                                         <div class="field">
                                             <label>Placa</label>
-                                            <InputText v-model="controladora.dados.placa" disabled />
+                                            <InputText v-model="controladora.dados.placa" />
                                         </div>
                                         <div class="field">
                                             <label>Motor</label>
@@ -881,11 +868,11 @@ const removeControladora = (index) => {
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="produtoSelecionado.Controladora === '2018'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="checkboxes" class="font-semibold">Mola1 (Checkboxes):</label>
+                        <label for="molas" class="font-semibold">Molas:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="checkboxOptions"
-                            optionLabel="label" optionValue="value" placeholder="Selecione Mola1" />
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione as Molas" />
                     </div>
                 </template>
 
@@ -946,6 +933,7 @@ const removeControladora = (index) => {
         </template>
     </Dialog>
 </template>
+
 <style scoped>
 @media (max-width: 768px) {
     .full {
@@ -971,7 +959,6 @@ const removeControladora = (index) => {
     .box {
         width: 30vw;
     }
-}
 
 .card {
     overflow: hidden;
@@ -990,5 +977,6 @@ const removeControladora = (index) => {
     display: flex;
     align-items: center;
     gap: 5px;
+}
 }
 </style>

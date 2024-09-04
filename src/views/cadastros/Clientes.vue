@@ -7,6 +7,7 @@ import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import MenuSelector from '@/components/MenuSelector.vue';
 import { format } from 'date-fns'; // Certifique-se de que você está importando 'format' corretamente
+import { cnpj as validateCNPJ } from 'cpf-cnpj-validator';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -169,7 +170,17 @@ const resetForm = () => {
     });
     structuredMenus.value = []; // Limpar a estrutura de menus ao resetar o formulário
 };
+const errors = reactive({
+    cpfcnpj: ''
+});
 
+const validateCNPJField = () => {
+    if (!validateCNPJ(cliente.cpfcnpj)) {
+        errors.cpfcnpj = 'CNPJ inválido';
+    } else {
+        errors.cpfcnpj = '';
+    }
+};
 const formatDate = (value) => {
     if (!value) {
         return '';
@@ -264,8 +275,11 @@ onMounted(() => {
                                         </div>
 
                                         <div class="mt-4">
-                                            <label for="cpfcnpj">CNPJ/CPF:</label>
-                                            <InputText class="my-2" id="cpfcnpj" v-model="cliente.cpfcnpj" required />
+                                            <label for="cpfcnpj">CNPJ:</label>
+                                            <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj"
+                                                mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj"
+                                                @blur="validateCNPJField" />
+                                            <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
                                         </div>
 
                                         <div class="input justify-items-center mt-5">
@@ -298,8 +312,7 @@ onMounted(() => {
                                     optionValue="value" placeholder="Selecione um Perfil" />
 
                                 <!-- Seção de Seleção de Menu -->
-                                <MenuSelector v-if="selectedPerfil"
-                                    :selectedPerfil="selectedPerfil"
+                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
                                     :initialMenus="structuredMenus.value"
                                     @update:structuredMenus="structuredMenus.value = $event" />
 

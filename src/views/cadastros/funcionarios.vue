@@ -55,6 +55,8 @@ let funcionario = reactive({
     domingo: false,
     nomearquivo: ''
 });
+const ListaProdutoFuncionario = ref([]);
+const ListaItemsSetor = ref([]);
 const editVisible = ref(false);
 const selectedProduct = ref([]);
 const itemsSelecionadosFuncionario = ref([]);
@@ -207,6 +209,38 @@ const fetchCentroCusto = async () => {
     }
 };
 
+const fetchItensFuncionario = async (id_funcionario) => {
+    const data = {
+        id_cliente: id_funcionario
+    };
+    try {
+        const response = await axios.post('funcionarios/listarItensFuncionario', data);
+
+    } catch (error) {
+        
+    }
+};
+const adicionarItensFuncionario = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('funcionarios/adicionarItensFuncionario', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        centroCusto.value = [
+            todosOption,
+            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+                label: `Centro de Custo  ${Nome}`,
+                value: ID_CentroCusto
+            }))
+        ];
+    } catch (error) {
+        console.error('Erro ao buscar centros de custo:', error);
+    }
+};
 const fetchSetorDiretoria = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -258,7 +292,6 @@ const fetchIdPlanta = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
         plantas.value = [
             todosOption,
             ...response.data.map(({ nome, id_planta }) => ({
@@ -398,10 +431,6 @@ const deleteFuncionario = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
-        // if (index !== -1) {
-        //     ListaFuncionarios.value.splice(index, 1);
-        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
         deleteFuncionarioDialog.value = false;
         loadFuncionarios();
@@ -681,22 +710,20 @@ const handleDatepickerOpen = () => {
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class="" :value="ItensSetorDev" stripedRows dataKey="sku"
+                                        <DataTable class="" :value="ListaItemsSetor" stripedRows dataKey="sku"
                                             v-model="funcionario.itemsSelecionadosSetor">
-                                            <Column field="name" header="Nome"></Column>
+                                            <Column field="nome" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
-                                            <Column field="quantidade" header="Quantidade"></Column>
-                                            <Column field="prazo" header="Prazo"></Column>
+                                            <Column field="qtd_limite" header="Quantidade"></Column>
                                         </DataTable>
                                     </TabPanel>
                                     <TabPanel header="Itens do Funcionario">
                                         <Button class="m-1" label="Adicionar Itens" @click="visible = true" />
-                                        <!--data table que exibe os items adicionados-->
-                                        <DataTable class="mt-3" :value="itemsSelecionadosFuncionario"
+                                        <DataTable class="mt-3" :value="ListaProdutoFuncionario"
                                             tableStyle="min-width: 50rem" stripedRows dataKey="sku">
-                                            <Column field="name" header="Nome"></Column>
+                                            <Column field="nome_produto" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
-                                            <Column field="quantidade" header="Quantidade"></Column>
+                                            <Column field="qtd_permitida" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
                                                     <Button icon="pi pi-pencil" outlined rounded class="mr-2"
