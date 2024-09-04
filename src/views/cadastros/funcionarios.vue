@@ -23,11 +23,11 @@ const status = ref([
     { label: 'Inativo', value: 'Inativo' }
 ]);
 const imageUrl = ref(null);
-let centroCusto  = ref([]);
+let centroCusto = ref([]);
 let setor = ref([]);
 let hieraquiaoptions = ref([]);
 let formatedHierarquiaOptions = ref([]);
-let plantas  = ref([]);
+let plantas = ref([]);
 let funcionario = reactive({
     id_funcionario: '',
     matricula: '',
@@ -55,10 +55,16 @@ let funcionario = reactive({
     domingo: false,
     nomearquivo: ''
 });
+const ListaProdutos = ref([]);
 const ListaProdutoFuncionario = ref([]);
 const ListaItemsSetor = ref([]);
 const editVisible = ref(false);
-const selectedProduct = ref([]);
+const selectedProduct = ref({
+    id_produto: null,
+    nome: '',
+    sku: '',
+    quantidade: 1
+});
 const itemsSelecionadosFuncionario = ref([]);
 const arquivo = ref(null);
 const ListaFuncionarios = ref([]);
@@ -93,8 +99,9 @@ const onRowSelect = async (event) => {
     ListaProdutoFuncionario.value = funcionario.itens;
     setTempo(TempoInicio, funcionario.hora_inicial);
     setTempo(TempoFim, funcionario.hora_final);
-    await fetchItensSetor( funcionario.id_setor);
+    await fetchItensSetor(funcionario.id_setor);
     await getImagem(funcionario.foto);
+    await listarProduto();
     active.value = 1;
     editVisible.value = true;
 };
@@ -180,7 +187,7 @@ const adicionarItensFuncionario = async () => {
     };
     try {
         const response = await axios.post('setor/additem', data);
-    
+
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     }
@@ -193,7 +200,7 @@ const fetchItensSetor = async (id_setor) => {
     };
     try {
         const response = await axios.post('Setor/itensdisponiveissetor', data);
-       ListaItemsSetor.value = response.data;
+        ListaItemsSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
@@ -259,7 +266,31 @@ const fetchIdPlanta = async () => {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
-
+const listarProduto = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        loading.value = true;
+        const response = await axios.post('/produtos/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaProdutos.value = response.data.map(({ id_produto, codigo, nome }) => ({
+            label: `${nome}`,
+            value: {
+                id_produto: id_produto,
+                nome: nome,
+                sku: codigo
+            }
+        }));
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 watch(
     TempoInicio,
     (newTime) => {
@@ -430,24 +461,62 @@ const resetForm = () => {
     TempoFim.value = null;
 };
 
+const SalvarProduto = () => {
+    // Verificação para garantir que o produto e a quantidade estão preenchidos
+    if (!selectedProduct.value.id_produto || !selectedProduct.value.quantidade) {
+        toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecione um produto e quantidade', life: 3000 });
+        return;
+    }
+
+    // Adiciona ou atualiza o produto na lista de itens do funcionário
+    const index = funcionario.itens.findIndex(i => i.id_produto === selectedProduct.value.id_produto);
+
+    if (index !== -1) {
+        // Atualiza o item existente
+        funcionario.itens[index] = { ...selectedProduct.value };
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item atualizado com sucesso!', life: 3000 });
+    } else {
+        // Adiciona um novo item à lista
+        funcionario.itens.push({ ...selectedProduct.value });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Novo item adicionado com sucesso!', life: 3000 });
+    }
+
+    // Limpa o produto selecionado para permitir nova adição
+    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
+
+    // Fecha o diálogo
+    visible.value = false;
+};
+const isEditing = ref(false); // Variável para controlar se é edição ou adição
+
+const editItem = (selectedItem) => {
+    selectedProduct.value = { ...selectedItem };
+    visible.value = true; 
+};
+
+
 const atualizarFuncionario = async () => {
     const formData = new FormData();
 
     if (selectedFile.value) {
         const fileExtension = selectedFile.value.name.split('.').pop();  // Obtém a extensão do arquivo
         const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
-        
+
         formData.append('foto', nomeArquivo);  // Adiciona o novo nome do arquivo ao FormData
         formData.append('file', selectedFile.value);
         formData.append('remove_old_photo', true);
     } else {
         formData.append('foto', funcionario.nomearquivo);
     }
+
     const { foto, ...restOfFuncionario } = funcionario;
 
     Object.entries(restOfFuncionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
+
+    formData.append('itens', JSON.stringify(funcionario.itens));
+
     formData.append('id_usuario', store.userId);
 
     try {
@@ -460,20 +529,18 @@ const atualizarFuncionario = async () => {
             }
         });
 
-        // Exibe um toast de sucesso e recarrega a lista de funcionários
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
         loadFuncionarios();
         active.value = 0;
-        // Reseta o formulário ou faz outra ação necessária
         resetForm();
     } catch (error) {
-        // Em caso de erro, exibe um toast de erro
         console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
 };
+
 
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
@@ -486,6 +553,18 @@ const closeAllDropdowns = () => {
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
+const confirmDeleteProduct = (selectedItem) => {
+    const index = funcionario.itens.findIndex(i => i.id_produto === selectedItem.id_produto);
+    if (index !== -1) {
+        funcionario.itens.splice(index, 1); // Remove o item da lista
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item removido com sucesso!', life: 3000 });
+    }
+};
+
+const hideDialog = () => {
+    itemDialog.value = false;  
+};
+
 </script>
 
 <template>
@@ -554,21 +633,21 @@ const handleDatepickerOpen = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo"
-                                        :options="centroCusto" optionLabel="label" optionValue="value"
-                                        placeholder="Selecione Um " ref="dropdown1" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="centroCusto"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione Um "
+                                        ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta"
-                                        :options="plantas" optionLabel="label" optionValue="value"
-                                        placeholder="Selecione a Planta" ref="dropdown2" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione a Planta"
+                                        ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor"
-                                        :options="setor" optionLabel="label" optionValue="value"
-                                        placeholder="Selecione o Setor" ref="dropdown3" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione o Setor"
+                                        ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
@@ -674,11 +753,11 @@ const handleDatepickerOpen = () => {
                                     </TabPanel>
                                     <TabPanel header="Itens do Funcionario">
                                         <Button class="m-1" label="Adicionar Itens" @click="visible = true" />
-                                        <DataTable class="mt-3" :value="ListaProdutoFuncionario"
+                                        <DataTable class="mt-3" :value="funcionario.itens"
                                             tableStyle="min-width: 50rem" stripedRows dataKey="sku">
-                                            <Column field="nome_produto" header="Nome"></Column>
+                                            <Column field="nome" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
-                                            <Column field="qtd_permitida" header="Quantidade"></Column>
+                                            <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
                                                     <Button icon="pi pi-pencil" outlined rounded class="mr-2"
@@ -702,7 +781,7 @@ const handleDatepickerOpen = () => {
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
                         <label for="name">Nome:</label>
-                        <InputText disabled v-model="item.name" id="name" type="text"></InputText>
+                        <InputText disabled v-model="item.nome" id="name" type="text"></InputText>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-4">
                         <label for="Quantidade">Quantidade</label>
@@ -719,8 +798,8 @@ const handleDatepickerOpen = () => {
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name"
-                        placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct" :options="ListaProdutos" optionLabel="label"
+                        optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
