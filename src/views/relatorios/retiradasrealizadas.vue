@@ -335,9 +335,11 @@ onMounted(() => {
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         rowHover
                         :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        :tableStyle="{ width: '100%' }"
+                        :tableStyle="{ width: '100%' }"  
                         ref="dt"
                         class=""
+                        :sortField="'ID_Retirada'" 
+                        :sortOrder="-1"                          
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
@@ -353,9 +355,9 @@ onMounted(() => {
                         <template #empty> {{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>
-                        <Column field="matricula" sortable header="Matricula"></Column>
-                        <Column field="nome" sortable header="Nome"></Column>
-                        <Column field="email" sortable header="E-mail"></Column>
+                        <Column field="Matricula" sortable header="Matricula"></Column>
+                        <Column field="Nome" sortable header="Nome"></Column>
+                        <Column field="Email" sortable header="E-mail"></Column>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
                         <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
                         <Column field="ProdutoSKU" sortable header="CA"></Column>

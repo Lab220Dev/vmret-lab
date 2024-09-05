@@ -55,16 +55,13 @@ const buscar = async () => {
     const data = {
         id_cliente: store.userIdCliente,
         id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
-        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
         id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
         loading.value = true;
-        const response = await axios.post('relatorioRetiRe/relatorio', data, {
+        const response = await axios.post('devolucoes/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -332,6 +329,8 @@ onMounted(() => {
                         :tableStyle="{ width: '100%' }"
                         ref="dt"
                         class=""
+                        :sortField="'ID_Devolucao_Item'" 
+                        :sortOrder="-1"  
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>

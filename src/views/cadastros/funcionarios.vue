@@ -53,7 +53,8 @@ let funcionario = reactive({
     sexta: false,
     sabado: false,
     domingo: false,
-    nomearquivo: ''
+    nomearquivo: '',
+    itens: []
 });
 const ListaProdutos = ref([]);
 const ListaProdutoFuncionario = ref([]);
@@ -74,7 +75,7 @@ const deleteFuncionarioDialog = ref(false);
 const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
-const item = ref({});
+const items = ref({});
 const loading = ref(false);
 
 const dropdown1 = ref(null);
@@ -96,7 +97,10 @@ const TempoFim = ref(null);
 
 const onRowSelect = async (event) => {
     funcionario = event.data;
-    ListaProdutoFuncionario.value = funcionario.itens;
+    ListaProdutoFuncionario.value = funcionario.itens.map(item => ({
+        ...item,
+        action: 'new' 
+    }));
     setTempo(TempoInicio, funcionario.hora_inicial);
     setTempo(TempoFim, funcionario.hora_final);
     await fetchItensSetor(funcionario.id_setor);
@@ -181,17 +185,6 @@ const fetchCentroCusto = async () => {
     }
 };
 
-const adicionarItensFuncionario = async () => {
-    const data = {
-        itens: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('setor/additem', data);
-
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
 
 const fetchItensSetor = async (id_setor) => {
     const data = {
@@ -281,7 +274,7 @@ const listarProduto = async () => {
             label: `${nome}`,
             value: {
                 id_produto: id_produto,
-                nome: nome,
+                nome_produto: nome,
                 sku: codigo
             }
         }));
@@ -371,17 +364,7 @@ const cpfvalidate = () => {
         errors.value.CPF = '';
     }
 };
-const handleSubmit = () => {
-    console.log(validateForm())
-    if (validateForm()) {
-        if (editVisible.value) {
-            atualizarFuncionario();
-        } else {
-            adicionarFuncionario();
-        }
-        console.log("não passou do validate")
-    }
-};
+
 
 const getImagem = async (filename) => {
     if (filename === '') {
@@ -462,36 +445,38 @@ const resetForm = () => {
 };
 
 const SalvarProduto = () => {
-    // Verificação para garantir que o produto e a quantidade estão preenchidos
     if (!selectedProduct.value.id_produto || !selectedProduct.value.quantidade) {
         toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecione um produto e quantidade', life: 3000 });
         return;
     }
 
-    // Adiciona ou atualiza o produto na lista de itens do funcionário
     const index = funcionario.itens.findIndex(i => i.id_produto === selectedProduct.value.id_produto);
 
     if (index !== -1) {
-        // Atualiza o item existente
-        funcionario.itens[index] = { ...selectedProduct.value };
+        funcionario.itens[index] = {
+            ...selectedProduct.value,
+            action: 'update'  
+        };
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item atualizado com sucesso!', life: 3000 });
     } else {
-        // Adiciona um novo item à lista
-        funcionario.itens.push({ ...selectedProduct.value });
+        funcionario.itens.push({
+            ...selectedProduct.value,
+            action: 'new'  
+        });
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Novo item adicionado com sucesso!', life: 3000 });
     }
-
-    // Limpa o produto selecionado para permitir nova adição
     selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
 
-    // Fecha o diálogo
     visible.value = false;
+    if(itemDialog.value){
+        itemDialog.value = false
+    }
 };
-const isEditing = ref(false); // Variável para controlar se é edição ou adição
+
 
 const editItem = (selectedItem) => {
     selectedProduct.value = { ...selectedItem };
-    visible.value = true; 
+    itemDialog.value = true; 
 };
 
 
@@ -502,26 +487,31 @@ const atualizarFuncionario = async () => {
         const fileExtension = selectedFile.value.name.split('.').pop();  // Obtém a extensão do arquivo
         const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
 
-        formData.append('foto', nomeArquivo);  // Adiciona o novo nome do arquivo ao FormData
+        formData.append('foto', nomeArquivo);  
         formData.append('file', selectedFile.value);
         formData.append('remove_old_photo', true);
     } else {
-        formData.append('foto', funcionario.nomearquivo);
+        formData.append('foto', funcionario.foto); 
     }
 
-    const { foto, ...restOfFuncionario } = funcionario;
+    const { foto, itens, ...restOfFuncionario } = funcionario;
 
+    // Remove itens duplicados antes de enviar
+    const itensUnicos = Array.from(new Set(itens.map(item => item.id_produto))) // Remove duplicados com base no id_produto
+        .map(id_produto => itens.find(item => item.id_produto === id_produto)); // Mapeia os itens únicos de volta
+
+    // Adiciona os itens únicos ao FormData
+    formData.append('itens', JSON.stringify(itensUnicos)); 
+
+    // Adiciona as demais propriedades do funcionário, incluindo a foto se ela estiver no `restOfFuncionario`
     Object.entries(restOfFuncionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
-
-    formData.append('itens', JSON.stringify(funcionario.itens));
 
     formData.append('id_usuario', store.userId);
 
     try {
         loading.value = true;
-        // Faz a requisição PUT para atualizar o funcionário
         const response = await axios.put(`/funcionarios/atualizar`, formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -537,9 +527,10 @@ const atualizarFuncionario = async () => {
         console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
+
 
 
 const closeAllDropdowns = () => {
@@ -553,16 +544,25 @@ const closeAllDropdowns = () => {
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
-const confirmDeleteProduct = (selectedItem) => {
-    const index = funcionario.itens.findIndex(i => i.id_produto === selectedItem.id_produto);
-    if (index !== -1) {
-        funcionario.itens.splice(index, 1); // Remove o item da lista
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item removido com sucesso!', life: 3000 });
-    }
+const confirmDeleteProduct = (item) => {
+    selectedProduct.value = {...item};
+    deleteProductDialog.value = true;
 };
+const deleteProduct = () => {
+    const index = funcionario.itens.findIndex(i => i.id_produto === selectedProduct.value.id_produto);
+
+    if (index !== -1) {
+        funcionario.itens[index].action = 'delete'; 
+        //ListaProdutoFuncionario.value = funcionario.itens.filter(i => i.action !== 'delete');
+    }
+    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
+    deleteProductDialog.value = false;
+};
+
 
 const hideDialog = () => {
     itemDialog.value = false;  
+    deleteProductDialog.value = false;
 };
 
 </script>
@@ -753,9 +753,9 @@ const hideDialog = () => {
                                     </TabPanel>
                                     <TabPanel header="Itens do Funcionario">
                                         <Button class="m-1" label="Adicionar Itens" @click="visible = true" />
-                                        <DataTable class="mt-3" :value="funcionario.itens"
-                                            tableStyle="min-width: 50rem" stripedRows dataKey="sku">
-                                            <Column field="nome" header="Nome"></Column>
+                                        <DataTable class="mt-3" :value="funcionario.itens.filter(i => i.action !== 'delete')"
+                                            tableStyle="min-width: 50rem" stripedRows dataKey="id_item_funcionario">
+                                            <Column field="nome_produto" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
@@ -781,11 +781,11 @@ const hideDialog = () => {
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
                         <label for="name">Nome:</label>
-                        <InputText disabled v-model="item.nome" id="name" type="text"></InputText>
+                        <InputText disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-4">
                         <label for="Quantidade">Quantidade</label>
-                        <InputText id="Quantidade" v-model="item.quantidade" />
+                        <InputText id="Quantidade" v-model="selectedProduct.quantidade" />
                     </div>
                 </div>
             </div>
@@ -816,11 +816,11 @@ const hideDialog = () => {
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="item">Você tem certeza que quer deletar o Item <b>{{ item.name }}</b> ?</span>
+                <span v-if="selectedProduct.id_produto">Você tem certeza que quer deletar o Item <b>{{ selectedProduct.nome_produto }}</b> ?</span>
             </div>
             <template #footer>
-                <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
+                <Button label="Não" icon="pi pi-times" text @click="hideDialog()" />
+                <Button label="Sim" icon="pi pi-check" text @click="deleteProduct()" />
             </template>
         </Dialog>
         <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px"
