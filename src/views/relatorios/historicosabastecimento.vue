@@ -38,7 +38,7 @@ const relatorio = ref({
     id_planta: '',
     id_centro_custo: '',
     id_setor: '',
-    id_operador: '',    
+    id_operador: '',
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     data_final: new Date()
 });
@@ -57,6 +57,7 @@ const toISODate = (date) => {
 
 const buscar = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
         id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
@@ -68,7 +69,7 @@ const buscar = async () => {
         id_operador: relatorio.value.id_operador
     };
     try {
-        loading.value = true
+        loading.value = true;
         const response = await axios.post('', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -85,7 +86,6 @@ const buscar = async () => {
     } finally {
         loading.value = false; // Desativando loading
     }
-    
 };
 const voltar = () => {
     show.value = true;
@@ -122,20 +122,22 @@ const exportJSON = () => {
     document.body.removeChild(link);
 };
 const fetchDM = async () => {
-    const params = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('', {
-            params: params,
+        const response = await axios.post('/relatorioRetiRe/listardm', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
-            label: `DM  ${id_dm}`,
-            value: id_dm
-        }))];
+        dms.value = [
+            todosOption,
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                label: `${Identificacao}`,
+                value: ID_DM
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
     }
@@ -145,15 +147,19 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('', data, {
+        const response = await axios.post('plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        plantas.value = [todosOption, ...response.data.map(({ id_planta }) => ({
-            label: `Planta  ${id_planta}`,
-            value: id_planta
-        }))];
+        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
+        plantas.value = [
+            todosOption,
+            ...response.data.map(({ nome, id_planta }) => ({
+                label: `Planta  ${nome}`,
+                value: id_planta
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar opções de plantas:', error);
     }
@@ -163,15 +169,18 @@ const fetchSetorDiretoria = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('', data, {
+        const response = await axios.post('Setor/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        setor.value = [todosOption, ...response.data.map(({ id_setor }) => ({
-            label: `Setor  ${id_setor}`,
-            value: id_setor
-        }))];
+        setor.value = [
+            todosOption,
+            ...response.data.map(({ id_setor, nome }) => ({
+                label: `Setor  ${nome}`,
+                value: id_setor
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
@@ -181,15 +190,18 @@ const fetchCentroCusto = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('', data, {
+        const response = await axios.post('cdc/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCusto.value = response.data.map(({ id_centro_custo }) => ({
-            label: `Centro de Custo  ${id_centro_custo}`,
-            value: id_centro_custo
-        }));
+        centroCusto.value = [
+            todosOption,
+            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+                label: `Centro de Custo  ${Nome}`,
+                value: ID_CentroCusto
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     }
@@ -200,29 +212,32 @@ const fetchOperador = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('', data, {
+        const response = await axios.post('/funcionarios/listarOperarios', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaOperador.value = [todosOption, ... response.data.map((funcionario) => ({
-            label: funcionario.nome,
-            value: funcionario.id_operador
-        }))];
+        ListaOperador.value = [
+            todosOption,
+            ...response.data.map((funcionario) => ({
+                label: funcionario.nome,
+                value: funcionario.id_operador
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     }
 };
 const closeAllDropdowns = () => {
-  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
 
 const handleDatepickerOpen = () => {
-  closeAllDropdowns();
+    closeAllDropdowns();
 };
 onMounted(() => {
     fetchDM();
@@ -231,7 +246,6 @@ onMounted(() => {
     fetchOperador();
     fetchCentroCusto();
 });
-
 </script>
 
 <template>
@@ -241,47 +255,60 @@ onMounted(() => {
                 <h5 class="my-4 text-2xl">Histórico de Abastecimento</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms"
-                         optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"/>
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" 
-                        optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2"/>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor"
-                         optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3"/>
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" 
-                        :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos"
-                        ref="dropdown4"/>
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
-                    
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+
+                    <div class="field lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Operador:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_operador" 
-                        :options="ListaOperador" optionLabel="label" optionValue="value" placeholder="Todos"
-                        ref="dropdown5"/>
+                        <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" 
-                        :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
-                        @open="handleDatepickerOpen" placeholder="Selecione uma data inicial"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            auto-apply
+                            :enable-time-picker="false"
+                            @open="handleDatepickerOpen"
+                            teleport="body"
+                            placeholder="Selecione uma data inicial"
+                        />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" 
-                        :format="format" locale="pt-BR" auto-apply :enable-time-picker="false"
-                        @open="handleDatepickerOpen" placeholder="Selecione uma data final"/>
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            auto-apply
+                            :enable-time-picker="false"
+                            @open="handleDatepickerOpen"
+                            teleport="body"
+                            placeholder="Selecione uma data final"
+                        />
                     </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-6">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -319,7 +346,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty>{{ emptyMessage }}  </template>
+                        <template #empty>{{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Data" sortable header="Data"></Column>
                         <Column field="operador" sortable header="Operador"></Column>
@@ -331,7 +358,7 @@ onMounted(() => {
                 <Card v-if="!show">
                     <template #title>{{ selectedItem.dm }}</template>
                     <template #content>
-                        <Button type="button" label="Voltar" icon="pi pi-check" severity="info" @click="voltar" />
+                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
                     </template>
                 </Card>
             </div>
@@ -353,7 +380,7 @@ onMounted(() => {
 }
 
 .datatable-wrapper {
-    overflow-x: auto;
+    overflow: hidden;
     width: 100vw;
 }
 

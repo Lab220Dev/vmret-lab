@@ -4,7 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
-import imagePlaceholder from '@/assets/images/placeholder4.png';
+import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
@@ -16,21 +16,18 @@ const selectedFile = ref(null);
 const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
-
+const todosOption = { label: 'Todos', value: null };
 const errors = ref({});
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
 ]);
 const imageUrl = ref(null);
-let centroCustooptions = ref([]);
-let SetorDiretoriaoptions = ref([]);
+let centroCusto = ref([]);
+let setor = ref([]);
 let hieraquiaoptions = ref([]);
-let plantasoptions = ref([]);
-let formatedCentroCustoOptions = ref([]);
-let formatedSetorOptions = ref([]);
 let formatedHierarquiaOptions = ref([]);
-let formatedPlantaOptions = ref([]);
+let plantas = ref([]);
 let funcionario = reactive({
     id_funcionario: '',
     matricula: '',
@@ -56,24 +53,20 @@ let funcionario = reactive({
     sexta: false,
     sabado: false,
     domingo: false,
-    nomearquivo: ''
+    nomearquivo: '',
+    itens: []
 });
+const ListaProdutos = ref([]);
+const ListaProdutoFuncionario = ref([]);
+const ListaItemsSetor = ref([]);
 const editVisible = ref(false);
-const selectedProduct = ref([]);
+const selectedProduct = ref({
+    id_produto: null,
+    nome: '',
+    sku: '',
+    quantidade: 1
+});
 const itemsSelecionadosFuncionario = ref([]);
-const ItensSetorDev = ref([
-    { name: 'Mouse', sku: 123, quantidade: 1 },
-    { name: 'Teclado', sku: 647, quantidade: 1 },
-    { name: 'Microfone', sku: 563, quantidade: 1 },
-    { name: 'Fone de ouvido', sku: 436, quantidade: 1 },
-    { name: 'Cabo USB', sku: 279, quantidade: 1 }
-]);
-const ItensSetorAdm = ref([
-    { name: 'Post-it', sku: 98374, quantidade: 0 },
-    { name: 'caderno', sku: 827642, quantidade: 0 },
-    { name: 'corretivo', sku: 7462, quantidade: 0 },
-    { name: 'clipe de papel', sku: 2978264, quantidade: 0 }
-]);
 const arquivo = ref(null);
 const ListaFuncionarios = ref([]);
 const itemDialog = ref(false);
@@ -82,7 +75,7 @@ const deleteFuncionarioDialog = ref(false);
 const visible = ref(false);
 const metaKey = ref(true);
 const active = ref(0);
-const item = ref({});
+const items = ref({});
 const loading = ref(false);
 
 const dropdown1 = ref(null);
@@ -91,19 +84,6 @@ const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 
-const SalvarProduto = () => {
-    if (!(itemsSelecionadosFuncionario.sku === selectedProduct.value.sku)) {
-        itemsSelecionadosFuncionario.push(selectedProduct.value);
-        selectedProduct.value = {};
-        visible.value = false;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Adicionado', life: 3000 });
-    } else {
-        itemsSelecionadosFuncionario[findIndexById(item.value.sku)] = item.value;
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Item atualizado', life: 3000 });
-        item.value = {};
-        itemDialog.value = false;
-    }
-};
 
 const format = (date) => {
     const day = date.getDate();
@@ -115,41 +95,23 @@ const format = (date) => {
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
 
-const onRowSelect = (event) => {
+const onRowSelect = async (event) => {
     funcionario = event.data;
+    ListaProdutoFuncionario.value = funcionario.itens.map(item => ({
+        ...item,
+        action: 'new' 
+    }));
     setTempo(TempoInicio, funcionario.hora_inicial);
     setTempo(TempoFim, funcionario.hora_final);
-    getImagem(funcionario.foto);
+    await fetchItensSetor(funcionario.id_setor);
+    await getImagem(funcionario.foto);
+    await listarProduto();
     active.value = 1;
     editVisible.value = true;
 };
-const editItem = (itm) => {
-    item.value = { ...itm };
-    itemDialog.value = true;
-};
-const findIndexById = (sku) => {
-    let index = 0;
-    for (let i = 0; i < itemsSelecionadosFuncionario.length; i++) {
-        if (itemsSelecionadosFuncionario[i].sku === sku) {
-            index = i;
-            break;
-        }
-    }
-    return index;
-};
-const confirmDeleteProduct = (itm) => {
-    item.value = itm;
-    deleteProductDialog.value = true;
-};
-const deleteProduct = () => {
-    const remover = itemsSelecionadosFuncionario.findIndex((itm) => itm.sku === item.value.sku);
-    if (remover !== -1) {
-        itemsSelecionadosFuncionario.splice(remover, 1);
-    }
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Item Deletado', life: 3000 });
-    item.value = {};
-    deleteProductDialog.value = false;
-};
+
+
+
 const loadFuncionarios = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -163,9 +125,9 @@ const loadFuncionarios = async () => {
         });
         ListaFuncionarios.value = response.data;
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }finally {
-        loading.value = false; 
+        console.error('Erro ao carregar funcionários:', error);
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -180,8 +142,9 @@ const adicionarFuncionario = async () => {
         formData.append(key, value);
     });
     formData.append('id_cliente', store.userIdCliente);
+    formData.append('id_usuario', store.userId);
     try {
-        loading.value = true
+        loading.value = true;
         const response = await axios.post('/funcionarios/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -195,7 +158,7 @@ const adicionarFuncionario = async () => {
     } catch (error) {
         console.error('Erro ao adicionar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -205,41 +168,57 @@ const fetchCentroCusto = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarcentrocusto', data, {
+        const response = await axios.post('cdc/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        centroCustooptions = response.data;
-        formatedCentroCustoOptions = centroCustooptions.map((centroCustooptions) => ({
-            label: `Centro de Custo ${centroCustooptions.id_centro_custo}`,
-            value: centroCustooptions.id_centro_custo
-        }));
+        centroCusto.value = [
+            todosOption,
+            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
+                label: `Centro de Custo  ${Nome}`,
+                value: ID_CentroCusto
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar centros de custo:', error);
     }
 };
 
+
+const fetchItensSetor = async (id_setor) => {
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_setor: id_setor
+    };
+    try {
+        const response = await axios.post('Setor/itensdisponiveissetor', data);
+        ListaItemsSetor.value = response.data;
+    } catch (error) {
+        console.error('Erro ao buscar setores/diretorias:', error);
+    }
+};
 const fetchSetorDiretoria = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarsetor', data, {
+        const response = await axios.post('Setor/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        SetorDiretoriaoptions = response.data;
-        formatedSetorOptions = SetorDiretoriaoptions.map((SetorDiretoriaoptions) => ({
-            label: `Setor ${SetorDiretoriaoptions.id_setor}`,
-            value: SetorDiretoriaoptions.id_setor
-        }));
+        setor.value = [
+            todosOption,
+            ...response.data.map(({ id_setor, nome }) => ({
+                label: `Setor  ${nome}`,
+                value: id_setor
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
 };
-
 const fetchHieraquiaOptions = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -264,21 +243,47 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('funcionarios/listarplanta', data, {
+        const response = await axios.post('plantas/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        plantasoptions = response.data;
-        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
-            label: `Planta ${plantasoptions.id_planta}`,
-            value: plantasoptions.id_planta
-        }));
+        plantas.value = [
+            todosOption,
+            ...response.data.map(({ nome, id_planta }) => ({
+                label: `Planta  ${nome}`,
+                value: id_planta
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
-
+const listarProduto = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        loading.value = true;
+        const response = await axios.post('/produtos/listar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaProdutos.value = response.data.map(({ id_produto, codigo, nome }) => ({
+            label: `${nome}`,
+            value: {
+                id_produto: id_produto,
+                nome_produto: nome,
+                sku: codigo
+            }
+        }));
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+    } finally {
+        loading.value = false; // Desativando loading
+    }
+};
 watch(
     TempoInicio,
     (newTime) => {
@@ -336,8 +341,9 @@ const setTempo = (tempoRef, isoString) => {
 
 const validateForm = () => {
     errors.value = {};
-    validateCPF();
+    cpfvalidate();
     validateEmail();
+    console.log(errors.value)
     return Object.keys(errors.value).length === 0;
 };
 
@@ -358,15 +364,7 @@ const cpfvalidate = () => {
         errors.value.CPF = '';
     }
 };
-const handleSubmit = () => {
-    if (validateForm()) {
-        if (editVisible.value) {
-            atualizarFuncionario();
-        } else {
-            adicionarFuncionario();
-        }
-    }
-};
+
 
 const getImagem = async (filename) => {
     if (filename === '') {
@@ -395,18 +393,14 @@ onMounted(() => {
 });
 
 const deleteFuncionario = async () => {
-    let data = { id_funcionario: funcionario.id_funcionario };
+    let data = { id_funcionario: funcionario.id_funcionario, id_usuario: store.userId };
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/funcionarios/deleteFuncionario', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        // const index = ListaFuncionarios.value.findIndex((f) => f.id_funcionario === funcionario.id_funcionario);
-        // if (index !== -1) {
-        //     ListaFuncionarios.value.splice(index, 1);
-        // }
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
         deleteFuncionarioDialog.value = false;
         loadFuncionarios();
@@ -414,7 +408,7 @@ const deleteFuncionario = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -450,24 +444,74 @@ const resetForm = () => {
     TempoFim.value = null;
 };
 
+const SalvarProduto = () => {
+    if (!selectedProduct.value.id_produto || !selectedProduct.value.quantidade) {
+        toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecione um produto e quantidade', life: 3000 });
+        return;
+    }
+
+    const index = funcionario.itens.findIndex(i => i.id_produto === selectedProduct.value.id_produto);
+
+    if (index !== -1) {
+        funcionario.itens[index] = {
+            ...selectedProduct.value,
+            action: 'update'  
+        };
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item atualizado com sucesso!', life: 3000 });
+    } else {
+        funcionario.itens.push({
+            ...selectedProduct.value,
+            action: 'new'  
+        });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Novo item adicionado com sucesso!', life: 3000 });
+    }
+    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
+
+    visible.value = false;
+    if(itemDialog.value){
+        itemDialog.value = false
+    }
+};
+
+
+const editItem = (selectedItem) => {
+    selectedProduct.value = { ...selectedItem };
+    itemDialog.value = true; 
+};
+
+
 const atualizarFuncionario = async () => {
     const formData = new FormData();
 
-    // Adiciona a foto se houver uma selecionada
     if (selectedFile.value) {
-        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
-        formData.append('foto', nomeArquivo);
+        const fileExtension = selectedFile.value.name.split('.').pop();  // Obtém a extensão do arquivo
+        const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
+
+        formData.append('foto', nomeArquivo);  
         formData.append('file', selectedFile.value);
+        formData.append('remove_old_photo', true);
+    } else {
+        formData.append('foto', funcionario.foto); 
     }
 
-    // Adiciona os dados do funcionário
-    Object.entries(funcionario).forEach(([key, value]) => {
+    const { foto, itens, ...restOfFuncionario } = funcionario;
+
+    // Remove itens duplicados antes de enviar
+    const itensUnicos = Array.from(new Set(itens.map(item => item.id_produto))) // Remove duplicados com base no id_produto
+        .map(id_produto => itens.find(item => item.id_produto === id_produto)); // Mapeia os itens únicos de volta
+
+    // Adiciona os itens únicos ao FormData
+    formData.append('itens', JSON.stringify(itensUnicos)); 
+
+    // Adiciona as demais propriedades do funcionário, incluindo a foto se ela estiver no `restOfFuncionario`
+    Object.entries(restOfFuncionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
 
+    formData.append('id_usuario', store.userId);
+
     try {
-        loading.value = true       
-        // Faz a requisição PUT para atualizar o funcionário
+        loading.value = true;
         const response = await axios.put(`/funcionarios/atualizar`, formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -475,32 +519,52 @@ const atualizarFuncionario = async () => {
             }
         });
 
-        // Exibe um toast de sucesso e recarrega a lista de funcionários
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
         loadFuncionarios();
         active.value = 0;
-        // Reseta o formulário ou faz outra ação necessária
         resetForm();
     } catch (error) {
-        // Em caso de erro, exibe um toast de erro
         console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
-    }finally {
-        loading.value = false; // Desativando loading
+    } finally {
+        loading.value = false;
     }
 };
 
+
+
 const closeAllDropdowns = () => {
-  if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-  if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-  if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-  if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-  if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
 
 const handleDatepickerOpen = () => {
-  closeAllDropdowns();
+    closeAllDropdowns();
 };
+const confirmDeleteProduct = (item) => {
+    selectedProduct.value = {...item};
+    deleteProductDialog.value = true;
+};
+const deleteProduct = () => {
+    const index = funcionario.itens.findIndex(i => i.id_produto === selectedProduct.value.id_produto);
+
+    if (index !== -1) {
+        funcionario.itens[index].action = 'delete'; 
+        //ListaProdutoFuncionario.value = funcionario.itens.filter(i => i.action !== 'delete');
+    }
+    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
+    deleteProductDialog.value = false;
+};
+
+
+const hideDialog = () => {
+    itemDialog.value = false;  
+    deleteProductDialog.value = false;
+};
+
 </script>
 
 <template>
@@ -508,14 +572,15 @@ const handleDatepickerOpen = () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionários">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect">
+                    <DataTable :value="ListaFuncionarios" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="onRowSelect">
                         <Column field="nome" header="Nome" class="col-6"></Column>
                         <Column field="matricula" header="Matrícula" class="col-6"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
 
-            <TabPanel header="Adicionar Funcionário">
+            <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
@@ -523,7 +588,8 @@ const handleDatepickerOpen = () => {
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-8 md:col-6 sm:col-12">
                                     <label for="name">Nome:</label>
-                                    <InputText class="my-2" v-model="funcionario.nome" id="name" type="text"></InputText>
+                                    <InputText class="my-2" v-model="funcionario.nome" id="name" type="text">
+                                    </InputText>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="matricula">Matrícula:</label>
@@ -539,57 +605,68 @@ const handleDatepickerOpen = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
-                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen"/>
+                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon
+                                        :showOnFocus="false" :format="format" locale="pt-BR" auto-apply
+                                        :enable-time-picker="false" @open="handleDatepickerOpen" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
+                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99"
+                                        :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="rg">RG:</label>
-                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
+                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*"
+                                        :unmask="true" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="ctps">CTPS:</label>
-                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" />
+                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999"
+                                        :unmask="true" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="email">E-mail:</label>
-                                    <InputText class="my-2" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
+                                    <InputText class="my-2" id="email" v-model="funcionario.email"
+                                        :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="formatedCentroCustoOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="centroCusto"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione Um "
+                                        ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="formatedPlantaOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2"/>
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione a Planta"
+                                        ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="formatedSetorOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione o Setor" 
-                                    ref="dropdown3"/>
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione o Setor"
+                                        ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" 
-                                    optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4"/>
+                                    <Dropdown class="my-2" v-model="funcionario.id_funcao"
+                                        :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value"
+                                        placeholder="Selecione a Função" ref="dropdown4" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" 
-                                    optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status"
+                                        optionLabel="label" optionValue="value" placeholder="Escolha um"
+                                        ref="dropdown5"></Dropdown>
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Início:</label>
-                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker  disable-time-range-validation>
+                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker
+                                            disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
@@ -597,46 +674,51 @@ const handleDatepickerOpen = () => {
                                     </div>
                                     <div class="full lg:col-6 md:col-6 sm:col-6">
                                         <label for="inicio">Hora Fim:</label>
-                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker  disable-time-range-validation>
+                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker
+                                            disable-time-range-validation>
                                             <template #input-icon>
                                                 <img class="input-slot-image" :src="clockurl" />
                                             </template>
                                         </VueDatePicker>
                                     </div>
 
-                                    <Fieldset
-                                        legend="Selecione os dias que o funcionário poderá retirar os
-                                        Itens:"
-                                        class="p-1 lg:col-12 md:col-12 sm:col-12"
-                                    >
+                                    <Fieldset legend="Selecione os dias que o funcionário poderá retirar os
+                                        Itens:" class="p-1 lg:col-12 md:col-12 sm:col-12">
                                         <label for="fim"></label>
                                         <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
                                             <div class="checkbox-items m-2 flex align-items-end">
-                                                <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
+                                                <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias"
+                                                    value="Segunda" :binary="true" />
                                                 <label for="Segunda" class="ml-2"> Segunda-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
+                                                <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias"
+                                                    value="Terca" :binary="true" />
                                                 <label for="Terca" class="ml-2"> Terça-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
+                                                <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias"
+                                                    value="Quarta" :binary="true" />
                                                 <label for="Quarta" class="ml-2"> Quarta-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
+                                                <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias"
+                                                    value="Quinta" :binary="true" />
                                                 <label for="Quinta" class="ml-2"> Quinta-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
+                                                <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias"
+                                                    value="Sexta" :binary="true" />
                                                 <label for="Sexta" class="ml-2"> Sexta-Feira </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
+                                                <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias"
+                                                    value="Sabado" :binary="true" />
                                                 <label for="Sabado" class="ml-2"> Sábado </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
+                                                <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias"
+                                                    value="Domingo" :binary="true" />
                                                 <label for="Domingo" class="ml-2"> Domingo</label>
                                             </div>
                                         </div>
@@ -648,33 +730,40 @@ const handleDatepickerOpen = () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarFuncionario" />
-                                <Button v-if="editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="editVisible" style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="ATT"
+                                    icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
+                                <Button v-if="editVisible" style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
+                                    icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
 
-                                <Button v-if="!editVisible" style="width: 15%;" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="handleSubmit" />
+                                <Button v-if="!editVisible" style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
+                                    icon="pi pi-check" severity="info" @click="adicionarFuncionario()" />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class="" :value="ItensSetorDev" stripedRows dataKey="sku" v-model="funcionario.itemsSelecionadosSetor">
-                                            <Column field="name" header="Nome"></Column>
+                                        <DataTable class="" :value="ListaItemsSetor" stripedRows dataKey="sku">
+                                            <Column field="nome" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
-                                            <Column field="quantidade" header="Quantidade"></Column>
-                                            <Column field="prazo" header="Prazo"></Column>
+                                            <Column field="qtd_limite" header="Quantidade"></Column>
                                         </DataTable>
                                     </TabPanel>
                                     <TabPanel header="Itens do Funcionario">
                                         <Button class="m-1" label="Adicionar Itens" @click="visible = true" />
-                                        <!--data table que exibe os items adicionados-->
-                                        <DataTable class="mt-3" :value="itemsSelecionadosFuncionario" tableStyle="min-width: 50rem" stripedRows dataKey="sku">
-                                            <Column field="name" header="Nome"></Column>
+                                        <DataTable class="mt-3" :value="funcionario.itens.filter(i => i.action !== 'delete')"
+                                            tableStyle="min-width: 50rem" stripedRows dataKey="id_item_funcionario">
+                                            <Column field="nome_produto" header="Nome"></Column>
                                             <Column field="sku" header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
                                                 <template #body="slotProps">
-                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
-                                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2"
+                                                        @click="editItem(slotProps.data)" />
+                                                    <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                                        @click="confirmDeleteProduct(slotProps.data)" />
                                                 </template>
                                             </Column>
                                         </DataTable>
@@ -686,16 +775,17 @@ const handleDatepickerOpen = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true"
+            class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
                         <label for="name">Nome:</label>
-                        <InputText disabled v-model="item.name" id="name" type="text"></InputText>
+                        <InputText disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-4">
                         <label for="Quantidade">Quantidade</label>
-                        <InputText id="Quantidade" v-model="item.quantidade" />
+                        <InputText id="Quantidade" v-model="selectedProduct.quantidade" />
                     </div>
                 </div>
             </div>
@@ -708,11 +798,13 @@ const handleDatepickerOpen = () => {
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                    <Dropdown v-model="selectedProduct" :options="ItensSetorAdm" optionLabel="name" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct" :options="ListaProdutos" optionLabel="label"
+                        optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3"
+                        autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -724,21 +816,20 @@ const handleDatepickerOpen = () => {
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="item"
-                    >Você tem certeza que quer deletar o Item <b>{{ item.name }}</b> ?</span
-                >
+                <span v-if="selectedProduct.id_produto">Você tem certeza que quer deletar o Item <b>{{ selectedProduct.nome_produto }}</b> ?</span>
             </div>
             <template #footer>
-                <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
+                <Button label="Não" icon="pi pi-times" text @click="hideDialog()" />
+                <Button label="Sim" icon="pi pi-check" text @click="deleteProduct()" />
             </template>
         </Dialog>
-        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px"
+            :modal="true" :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
-                    Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{ funcionario.nome }}</b> ?</span
-                >
+                    Você tem certeza que deseja deletar o funcionário <b>{{ funcionario.id_funcionario }}</b> - <b>{{
+                        funcionario.nome }}</b> ?</span>
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteFuncionarioDialog = false" class="p-button-text" />
@@ -763,7 +854,8 @@ const handleDatepickerOpen = () => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block; /* Garantir que o label se comporte corretamente dentro de um grid */
+    display: block;
+    /* Garantir que o label se comporte corretamente dentro de um grid */
 }
 
 .checkbox-container {
@@ -771,8 +863,10 @@ const handleDatepickerOpen = () => {
 }
 
 .checkbox-items {
-    width: 40%; /* Metade da largura do contêiner para duas colunas */
-    margin-bottom: 10px; /* Espaçamento entre as linhas */
+    width: 40%;
+    /* Metade da largura do contêiner para duas colunas */
+    margin-bottom: 10px;
+    /* Espaçamento entre as linhas */
 }
 
 .nested-grid {
@@ -782,7 +876,6 @@ const handleDatepickerOpen = () => {
 .buttons {
     width: 100px;
 }
-
 
 @media (max-width: 580px) {
     .full {

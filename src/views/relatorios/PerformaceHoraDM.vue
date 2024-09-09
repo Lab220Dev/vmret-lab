@@ -3,7 +3,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -13,6 +13,7 @@ const dialogMessage = ref('');
 
 const store = useAuthStore();
 const toast = useToast();
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
@@ -28,14 +29,13 @@ const centroCusto = ref([todosOption]);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
-const show = ref(true);
+const show = ref(false);
 const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
-    id_dm: '',
+    dm: '',
     id_planta: '',
-    ID_CentroCusto: '',
+    id_centro_custo: '',
     id_setor: '',
     id_funcionario: '',
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -51,10 +51,8 @@ const format = (date) => {
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
-
 const buscar = async () => {
     const data = {
-        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
         id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
@@ -66,32 +64,46 @@ const buscar = async () => {
     };
     try {
         loading.value = true;
-        const response = await axios.post('relatorioRetiRe/relatorio', data, {
+        const response = await axios.post('relatorioItems/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         retiradas.value = response.data;
-        if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
-            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-            showDialog.value = true;
-        }
         if (retiradas.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
             emptyMessage.value = '';
         }
+        // mostra o diálogo se não houver resultados
+        if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
+            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            showDialog.value = true;
+        }
     } catch (error) {
-        console.error('Erro ao buscar retiradas:', error);
+        console.error('Erro ao buscar centros de custo:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
+const onRowSelect = (event) => {
+    show.value = true;
+    selectedItem.value = event.data.Detalhes;
+
+    // Scrolar a tela para o grid de detalhes ao selecionar algum item
+    nextTick(() => {
+        const detailsCard = document.querySelector('.details-card');
+        if (detailsCard) {
+            detailsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+};
 
 const voltar = () => {
-    show.value = true;
+    show.value = false;
     selectedItem.value = {};
 };
+
 const dt = ref(null);
 
 const generateCSV = (data) => {
@@ -101,16 +113,34 @@ const generateCSV = (data) => {
 };
 
 const exportCSV = () => {
-    const csvContent = generateCSV(retiradas.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'RetiradasRealizadas.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (Array.isArray(retiradas.value)) {
+        // Agrega detalhes de cada produto
+        const detalhesAgregados = retiradas.value.flatMap((produto) => {
+            if (Array.isArray(produto.Detalhes)) {
+                return produto.Detalhes;
+            } else {
+                console.warn(`Detalhes não é um array para o produto ${produto.ProdutoID}`);
+                return [];
+            }
+        });
+
+        // Gera o conteúdo CSV
+        const csvContent = generateCSV(detalhesAgregados);
+
+        // Cria um Blob e link para download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'Items_Mais_Retiradas.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        console.error('retiradas.value não é um array.');
+    }
 };
+
 const exportJSON = () => {
     const jsonContent = JSON.stringify(retiradas.value, null, 2);
     const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
@@ -122,12 +152,13 @@ const exportJSON = () => {
     link.click();
     document.body.removeChild(link);
 };
+
 const fetchDM = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
+        const response = await axios.post('/relatorioItems/listardm', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -143,92 +174,7 @@ const fetchDM = async () => {
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`,
-                value: id_planta
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        setor.value = [
-            todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
-                label: `Setor  ${nome}`,
-                value: id_setor
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
 
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_funcionario
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
@@ -242,10 +188,6 @@ const handleDatepickerOpen = () => {
 };
 onMounted(() => {
     fetchDM();
-    fetchIdPlanta();
-    fetchSetorDiretoria();
-    fetchFuncionarios();
-    fetchCentroCusto();
 });
 </script>
 
@@ -253,30 +195,14 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Retiradas Realizadas</h5>
-                <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-                    <!-- div de busca de informações para o relatorio -->
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+                <h5 class="my-4 text-2xl">Performace por Horário</h5>
+                <div class="p-0 m-0 p-fluid formgrid grid col-12">
+                    <!-- Div de busca de informações para o relatório -->
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
-                    </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
-                    </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
-                    </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
-                    </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker
                             class="drop"
@@ -285,15 +211,14 @@ onMounted(() => {
                             :showOnFocus="false"
                             :format="format"
                             locale="pt-BR"
-                            auto-apply
                             :enable-time-picker="false"
-                            placeholder="Selecione uma data inicial"
-                            teleport="body"
+                            auto-apply
                             ref="datepicker1"
                             @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data inicial"
                         />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker
                             class="drop"
@@ -302,28 +227,28 @@ onMounted(() => {
                             :showOnFocus="false"
                             :format="format"
                             locale="pt-BR"
-                            auto-apply
                             :enable-time-picker="false"
-                            placeholder="Selecione uma data final"
-                            teleport="body"
+                            auto-apply
                             ref="datepicker2"
                             @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data final"
                         />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <!-- botão de filtrar -->
+
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
-                </div>
 
-                <!--  datatable do relatorio -->
+                    <!-- Botão de filtrar -->
+                </div>
+                <!-- DataTable do relatório -->
                 <div class="datatable-wrapper">
                     <DataTable
                         v-model:filters="filters"
@@ -334,14 +259,12 @@ onMounted(() => {
                         :rows="10"
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         rowHover
-                        :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        :tableStyle="{ width: '100%' }"  
+                        @rowSelect="onRowSelect"
+                        :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']"
+                        selectionMode="single"
+                        :tableStyle="{ width: '100%' }"
                         ref="dt"
-                        class=""
-                        :sortField="'ID_Retirada'" 
-                        :sortOrder="-1"                          
                     >
-                        <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
                             <div class="flex justify-content-end">
                                 <IconField iconPosition="left">
@@ -352,23 +275,22 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> {{ emptyMessage }} </template>
-                        <Column field="ID_DM" sortable header="DM"></Column>
-                        <Column field="Dia" sortable header="Data"></Column>
-                        <Column field="Matricula" sortable header="Matricula"></Column>
-                        <Column field="Nome" sortable header="Nome"></Column>
-                        <Column field="Email" sortable header="E-mail"></Column>
-                        <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
-                        <Column field="ProdutoSKU" sortable header="CA"></Column>
+                        <template #empty>{{ emptyMessage }} </template>
+                        <Column field="ProdutoNome" sortable header="DM"></Column>
+                        <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
                     </DataTable>
+                    <card v-if="show" class="details-card">
+                        <template #title>Detalhes do Produto</template>
+                        <template #content>
+                            <DataTable :value="selectedItem" stripedRows showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                                <Column field="ProdutoNome" sortable header="Item"></Column>
+                                <Column field="Data" sortable header="Data"></Column>
+                                <Column field="Quantidade" sortable header="Quantidade"> </Column>
+                                <Column field="ProdutoSKU" sortable header="SKU"></Column>
+                            </DataTable>
+                        </template>
+                    </card>
                 </div>
-                <Card v-if="!show">
-                    <template #title>{{ selectedItem.dm }}</template>
-                    <template #content>
-                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
-                    </template>
-                </Card>
             </div>
         </div>
     </div>
@@ -382,7 +304,23 @@ onMounted(() => {
         </template>
     </Dialog>
 </template>
+
 <style>
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dialog-content {
+    padding: 1rem;
+}
+
+.dialog-message {
+    text-align: justify;
+    margin: 0;
+}
+
 .card {
     overflow-x: auto;
 }

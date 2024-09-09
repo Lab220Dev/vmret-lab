@@ -18,7 +18,7 @@ const dropdown2 = ref(null);
 const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
-const retiradas = ref([]);
+const devolucoes = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const ListaFuncionarios = ref(null);
 const dms = ref([todosOption]);
@@ -33,9 +33,9 @@ const show = ref(true);
 const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
-    id_dm: '',
+    dm: '',
     id_planta: '',
-    ID_CentroCusto: '',
+    id_centro_custo: '',
     id_setor: '',
     id_funcionario: '',
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -51,43 +51,37 @@ const format = (date) => {
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
-
 const buscar = async () => {
     const data = {
-        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
-        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
         id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
         loading.value = true;
-        const response = await axios.post('relatorioRetiRe/relatorio', data, {
+        const response = await axios.post('devolucoes/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        retiradas.value = response.data;
-        if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
+        devolucoes.value = response.data;
+        if (Array.isArray(devolucoes.value) && devolucoes.value.length === 0) {
             dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             showDialog.value = true;
         }
-        if (retiradas.value.length === 0) {
+        if (devolucoes.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
             emptyMessage.value = '';
         }
     } catch (error) {
-        console.error('Erro ao buscar retiradas:', error);
+        console.error('Erro ao buscar devoluções:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
-
 const voltar = () => {
     show.value = true;
     selectedItem.value = {};
@@ -101,23 +95,23 @@ const generateCSV = (data) => {
 };
 
 const exportCSV = () => {
-    const csvContent = generateCSV(retiradas.value);
+    const csvContent = generateCSV(devolucoes.value);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'RetiradasRealizadas.csv');
+    link.setAttribute('download', 'Devoluções.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 };
 const exportJSON = () => {
-    const jsonContent = JSON.stringify(retiradas.value, null, 2);
+    const jsonContent = JSON.stringify(devolucoes.value, null, 2);
     const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'RetiradasRealizadas.json');
+    link.setAttribute('download', 'Devoluções.json');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -127,7 +121,7 @@ const fetchDM = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
+        const response = await axios.post('/relatorioItems/listardm', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -148,7 +142,7 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('plantas/listar', data, {
+        const response = await axios.post('funcionarios/listarplanta', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -156,8 +150,8 @@ const fetchIdPlanta = async () => {
         // usar o id_dm para acessar quais as plantas e setores estão disponiveis
         plantas.value = [
             todosOption,
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`,
+            ...response.data.map(({ id_planta }) => ({
+                label: `Planta  ${id_planta}`,
                 value: id_planta
             }))
         ];
@@ -170,15 +164,15 @@ const fetchSetorDiretoria = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('Setor/listar', data, {
+        const response = await axios.post('funcionarios/listarsetor', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         setor.value = [
             todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
-                label: `Setor  ${nome}`,
+            ...response.data.map(({ id_setor }) => ({
+                label: `Setor  ${id_setor}`,
                 value: id_setor
             }))
         ];
@@ -191,16 +185,16 @@ const fetchCentroCusto = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('cdc/listar', data, {
+        const response = await axios.post('funcionarios/listarcentrocusto', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         centroCusto.value = [
             todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
+            ...response.data.map(({ id_centro_custo }) => ({
+                label: `Centro de Custo  ${id_centro_custo}`,
+                value: id_centro_custo
             }))
         ];
     } catch (error) {
@@ -218,13 +212,10 @@ const fetchFuncionarios = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaFuncionarios.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_funcionario
-            }))
-        ];
+        ListaFuncionarios.value = response.data.map((funcionario) => ({
+            label: funcionario.nome,
+            value: funcionario.id_funcionario
+        }));
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     }
@@ -253,12 +244,12 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Retiradas Realizadas</h5>
+                <h5 class="my-4 text-2xl">Devoluções</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
@@ -266,7 +257,7 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
@@ -327,7 +318,7 @@ onMounted(() => {
                 <div class="datatable-wrapper">
                     <DataTable
                         v-model:filters="filters"
-                        :value="retiradas"
+                        :value="devolucoes"
                         stripedRows
                         showGridlines
                         paginator
@@ -335,11 +326,11 @@ onMounted(() => {
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         rowHover
                         :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        :tableStyle="{ width: '100%' }"  
+                        :tableStyle="{ width: '100%' }"
                         ref="dt"
                         class=""
-                        :sortField="'ID_Retirada'" 
-                        :sortOrder="-1"                          
+                        :sortField="'ID_Devolucao_Item'" 
+                        :sortOrder="-1"  
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
@@ -355,9 +346,9 @@ onMounted(() => {
                         <template #empty> {{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>
-                        <Column field="Matricula" sortable header="Matricula"></Column>
-                        <Column field="Nome" sortable header="Nome"></Column>
-                        <Column field="Email" sortable header="E-mail"></Column>
+                        <Column field="matricula" sortable header="Matricula"></Column>
+                        <Column field="nome" sortable header="Nome"></Column>
+                        <Column field="email" sortable header="E-mail"></Column>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
                         <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
                         <Column field="ProdutoSKU" sortable header="CA"></Column>

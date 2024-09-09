@@ -43,7 +43,7 @@ const router = createRouter({
                     component: () => import('@/views/relatorios/retiradasavulsas.vue'),
                     meta: { requiresAuth: true }
                 },
-                {
+                                {
                     path: '/relatorios/historicosabastecimento',
                     name: 'historicosabastecimento',
                     component: () => import('@/views/relatorios/historicosabastecimento.vue'),
@@ -65,6 +65,30 @@ const router = createRouter({
                     path: '/relatorios/logs',
                     name: 'logs',
                     component: () => import('@/views/relatorios/logs.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/Metricasdm',
+                    name: 'Metricas da DM',
+                    component: () => import('@/views/relatorios/MetricasDM.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/PerformaceDM',
+                    name: 'Performace da DM',
+                    component: () => import('@/views/relatorios/PerformaceDM.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/devolucoes',
+                    name: 'Devoluções',
+                    component: () => import('@/views/relatorios/devolucoes.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/PerformaceHoraDM',
+                    name: 'Performace por Hora da DM',
+                    component: () => import('@/views/relatorios/PerformaceHoraDM.vue'),
                     meta: { requiresAuth: true }
                 },
                 {
@@ -128,6 +152,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/cadastros/UsuarioDM',
+                    name: 'Cadastro de Usuarios Dispenser Machine',
+                    component: () => import('@/views/cadastros/usuarios/UsuariosDMs.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')
@@ -138,9 +168,39 @@ const router = createRouter({
                     component: () => import('@/views/pages/Empty.vue')
                 },
                 {
-                    path: '/pages/crud',
-                    name: 'crud',
-                    component: () => import('@/views/pages/Crud.vue')
+                    path: '/endpoints/entrada',
+                    name: 'Endpoints de Entrada',
+                    component: () => import('@/views/pages/Entradas.vue')
+                },
+                {
+                    path: '/endpoints/saida',
+                    name: 'Endpoints de Saida',
+                    component: () => import('@/views/pages/Saida.vue')
+                },
+                {
+                    path: '/relatorios/ConsultaStatus',
+                    name: 'Consulta Status',
+                    component: () => import('@/views/relatorios/ConsultaStatus.vue')
+                },
+                {
+                    path: '/cadastros/LiberacaoAvulsa',
+                    name: 'Liberação Avulsa',
+                    component: () => import('@/views/cadastros/LiberacaoAvulsa.vue')
+                },
+                {
+                    path: '/pages/listaItensNaoAlocados',
+                    name: 'Lista de Itens Não Liberados',
+                    component: () => import('@/views/pages/ListaItensNaoAlocados.vue')
+                },
+                {
+                    path: '/cadastros/Termo',
+                    name: 'Termo de compromisso - Ficha Retirada',
+                    component: () => import('@/views/pages/Termo.vue')
+                },
+                {
+                    path: '/cadastros/Importacao',
+                    name: 'Importação de dados',
+                    component: () => import('@/views/pages/Importacao.vue')
                 },
             ]
         },

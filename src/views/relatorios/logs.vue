@@ -12,14 +12,18 @@ const toast = useToast();
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
-const dropdown4 = ref(null);
 const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
 const dms = ref([todosOption]);
-const operacao = ref([todosOption]);
+const operacao = ref([
+    { label: 'Todos', value: null },
+    { label: 'Insert', value: 'INSERT' },
+    { label: 'Update', value: 'UPDATE' },
+    { label: 'Delete', value: 'DELETE' },
+]);
+
+const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
-const show = ref(true);
-const selectedItem = ref([]);
 const relatorio = ref({
     dm: '',
     id_usuario: '',
@@ -47,12 +51,12 @@ const buscar = async () => {
         id_dm: relatorio.value.dm,
         id_usuario: relatorio.value.id_usuario,
         id_funcionario: relatorio.value.id_funcionario,
-        id_operacao: relatorio.value.id_operacao,
+        operacao: relatorio.value.id_operacao,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        const response = await axios.post('', data, {
+        const response = await axios.post('/Log/relatorio', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -63,56 +67,20 @@ const buscar = async () => {
     }
 };
 
-const voltar = () => {
-    show.value = true;
-    selectedItem.value = {};
-};
-
-const dt = ref(null);
-
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
-};
-
-// const exportCSV = () => {
-//     const csvContent = generateCSV(historico.value);
-//     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-//     const link = document.createElement('a');
-//     const url = URL.createObjectURL(blob);
-//     link.setAttribute('href', url);
-//     link.setAttribute('download', 'HistoricoAbastecimento.csv');
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-// };
-// const exportJSON = () => {
-//     const jsonContent = JSON.stringify(historico.value, null, 2);
-//     const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-//     const link = document.createElement('a');
-//     const url = URL.createObjectURL(blob);
-//     link.setAttribute('href', url);
-//     link.setAttribute('download', 'HistoricoAbastecimento.json');
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-// };
 
 const fetchDM = async () => {
-    const params = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('', {
-            params: params,
+        const response = await axios.post('/DM/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ id_dm }) => ({
-            label: `DM  ${id_dm}`,
-            value: id_dm
+        dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({
+            label: Identificacao,
+            value: ID_DM
         }))];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
@@ -120,18 +88,17 @@ const fetchDM = async () => {
 };
 
 const fetchUsuario = async () => {
-    const user = {
+    const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.get('', {
-            user: user,
+        const response = await axios.post('/usuarios/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = response.data.map(({ id_usuario }) => ({
-            label: `Usuario  ${id_usuario}`,
+        usuario.value = response.data.map(({ id_usuario,nome }) => ({
+            label: nome,
             value: id_usuario
         }));
     } catch (error) {
@@ -166,59 +133,58 @@ const closeAllDropdowns = () => {
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
-//falta operação;//
 
 onMounted(() => {
     fetchDM();
     fetchUsuario();
     fetchFuncionarios();
 });
-
 </script>
 
 <template>
     <div class="card vh p-fluid formgrid">
         <div class="form">
             <h5 class="my-4 text-2xl">Log</h5>
-        <div class="grid mt-3 mx-1 p-1">
-        <!-- Header com a Seleção de Dms -->
-        
-        <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"/>
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="usuario">Usuário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="funcionario">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2"/>
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="operacao">Operação:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
-                    </div>
-        <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false" :format="format" locale="pt-BR" @open="handleDatepickerOpen":enable-time-picker="false" placeholder="Selecione uma data inicial"/>
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Final:</label>
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false" :format="format" locale="pt-BR" @open="handleDatepickerOpen" :enable-time-picker="false" placeholder="Selecione uma data final"/>
-                    </div>
+            <div class="grid mt-3 mx-1 p-1">
+                <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <label for="usuario">Usuário:</label>
+                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
+                        optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
+                <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <label for="operacao">Operação:</label>
+                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
+                        optionValue="value" placeholder="Todos" />
                 </div>
-        <DataTable :value="dms" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
-            <Column field="DM" header="DM"></Column>
-            <Column field="Data" header="Data"></Column>
-            <Column field="usuario" header="Usuário"></Column>
-            <Column field="funcionario" header="Funcionário"></Column>
-            <Column field="operacao" header="Operação"></Column>
+                <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <label for="perfil">Data Inicial:</label>
+                    <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
+                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
+                </div>
+                <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <label for="perfil">Data Final:</label>
+                    <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
+                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
+                </div>
+                <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
+                        @click="buscar" />
+                </div>
+            </div>
+        </div>
+        <DataTable :value="historico" stripedRows showGridlines paginator :rows="10" dataKey="DM"
+            :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+            <Column field="Dia" header="Data"></Column>
+            <Column field="Operacao" header="Operação"></Column>
+            <Column field="ID_Usuario" header="Usuário"></Column>
+            <Column field="Log_Web" header="Resumo"></Column>
+            <Column field="Resultado" header="Resultado"></Column>
         </DataTable>
     </div>
 </template>
-<style>
+<style scoped>
 .card {
     overflow-x: auto;
 }

@@ -3,6 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -11,6 +12,7 @@ const ListaPlanta = ref([]);
 const visible = ref(false);
 const integracao = ref(false);
 const deletePlantaDialog = ref(false);
+const loading = ref(false);
 
 let planta = reactive({
     nome: '',
@@ -40,6 +42,7 @@ const loadPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
+    loading.value = true;
     try {
         const response = await axios.post('/plantas/listar', data, {
             headers: {
@@ -49,14 +52,18 @@ const loadPlanta = async () => {
         ListaPlanta.value = response.data;
     } catch (error) {
         console.error('Erro ao listar plantas:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 
 const adicionarPlanta = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...planta
     };
+    loading.value = true;
     try {
         const response = await axios.post('/plantas/adicionar', data, {
             headers: {
@@ -68,11 +75,14 @@ const adicionarPlanta = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar planta:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 
 const deletePlanta = async () => {
     let data = { id_planta: planta.id_planta };
+    loading.value = true;
     try {
         await axios.post('/planta/deletePlanta', data, {
             headers: {
@@ -86,15 +96,19 @@ const deletePlanta = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
+    } finally {
+        loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
 
 const atualizarPlanta = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...planta
     };
+    loading.value = true;
     try {
         const response = await axios.post('/plantas/atualizar', data, {
             headers: {
@@ -106,6 +120,8 @@ const atualizarPlanta = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao atualizar Plantas:', error);
+    } finally {
+        loading.value = false; // Desativando loading
     }
 };
 
@@ -119,6 +135,7 @@ watch(active, (newIndex, oldIndex) => {
 
 const resetForm = () => {
     planta.nome = '';
+    planta.codigo = '';
     planta.id_planta = '';
     planta.clienteid = '';
     planta.senha = '';
@@ -142,12 +159,13 @@ onMounted(() => {
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
                     <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        <template #empty> Nenhuma Planta adicionada. </template>
                         <Column field="id_planta" header="Planta de Custo"></Column>
                         <Column field="nome" header="Planta (Nome)"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel header="Adicionar Planta" v-model:activeIndex="active">
+            <TabPanel :header="visible ? 'Editar Planta' : 'Adicionar Planta'">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
@@ -155,7 +173,7 @@ onMounted(() => {
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_planta">Código:</label>
-                                        <InputText class="my-2" id="id_planta" v-model="planta.id_planta" required />
+                                        <InputText class="my-2" id="id_planta" v-model="planta.codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Planta (Nome):</label>
@@ -186,9 +204,9 @@ onMounted(() => {
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarPlanta" />
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
                                 </div>
                             </form>
                         </div>
@@ -210,6 +228,7 @@ onMounted(() => {
                 </div>
             </TabPanel>
         </TabView>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
@@ -247,5 +266,4 @@ onMounted(() => {
         margin: 1px;
     }
 }
-
 </style>

@@ -3,18 +3,20 @@ import { onMounted, ref, reactive } from 'vue';
 import axios from '@/axios.js';
 import LastRecalls from '@/components/LastRecalls.vue';
 import MostRecalled from '@/components/MostRecalled.vue';
-import { useAuthStore } from '@/store/authStore'; //valida o token
+import { useAuthStore } from '@/store/authStore'; // Importa a store
+import { useToast } from 'primevue/usetoast'; // Importa o toast
 
 // Usa a store
-const store = useAuthStore(); // useStore é chamado aqui
+const store = useAuthStore();
+const toast = useToast(); // Inicializa o toast
 
-const canViewLastRecalls = ref(false); // controle de exibição
+const canViewLastRecalls = ref(false); // Controle de exibição
 
-// metodo de permissão
+// Método de permissão
 const checkPermission = () => {
-    // aqui faz a verificação
+    // Verifica a permissão do usuário
     if (store.userRole === 'Master' || store.userRole === 'Operador') {
-        canViewLastRecalls.value = true; //se for verdade, mostra, do contrário não exibe e nem renderiza
+        canViewLastRecalls.value = true; // Se for permitido, exibe os componentes
     }
 };
 
@@ -52,12 +54,8 @@ const fetchUltimasRetiradas = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioItems/ultimos', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // o token está sendo passado
-            }
-        });
-        products.value = response.data; // Atualiza os dados do produto
+        const response = await axios.post('/relatorioItems/ultimos', data);
+        products.value = response.data; // Atualiza os dados dos produtos
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -74,12 +72,8 @@ const fetchMaisRetirados = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioItems/listarMaisRet', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // o token está sendo passado
-            }
-        });
-        most.value = response.data; // Atualiza os dados do produto
+        const response = await axios.post('/relatorioItems/listarMaisRet', data);
+        most.value = response.data; // Atualiza os dados dos produtos mais retirados
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -92,18 +86,38 @@ const fetchMaisRetirados = async () => {
 };
 
 onMounted(() => {
+    // Exibe o toast se houver uma mensagem global
+    if (store.getGlobalMessage) { // Usando o getter
+        toast.add({
+            severity: 'warn',
+            summary: 'Acesso Negado',
+            detail: store.getGlobalMessage,
+            life: 3000
+        });
+        
+        // Limpa a mensagem global após exibir o toast
+        store.clearGlobalMessage();
+    }
+
     checkPermission();
     if (canViewLastRecalls.value) {
         fetchUltimasRetiradas();
-        fetchMaisRetirados(); // busca só se tiver permissão
+        fetchMaisRetirados(); // Busca só se tiver permissão
     }
 });
+const estoquebaixo = ref([
+  { ProdutoNome: 'Produto 1', ProdutoSKU: 'SKU001', TotalQuantidade: 10 },
+  { ProdutoNome: 'Produto 2', ProdutoSKU: 'SKU002', TotalQuantidade: 15 },
+  { ProdutoNome: 'Produto 3', ProdutoSKU: 'SKU003', TotalQuantidade: 8 },
+  { ProdutoNome: 'Produto 4', ProdutoSKU: 'SKU004', TotalQuantidade: 12 },
+  { ProdutoNome: 'Produto 5', ProdutoSKU: 'SKU005', TotalQuantidade: 5 }
+]);
 </script>
 
 <template>
-    <div class="grid">
+    <div class="grid grid-cols-12">
         <!--cards-->
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12 m-0">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
@@ -118,7 +132,7 @@ onMounted(() => {
                 <span class="text-500">since last visit</span>
             </div>
         </div>
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
@@ -133,8 +147,8 @@ onMounted(() => {
                 <span class="text-500">since last week</span>
             </div>
         </div>
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12">
-            <div class="card mb-0">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
+            <div class="card">
                 <div class="flex justify-content-between mb-3">
                     <div>
                         <span class="block text-500 font-medium mb-3">Customers</span>
@@ -148,7 +162,7 @@ onMounted(() => {
                 <span class="text-500">newly registered</span>
             </div>
         </div>
-        <div class="xl:col-3 lg:col-3 md:col-6 sm:12">
+        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
             <div class="card mb-0">
                 <div class="flex justify-content-between mb-3">
                     <div>
@@ -163,85 +177,56 @@ onMounted(() => {
                 <span class="text-500">responded</span>
             </div>
         </div>
-    
-        <div class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <!--chart-->
-            <div class="card">
+
+        <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12 ">
+            <div class="card card-item">
                 <h5>Keep Alive</h5>
                 <Chart type="line" :data="lineData" :options="lineOptions" />
             </div>
+
+            <div v-if="canViewLastRecalls" class="card card-item">
+                <LastRecalls :products="products" />
+            </div>
         </div>
 
- <div v-if="canViewLastRecalls" class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <MostRecalled :most="most" />
- </div>
-
-        <!-- começo do componente de últimas retiradas, só se for permitido -->
-        <div v-if="canViewLastRecalls" class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <LastRecalls :products="products" />
-        </div>
-        <!-- fim do componente de últimas retiradas -->
-
-        <div class="xl:col-6 lg:col-6 md:col-6 sm:12">
-            <div class="card">
-                <div class="flex align-items-center justify-content-between mb-4">
-                    <h5>Itens com estoque baixo</h5>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu1.toggle($event)"></Button>
-                        <Menu ref="menu1" :popup="true" :model="items"></Menu>
-                    </div>
+        <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
+            <div class="card card-item">
+                <div class="title" style="display: flex; align-items: center">
+                    <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
-                <span class="block text-600 font-medium mb-3">TODAY</span>
-                <ul class="p-0 mx-0 mt-0 mb-4 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Richard Jones
-                            <span class="text-700">has purchased a blue t-shirt for <span class="text-blue-500">79$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-download text-xl text-orange-500"></i>
-                        </div>
-                        <span class="text-700 line-height-3">Your request for withdrawal of <span class="text-blue-500 font-medium">2500$</span> has been initiated.</span>
-                    </li>
-                </ul>
-                <span class="block text-600 font-medium mb-3">YESTERDAY</span>
-                <ul class="p-0 m-0 list-none">
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-dollar text-xl text-blue-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Keyser Wick
-                            <span class="text-700">has purchased a black jacket for <span class="text-blue-500">59$</span></span>
-                        </span>
-                    </li>
-                    <li class="flex align-items-center py-2 border-bottom-1 surface-border">
-                        <div class="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                            <i class="pi pi-question text-xl text-pink-500"></i>
-                        </div>
-                        <span class="text-900 line-height-3"
-                            >Jane Davis
-                            <span class="text-700">has posted a new questions about your product.</span>
-                        </span>
-                    </li>
-                </ul>
+
+                <!-- <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i> -->
+
+                <DataTable :rows="5" :value="estoquebaixo" responsiveLayout="scroll">
+                    <Column field="ProdutoNome" header="Item" sortable style="width: 50%"></Column>
+                    <Column field="ProdutoSKU" header="SKU" sortable style="width: 30%"></Column>
+                    <Column field="TotalQuantidade" header="Quantidade" sortable style="width: 20%"></Column>
+                </DataTable>
+            </div>
+
+            <div v-if="canViewLastRecalls" class="card card-item">
+                <MostRecalled :most="most" />
             </div>
         </div>
     </div>
 </template>
-<style scoped>
-.grid {
-    margin: 0;
-    
+
+<style>
+.grid-container {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Ajusta o número de colunas automaticamente */
+  gap: 16px; /* Espaçamento entre os cards */
 }
-.card {
-    margin-bottom: 0 !important;
-    align-content: start;
+
+.card-item {
+  height: 350px; /* Defina uma altura fixa */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Evita que o conteúdo saia do card */
 }
 
 </style>

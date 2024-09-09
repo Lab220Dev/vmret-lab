@@ -3,7 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
-import imagePlaceholder from '@/assets/images/placeholder4.png';
+import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -26,7 +26,7 @@ const selectedInfoFile = ref(null);
 
 const imagePrinc = ref(imagePlaceholder);
 const imageSec = ref(imagePlaceholder);
-const imageInfo = ref(imagePlaceholder)
+const imageInfo = ref(imagePlaceholder);
 
 const ListaProdutos = ref([]);
 const deleteProdutoDialog = ref(false);
@@ -42,7 +42,7 @@ const handleFileSelected = (file, type) => {
     }
 };
 
-let produto = reactive({
+const produto = reactive({
     codigo: '',
     id_planta: '',
     id_tipoProduto: '',
@@ -62,7 +62,7 @@ const setImageIfValid = async (image, targetRef) => {
 };
 
 const onRowSelect = async (event) => {
-    produto = event.data;
+    Object.assign(produto, event.data);
     await setImageIfValid(produto.imagem1, imagePrinc);
     await setImageIfValid(produto.imagem2, imageSec);
     await setImageIfValid(produto.imagemdetalhe, imageInfo);
@@ -76,19 +76,20 @@ const loadProdutos = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        loading.value = true
+        loading.value = true;
         const response = await axios.post('/produtos/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
         ListaProdutos.value = response.data;
-        ListaProdutos.value.forEach(async (produto) => {
+        for (const produto of ListaProdutos.value) {
             produto.imagemUrl = await getImagem(produto.imagem1);
-        });
+        }
+
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
@@ -103,15 +104,22 @@ const fetchIdPlanta = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        plantasoptions = response.data;
-        formatedPlantaOptions = plantasoptions.map((plantasoptions) => ({
-            label: `Planta ${plantasoptions.id_planta}`,
-            value: plantasoptions.id_planta
-        }));
+
+        // Verificar se a resposta é um array
+        if (Array.isArray(response.data)) {
+            plantasoptions.value = response.data;
+            formatedPlantaOptions.value = plantasoptions.value.map((option) => ({
+                label: `Planta ${option.id_planta}`,
+                value: option.id_planta
+            }));
+        } else {
+            console.error('A resposta da API não é um array:', response.data);
+        }
     } catch (error) {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
+
 
 const saveProduto = async () => {
     const formData = new FormData();
@@ -119,12 +127,12 @@ const saveProduto = async () => {
         const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
-    }  
+    }
 
     if (selectedInfoFile.value) {
         const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
-        formData.append('file_info', selectedFile.value);
+        formData.append('file_info', selectedInfoFile.value);
     }
 
     if (selectedSecFile.value) {
@@ -132,37 +140,42 @@ const saveProduto = async () => {
         formData.append('imagem2', nomeArquivoSecundario);
         formData.append('file_secundario', selectedSecFile.value);
     }
+
     Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, value);
+        formData.append(key, typeof value === 'string' ? value : String(value));
     });
     formData.append('id_cliente', store.userIdCliente);
 
     try {
-        loading.value = true
-        await axios.post('/produtos/adicionar', formData, {
+        loading.value = true;
+        const response = await axios.post('/produtos/adicionar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
                 'Content-Type': 'multipart/form-data'
             }
         });
-
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
         loadProdutos();
-        active.value = 0;
         resetForm();
+        active.value = 0;
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
-    }finally {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o produto', life: 3000 });
+    } finally {
         loading.value = false; // Desativando loading
+        active.value = 0; // Mude a aba para listar produtos
     }
-    active.value = 0;
 };
 
+
 const deleteProduto = async () => {
-    let data = { id_produto: produto.id_produto };
+    let data = {
+        id_produto: produto.id_produto,
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente
+    };
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/produtos/deleteProduto', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -175,7 +188,7 @@ const deleteProduto = async () => {
         resetForm();
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
     active.value = 0;
@@ -185,7 +198,7 @@ const updateProduto = async () => {
     const formData = new FormData();
 
     Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, value);
+        formData.append(key, typeof value === 'string' ? value : String(value));
     });
 
     if (selectedFile.value) {
@@ -194,7 +207,7 @@ const updateProduto = async () => {
     }
 
     if (selectedInfoFile.value) {
-        formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`);
+        formData.append('imagemdetalhe', ` produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`);
         formData.append('file_info', selectedInfoFile.value);
     }
 
@@ -204,7 +217,7 @@ const updateProduto = async () => {
     }
 
     try {
-        loading.value = true
+        loading.value = true;
         await axios.post('/produtos/atualizar', formData, {
             headers: {
                 Authorization: `Bearer ${store.token}`,
@@ -219,13 +232,13 @@ const updateProduto = async () => {
     } catch (error) {
         console.error('Erro ao atualizar o produto:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
-    }finally {
+    } finally {
         loading.value = false; // Desativando loading
     }
 };
 
 const getImagem = async (filename) => {
-    if (filename === '') {
+    if (!filename) {
         return imagePlaceholder;
     }
     try {
@@ -236,13 +249,14 @@ const getImagem = async (filename) => {
         });
         if (response.status === 200) {
             const { image, mimeType } = response.data;
-            return `data:${mimeType};base64,${image}`;
+            const imageUrl = `data:${mimeType};base64,${image}`;
+            return imageUrl;
         }
     } catch (error) {
+        console.error('Error fetching image:', error);
         return imagePlaceholder;
     }
 };
-
 
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -253,21 +267,19 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    produto = {
+    Object.assign(produto, {
         codigo: '',
         id_planta: '',
         id_tipoProduto: '',
-        id_categoria: 71,
+        id_categoria: '',
         nome: '',
         descricao: ' ',
         unidade_medida: '',
-        validadedias: '',
+        validadedias: 0,
         imagem1: '',
         imagem2: '',
-        imagem3: '',
-        imagem4: '',
         imagemdetalhe: ''
-    };
+    });
     selectedFile.value = null;
     selectedSecFile.value = null;
     selectedInfoFile.value = null;
@@ -291,11 +303,13 @@ onMounted(async () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Produtos">
                 <div class="col-12">
-                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable :value="ListaProdutos" selectionMode="single" stripedRows dataKey="id"
+                        :metaKeySelection="false" @rowSelect="handleRowSelection">
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto" class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto"
+                                        class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
@@ -304,15 +318,16 @@ onMounted(async () => {
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel header="Adicionar Produto" v-model:activeIndex="active">
+            <TabPanel :header="visible ? 'Editar Produto' : 'Adicionar Produto'">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
                             <!--form de cadastro de novo produto-->
-                            <div class="p-fluid  formgrid grid m-0 p-0">
+                            <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">SKU:</label>
-                                    <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text" ></InputText>
+                                    <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text">
+                                    </InputText>
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Nome:</label>
@@ -320,27 +335,33 @@ onMounted(async () => {
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="nome">Descrição:</label>
-                                    <Textarea v-model="produto.descricao" class="my-2 overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.descricao" class="my-2 overflow-scroll" rows="5"
+                                        cols="30" />
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="codigo">Especificação:</label>
-                                    <Textarea v-model="produto.especificacoes" class="my-2 overflow-scroll" rows="5" cols="30" />
+                                    <Textarea v-model="produto.especificacoes" class="my-2 overflow-scroll" rows="5"
+                                        cols="30" />
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="tipo">Tipo:</label>
-                                    <Dropdown class="my-2" v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <Dropdown class="my-2" v-model="produto.id_tipoProduto" :options="tipoProduto"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="tipo">Planta:</label>
-                                    <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
+                                    <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions"
+                                        optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
                                 </div>
                                 <div class="full med lg:col-6 md:col-6 sm:col-6">
                                     <label for="UndMedida">Unidade de Medida:</label>
-                                    <InputText class="my-2" v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
+                                    <InputText class="my-2" v-model="produto.unidade_medida" id="UndMedida" type="text">
+                                    </InputText>
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="vldDias">Validade:</label>
-                                    <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
+                                    <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias"
+                                        suffix=" dias" />
                                 </div>
                             </div>
                         </div>
@@ -349,15 +370,18 @@ onMounted(async () => {
                                 <!-- Grid de Upload de Imagens -->
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Principal:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'principal')" :externalImages="imagePrinc"  />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'principal')"
+                                        :externalImages="imagePrinc" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Secundária:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'secundaria')" :externalImages="imageSec" />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'secundaria')"
+                                        :externalImages="imageSec" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Informações<br />Adicionais:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'info')" :externalImages="imageInfo"  />
+                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'info')"
+                                        :externalImages="imageInfo" />
                                 </div>
                             </div>
                         </div>
@@ -365,21 +389,28 @@ onMounted(async () => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="updateProduto" />
-                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button v-if="!visible" style="width: 15%; "class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2"
+                        label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" />
+                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2"
+                        label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
+                    <Button v-if="!visible" style="width: 15%"
+                        class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar"
+                        icon="pi pi-check" severity="info" @click="saveProduto" />
                 </div>
 
-                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
+                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px"
+                    :modal="true" :closable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                        <span class="">
-                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
-                        >
+                        <span>
+                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{
+                                produto.nome
+                                }}</b> ?</span>
                     </div>
 
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
+                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false"
+                            class="p-button-text" />
                         <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
                     </template>
                 </Dialog>
@@ -391,12 +422,10 @@ onMounted(async () => {
 
 <style scoped>
 .overflow-scroll {
-    overflow-y: scroll;
-    overflow-x: hidden !important;
+    overflow-x: auto !important;
 
     resize: none;
 }
-
 
 @media (max-width: 1024px) {
     .text-center {

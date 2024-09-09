@@ -13,8 +13,9 @@ const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
 
 let cdc = reactive({
-    nome: '',
-    id_centro_custo: ''
+    Nome: '',
+    Codigo: '',
+    ID_CentroCusto: ''
 });
 
 const onRowSelect = async (event) => {
@@ -51,6 +52,7 @@ const loadCentroCusto = async () => {
 const adicionarCentro = async () => {
     const data = {
         id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
         ...cdc
     };
     try {
@@ -68,7 +70,11 @@ const adicionarCentro = async () => {
 };
 
 const deleteCentro = async () => {
-    let data = { id_centro_custo: cdc.id_centro_custo };
+    let data = {
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        ID_CentroCusto: cdc.ID_CentroCusto
+    };
     try {
         await axios.post('/cdc/deleteCentro', data, {
             headers: {
@@ -92,6 +98,7 @@ const deleteCentro = async () => {
 
 const atualizarCDC = async () => {
     const data = {
+        id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...cdc
     };
@@ -119,7 +126,7 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    (cdc.nome = ''), (cdc.codigo = ''), (cdc.id_centro_custo = '');
+    (cdc.Nome = ''), (cdc.Codigo = ''), (cdc.ID_CentroCusto = '');
 };
 
 const handleRowSelection = async (event) => {
@@ -137,13 +144,12 @@ onMounted(() => {
             <TabPanel header="Listar Centros de Custo">
                 <div class="col-12">
                     <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        <Column field="id_centro_custo" header="Código"></Column>
-                        <Column field="nome" header="Centro de Custo (Nome)"></Column>
+                        <Column field="Codigo" header="Código"></Column>
+                        <Column field="Nome" header="Centro de Custo (Nome)"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
-
-            <TabPanel header="Adicionar Centro de Custo" v-model:activeIndex="active">
+            <TabPanel :header="visible ? 'Editar Centro de Custo' : 'Adicionar Centro de Custo'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
                         <div class="card">
@@ -151,11 +157,11 @@ onMounted(() => {
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_centro_custo">Código:</label>
-                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.id_centro_custo" required />
+                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Centro de Custo (Nome):</label>
-                                        <InputText class="my-2" id="nome" v-model="cdc.nome" required />
+                                        <InputText class="my-2" id="nome" v-model="cdc.Nome" required />
                                     </div>
                                 </div>
 
@@ -166,9 +172,9 @@ onMounted(() => {
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- <Button label="Adicionar" type="submit" /> -->
 
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-refresh" severity="primary" @click="atualizarCDC" />
-                                    <Button v-if="visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%;" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCentro" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCDC" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCentro" />
                                 </div>
                                 <!-- </div> -->
                             </form>
@@ -180,7 +186,7 @@ onMounted(() => {
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">
-                                    Você tem certeza que deseja deletar esse centro de custo? <b>{{ cdc.id_centro_custo }}</b> - <b>{{ cdc.nome }}</b> ?</span
+                                    Você tem certeza que deseja deletar o centro de custo <b>{{ cdc.Codigo }}</b> - <b>{{ cdc.Nome }}</b> ?</span
                                 >
                             </div>
 

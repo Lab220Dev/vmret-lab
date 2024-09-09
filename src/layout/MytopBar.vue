@@ -156,7 +156,7 @@ const toggle = (event) => {
 .relogio {
     font-size: 10pt;
     font-weight: bold;
-    color: #ff0000;
+    color: #EFAE33;
     padding-top: 0px;
     margin-left: 0px;
     margin-right: 10px;
