@@ -90,7 +90,8 @@ const deleteUsuario = async (item) => {
             fetchUsuarios();
         }
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+        loading.value = false; // Desativando loading
+        console.error('Erro ao deletar os usuários:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -115,12 +116,12 @@ const saveUsuario = async () => {
     if (store.userRole === 'Administrador') {
         data = {};
         data = usuario;
-        data.id_ususario = store.userId;
+        data.id_usuario = store.userId;
     } else {
         data = {};
         data = usuario;
         data.id_cliente = store.userIdCliente;
-        data.id_ususario = store.userId;
+        data.id_usuario = store.userId;
     }
     try {
         const response = await axios.post('/usuarios/adicionar', data, {
@@ -134,6 +135,7 @@ const saveUsuario = async () => {
         active.value = 0;
         resetForm();
     } catch (error) {
+        loading.value = false; // Desativando loading
         console.error('Erro ao adicionar Usuario:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -144,7 +146,7 @@ const atualizarUsuario = async () => {
     loading.value = true;
     const data = {
         ...usuario,
-        id_usuario: store.userId
+        id_usuario_pedinte: store.userId
     };
     if (isSameSenha()) {
         delete data.senha;
@@ -162,10 +164,10 @@ const atualizarUsuario = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao atualizar o usuário', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
-    loading.value = true;
 };
 const fetchIdPlanta = async () => {
     const data = {
@@ -185,7 +187,8 @@ const fetchIdPlanta = async () => {
             }))
         ];
     } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
+        loading.value = false; // Desativando loading
+        //console.error('Erro ao buscar opções de plantas:', error);
     }
 };
 const fetchUsuarios = async () => {
@@ -208,6 +211,7 @@ const fetchUsuarios = async () => {
         });
         ListaUsuario.value = response.data;
     } catch (error) {
+        loading.value = false; // Desativando loading
         console.error('Erro ao carregar usuários:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -226,7 +230,8 @@ const fetchCliente = async () => {
             value: id_cliente
         }));
     } catch (error) {
-        console.error('Erro ao listar plantas:', error);
+        loading.value = false; // Desativando loading
+        console.error('Erro ao listar Clientes:', error);
     } finally {
         loading.value = false; // Desativando loading
     }

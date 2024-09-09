@@ -35,6 +35,22 @@ let DM = reactive({
     Versao: '',
     Devolucao: false
 });
+const Controladoras = ref([]);
+const tipoControladoras = ['2018', '2023', '2024'];
+
+const nextValues = reactive({
+    '2018': { placa: 12 },
+    '2023': { dip: 2 },
+    '2024': { placa: 101 }
+});
+const maxControladoras = {
+    '2018': 16,
+    '2023': 90,
+    '2024': Infinity
+};
+const countControladoras = (tipo) => {
+    return Controladoras.value.filter(controladora => controladora.tipo === tipo).length;
+};
 const operador = ref(false);
 const show = ref(false);
 const showDialogDVM = ref(false);
@@ -43,6 +59,7 @@ const showDialogProduto = ref(false);
 const ListaProdutos = ref([]);
 const ListaProdutosFiltradp = ref([]);
 const ListaClientes = ref([]);
+const selectedClient = ref({ id_cliente: null, nome_cliente: '', usar_api: false });
 const visible = ref(false);
 const ListaItens = ref([]);
 const filters = ref({
@@ -56,9 +73,31 @@ const produtoSelecionado = ref({
     Motor2: '',
     Controladora: ''
 });
+const controladoraOptions = ref([]);
+const molasOptions = ref([]); // Substituição de checkboxOptions
+const dipOptions = ref([]);
+const andarOptions = ref([]);
+const posicaoOptions = ref([]);
+const motorOptions = ref([]);
 const ListaDMS = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const plantas = ref([todosOption]);
+
+const handleControladoraChange = () => {
+    const selectedControladora = Controladoras.value.find(c => c.tipo === produtoSelecionado.value.Controladora);
+
+    if (!selectedControladora) return;
+
+    if (produtoSelecionado.value.Controladora === '2018') {
+        molasOptions.value = selectedControladora.dados.molas.map(mola => ({ label: mola, value: mola }));
+    } else if (produtoSelecionado.value.Controladora === '2023') {
+        dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
+        andarOptions.value = selectedControladora.dados.andar.map(a => ({ label: a, value: a }));
+        posicaoOptions.value = selectedControladora.dados.posicao.map(p => ({ label: p, value: p }));
+    } else if (produtoSelecionado.value.Controladora === '2024') {
+        motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
+    }
+};
 
 const fetchDMS = async () => {
     loading.value = true;
@@ -151,25 +190,117 @@ const fetchItemDM = async () => {
 const onRowSelect = async (event) => {
     DM = event.data;
     visible.value = true;
+
+    mapControladoras(DM);
+    configurarClienteSelecionado(DM);
+    configurarVisibilidade();
+};
+const configurarClienteSelecionado = (dm) => {
+    const client = ListaClientes.value.find(client => client.value.id_cliente === dm.ID_Cliente);
+    if (client) {
+        selectedClient.value = client.value;
+        usarApi.value = client.value.usar_api ?? false;
+    } else {
+        selectedClient.value = null;
+        usarApi.value = false;
+    }
+};
+const mapControladoras = (dm) => {
+    Controladoras.value = dm.Controladoras.map(controladora => ({
+        id: controladora.ID,  
+        tipo: controladora.Tipo_Controladora,
+        dados: {
+            placa: controladora.Placa,
+            dip: controladora.DIP,
+            andar: Array.isArray(controladora.Andar) ? controladora.Andar.map(Number) : (controladora.Andar ? controladora.Andar.split(',').map(Number) : []),
+            posicao: Array.isArray(controladora.Posicao) ? controladora.Posicao.map(Number) : (controladora.Posicao ? controladora.Posicao.split(',').map(Number) : []),
+            molas: Array.isArray(controladora.Mola1) ? controladora.Mola1.map(Number) : (controladora.Mola1 ? controladora.Mola1.split(',').map(Number) : []),
+            motor: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola1 || '',
+            motor2: controladora.Tipo_Controladora === '2018' ? '' : controladora.Mola2 || ''
+        }
+    }));
+
+    ajustarContagemInicial();
+};
+const preencherControladoraOptions = () => {
+    controladoraOptions.value = Controladoras.value.map(controladora => {
+        const id = controladora.id || 'N/A'; // Usando o ID da controladora diretamente
+        return {
+            label: `ID: ${id}, Tipo: ${controladora.tipo}`,
+            value: controladora.tipo
+        };
+    });
+};
+const ajustarContagemInicial = () => {
+    const placasExistentes2018 = Controladoras.value
+        .filter(controladora => controladora.tipo === '2018')
+        .map(controladora => controladora.dados.placa);
+
+    if (placasExistentes2018.length > 0) {
+        nextValues['2018'].placa = Math.max(...placasExistentes2018) + 1;
+    } else {
+        nextValues['2018'].placa = 12; // Valor inicial caso não haja nenhuma
+    }
+
+    const dipsExistentes2023 = Controladoras.value
+        .filter(controladora => controladora.tipo === '2023')
+        .map(controladora => controladora.dados.dip);
+
+    if (dipsExistentes2023.length > 0) {
+        nextValues['2023'].dip = Math.max(...dipsExistentes2023) + 1;
+    } else {
+        nextValues['2023'].dip = 2; // Valor inicial caso não haja nenhuma
+    }
+
+    const placas2024Existentes = Controladoras.value
+        .filter(controladora => controladora.tipo === '2024')
+        .map(controladora => controladora.dados.placa);
+
+    if (placas2024Existentes.length > 0) {
+        nextValues['2024'].placa = Math.max(...placas2024Existentes) + 1;
+    } else {
+        nextValues['2024'].placa = 101; // Valor inicial caso não haja nenhuma
+    }
+};
+
+const preencherOpcoesControladoras = () => {
+    molasOptions.value = []; 
+    dipOptions.value = [];
+    andarOptions.value = [];
+    posicaoOptions.value = [];
+    motorOptions.value = [];
+
+    Controladoras.value.forEach(controladora => {
+        if (controladora.tipo === '2018') {
+            molasOptions.value.push(...controladora.dados.molas); 
+        } else if (controladora.tipo === '2023') {
+            dipOptions.value.push(controladora.dados.dip);
+            andarOptions.value.push(...controladora.dados.andar);
+            posicaoOptions.value.push(...controladora.dados.posicao);
+        } else if (controladora.tipo === '2024') {
+            motorOptions.value.push(controladora.dados.motor);
+        }
+    });
+};
+const configurarVisibilidade = () => {
     if (!admin()) {
         show.value = true;
         fetchItemDM();
         listarProduto();
+        preencherOpcoesControladoras();
+        preencherControladoraOptions();
         operador.value = true;
     } else {
         active.value = 1;
     }
 };
-
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
-
 const adicionarDM = async () => {
+    DM.IDcliente = selectedClient.value.id_cliente;
+    DM.ClienteNome = selectedClient.value.nome_cliente;
     const data = {
         id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...DM
+        ...DM,
+        Controladoras: Controladoras.value
     };
     loading.value = true;
     try {
@@ -182,7 +313,7 @@ const adicionarDM = async () => {
         active.value = 0;
         resetDMForm();
     } catch (error) {
-        console.error('Erro ao adicionar planta:', error);
+        console.error('Erro ao adicionar DM:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -202,7 +333,7 @@ const deleteDM = async (item) => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
-        fetchDMS();
+        await fetchDMS();
     } catch (error) {
         if (error.response && (error.response.status === 500 || error.response.status === 401)) {
             toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a DM.', life: 3000 });
@@ -212,12 +343,22 @@ const deleteDM = async (item) => {
     }
     active.value = 0;
 };
+const handleRowSelection = async (event) => {
+    await onRowSelect(event);
+};
 
 const atualizarDM = async () => {
     const data = {
         id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...DM
+        IDcliente: selectedClient.value.id_cliente,
+        ClienteNome: selectedClient.value.nome_cliente,
+        ...DM,
+        Controladoras: Controladoras.value.map(controladora => {
+            if (!controladora.ID) {
+                controladora.ID = null;
+            }
+            return controladora;
+        })
     };
     loading.value = true;
     try {
@@ -230,9 +371,9 @@ const atualizarDM = async () => {
         active.value = 0;
         resetDMForm();
     } catch (error) {
-        console.error('Erro ao atualizar Plantas:', error);
+        console.error('Erro ao atualizar DM:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
 const admin = () => {
@@ -307,6 +448,7 @@ const adicionarProduto = async () => {
     }
 };
 
+
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetDMForm();
@@ -341,7 +483,15 @@ const resetDMForm = () => {
     DM.UserID = '';
     DM.Versao = '';
     DM.Devolucao = '';
+    Controladoras.value = [];
+    nextValues['2018'].placa = 12;
+    nextValues['2023'].dip = 2;
+    nextValues['2024'].placa = 101;
 };
+const voltar = () => {
+    show.value = false;
+    operador.value = false;
+}
 const resetProdutoSelecionado = () => {
     produtoSelecionado.value = {
         id_produto: '',
@@ -388,7 +538,11 @@ const fetchCliente = async () => {
         );
         ListaClientes.value = response.data.map((cliente) => ({
             label: cliente.nome,
-            value: cliente.id_cliente,
+            value: {
+                id_cliente: cliente.id_cliente,
+                nome_cliente: cliente.nome,
+                usar_api: cliente.usar_api
+            },
             usar_api: cliente.usar_api
         }));
     } catch (error) {
@@ -398,16 +552,63 @@ const fetchCliente = async () => {
     }
 };
 watch(
-    () => DM.IDcliente,
+    () => DM.ID_Cliente, 
     (newClienteId) => {
-        const selectedClient = ListaClientes.value.find((client) => client.value === newClienteId);
-        if (selectedClient) {
-            usarApi.value = selectedClient.usar_api;
+        const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
+        if (client) {
+            selectedClient.value = client.value; // Atualiza selectedClient com o cliente selecionado
+            usarApi.value = client.value.usar_api ?? false; // Verifica se usar_api é nulo e define como false
         } else {
-            usarApi.value = false;
+            usarApi.value = false; // Define usarApi como false se o cliente não for encontrado
         }
     }
 );
+
+const addControladora = () => {
+    Controladoras.value.push({
+        ID: null,
+        tipo: '',
+        dados: {}
+    });
+};
+
+const updateTipoControladora = (index, tipo) => {
+    const count = countControladoras(tipo);
+    const controladora = Controladoras.value[index];
+
+    if (count >= maxControladoras[tipo]) {
+        toast.add({
+            severity: 'warn',
+            summary: 'Limite Atingido',
+            detail: `Você atingiu o limite máximo de controladoras ${tipo}`,
+            life: 3000
+        });
+        Controladoras.value.splice(index, 1);
+        return;
+    }
+
+    if (tipo === '2018') {
+        controladora.dados.placa = nextValues['2018'].placa++;
+        controladora.dados.molas = controladora.dados.molas || [];
+    } else if (tipo === '2023') {
+        controladora.dados.dip = nextValues['2023'].dip++;
+        controladora.dados.andar = controladora.dados.andar || [];
+        controladora.dados.posicao = controladora.dados.posicao || [];
+    } else if (tipo === '2024') {
+        controladora.dados.placa = nextValues['2024'].placa++;
+        controladora.dados.motor = controladora.dados.motor || '';
+    }
+};
+
+
+const selectAllMolas = (index) => {
+    if (Controladoras.value[index].tipo === '2018') {
+        Controladoras.value[index].dados.molas = Array.from({ length: 10 }, (_, i) => i + 1);
+    }
+};
+const removeControladora = (index) => {
+    Controladoras.value.splice(index, 1);
+};
 </script>
 
 <template>
@@ -418,20 +619,10 @@ watch(
                 <TabView v-model:activeIndex="active" v-if="!show">
                     <TabPanel header="Listar Dispenser Machines">
                         <div class="col-12">
-                            <DataTable
-                                v-model:filters="filters"
-                                :value="ListaDMS"
-                                selectionMode="single"
-                                tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
-                                stripedRows
-                                dataKey="id"
-                                :metaKeySelection="false"
-                                @rowSelect="onRowSelect"
-                                paginator
-                                :rows="10"
-                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']"
-                            >
+                            <DataTable v-model:filters="filters" :value="ListaDMS" selectionMode="single"
+                                tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows
+                                dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" paginator :rows="10"
+                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']">
                                 <template #header>
                                     <div class="flex justify-content-end">
                                         <IconField iconPosition="left">
@@ -449,7 +640,8 @@ watch(
                                 <Column field="local" header="Localização"></Column>
                                 <Column field="Ativo" header="Ativo">
                                     <template #body="{ data }">
-                                        <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
+                                        <i class="pi"
+                                            :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
                                     </template>
                                 </Column>
                                 <Column field="Updated" header="Atualizado">
@@ -459,17 +651,21 @@ watch(
                                 </Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteDM(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                            @click="deleteDM(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel :header="visible ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'" v-if="admin()">
+                    <TabPanel :header="visible ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'"
+                        v-if="admin()">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">Cliente:</label>
-                                <Dropdown class="my-2" v-model="DM.IDcliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes"
+                                    optionLabel="label" optionValue="value" placeholder="Selecione um" />
+
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Numero da DM:</label>
@@ -501,7 +697,8 @@ watch(
                                 <label for="fim"></label>
                                 <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
                                     <div class="checkbox-items m-2 flex align-items-end">
-                                        <Checkbox v-model="DM.voucher" inputId="Voucher" value="Voucher" :binary="true" />
+                                        <Checkbox v-model="DM.voucher" inputId="Voucher" value="Voucher"
+                                            :binary="true" />
                                         <label for="Voucher" class="ml-2"> Voucher </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
@@ -509,18 +706,20 @@ watch(
                                         <label for="cracha" class="ml-2"> Crachá </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" value="Biometria" :binary="true" />
+                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" value="Biometria"
+                                            :binary="true" />
                                         <label for="Biometria" class="ml-2"> Biometria </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" value="Facial" :binary="true" />
+                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" value="Facial"
+                                            :binary="true" />
                                         <label for="Facial" class="ml-2"> Rec. Facial </label>
                                     </div>
                                 </div>
                             </div>
                         </panel>
 
-                        <div v-if="usarApi" class="mt-5 mx-auto p-fluid grid">
+                        <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
                             <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
                                 <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
@@ -539,12 +738,86 @@ watch(
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full" rows="2" cols="30" />
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 20px"
+                                    inputClass="w-full" rows="2" cols="30" />
                             </div>
                         </div>
-                        <!-- <h5 class="mt-6">Controladoras</h5> -->
+                        <div>
+                            <Button label="Adicionar Controladora" @click="addControladora" />
+                            <div v-for="(controladora, index) in Controladoras" :key="index" class="card">
+                                <h5>Controladora {{ index + 1 }}</h5>
+                                <Dropdown v-model="controladora.tipo" :options="tipoControladoras"
+                                    placeholder="Selecione o tipo de Controladora"
+                                    @change="updateTipoControladora(index, controladora.tipo)" />
+
+                                <!-- Botão de Remoção -->
+                                <Button icon="pi pi-trash" label="Remover" class="p-button-danger"
+                                    @click="removeControladora(index)" />
+
+                                <!<!-- Controladora 2018 -->
+                                    <div v-if="controladora.tipo === '2018'">
+                                        <div class="field">
+                                            <label>Placa</label>
+                                            <InputText v-model="controladora.dados.placa" />
+                                        </div>
+                                        <div class="field">
+                                            <label>Selecionar molas</label>
+                                            <label>{{controladora.dados.molas}}</label>
+                                            <div class="checkbox-group">
+                                                <Button label="Selecionar Todos" @click="selectAllMolas(index)" />
+                                                <div v-for="i in 10" :key="i" class="checkbox-item">
+                                                    <Checkbox v-model="controladora.dados.molas" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Controladora 2023 -->
+                                    <div v-if="controladora.tipo === '2023'">
+                                        <div class="field">
+                                            <label>DIP</label>
+                                            <InputText v-model="controladora.dados.dip" />
+                                        </div>
+                                        <div class="field">
+                                            <h4>Andar</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 6" :key="i" class="checkbox-item">
+                                                    <Checkbox v-model="controladora.dados.andar" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <h4>Posição</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 15" :key="i" class="checkbox-item">
+                                                    <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Controladora 2024 -->
+                                    <div v-if="controladora.tipo === '2024'">
+                                        <div class="field">
+                                            <label>Placa</label>
+                                            <InputText v-model="controladora.dados.placa" />
+                                        </div>
+                                        <div class="field">
+                                            <label>Motor</label>
+                                            <InputText v-model="controladora.dados.motor" />
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <Button label="Salvar" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
+                            <Button v-if="!visible" label="Salvar" icon="pi pi-check" severity="info"
+                                @click="adicionarDM" class="full mt-4 mr-2" />
+                            <Button v-if="visible" label="Salvar" icon="pi pi-check" severity="info"
+                                @click="atualizarDM" class="full mt-4 mr-2" />
                         </div>
                     </TabPanel>
                 </TabView>
@@ -553,30 +826,23 @@ watch(
                     <Button class="m-1" label="Adicionar Itens" @click="showDialogProduto = true" />
                     <div class="mt-5 mx-0 p-fluid grid">
                         <div class="lg:col-12 md:col-12 sm:col-12">
-                            <DataTable
-                                :value="ListaItens"
-                                selectionMode="single"
-                                tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
-                                stripedRows
-                                dataKey="id"
-                                :metaKeySelection="false"
-                                @rowSelect="handleRowSelection"
-                                paginator
-                                :rows="10"
-                            >
+                            <DataTable :value="ListaItens" selectionMode="single" tableStyle="min-width: 25%"
+                                :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false"
+                                @rowSelect="handleRowSelection" paginator :rows="10">
                                 <Column field="SKU" header="SKU"></Column>
                                 <Column field="Nome_Produto" header="Produto"></Column>
                                 <Column field="Posicao" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
                                 <Column field="QTD" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                            @click="deleteItem(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
                         </div>
                     </div>
+                    <Button class="m-1" label="Voltar" @click="voltar()" />
                 </div>
                 <LoadingSpinner v-if="loading" />
             </div>
@@ -589,36 +855,62 @@ watch(
                     <label for="Produto" class="font-semibold">Produto:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" />
+                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos"
+                        optionLabel="label" optionValue="value" placeholder="Selecione um produto" />
                 </div>
-
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Porta" class="font-semibold">Porta:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Porta" v-model="produtoSelecionado.Porta" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
-                </div>
-
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Controladora" class="font-semibold">Controladora:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Controladora" v-model="produtoSelecionado.Controladora" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
+                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions"
+                        @change="handleControladoraChange" placeholder="Selecione uma controladora" />
                 </div>
+                <!-- Exibir campos dependendo do tipo de controladora -->
+                <template v-if="produtoSelecionado.Controladora === '2018'">
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="molas" class="font-semibold">Molas:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione as Molas" />
+                    </div>
+                </template>
 
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Mola" class="font-semibold">Motor 1:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Mola" v-model="produtoSelecionado.Motor1" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
-                </div>
+                <template v-if="produtoSelecionado.Controladora === '2023'">
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Dip" class="font-semibold">DIP:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                    </div>
 
-                <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Mola2" class="font-semibold">Motor 2:</label>
-                </div>
-                <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <InputNumber id="Mola2" v-model="produtoSelecionado.Motor2" inputClass="w-full" autocomplete="off" :min="1" :max="999" />
-                </div>
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Andar" class="font-semibold">Andar:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione o andar" />
+                    </div>
+
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Posicao" class="font-semibold">Posição:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
+                    </div>
+                </template>
+
+                <template v-if="produtoSelecionado.Controladora === '2024'">
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Motor" class="font-semibold">Motor:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
+                    </div>
+                </template>
             </div>
         </div>
 
@@ -641,6 +933,7 @@ watch(
         </template>
     </Dialog>
 </template>
+
 <style scoped>
 @media (max-width: 768px) {
     .full {
@@ -650,6 +943,7 @@ watch(
         width: 100%;
         margin: 1px;
     }
+
     .box {
         width: 50vw;
     }
@@ -665,10 +959,24 @@ watch(
     .box {
         width: 30vw;
     }
-}
 
 .card {
-    overflow: hidden; /* Ensure content doesn't overflow */
-    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    overflow: hidden;
+    /* Ensure content doesn't overflow */
+    box-sizing: border-box;
+    /* Include padding and border in element's total width and height */
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 }
 </style>

@@ -64,7 +64,7 @@ const voltar = () => {
 const fetchRelatorio = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        id_funcionario: relatorio.value.id_funcionario || null,
+        id_funcionario: selectedItem.value.id_funcionario || null,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };

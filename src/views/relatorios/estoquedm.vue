@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const dm = ref([]);
 const loading = ref(false);
 const relatorio = ref({
-    dms: ''
+    id_dm: ''
 });
 const EstoqueDM = ref([]);
 const dms = ref([]);
@@ -64,7 +64,7 @@ onMounted(() => {
         <h5 class="my-4 ml-2 text-2xl">Estoque da DM</h5>
         <div class="my-2">
             <label for="dm" class="">DM:</label>
-            <Dropdown id="dm" v-model="relatorio.dms" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <DataTable :value="EstoqueDM" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">

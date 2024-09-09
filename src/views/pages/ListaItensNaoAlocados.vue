@@ -1,64 +1,104 @@
 <script setup>
 import { FilterMatchMode } from 'primevue/api';
-import '@vuepic/vue-datepicker/dist/main.css'
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import axios from '@/axios.js'
+import '@vuepic/vue-datepicker/dist/main.css';
+import { ref, onMounted } from 'vue';
+import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const loading = ref(false);
 const store = useAuthStore();
-const itens = ref([]);
+const itens = ref([]); 
+const sincronizado = ref(false); 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const fetchItensNãoAlocadas = async () => {
+const emptyMessage = ref('Nenhum item encontrado');
+
+const fetchItensNaoAlocadas = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     loading.value = true;
     try {
-        // const response = await axios.post('/funcionarios/listar', data, {
-        //     headers: {
-        //         Authorization: `Bearer ${store.token}`
-        //     }
-        // });
-        itens.value = [];
+        const response = await axios.post('/naoalocados/recuperar', data);
+        itens.value = response.data; 
+        if (response.data.length === 0) {
+            emptyMessage.value = 'Nenhum produto registrado';
+        }
+        sincronizado.value = false; 
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }finally{
+        if (error.response && error.response.status === 404) {
+            emptyMessage.value = 'Nenhum produto registrado';
+        } else {
+            emptyMessage.value = 'Erro ao carregar itens não alocados';
+            console.error('Erro ao carregar itens não alocados:', error);
+        }
+    } finally {
         loading.value = false;
     }
 };
+
+const sincronizar = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    loading.value = true;
+    try {
+        const response = await axios.post('/naoalocados/sincronizar', data);
+        itens.value = response.data.map(item => ({
+            ...item.produto, 
+            status: item.status
+        }));
+        sincronizado.value = true; 
+    } catch (error) {
+        console.error('Erro ao sincronizar itens:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
 onMounted(() => {
-    fetchItensNãoAlocadas();
+    fetchItensNaoAlocadas();
 });
 </script>
 
 <template>
-    <div class="card vh ">
+    <div class="card vh">
         <h5 class="my-4 text-2xl">Itens não alocados</h5>
-            <DataTable v-model:filters="filters" :value="itens" stripedRows showGridlines paginator :rows="10"
-                :rowsPerPageOptions="[5, 10, 20, 50]" rowHover 
-                :globalFilterFields="['ProdutoNome', 'descricao', 'ProdutoSKU']" selectionMode="single"
-                :tableStyle="{ width: '100%' }">
-                <template #header>
-                    <div class="flex justify-content-end">
-                        <IconField iconPosition="left">
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
-                        </IconField>
-                    </div>
-                </template>
-                <template #empty>{{ emptyMessage }} </template>
-                <Column field="ProdutoNome" sortable header="Item"></Column>
-                <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
-                <Column field="ProdutoSKU" sortable header="CA"></Column>
-            </DataTable>
+
+        <!-- Botão Sincronizar -->
+        <div class="mb-4 flex justify-content-end">
+            <Button label="Sincronizar" icon="pi pi-refresh" class="p-button-secondary" @click="sincronizar" />
         </div>
-    
-    
+
+        <DataTable v-model:filters="filters" :value="itens" stripedRows showGridlines paginator :rows="10"
+            :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
+            :globalFilterFields="['nome', 'descricao', 'codigo']" selectionMode="single"
+            :tableStyle="{ width: '100%' }">
+            <template #header>
+                <div class="flex justify-content-end">
+                    <IconField iconPosition="left">
+                        <InputIcon>
+                            <i class="pi pi-search" />
+                        </InputIcon>
+                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                    </IconField>
+                </div>
+            </template>
+            <template #empty>{{ emptyMessage }}</template>
+
+            <Column field="nome" sortable header="Item"></Column>
+            <Column field="quantidadeReferencia" sortable header="Quantidade" class="text-center"></Column>
+            <Column field="ca" sortable header="CA"></Column>
+            <Column v-if="sincronizado" header="Status">
+                <template #body="slotProps">
+                    <span>{{ slotProps.data.status }}</span>
+                </template>
+            </Column>
+        </DataTable>
+    </div>
+
     <LoadingSpinner v-if="loading" />
 </template>
 
