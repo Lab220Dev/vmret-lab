@@ -116,22 +116,29 @@ const fetchIdPlanta = async () => {
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`;
+        const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
+        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png'; // Define a extensão com base no tipo MIME
+        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`;
         formData.append('imagem1', nomeArquivoPrincipal);
         formData.append('file_principal', selectedFile.value);
     }
 
     if (selectedInfoFile.value) {
-        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`;
+        const fileType = selectedInfoFile.value.type;
+        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png';
+        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}${fileExtension}`;
         formData.append('imagemdetalhe', nomeArquivoInfo);
         formData.append('file_info', selectedInfoFile.value);
     }
 
     if (selectedSecFile.value) {
-        const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`;
+        const fileType = selectedSecFile.value.type;
+        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png';
+        const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`;
         formData.append('imagem2', nomeArquivoSecundario);
         formData.append('file_secundario', selectedSecFile.value);
     }
+    
     Object.entries(produto).forEach(([key, value]) => {
         formData.append(key, value);
     });
@@ -152,13 +159,12 @@ const saveProduto = async () => {
         resetForm();
     } catch (error) {
         console.error('Erro ao adicionar o produto:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'erro ao criar o produto', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o produto', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
     active.value = 0;
 };
-
 const deleteProduto = async () => {
     let data = {
         id_produto: produto.id_produto,
@@ -188,22 +194,36 @@ const deleteProduto = async () => {
 const updateProduto = async () => {
     const formData = new FormData();
 
+    // Adiciona os dados do produto ao FormData
     Object.entries(produto).forEach(([key, value]) => {
         formData.append(key, value);
     });
 
+    // Função para obter a extensão do arquivo com base no tipo MIME
+    const getFileExtension = (fileType) => {
+        if (fileType === 'image/jpeg') return '.jpg';
+        if (fileType === 'image/png') return '.png';
+        return ''; // Default if file type is not supported
+    };
+
     if (selectedFile.value) {
-        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}.png`);
+        const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
+        const fileExtension = getFileExtension(fileType); // Obtém a extensão com base no tipo MIME
+        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`);
         formData.append('file_principal', selectedFile.value);
     }
 
     if (selectedInfoFile.value) {
-        formData.append('imagemdetalhe', ` produto_${produto.nome}_${produto.codigo}_info${Date.now()}.png`);
+        const fileType = selectedInfoFile.value.type;
+        const fileExtension = getFileExtension(fileType);
+        formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}${fileExtension}`);
         formData.append('file_info', selectedInfoFile.value);
     }
 
     if (selectedSecFile.value) {
-        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}.png`);
+        const fileType = selectedSecFile.value.type;
+        const fileExtension = getFileExtension(fileType);
+        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`);
         formData.append('file_secundario', selectedSecFile.value);
     }
 
