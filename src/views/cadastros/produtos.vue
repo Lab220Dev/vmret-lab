@@ -216,6 +216,7 @@ const updateProduto = async () => {
     };
 
     if (selectedFile.value) {
+        formData.delete('imagem1');
         const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
         const fileExtension = getFileExtension(fileType); // Obtém a extensão com base no tipo MIME
         formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`);
@@ -223,6 +224,7 @@ const updateProduto = async () => {
     }
 
     if (selectedInfoFile.value) {
+        formData.delete('imagemdetalhe');
         const fileType = selectedInfoFile.value.type;
         const fileExtension = getFileExtension(fileType);
         formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}${fileExtension}`);
@@ -230,6 +232,7 @@ const updateProduto = async () => {
     }
 
     if (selectedSecFile.value) {
+        formData.delete('imagem2');
         const fileType = selectedSecFile.value.type;
         const fileExtension = getFileExtension(fileType);
         formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`);

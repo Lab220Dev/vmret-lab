@@ -731,7 +731,7 @@ const hideDialog = () => {
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
                                 <Button v-if="editVisible" style="width: 15%"
-                                    class="buttons flex align-items-center justify-content-center m-2" label="ATT"
+                                    class="buttons flex align-items-center justify-content-center m-2" label="Salvar"
                                     icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
                                 <Button v-if="editVisible" style="width: 15%"
                                     class="buttons flex align-items-center justify-content-center m-2" label="Excluir"
