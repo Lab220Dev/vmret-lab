@@ -146,6 +146,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/cadastros/servico',
+                    name: 'Gerencia de MicroServiços',
+                    component: () => import('@/views/pages/GerenciaMicro.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/cadastros/Cliente',
                     name: 'Cadastro de Clientes',
                     component: () => import('@/views/cadastros/Clientes.vue'),
