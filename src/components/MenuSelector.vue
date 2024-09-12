@@ -75,7 +75,7 @@ const menus = {
             submenus: [
                 { name: "Lista de DM" },
                 { name: "Liberação Avulsa" },
-                { name: "Tema" },
+                { name: "Gerenciamento de Serviços" },
                 { name: "Termo de compromisso - Ficha Retirada" }
             ]
         },

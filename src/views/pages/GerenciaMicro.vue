@@ -1,17 +1,19 @@
 <template>
     <div class="card">
-        <h2>Gerenciamento de Serviços por Cliente</h2>
+        <h2 v-if="isAdmin">Gerenciamento de Serviços por Cliente</h2>
+        <h2 v-else>Configuração de Serviços</h2>
 
-        <!-- Seção para selecionar cliente -->
-        <div class="cliente-selection">
+        <!-- Seção para selecionar cliente (apenas para administrador) -->
+        <div v-if="isAdmin" class="cliente-selection">
             <label for="cliente">Selecionar Cliente:</label>
             <Dropdown v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente"
                 optionLabel="name" />
         </div>
 
-        <!-- Seção para editar serviços atribuídos ao cliente -->
-        <div v-if="selectedClient" class="services-edit">
-            <h3>Serviços atribuídos a {{ selectedClient.name }}</h3>
+        <!-- Seção para editar serviços atribuídos ao cliente (ou ao usuário comum) -->
+        <div v-if="isAdmin ? selectedClient : true" class="services-edit">
+            <h3 v-if="isAdmin">Serviços atribuídos a {{ selectedClient.name }}</h3>
+            <h3 v-else>Seus Serviços</h3>
 
             <!-- Tabela para exibir os serviços já atribuídos -->
             <DataTable :value="clientServices">
@@ -48,6 +50,13 @@
                         optionLabel="label" optionValue="value" />
                 </div>
 
+                <!-- Mostrar o VueDatePicker apenas se a frequência for "1x ao dia" -->
+                <div v-if="serviceConfigs[selectedService.id].frequency === '1x-dia'" class="field">
+                    <label for="time">Horário:</label>
+                    <VueDatePicker v-model="serviceConfigs[selectedService.id].time" time-picker
+                        placeholder="Selecione o horário" />
+                </div>
+
                 <div class="field">
                     <label for="notificationMethods">Métodos de Notificação:</label>
                     <MultiSelect v-model="serviceConfigs[selectedService.id].notificationMethods"
@@ -56,8 +65,8 @@
 
                 <div class="field">
                     <label for="recipients">Destinatários:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" 
-                    :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
+                    <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients"
+                        optionLabel="name" optionValue="id" display="chip" />
                 </div>
             </div>
         </div>
@@ -65,8 +74,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import { useAuthStore } from '@/store/authStore.js';
+import axios from '@/axios';
+
+const store = useAuthStore();
+const isAdmin = computed(() => store.userRole === 'Administrador'); 
+
+// Se o usuário não for administrador, define o cliente como ele mesmo (com base no store)
+const selectedClient = ref(isAdmin.value ? null : { id: store.userId, name: store.userName });
 
 // Dados fictícios para clientes e serviços
 const availableClients = ref([
@@ -81,7 +100,6 @@ const availableServices = ref([
 ]);
 
 const toast = useToast();
-const selectedClient = ref(null);
 const clientServices = ref([]);
 const newService = ref(null);
 
@@ -107,20 +125,21 @@ const removeService = (service) => {
 // Configurações de monitoramento
 const selectedService = ref(null);
 const serviceConfigs = ref({
-    1: { frequency: null, notificationMethods: [], recipients: [] },
-    2: { frequency: null, notificationMethods: [], recipients: [] },
-    3: { frequency: null, notificationMethods: [], recipients: [] }
+    1: { frequency: null, notificationMethods: [], recipients: [], time: null }, // Adicionado campo time
+    2: { frequency: null, notificationMethods: [], recipients: [], time: null },
+    3: { frequency: null, notificationMethods: [], recipients: [], time: null }
 });
 
 const frequencies = ref([
     { label: 'A cada 5 minutos', value: '5m' },
     { label: 'A cada 30 minutos', value: '30m' },
-    { label: 'A cada 1 hora', value: '1h' }
+    { label: 'A cada 1 hora', value: '1h' },
+    { label: '1x ao dia', value: '1x-dia' } // Frequência com opção de horário
 ]);
 
 const notificationMethods = ref([
     { label: 'E-mail', value: 'email' },
-    { label: 'Notificação', value: 'Notif' },
+    { label: 'Notificação', value: 'notif' }
 ]);
 
 const availableRecipients = ref([
