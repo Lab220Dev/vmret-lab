@@ -1,4 +1,4 @@
-<!-- DMForm.vue -->
+
 <template>
     <div class="mt-5 mx-0 p-fluid grid">
       <div class="full lg:col-12 md:col-12 sm:col-12">
@@ -14,7 +14,6 @@
         <label for="Identificacao">Identificação da DM:</label>
         <InputText class="my-2" v-model="DM.Identificacao" id="Identificacao" />
       </div>
-      <!-- Outros campos... -->
       <Button label="Salvar" icon="pi pi-check" @click="saveDM" class="full mt-4 mr-2" />
     </div>
   </template>
@@ -27,7 +26,6 @@
   const DM = ref({
       Numero: '',
       Identificacao: '',
-      // Outros campos...
   });
   const selectedClient = ref(null);
   const ListaClientes = ref([]);

@@ -290,6 +290,9 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
+    delete produto.imagem1;
+    delete produto.imagem2;
+    delete produto.imagemdetalhe;
     Object.assign(produto, {
         codigo: '',
         id_planta: '',
@@ -298,10 +301,7 @@ const resetForm = () => {
         nome: '',
         descricao: ' ',
         unidade_medida: '',
-        validadedias: 0,
-        imagem1: '',
-        imagem2: '',
-        imagemdetalhe: ''
+        validadedias: 0
     });
     selectedFile.value = null;
     selectedSecFile.value = null;

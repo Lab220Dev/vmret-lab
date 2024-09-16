@@ -3,19 +3,16 @@
         <h2 v-if="isAdmin">Gerenciamento de Serviços por Cliente</h2>
         <h2 v-else>Configuração de Serviços</h2>
 
-        <!-- Seção para selecionar cliente (apenas para administrador) -->
         <div v-if="isAdmin" class="cliente-selection">
             <label for="cliente">Selecionar Cliente:</label>
             <Dropdown v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente"
                 optionLabel="name" />
         </div>
 
-        <!-- Seção para editar serviços atribuídos ao cliente (ou ao usuário comum) -->
-        <div v-if="isAdmin ? selectedClient : true" class="services-edit">
+        <div v-if="isAdmin && selectedClient && selectedClient.id !== null" class="services-edit">
             <h3 v-if="isAdmin">Serviços atribuídos a {{ selectedClient.name }}</h3>
             <h3 v-else>Seus Serviços</h3>
 
-            <!-- Tabela para exibir os serviços já atribuídos -->
             <DataTable :value="clientServices">
                 <Column field="name" header="Serviço"></Column>
                 <Column header="Ação">
@@ -25,56 +22,54 @@
                 </Column>
             </DataTable>
 
-            <!-- Adicionar serviços -->
             <div class="add-service">
                 <Dropdown v-model="newService" :options="availableServices" optionLabel="name"
                     placeholder="Adicionar Serviço" />
                 <Button label="Adicionar" @click="addService" />
             </div>
+            <hr />
+
+<div v-if="clientServices.length > 0" class="configuracao-monitoramento">
+    <h3>Configurações de Monitoramento</h3>
+    <Dropdown v-model="selectedService" :options="clientServices" placeholder="Selecione um serviço"
+        optionLabel="name" />
+
+    <div v-if="selectedService">
+        <h4>Configurações para {{ selectedService.name }}</h4>
+
+        <div class="field">
+            <label for="frequency">Frequência de Monitoramento:</label>
+            <Dropdown v-model="serviceConfigs[selectedService.id].frequency" :options="frequencies"
+                optionLabel="label" optionValue="value" />
         </div>
 
-        <hr />
-
-        <!-- Seção de configuração de monitoramento para os serviços atribuídos -->
-        <div v-if="clientServices.length > 0" class="configuracao-monitoramento">
-            <h3>Configurações de Monitoramento</h3>
-            <Dropdown v-model="selectedService" :options="clientServices" placeholder="Selecione um serviço"
-                optionLabel="name" />
-
-            <div v-if="selectedService">
-                <h4>Configurações para {{ selectedService.name }}</h4>
-
-                <div class="field">
-                    <label for="frequency">Frequência de Monitoramento:</label>
-                    <Dropdown v-model="serviceConfigs[selectedService.id].frequency" :options="frequencies"
-                        optionLabel="label" optionValue="value" />
-                </div>
-
-                <!-- Mostrar o VueDatePicker apenas se a frequência for "1x ao dia" -->
-                <div v-if="serviceConfigs[selectedService.id].frequency === '1x-dia'" class="field">
-                    <label for="time">Horário:</label>
-                    <VueDatePicker v-model="serviceConfigs[selectedService.id].time" time-picker
-                        placeholder="Selecione o horário" />
-                </div>
-
-                <div class="field">
-                    <label for="notificationMethods">Métodos de Notificação:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].notificationMethods"
-                        :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
-                </div>
-
-                <div class="field">
-                    <label for="recipients">Destinatários:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients"
-                        optionLabel="name" optionValue="id" display="chip" />
-                </div>
-            </div>
+        <div v-if="serviceConfigs[selectedService.id].frequency === '1x-dia'" class="field">
+            <label for="time">Horário:</label>
+            <VueDatePicker v-model="serviceConfigs[selectedService.id].time" time-picker
+                placeholder="Selecione o horário" />
         </div>
+
+        <div class="field">
+            <label for="notificationMethods">Métodos de Notificação:</label>
+            <MultiSelect v-model="serviceConfigs[selectedService.id].notificationMethods"
+                :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
+        </div>
+
+        <div class="field">
+            <label for="recipients">Destinatários:</label>
+            <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients"
+                optionLabel="name" optionValue="id" display="chip" />
+        </div>
+    </div>
+</div>
+        </div>
+
+
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
@@ -82,30 +77,80 @@ import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios';
 
 const store = useAuthStore();
-const isAdmin = computed(() => store.userRole === 'Administrador'); 
-
-// Se o usuário não for administrador, define o cliente como ele mesmo (com base no store)
-const selectedClient = ref(isAdmin.value ? null : { id: store.userId, name: store.userName });
-
-// Dados fictícios para clientes e serviços
-const availableClients = ref([
-    { id: 1, name: 'Cliente A' },
-    { id: 2, name: 'Cliente B' }
-]);
-
-const availableServices = ref([
-    { id: 1, name: 'Serviço A' },
-    { id: 2, name: 'Serviço B' },
-    { id: 3, name: 'Serviço C' }
-]);
+const isAdmin = ref(false);
 
 const toast = useToast();
 const clientServices = ref([]);
 const newService = ref(null);
+const availableRecipients = ref([]);
+const availableClients = ref([]);
+const selectedService = ref(null);
+const serviceConfigs = ref({});
 
-// Adiciona um serviço ao cliente
+const frequencies = ref([
+    { label: 'A cada 5 minutos', value: '5m' },
+    { label: 'A cada 30 minutos', value: '30m' },
+    { label: 'A cada 1 hora', value: '1h' },
+    { label: '1x ao dia', value: '1x-dia' } 
+]);
+
+const notificationMethods = ref([
+    { label: 'E-mail', value: 'email' },
+    { label: 'Notificação', value: 'notif' }
+]);
+
+const availableServices = ref([
+    { id: 1, name: 'Monitoramento De Status DM' },
+    { id: 2, name: 'Monitoramento de Estoque' }
+]);
+
+const selectedClient = ref({
+    id:null,
+    nome:'',
+});
+
+const fetchIfAdmin = async() => {
+    if(store.userRole === 'Administrador'){
+        isAdmin.value = true;
+        //clientServices.value  
+        await fetchClientes();
+    }else{
+        selectedClient.value = { id: store.userId, name: store.userName }
+    }
+}
+const fetchClientes = async () => {
+    try {
+        const response = await axios.get('/admin/cliente/listarClienteServicos');
+
+        availableClients.value = response.data.map((cliente) => ({
+            name: cliente.nome,
+            value: cliente.id_cliente
+        }));
+
+        response.data.forEach(cliente => {
+            cliente.servicos.forEach(servico => {
+                serviceConfigs.value[servico.id_servico] = {
+                    frequency: null,
+                    notificationMethods: [],
+                    recipients: [],
+                    time: null
+                };
+
+                servico.notificacoes.forEach(notification => {
+                    serviceConfigs.value[servico.id_servico].frequency = notification.frequencia;
+                    serviceConfigs.value[servico.id_servico].notificationMethods.push(notification.tipo_notificacoes);
+                    serviceConfigs.value[servico.id_servico].recipients.push(notification.id_funcionario_responsavel);
+                    serviceConfigs.value[servico.id_servico].time = notification.hora_notificacao;
+                });
+            });
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar clientes e serviços:', error);
+    }
+  };
+
 const addService = () => {
-    // Verificar se o serviço já foi adicionado
     if (newService.value && clientServices.value.some(s => s.id === newService.value.id)) {
         toast.add({ severity: 'warn', summary: 'Serviço duplicado', detail: 'Este serviço já foi adicionado.', life: 3000 });
         return;
@@ -117,36 +162,11 @@ const addService = () => {
     }
 };
 
-// Remove um serviço do cliente
 const removeService = (service) => {
     clientServices.value = clientServices.value.filter(s => s.id !== service.id);
 };
 
-// Configurações de monitoramento
-const selectedService = ref(null);
-const serviceConfigs = ref({
-    1: { frequency: null, notificationMethods: [], recipients: [], time: null }, // Adicionado campo time
-    2: { frequency: null, notificationMethods: [], recipients: [], time: null },
-    3: { frequency: null, notificationMethods: [], recipients: [], time: null }
-});
-
-const frequencies = ref([
-    { label: 'A cada 5 minutos', value: '5m' },
-    { label: 'A cada 30 minutos', value: '30m' },
-    { label: 'A cada 1 hora', value: '1h' },
-    { label: '1x ao dia', value: '1x-dia' } // Frequência com opção de horário
-]);
-
-const notificationMethods = ref([
-    { label: 'E-mail', value: 'email' },
-    { label: 'Notificação', value: 'notif' }
-]);
-
-const availableRecipients = ref([
-    { id: 1, name: 'Funcionario 1' },
-    { id: 2, name: 'Funcionario 2' },
-    { id: 3, name: 'Funcionario 3' }
-]);
+onMounted(fetchIfAdmin);
 </script>
 
 <style scoped>
