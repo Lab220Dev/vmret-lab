@@ -15,8 +15,6 @@ const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const todosOption = { label: 'Todos', value: null };
 const loading = ref(false);
 const dms = ref([todosOption]);
-const formatedDms = ref([]);
-const selectedDM = ref('');
 const StatusDM = ref([]);
 const dropdown1 = ref(null);
 
@@ -46,17 +44,14 @@ const fetchDM = async () => {
     }
 };
 const KeepAlive = async () => {
-    if (relatorio.id_dm || relatorio.dia) {
         const data = {
             id_cliente: store.userIdCliente,
-            id_usuario: store.userId
+            id_usuario: store.userId,
+            id_dm:relatorio.value.id_dm,
+            dia:relatorio.value.dia.toISOString()
         };
         try {
-            const response = await axios.post('/SDM/relatorio', data, {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
-                }
-            });
+            const response = await axios.post('/SDM/relatorio', data);
             StatusDM.value = response.data;
             if (StatusDM.value.length === 0) {
                 emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
@@ -65,7 +60,7 @@ const KeepAlive = async () => {
             console.error('Erro ao carregar lista de dms:', error);
         }
     }
-};
+
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -73,9 +68,6 @@ const format = (date) => {
 
     return `${day}/${month}/${year}`;
 };
-watch([() => relatorio.value.id_dm, () => relatorio.value.dia], () => {
-    KeepAlive();
-});
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
 };
@@ -90,7 +82,8 @@ const handleDatepickerOpen = () => {
         <!-- Header com a Seleção de Dms -->
         <h5 class="my-4 text-2xl">Status DM</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" ref="dropdown1" />
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value"
+             placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" ref="dropdown1" @change="KeepAlive"/>
             <VueDatePicker
                 class="drop w-full md:w-14rem"
                 v-model="relatorio.dia"
@@ -102,13 +95,15 @@ const handleDatepickerOpen = () => {
                 :enable-time-picker="false"
                 placeholder="Selecione uma data"
                 teleport="body"
+                @update:modelValue="KeepAlive"
                 @open="handleDatepickerOpen"
             />
         </div>
         <DataTable :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="DM" header="DM"></Column>
-            <Column field="Data" header="Data"></Column> </DataTable
+            <Column field="ID_DM" header="DM"></Column>
+            <Column field="status" header="status"></Column>
+            <Column field="dataHora" header="Data"></Column> </DataTable
         ><LoadingSpinner v-if="loading" />
     </div>
 </template>
