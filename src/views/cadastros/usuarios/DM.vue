@@ -710,6 +710,7 @@ const removeControladora = (index) => {
                                         <label for="Facial" class="ml-2"> Rec. Facial </label>
                                     </div>
                                 </div>
+                                <Button class="mt-5" label="Adicionar Controladora" @click="addControladora" />
                             </div>
                         </panel>
 
@@ -732,17 +733,31 @@ const removeControladora = (index) => {
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full" rows="2" cols="30" />
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
                             </div>
                         </div>
                         <div>
-                            <Button label="Adicionar Controladora" @click="addControladora" />
-                            <div v-for="(controladora, index) in Controladoras" :key="index" class="card">
-                                <h5>Controladora {{ index + 1 }}</h5>
-                                <Dropdown v-model="controladora.tipo" :options="tipoControladoras" placeholder="Selecione o tipo de Controladora" @change="updateTipoControladora(index, controladora.tipo)" />
+                            <div v-for="(controladora, index) in Controladoras" :key="index" class="card mt-5">
+                                <div class="container flex justify-content-between align-items-center" style="width: 100%">
+                                    <h5>Controladora {{ index + 1 }}</h5>
+                                    <!-- Botão de Remoção -->
+                                    <Button icon="pi pi-trash" label="Remover" class="p-button-danger" @click="removeControladora(index)" />
+                                </div>
+                                <hr />
+                                <div class="card inline-flex align-items-center justify-content-left w-full">
+                                    <div>
+                                        <label>Tipo: </label>
+                                        <Dropdown style="width: 200px" v-model="controladora.tipo" :options="tipoControladoras" placeholder="Selecione o tipo:" @change="updateTipoControladora(index, controladora.tipo)" />
+                                    </div>
 
-                                <!-- Botão de Remoção -->
-                                <Button icon="pi pi-trash" label="Remover" class="p-button-danger" @click="removeControladora(index)" />
+                                    <!--aqui é a configuração DIP da placa 2023-->
+                                    <div v-if="controladora.tipo === '2023'">
+                                    <div class="">
+                                        <label class="ml-5">DIP: </label>
+                                        <InputText v-model="controladora.dados.dip" />
+                                    </div>
+                                    </div>
+                                </div>
 
                                 <!<!-- Controladora 2018 -->
                                 <div v-if="controladora.tipo === '2018'">
@@ -763,13 +778,10 @@ const removeControladora = (index) => {
                                     </div>
                                 </div>
 
-                                <!-- Controladora 2023 -->
-                                <div v-if="controladora.tipo === '2023'">
-                                    <div class="field">
-                                        <label>DIP</label>
-                                        <InputText v-model="controladora.dados.dip" />
-                                    </div>
-                                    <div class="field">
+                                
+                                <div class="grid mt-3 mx-8">
+                                    <!-- Controladora 2023 -->
+                                    <div class="field col-5">
                                         <h4>Andar</h4>
                                         <div class="checkbox-group">
                                             <div v-for="i in 6" :key="i" class="checkbox-item">
@@ -778,7 +790,8 @@ const removeControladora = (index) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="field">
+                                    <Divider layout="vertical" />
+                                    <div class="field col-5">
                                         <h4>Posição</h4>
                                         <div class="checkbox-group">
                                             <div v-for="i in 15" :key="i" class="checkbox-item">

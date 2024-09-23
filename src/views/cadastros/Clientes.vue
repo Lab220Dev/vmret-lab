@@ -10,6 +10,7 @@ import { format } from 'date-fns'; // Certifique-se de que você está importand
 import { cnpj as validateCNPJ } from 'cpf-cnpj-validator';
 
 const active = ref(0);
+const show = ref(false);
 const store = useAuthStore();
 const toast = useToast();
 const loading = ref(false);
@@ -224,7 +225,7 @@ onMounted(() => {
 
 <template>
     <div class="card">
-        <TabView v-model:activeIndex="active">
+        <TabView v-model:activeIndex="active" v-if="!show">
             <TabPanel header="Listar Clientes">
                 <div class="col-12">
                     <DataTable
@@ -276,44 +277,44 @@ onMounted(() => {
                             <form @submit.prevent="submitForm">
                                 <div class="mt-5 mx-0 p-fluid grid">
                                     <div class="full mt-5 lg:col-12 md:col-12 sm:col-12">
-                                            <label for="id_planta">Nome:</label>
-                                            <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
+                                        <label for="id_planta">Nome:</label>
+                                        <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
                                     </div>
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
-                                            <label for="cpfcnpj">CNPJ:</label>
-                                            <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj" @blur="validateCNPJField" />
-                                            <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
+                                    <div :class="visible ? {'lg:col-9 md:col-9 sm:col-12': true} : {'lg:col-12 md:col-12 sm:col-12': true}">
+                                        <label for="cpfcnpj">CNPJ:</label>
+                                        <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj" @blur="validateCNPJField" />
+                                        <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
+                                    </div>
+                                    <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 my-4' : ''">
+                                       <Dropdown v-if="visible" style="width: 232px" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" /> 
                                     </div>
 
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                         <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
                                         <div class="grid mt-3">
-                                        <InputSwitch class="mr-2" v-model="cliente.usar_api" inputId="switch1" />
-                                        <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
+                                            <InputSwitch class="mr-2" v-model="cliente.usar_api" inputId="switch1" />
+                                            <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
                                         </div>
                                     </div>
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                         <label class="mt-0 text-nowrap" for="switch2">Cliente Ativo?</label>
                                         <div class="grid mt-3">
-                                        <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
-                                        <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
+                                            <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
+                                            <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             </form>
-                            <div class="card" v-if="visible">
-                                <!-- Seleção de Perfil -->
-                                <Dropdown v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" />
-
+                            <div class="mt-6" v-if="visible">
                                 <!-- Seção de Seleção de Menu -->
-                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil" :initialMenus="structuredMenus.value" @update:structuredMenus="structuredMenus.value = $event" />
+                                <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil" :initialMenus="structuredMenus.value" @update:structuredMenus="structuredMenus.value = $event" />
 
                                 <!-- Botão para Salvar Configurações -->
-                                <Button label="Salvar Configurações" @click="submitMenu" />
+                                <!-- <div class="mr-1 mt-8 grid justify-content-end"><Button v-if="selectedPerfil" label="Salvar Configurações" @click="submitMenu" /></div> -->
                             </div>
                         </div>
-                        <div class="mr-1 mt-8 grid justify-content-end">
-                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                        <div class="mr-1 my-7 grid justify-content-end">
+                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
                             <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
                             <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
                         </div>

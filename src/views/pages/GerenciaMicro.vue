@@ -1,17 +1,24 @@
 <template>
     <div class="card">
-        <h2>Gerenciamento de Serviços por Cliente</h2>
-
-        <div v-if="isAdmin" class="cliente-selection">
-            <label for="cliente">Selecionar Cliente:</label>
-            <Dropdown v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente"
+        <h2>Gerenciamento de Serviços</h2>
+ <hr>
+        <div v-if="isAdmin" class="flex justify-content-start cliente-selection" >
+            <!--<label for="cliente">Selecionar Cliente:</label>-->
+           
+            <Dropdown class="mt-2" style="width: 300px;" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente"
                 optionLabel="name" @change="onClientSelected" />
         </div>
 
         <div v-if="selectedClient?.id" class="services-edit">
-            <h3>Serviços atribuídos a {{ selectedClient.name }}</h3>
+            <h4 class="mt-8">Serviços atribuídos a {{ selectedClient.name }}</h4>
 
-            <DataTable :value="clientServices">
+<div class="add-service">
+                <Dropdown v-model="newService" class="mt-3" style="width: 300px;" :options="availableServices" optionLabel="name"
+                    placeholder="Adicionar Serviço" />
+                <Button class="ml-3" label="Inserir" @click="addService" />
+            </div>
+
+            <DataTable class="mt-5" :value="clientServices">
                 <Column field="name" header="Serviço"></Column>
                 <Column header="Ação">
                     <template #body="slotProps">
@@ -21,11 +28,7 @@
                 </Column>
             </DataTable>
 
-            <div class="add-service">
-                <Dropdown v-model="newService" :options="availableServices" optionLabel="name"
-                    placeholder="Adicionar Serviço" />
-                <Button label="Inserir" @click="addService" />
-            </div>
+            
 
             <div v-if="showConfig" class="configuracao-monitoramento">
                 <h4>Configurações para {{ selectedService.name }}</h4>
@@ -54,8 +57,11 @@
                         optionLabel="name" optionValue="id" display="chip" />
                 </div>
             </div>
-            <Button v-if="novo" label="Adicionar Novo Serviço" @click="addServiceWithConfig" />
-            <Button v-else label="Atualizar Serviços" @click="updateServiceConfig" />
+        </div>
+        <div class="flex justify-content-end flex-wrap mt-8">
+            <Button class="flex align-items-center justify-content-center" v-if="novo" label="Adicionar Novo Serviço" @click="addServiceWithConfig" />
+            
+            <Button class="flex align-items-center justify-content-center" v-else label="Atualizar Serviços" @click="updateServiceConfig" />
         </div>
     </div>
 </template>
