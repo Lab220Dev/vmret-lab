@@ -752,10 +752,10 @@ const removeControladora = (index) => {
 
                                     <!--aqui é a configuração DIP da placa 2023-->
                                     <div v-if="controladora.tipo === '2023'">
-                                    <div class="">
-                                        <label class="ml-5">DIP: </label>
-                                        <InputText v-model="controladora.dados.dip" />
-                                    </div>
+                                        <div class="">
+                                            <label class="ml-5">DIP: </label>
+                                            <InputText v-model="controladora.dados.dip" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -778,8 +778,7 @@ const removeControladora = (index) => {
                                     </div>
                                 </div>
 
-                                
-                                <div class="grid mt-3 mx-8">
+                                <div class="grid mt-3 ml-4">
                                     <!-- Controladora 2023 -->
                                     <div class="field col-5">
                                         <h4>Andar</h4>

@@ -285,8 +285,9 @@ onMounted(() => {
                                         <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj" @blur="validateCNPJField" />
                                         <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
                                     </div>
-                                    <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 my-4' : ''">
-                                       <Dropdown v-if="visible" style="width: 232px" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" /> 
+                                    <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
+                                        <label>Selecione o perfil</label>
+                                       <Dropdown v-if="visible" style="width: 232px" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" /> 
                                     </div>
 
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
