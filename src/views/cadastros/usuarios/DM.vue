@@ -726,15 +726,15 @@ const removeControladora = (index) => {
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">UserID API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.UserID" type="password" />
+                                <InputText class="my-2" id="senha" v-model="DM.UserID" />
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">Senha API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.senha" type="password" />
+                                <InputText class="my-2" id="senha" v-model="DM.senha"  />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">IdCliente API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.ClienteID" type="password" />
+                                <InputText class="my-2" id="senha" v-model="DM.ClienteID"  />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
