@@ -335,11 +335,11 @@ onMounted(() => {
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         rowHover
                         :globalFilterFields="['ID_DM', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        :tableStyle="{ width: '100%' }"  
+                        :tableStyle="{ width: '100%' }"
                         ref="dt"
                         class=""
-                        :sortField="'ID_Retirada'" 
-                        :sortOrder="-1"                          
+                        :sortField="'ID_Retirada'"
+                        :sortOrder="-1"
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
@@ -351,9 +351,12 @@ onMounted(() => {
                                     <InputText v-model="filters['global'].value" placeholder="Busca" />
                                 </IconField>
                             </div>
+                            <div class="flex justify-content-start">
+                                <span>Total de registros: {{ retiradas.length }}</span>
+                            </div>
                         </template>
                         <template #empty> {{ emptyMessage }} </template>
-                        <Column field="ID_DM" sortable header="DM"></Column>
+                        <Column field="Identificacao" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>
                         <Column field="Matricula" sortable header="Matricula"></Column>
                         <Column field="Nome" sortable header="Nome"></Column>

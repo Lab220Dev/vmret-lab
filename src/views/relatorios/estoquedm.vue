@@ -66,7 +66,9 @@ onMounted(() => {
             <label for="dm" class="">DM:</label>
             <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
-
+        <div class="flex justify-content-start">
+            <span>Total de registros: {{ EstoqueDM.length }}</span>
+        </div>
         <DataTable :value="EstoqueDM" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
             <Column field="sku" header="SKU"></Column>
             <Column field="nome" header="Produto"></Column>

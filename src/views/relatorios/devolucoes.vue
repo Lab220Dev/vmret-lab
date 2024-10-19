@@ -342,6 +342,9 @@ onMounted(() => {
                                     <InputText v-model="filters['global'].value" placeholder="Busca" />
                                 </IconField>
                             </div>
+                            <div class="flex justify-content-start">
+                                <span>Total de registros: {{ devolucoes.length }}</span>
+                            </div>
                         </template>
                         <template #empty> {{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>

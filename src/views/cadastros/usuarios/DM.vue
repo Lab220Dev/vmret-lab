@@ -16,6 +16,7 @@ const loadingControladoras = ref(true);
 let DM = reactive({
     Ativo: false,
     Chave: '',
+    ChaveAPI:'',
     ClienteID: '',
     ClienteNome: '',
     Created: '',
@@ -382,6 +383,7 @@ const deleteDM = async (item) => {
 };
 const handleRowSelection = async (event) => {
     const edit = event.data;
+    console.log(edit)
     isEditMode.value = true; 
     showDialogProduto.value = true; 
     produtoSelecionado.value = {
@@ -401,9 +403,10 @@ const handleRowSelection = async (event) => {
         produtoSelecionado.value.Motor1 = Number(valor1); 
         produtoSelecionado.value.Motor2 = Number(valor2); 
     } else if (controladora === '2023') {
-        produtoSelecionado.value.Dip = Number(valor1);       
-        produtoSelecionado.value.Andar = Number(valor2);    
-        produtoSelecionado.value.Posicao = Number(valor3);   
+        console.log(Number(valor2))
+        produtoSelecionado.value.dip = Number(valor1);       
+        produtoSelecionado.value.andar = Number(valor2);    
+        produtoSelecionado.value.posicao = Number(valor3);   
     } else if (controladora === '2024') {
         produtoSelecionado.value.Motor1 = Number(valor1);   
     }
@@ -527,6 +530,7 @@ onMounted(() => {
 const resetDMForm = () => {
     DM.Ativo = '';
     DM.Chave = '';
+    DM.ChaveAPI = '';
     DM.ClienteID = '';
     DM.ClienteNome = '';
     DM.Created = '';
@@ -772,6 +776,11 @@ const removeControladora = (index) => {
                                             :binary="true" />
                                         <label for="Facial" class="ml-2"> Rec. Facial </label>
                                     </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" value="Senha"
+                                            :binary="true" />
+                                        <label for="Senha" class="ml-2"> Senha </label>
+                                    </div>
                                 </div>
                             </div>
                         </panel>
@@ -787,11 +796,15 @@ const removeControladora = (index) => {
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">Senha API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.senha" />
+                                <InputText class="my-2" id="senha" v-model="DM.ChaveAPI" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-12">
                                 <label for="senha">IdCliente API:</label>
                                 <InputText class="my-2" id="senha" v-model="DM.ClienteID" />
+                            </div>
+                            <div class="full lg:col-6 md:col-12 sm:col-12">
+                                <label for="senha">URL:</label>
+                                <InputText class="my-2" id="senha" v-model="DM.URL" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>
