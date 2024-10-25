@@ -78,7 +78,7 @@ const deletUsuariodes = (itm) => {
 };
 const deleteUsuario = async (item) => {
     loading.value = true;
-    let data = { id_usuario_delete: item.id_usuario, id_usuario:store.userId, id_cliente:store.userIdCliente};
+    let data = { id_usuario_delete: item.id_usuario, id_usuario: store.userId, id_cliente: store.userIdCliente };
     try {
         const response = await axios.post('/usuarios/deletar', data, {
             headers: {
@@ -288,20 +288,22 @@ const resetForm = () => {
                 <h5 class="mt-2">Usuário Web</h5>
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar Usuário Web">
-                        <div class="col-12">
+                        <div class="">
                             <DataTable
                                 v-model:filters="filters"
                                 :value="ListaUsuario"
-                                selectionMode="single"
-                                tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
                                 stripedRows
+                                paginator
+                                :rows="10"
+                                :rowsPerPageOptions="[5, 10, 20, 50]"
+                                :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
+                                selectionMode="single"
+                                tableStyle="min-width: 50rem; table-layout: fixed;"
+                                ref="dt"
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                paginator
-                                :rows="10"
-                                :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
+                                :sortOrder="-1"
                             >
                                 <template #header>
                                     <div class="flex justify-content-end">
@@ -313,22 +315,37 @@ const resetForm = () => {
                                         </IconField>
                                     </div>
                                 </template>
-                                <Column field="id_usuario" header="Id"></Column>
-                                <Column field="nome" header="Nome"></Column>
-                                <Column field="email" header="E-mail"></Column>
-                                <Column v-if="isAdmin" field="nome_cliente" header="Cliente"></Column>
-                                <Column field="role" header="role"></Column>
-                                <Column field="ativo" header="Ativo">
+                                <Column field="id_usuario" sortable style="width: 7%" header="ID"></Column>
+                                <Column field="nome" sortable style="width: 20%" class="table-cell" header="Nome">
                                     <template #body="{ data }">
-                                        <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
+                                        <span v-tooltip="data.nome">{{ data.nome }}</span>
                                     </template>
                                 </Column>
-                                <Column field="last_login" header="Último Login">
+                                <Column field="email" sortable class="table-cell" style="width: 25%" header="E-mail">
+                                    <template #body="{ data }">
+                                        <span v-tooltip="data.email">{{ data.email }}</span>
+                                    </template>
+                                </Column>
+                                <Column v-if="isAdmin" field="nome_cliente" sortable class="table-cell" style="width: 15%" header="Cliente">
+                                    <template #body="{ data }">
+                                        <span v-tooltip="data.nome_cliente">{{ data.nome_cliente }}</span>
+                                    </template>
+                                </Column>
+                                <Column field="role" sortable class="table-cell" style="width: 15%" header="Role">
+                                    <template #body="{ data }">
+                                        <span v-tooltip="data.role">{{ data.role }}</span>
+                                    </template></Column>
+                                <Column field="ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
+                                    <template #body="{ data }">
+                                        <i class="pi" :class="{ 'pi-check-circle text-green-500': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
+                                    </template>
+                                </Column>
+                                <Column field="last_login" sortable class="table-cell" style="width: 17%" header="Último Login">
                                     <template #body="{ data }">
                                         {{ formatDate(new Date(data.last_login)) }}
                                     </template>
                                 </Column>
-                                <Column style="min-width: 8rem">
+                                <Column style="width: 10%">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deletUsuariodes(slotProps.data)" />
                                     </template>
@@ -426,7 +443,18 @@ const resetForm = () => {
     align-items: center;
 }
 
+.datatable-wrapper {
+    overflow-x: auto;
+    width: 100vw;
+}
+
 .text-nowrap {
     white-space: nowrap;
+}
+
+.table-cell {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 </style>

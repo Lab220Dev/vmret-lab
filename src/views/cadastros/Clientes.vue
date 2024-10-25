@@ -232,13 +232,16 @@ onMounted(() => {
                         v-model:filters="filters"
                         :value="ListaClientes"
                         selectionMode="single"
-                        tableStyle="min-width: 25%"
+                        tableStyle="min-width: 50rem; table-layout: fixed;"
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         stripedRows
+                        paginator
+                        :rows="10"
                         dataKey="id"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
                         :globalFilterFields="['id_cliente', 'nome', 'last_login']"
+                        :sortOrder="-1"
                     >
                         <template #header>
                             <div class="flex justify-content-end">
@@ -250,19 +253,19 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <Column field="id_cliente" header="Id"></Column>
-                        <Column field="nome" header="Nome"></Column>
-                        <Column field="ativo" header="Ativo">
+                        <Column field="id_cliente" sortable style="width: 7%" header="ID"></Column>
+                        <Column field="nome" sortable style="width: 20%" header="Nome"></Column>
+                        <Column field="ativo" sortable style="width: 10%; text-align: center;" header="Ativo">
                             <template #body="{ data }">
                                 <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                             </template>
                         </Column>
-                        <Column field="last_login" header="Último Login">
+                        <Column field="last_login" sortable class="table-cell" style="width: 15%" header="Último Login">
                             <template #body="{ data }">
                                 {{ formatDate(new Date(data.last_login)) }}
                             </template>
                         </Column>
-                        <Column style="min-width: 8rem">
+                        <Column style="width: 10%">
                             <template #body="slotProps">
                                 <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
                             </template>
@@ -286,7 +289,7 @@ onMounted(() => {
                                         <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
                                     </div>
                                     <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
-                                        <label>Selecione o perfil</label>
+                                        <label v-if="visible">Selecione o perfil</label>
                                        <Dropdown v-if="visible" style="width: 232px" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" /> 
                                     </div>
 

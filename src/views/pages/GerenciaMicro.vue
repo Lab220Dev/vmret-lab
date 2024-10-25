@@ -1,20 +1,18 @@
 <template>
     <div class="card">
         <h2>Gerenciamento de Serviços</h2>
- <hr>
-        <div v-if="isAdmin" class="flex justify-content-start cliente-selection" >
-            <!--<label for="cliente">Selecionar Cliente:</label>-->
-           
-            <Dropdown class="mt-2" style="width: 300px;" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente"
-                optionLabel="name" @change="onClientSelected" />
+        <hr />
+        <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
+            <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
+
+            <Dropdown class="mt-4" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
         </div>
 
-        <div v-if="selectedClient?.id" class="services-edit">
-            <h4 class="mt-8">Serviços atribuídos a {{ selectedClient.name }}</h4>
+        <div v-if="selectedClient?.id" class="mt-8 card services-edit">
+            <h4 class="mt-2">Serviços atribuídos a {{ selectedClient.name }}</h4>
 
-<div class="add-service">
-                <Dropdown v-model="newService" class="mt-3" style="width: 300px;" :options="availableServices" optionLabel="name"
-                    placeholder="Adicionar Serviço" />
+            <div class="add-service">
+                <Dropdown v-model="newService" class="mt-3" style="width: 300px" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
                 <Button class="ml-3" label="Inserir" @click="addService" />
             </div>
 
@@ -22,50 +20,43 @@
                 <Column field="name" header="Serviço"></Column>
                 <Column header="Ação">
                     <template #body="slotProps">
-                        <Button label="Configurar" icon="pi pi-cog" @click="editService(slotProps.data)" />
+                        <Button label="Configurar" class="mr-2" icon="pi pi-cog" @click="editService(slotProps.data)" />
                         <Button label="Remover" icon="pi pi-trash" @click="removeService(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
-
-            
 
             <div v-if="showConfig" class="configuracao-monitoramento">
                 <h4>Configurações para {{ selectedService.name }}</h4>
 
                 <div class="field">
                     <label for="notificationFrequency">Frequência de Notificação:</label>
-                    <Dropdown v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies"
-                        optionLabel="label" optionValue="value" />
+                    <Dropdown v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
                 </div>
 
                 <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field">
                     <label for="time">Horário de Notificação:</label>
-                    <VueDatePicker v-model="serviceConfigs[selectedService.id].notificationTime" time-picker
-                        placeholder="Selecione o horário" />
+                    <VueDatePicker v-model="serviceConfigs[selectedService.id].notificationTime" time-picker placeholder="Selecione o horário" />
                 </div>
 
                 <div class="field">
                     <label for="notificationMethods">Métodos de Notificação:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].notificationMethods"
-                        :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
+                    <MultiSelect v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
                 </div>
 
                 <div class="field">
                     <label for="recipients">Destinatários:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients"
-                        optionLabel="name" optionValue="id" display="chip" />
+                    <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
                 </div>
             </div>
         </div>
         <div class="flex justify-content-end flex-wrap mt-8">
-            <Button class="flex align-items-center justify-content-center" v-if="novo" label="Adicionar Novo Serviço" @click="addServiceWithConfig" />
-            
+            <Button class="flex align-items-center justify-content-center" v-if="novo" label="Adicionar Serviço" @click="addServiceWithConfig" />
+
             <Button class="flex align-items-center justify-content-center" v-else label="Atualizar Serviços" @click="updateServiceConfig" />
         </div>
     </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -90,7 +81,7 @@ const clientServices = ref([]);
 const newService = ref(null);
 const selectedService = ref(null);
 const serviceConfigs = ref({});
-const novo = ref(true)
+const novo = ref(true);
 const frequencies = ref([
     { label: 'A cada 5 minutos', value: '5m' },
     { label: 'A cada 30 minutos', value: '30m' },
@@ -109,7 +100,7 @@ const fetchIfAdmin = async () => {
     if (store.userRole === 'Administrador') {
         isAdmin.value = true;
         await fetchClientes();
-    }else{
+    } else {
         await fetchServicos();
     }
 };
@@ -117,7 +108,7 @@ const fetchIfAdmin = async () => {
 const fetchClientes = async () => {
     try {
         const response = await axios.get('/admin/cliente/listarClienteServicos');
-        availableClients.value = response.data.map(cliente => ({
+        availableClients.value = response.data.map((cliente) => ({
             id: cliente.id_cliente,
             name: cliente.nome,
             servicos: cliente.servicos
@@ -129,29 +120,31 @@ const fetchClientes = async () => {
 const fetchServicos = async () => {
     try {
         const data = {
-        id_cliente: store.userIdCliente
+            id_cliente: store.userIdCliente
         };
-        const response = await axios.post('/admin/cliente/listarServicos',data);
+        const response = await axios.post('/admin/cliente/listarServicos', data);
         const cliente = response.data[0];
         selectedClient.value = {
             id: cliente.id_cliente,
             name: cliente.nome,
             servicos: cliente.servicos
         };
-        clientServices.value = cliente.servicos.map(servico => ({
+        clientServices.value = cliente.servicos.map((servico) => ({
             id: servico.id_servico,
             name: servico.nome
         }));
         await fetchRecipients(cliente.id_cliente);
         if (selectedClient.value.servicos.length > 0) {
-            selectedClient.value.servicos.forEach(servico => {
+            selectedClient.value.servicos.forEach((servico) => {
                 serviceConfigs.value[servico.id_servico] = {
                     notificationFrequency: servico.notificacoes[0]?.frequencia || null,
-                    notificationMethods: servico.notificacoes.map(n => {
-                        const method = notificationMethods.value.find(m => m.value === n.tipo_notificacao);
-                        return method ? method.value : null;
-                    }).filter(Boolean),
-                    recipients: servico.notificacoes.map(n => n.id_funcionario_responsavel),
+                    notificationMethods: servico.notificacoes
+                        .map((n) => {
+                            const method = notificationMethods.value.find((m) => m.value === n.tipo_notificacao);
+                            return method ? method.value : null;
+                        })
+                        .filter(Boolean),
+                    recipients: servico.notificacoes.map((n) => n.id_funcionario_responsavel),
                     notificationTime: servico.notificacoes[0]?.hora_notificacao || null,
                     monitoringTime: servico.monitoringTime || null
                 };
@@ -167,7 +160,7 @@ const fetchServicos = async () => {
 const fetchRecipients = async (idCliente) => {
     try {
         const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
-        availableRecipients.value = response.data.map(funcionario => ({
+        availableRecipients.value = response.data.map((funcionario) => ({
             id: funcionario.id_funcionario,
             name: funcionario.nome
         }));
@@ -177,7 +170,7 @@ const fetchRecipients = async (idCliente) => {
 };
 
 const onClientSelected = async () => {
-    clientServices.value = selectedClient.value.servicos.map(servico => ({
+    clientServices.value = selectedClient.value.servicos.map((servico) => ({
         id: servico.id_servico,
         name: servico.nome
     }));
@@ -185,14 +178,16 @@ const onClientSelected = async () => {
     await fetchRecipients(selectedClient.value.id);
 
     if (selectedClient.value.servicos.length > 0) {
-        selectedClient.value.servicos.forEach(servico => {
+        selectedClient.value.servicos.forEach((servico) => {
             serviceConfigs.value[servico.id_servico] = {
                 notificationFrequency: servico.notificacoes[0]?.frequencia || null,
-                notificationMethods: servico.notificacoes.map(n => {
-                    const method = notificationMethods.value.find(m => m.value === n.tipo_notificacao);
-                    return method ? method.value : null;
-                }).filter(Boolean),
-                recipients: servico.notificacoes.map(n => n.id_funcionario_responsavel),
+                notificationMethods: servico.notificacoes
+                    .map((n) => {
+                        const method = notificationMethods.value.find((m) => m.value === n.tipo_notificacao);
+                        return method ? method.value : null;
+                    })
+                    .filter(Boolean),
+                recipients: servico.notificacoes.map((n) => n.id_funcionario_responsavel),
                 notificationTime: servico.notificacoes[0]?.hora_notificacao || null,
                 monitoringTime: servico.monitoringTime || null
             };
@@ -208,7 +203,7 @@ const editService = (service) => {
     showConfig.value = true;
 };
 const formatarTempo = (timeObj) => {
-    if (timeObj && timeObj.hours !== undefined && timeObj.minutes !== undefined ) {
+    if (timeObj && timeObj.hours !== undefined && timeObj.minutes !== undefined) {
         const hours = String(timeObj.hours).padStart(2, '0');
         const minutes = String(timeObj.minutes).padStart(2, '0');
         return `${hours}:${minutes}`;
@@ -217,15 +212,14 @@ const formatarTempo = (timeObj) => {
 };
 const addServiceWithConfig = async () => {
     try {
-
-        clientServices.value.forEach(service => {
+        clientServices.value.forEach((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
             if (typeof serviceConfig.notificationTime === 'object') {
                 serviceConfig.notificationTime = formatarTempo(serviceConfig.notificationTime);
             }
         });
 
-        const servicesConfigData = clientServices.value.map(service => {
+        const servicesConfigData = clientServices.value.map((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
 
             return {
@@ -254,7 +248,7 @@ const addServiceWithConfig = async () => {
 };
 
 const addService = () => {
-    if (newService.value && !clientServices.value.some(s => s.id === newService.value.id)) {
+    if (newService.value && !clientServices.value.some((s) => s.id === newService.value.id)) {
         clientServices.value.push(newService.value);
         serviceConfigs.value[newService.value.id] = {
             notificationFrequency: null,
@@ -272,7 +266,7 @@ const addService = () => {
 };
 
 const removeService = (service) => {
-    clientServices.value = clientServices.value.filter(s => s.id !== service.id);
+    clientServices.value = clientServices.value.filter((s) => s.id !== service.id);
     delete serviceConfigs.value[service.id];
 
     if (selectedService.value?.id === service.id) {
@@ -282,14 +276,14 @@ const removeService = (service) => {
 };
 const updateServiceConfig = async () => {
     try {
-        clientServices.value.forEach(service => {
+        clientServices.value.forEach((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
             if (typeof serviceConfig.notificationTime === 'object') {
                 serviceConfig.notificationTime = formatarTempo(serviceConfig.notificationTime);
             }
         });
 
-        const servicesConfigData = clientServices.value.map(service => {
+        const servicesConfigData = clientServices.value.map((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
 
             return {
@@ -318,7 +312,6 @@ const updateServiceConfig = async () => {
 };
 onMounted(fetchIfAdmin);
 </script>
-
 
 <style scoped>
 .field {
