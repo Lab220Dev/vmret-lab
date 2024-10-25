@@ -208,16 +208,23 @@ const editService = (service) => {
     showConfig.value = true;
 };
 const formatarTempo = (timeObj) => {
-    if (timeObj && timeObj.hour !== undefined && timeObj.minute !== undefined && timeObj.second !== undefined) {
-        const hours = String(timeObj.hour).padStart(2, '0');
-        const minutes = String(timeObj.minute).padStart(2, '0');
-        const seconds = String(timeObj.second).padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+    if (timeObj && timeObj.hours !== undefined && timeObj.minutes !== undefined ) {
+        const hours = String(timeObj.hours).padStart(2, '0');
+        const minutes = String(timeObj.minutes).padStart(2, '0');
+        return `${hours}:${minutes}`;
     }
     return null;
 };
 const addServiceWithConfig = async () => {
     try {
+
+        clientServices.value.forEach(service => {
+            const serviceConfig = serviceConfigs.value[service.id];
+            if (typeof serviceConfig.notificationTime === 'object') {
+                serviceConfig.notificationTime = formatarTempo(serviceConfig.notificationTime);
+            }
+        });
+
         const servicesConfigData = clientServices.value.map(service => {
             const serviceConfig = serviceConfigs.value[service.id];
 
@@ -225,7 +232,7 @@ const addServiceWithConfig = async () => {
                 id_servico: service.id,
                 nome_servico: service.name,
                 frequencia_notificacao: serviceConfig.notificationFrequency,
-                horario_notificacao: formatarTempo(serviceConfig.notificationTime),
+                horario_notificacao: serviceConfig.notificationTime,
                 frequencia_monitoramento: serviceConfig.monitoringFrequency,
                 metodos_notificacao: serviceConfig.notificationMethods,
                 destinatarios: serviceConfig.recipients
@@ -275,6 +282,13 @@ const removeService = (service) => {
 };
 const updateServiceConfig = async () => {
     try {
+        clientServices.value.forEach(service => {
+            const serviceConfig = serviceConfigs.value[service.id];
+            if (typeof serviceConfig.notificationTime === 'object') {
+                serviceConfig.notificationTime = formatarTempo(serviceConfig.notificationTime);
+            }
+        });
+
         const servicesConfigData = clientServices.value.map(service => {
             const serviceConfig = serviceConfigs.value[service.id];
 
@@ -282,7 +296,7 @@ const updateServiceConfig = async () => {
                 id_servico: service.id,
                 nome_servico: service.name,
                 frequencia_notificacao: serviceConfig.notificationFrequency,
-                horario_notificacao: formatarTempo(serviceConfig.notificationTime),
+                horario_notificacao: serviceConfig.notificationTime,
                 frequencia_monitoramento: serviceConfig.monitoringFrequency,
                 metodos_notificacao: serviceConfig.notificationMethods,
                 destinatarios: serviceConfig.recipients

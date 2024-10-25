@@ -83,11 +83,7 @@ const saveUsuario = async () => {
         data.id_usuario = store.userId;
     }
     try {
-        const response = await axios.post('/UDM/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/UDM/adicionar', data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 });
 
         fetchUsuarios();
@@ -152,10 +148,10 @@ const fetchUsuarios = async () => {
     let data = null;
 
     if (store.userRole === 'Administrador') {
-        data = ''; // Set to an empty string if the role is "Administrador"
+        data = ''; 
     } else {
-        data = {}; // Initialize data as an empty object
-        data.id_cliente = store.userIdCliente; // Set the value property
+        data = {}; 
+        data.id_cliente = store.userIdCliente; 
     }
     try {
         const response = await axios.post('/UDM/listar', data, {
