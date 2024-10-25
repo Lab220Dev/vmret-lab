@@ -46,10 +46,12 @@ const sincronizar = async () => {
     loading.value = true;
     try {
         const response = await axios.post('/naoalocados/sincronizar', data);
-        itens.value = response.data.map(item => ({
-            ...item.produto, 
-            status: item.status
-        }));
+        itens.value = response.data.flatMap(cliente => 
+            cliente.produtosComStatus.map(item => ({
+                ...item.produto,  
+                status: item.status 
+            }))
+        );
         sincronizado.value = true; 
     } catch (error) {
         console.error('Erro ao sincronizar itens:', error);

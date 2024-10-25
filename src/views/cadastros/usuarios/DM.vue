@@ -42,7 +42,7 @@ const tipoControladoras = ['2018', '2023', '2024', 'Locker'];
 const nextValues = reactive({
     '2018': { placa: 12 },
     '2023': { dip: 2 },
-    'Locker': { dip: 2 },
+    'Locker': { dip: 3 },
     '2024': { placa: 101 }
 });
 const maxControladoras = {
@@ -71,6 +71,9 @@ const usarApi = ref(false);
 const produtoSelecionado = ref({
     id_produto: '',
     Porta: '',
+    Placa:'',
+    Posicao:'',
+    Dip:'',
     Motor1: '',
     Motor2: '',
     Controladora: ''
@@ -82,16 +85,17 @@ const molasOptions = ref([]);
 const dipOptions = ref([]);
 const andarOptions = ref([]);
 const posicaoOptions = ref([]);
+const placaOptions = ref([]);
 const motorOptions = ref([]);
 const ListaDMS = ref([]);
 
 const handleControladoraChange = () => {
     const selectedControladora = Controladoras.value.find(c => c.tipo === produtoSelecionado.value.Controladora);
-
     if (!selectedControladora) return;
 
     if (produtoSelecionado.value.Controladora === '2018') {
         molasOptions.value = selectedControladora.dados.molas.map(mola => ({ label: mola, value: mola }));
+        placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
     } else if (produtoSelecionado.value.Controladora === '2023') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
         andarOptions.value = selectedControladora.dados.andar.map(a => ({ label: a, value: a }));
@@ -100,6 +104,7 @@ const handleControladoraChange = () => {
         motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
     } else if (produtoSelecionado.value.Controladora === 'Locker') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
+        posicaoOptions.value = selectedControladora.dados.posicao.map(p => ({ label: p, value: p }));
     }
 };
 const atualizarProduto = async () => {
@@ -310,7 +315,9 @@ const preencherOpcoesControladoras = () => {
 
     Controladoras.value.forEach(controladora => {
         if (controladora.tipo === '2018') {
+            console.log(controladora)
             molasOptions.value.push(...controladora.dados.molas);
+            placaOptions.value.push(controladora.dados.placa);
         } else if (controladora.tipo === '2023') {
             dipOptions.value.push(controladora.dados.dip);
             andarOptions.value.push(...controladora.dados.andar);
@@ -396,23 +403,41 @@ const handleRowSelection = async (event) => {
     };
 
     const [controladora, valor1, valor2, valor3] = edit.Posicao.split(' / ');
-
+    console.log(controladora, valor1, valor2, valor3)
     produtoSelecionado.value.Controladora = controladora;
 
     if (controladora === '2018') {
-        produtoSelecionado.value.Motor1 = Number(valor1); 
-        produtoSelecionado.value.Motor2 = Number(valor2); 
+        produtoSelecionado.value.Placa = Number(valor1); 
+        produtoSelecionado.value.Motor1 = Number(valor2); 
     } else if (controladora === '2023') {
-        console.log(Number(valor2))
-        produtoSelecionado.value.dip = Number(valor1);       
-        produtoSelecionado.value.andar = Number(valor2);    
-        produtoSelecionado.value.posicao = Number(valor3);   
+        produtoSelecionado.value.Dip = Number(valor1);       
+        produtoSelecionado.value.Andar = Number(valor2);    
+        produtoSelecionado.value.Posicao = Number(valor3);   
     } else if (controladora === '2024') {
         produtoSelecionado.value.Motor1 = Number(valor1);   
+    }else if (controladora === 'Locker') {
+        produtoSelecionado.value.Dip = Number(valor1);   
+        produtoSelecionado.value.Posicao = Number(valor2);   
     }
     handleControladoraChange();
 };
-
+const handleCancelar =() =>{
+    produtoSelecionado.value = {
+    id_item: '',
+    id_produto: '',
+    Nome_Produto: '',
+    QTD: '',
+    SKU: '',
+    Controladora: '',
+    Motor1: null,
+    Motor2: null,
+    Dip: null,
+    Andar: null,
+    Posicao: null
+  };
+  isEditMode.value = false;
+  showDialogProduto.value = false;
+}
 const atualizarDM = async () => {
     const data = {
         id_usuario: store.userId,
@@ -568,8 +593,6 @@ const resetProdutoSelecionado = () => {
         Controladora: ''
     };
 };
-
-
 
 const fetchCliente = async () => {
     loading.value = true;
@@ -957,6 +980,13 @@ const removeControladora = (index) => {
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="produtoSelecionado.Controladora === '2018'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
+                        <label for="Dip" class="font-semibold">Placa:</label>
+                    </div>
+                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions"
+                            optionLabel="label" optionValue="value" placeholder="Selecione a Placa" />
+                    </div>
+                    <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="molas" class="font-semibold">Molas:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
@@ -1012,7 +1042,7 @@ const removeControladora = (index) => {
                         <label for="Posicao" class="font-semibold">Posição:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.posicao" class="w-full" :options="posicaoOptions"
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions"
                             optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
                     </div>
                 </template>
@@ -1020,7 +1050,7 @@ const removeControladora = (index) => {
         </div>
 
         <div class="flex justify-content-end gap-2 mt-4">
-            <Button type="button" label="Cancelar" severity="secondary" @click="showDialogProduto = false"></Button>
+            <Button type="button" label="Cancelar" severity="secondary" @click="handleCancelar()"></Button>
             <Button type="button" :label="isEditMode ? 'Atualizar' : 'Salvar'" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
