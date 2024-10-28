@@ -10,6 +10,7 @@ import { format } from 'date-fns'; // Certifique-se de que você está importand
 import { cnpj as validateCNPJ } from 'cpf-cnpj-validator';
 
 const active = ref(0);
+const show = ref(false);
 const store = useAuthStore();
 const toast = useToast();
 const loading = ref(false);
@@ -32,9 +33,9 @@ let cliente = reactive({
 });
 
 const perfilOptions = [
-    { label: "Master", value: 1 },
-    { label: "Operador", value: 3 },
-    { label: "Avulso", value: 4 }
+    { label: 'Master', value: 1 },
+    { label: 'Operador', value: 3 },
+    { label: 'Avulso', value: 4 }
 ];
 
 const onRowSelect = (event) => {
@@ -128,8 +129,8 @@ const deleteCliente = async (item) => {
 // Função atualizada para enviar a estrutura hierárquica de menus
 const submitMenu = async () => {
     const simpleStructuredMenus = JSON.parse(JSON.stringify(structuredMenus.value.value));
-    console.log("Structured Menus Before Submission:", simpleStructuredMenus);
-    console.log("Structured Menus:", structuredMenus.value);
+    console.log('Structured Menus Before Submission:', simpleStructuredMenus);
+    console.log('Structured Menus:', structuredMenus.value);
     const data = {
         id_cliente: cliente.id_cliente,
         perfil: selectedPerfil.value,
@@ -224,13 +225,24 @@ onMounted(() => {
 
 <template>
     <div class="card">
-        <TabView v-model:activeIndex="active">
+        <TabView v-model:activeIndex="active" v-if="!show">
             <TabPanel header="Listar Clientes">
                 <div class="col-12">
-                    <DataTable v-model:filters="filters" :value="ListaClientes" selectionMode="single"
-                        tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id"
-                        :metaKeySelection="false" @rowSelect="onRowSelect"
-                        :globalFilterFields="['id_cliente', 'nome', 'last_login']">
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="ListaClientes"
+                        selectionMode="single"
+                        tableStyle="min-width: 50rem; table-layout: fixed;"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        stripedRows
+                        paginator
+                        :rows="10"
+                        dataKey="id"
+                        :metaKeySelection="false"
+                        @rowSelect="onRowSelect"
+                        :globalFilterFields="['id_cliente', 'nome', 'last_login']"
+                        :sortOrder="-1"
+                    >
                         <template #header>
                             <div class="flex justify-content-end">
                                 <IconField iconPosition="left">
@@ -241,23 +253,21 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
-                        <Column field="id_cliente" header="Id"></Column>
-                        <Column field="nome" header="Nome"></Column>
-                        <Column field="ativo" header="Ativo">
+                        <Column field="id_cliente" sortable style="width: 7%" header="ID"></Column>
+                        <Column field="nome" sortable style="width: 20%" header="Nome"></Column>
+                        <Column field="ativo" sortable style="width: 10%; text-align: center;" header="Ativo">
                             <template #body="{ data }">
-                                <i class="pi"
-                                    :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
+                                <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                             </template>
                         </Column>
-                        <Column field="last_login" header="Último Login">
+                        <Column field="last_login" sortable class="table-cell" style="width: 15%" header="Último Login">
                             <template #body="{ data }">
                                 {{ formatDate(new Date(data.last_login)) }}
                             </template>
                         </Column>
-                        <Column style="min-width: 8rem">
+                        <Column style="width: 10%">
                             <template #body="slotProps">
-                                <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                    @click="deleteClientedes(slotProps.data)" />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
                             </template>
                         </Column>
                     </DataTable>
@@ -268,80 +278,60 @@ onMounted(() => {
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid m-0 p-0">
+                                <div class="mt-5 mx-0 p-fluid grid">
                                     <div class="full mt-5 lg:col-12 md:col-12 sm:col-12">
-                                        <div><label for="id_planta">Nome:</label>
-                                            <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
-                                        </div>
+                                        <label for="id_planta">Nome:</label>
+                                        <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
+                                    </div>
+                                    <div :class="visible ? {'lg:col-9 md:col-9 sm:col-12': true} : {'lg:col-12 md:col-12 sm:col-12': true}">
+                                        <label for="cpfcnpj">CNPJ:</label>
+                                        <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj" @blur="validateCNPJField" />
+                                        <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
+                                    </div>
+                                    <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
+                                        <label v-if="visible">Selecione o perfil</label>
+                                       <Dropdown v-if="visible" style="width: 232px" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" /> 
+                                    </div>
 
-                                        <div class="mt-4">
-                                            <label for="cpfcnpj">CNPJ:</label>
-                                            <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj"
-                                                mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj"
-                                                @blur="validateCNPJField" />
-                                            <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
+                                    <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                        <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
+                                        <div class="grid mt-3">
+                                            <InputSwitch class="mr-2" v-model="cliente.usar_api" inputId="switch1" />
+                                            <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
                                         </div>
-
-                                        <div class="input justify-items-center mt-5">
-                                            <div
-                                                class=" full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                                <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
-                                                <div class="grid mt-3">
-                                                    <InputSwitch class="mr-2" v-model="cliente.usar_api"
-                                                        inputId="switch1" />
-                                                    <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
-                                                </div>
-                                            </div>
-                                            <div
-                                                class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                                <label class="mt-0 text-nowrap" for="switch2">Cliente Ativo?</label>
-                                                <div class="grid mt-3">
-                                                    <InputSwitch class="mr-2" v-model="cliente.ativo"
-                                                        inputId="switch2" />
-                                                    <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                        <label class="mt-0 text-nowrap" for="switch2">Cliente Ativo?</label>
+                                        <div class="grid mt-3">
+                                            <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
+                                            <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
                                         </div>
-
                                     </div>
                                 </div>
                             </form>
-                            <div class="card" v-if="visible">
-                                <!-- Seleção de Perfil -->
-                                <Dropdown v-model="selectedPerfil" :options="perfilOptions" optionLabel="label"
-                                    optionValue="value" placeholder="Selecione um Perfil" />
-
+                            <div class="mt-6" v-if="visible">
                                 <!-- Seção de Seleção de Menu -->
-                                <MenuSelector v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
-                                    :initialMenus="structuredMenus.value"
-                                    @update:structuredMenus="structuredMenus.value = $event" />
+                                <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil" :initialMenus="structuredMenus.value" @update:structuredMenus="structuredMenus.value = $event" />
 
                                 <!-- Botão para Salvar Configurações -->
-                                <Button label="Salvar Configurações" @click="submitMenu" />
+                                <!-- <div class="mr-1 mt-8 grid justify-content-end"><Button v-if="selectedPerfil" label="Salvar Configurações" @click="submitMenu" /></div> -->
                             </div>
                         </div>
-                        <div class="mr-1 mt-8 grid justify-content-end">
-                            <Button v-if="visible" style="width: 25%; min-width: 100px"
-                                class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar"
-                                icon="pi pi-check" severity="primary" @click="atualizarCliente" />
-                            <Button style="width: 25%; min-width: 100px"
-                                class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar"
-                                icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                            <Button v-if="!visible" style="width: 25%; min-width: 100px"
-                                class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar"
-                                icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                        <div class="mr-1 my-7 grid justify-content-end">
+                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
+                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
                         </div>
                     </div>
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true"
-            :closable="false">
+        <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true" :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
-                    Você tem certeza que deseja deletar o Cliente <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b>
-                    ?</span>
+                    Você tem certeza que deseja deletar o Cliente <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b> ?</span
+                >
             </div>
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteClienteDialog = false" class="p-button-text" />
