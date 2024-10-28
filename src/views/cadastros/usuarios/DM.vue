@@ -16,7 +16,7 @@ const loadingControladoras = ref(true);
 let DM = reactive({
     Ativo: false,
     Chave: '',
-    ChaveAPI:'',
+    ChaveAPI: '',
     ClienteID: '',
     ClienteNome: '',
     Created: '',
@@ -40,16 +40,16 @@ let DM = reactive({
 const tipoControladoras = ['2018', '2023', '2024', 'Locker'];
 
 const nextValues = reactive({
-    '2018': { placa: 12 },
-    '2023': { dip: 2 },
-    'Locker': { dip: 3 },
-    '2024': { placa: 101 }
+    2018: { placa: 12 },
+    2023: { dip: 2 },
+    Locker: { dip: 3 },
+    2024: { placa: 101 }
 });
 const maxControladoras = {
-    '2018': 16,
-    '2023': 90,
-    'Locker': Infinity,
-    '2024': Infinity
+    2018: 16,
+    2023: 90,
+    Locker: Infinity,
+    2024: Infinity
 };
 const countControladoras = (tipo) => {
     return Controladoras.value.filter((controladora) => controladora.tipo === tipo).length;
@@ -71,9 +71,9 @@ const usarApi = ref(false);
 const produtoSelecionado = ref({
     id_produto: '',
     Porta: '',
-    Placa:'',
-    Posicao:'',
-    Dip:'',
+    Placa: '',
+    Posicao: '',
+    Dip: '',
     Motor1: '',
     Motor2: '',
     Controladora: ''
@@ -90,11 +90,11 @@ const motorOptions = ref([]);
 const ListaDMS = ref([]);
 
 const handleControladoraChange = () => {
-    const selectedControladora = Controladoras.value.find(c => c.tipo === produtoSelecionado.value.Controladora);
+    const selectedControladora = Controladoras.value.find((c) => c.tipo === produtoSelecionado.value.Controladora);
     if (!selectedControladora) return;
 
     if (produtoSelecionado.value.Controladora === '2018') {
-        molasOptions.value = selectedControladora.dados.molas.map(mola => ({ label: mola, value: mola }));
+        molasOptions.value = selectedControladora.dados.molas.map((mola) => ({ label: mola, value: mola }));
         placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
     } else if (produtoSelecionado.value.Controladora === '2023') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
@@ -104,7 +104,7 @@ const handleControladoraChange = () => {
         motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
     } else if (produtoSelecionado.value.Controladora === 'Locker') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
-        posicaoOptions.value = selectedControladora.dados.posicao.map(p => ({ label: p, value: p }));
+        posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
     }
 };
 const atualizarProduto = async () => {
@@ -123,7 +123,7 @@ const atualizarProduto = async () => {
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
     } finally {
-        loading.value = false; 
+        loading.value = false;
         isEditMode.value = false;
     }
 };
@@ -217,15 +217,15 @@ const fetchItemDM = async () => {
 
 const onRowSelect = async (event) => {
     try {
-        DM = event.data;  
+        DM = event.data;
         visible.value = true;
-        console.log(DM)
-        await mapControladoras(DM);  
-        configurarClienteSelecionado(DM);  
-        configurarVisibilidade();  
+        console.log(DM);
+        await mapControladoras(DM);
+        configurarClienteSelecionado(DM);
+        configurarVisibilidade();
     } catch (error) {
-        console.error("Erro ao selecionar a DM:", error);
-        loadingControladoras.value = false;  
+        console.error('Erro ao selecionar a DM:', error);
+        loadingControladoras.value = false;
     }
 };
 const configurarClienteSelecionado = (dm) => {
@@ -238,31 +238,24 @@ const configurarClienteSelecionado = (dm) => {
         usarApi.value = false;
     }
 };
-const mapControladoras  = async (dm) => {
-    
-    Controladoras.value = dm.Controladoras.map(controladora => {
-    return {
-      id: controladora.ID,  
-      tipo: controladora.Tipo_Controladora,
-      deleted:false,
-      dados: {
-        placa: controladora.Placa,
-        dip: controladora.DIP,
-        andar: Array.isArray(controladora.Andar) ? 
-                 controladora.Andar.flatMap(a => a.split(',').map(Number)) : 
-                 (controladora.Andar ? controladora.Andar.split(',').map(Number) : []),
-        posicao: Array.isArray(controladora.Posicao) ? 
-                   controladora.Posicao.flatMap(p => p.split(',').map(Number)) : 
-                   (controladora.Posicao ? controladora.Posicao.split(',').map(Number) : []),
-        molas:controladora.Tipo_Controladora === '2018' && Array.isArray(controladora.Mola1)
-                ? controladora.Mola1.flatMap(mola => mola.split(',').map(Number)) 
-                : [],
-        motor:  '',
-        motor2:  ''
-      }
-    };
-  });
-    
+const mapControladoras = async (dm) => {
+    Controladoras.value = dm.Controladoras.map((controladora) => {
+        return {
+            id: controladora.ID,
+            tipo: controladora.Tipo_Controladora,
+            deleted: false,
+            dados: {
+                placa: controladora.Placa,
+                dip: controladora.DIP,
+                andar: Array.isArray(controladora.Andar) ? controladora.Andar.flatMap((a) => a.split(',').map(Number)) : controladora.Andar ? controladora.Andar.split(',').map(Number) : [],
+                posicao: Array.isArray(controladora.Posicao) ? controladora.Posicao.flatMap((p) => p.split(',').map(Number)) : controladora.Posicao ? controladora.Posicao.split(',').map(Number) : [],
+                molas: controladora.Tipo_Controladora === '2018' && Array.isArray(controladora.Mola1) ? controladora.Mola1.flatMap((mola) => mola.split(',').map(Number)) : [],
+                motor: '',
+                motor2: ''
+            }
+        };
+    });
+
     ajustarContagemInicial();
 };
 const preencherControladoraOptions = () => {
@@ -309,7 +302,7 @@ const preencherOpcoesControladoras = () => {
 
     Controladoras.value.forEach((controladora) => {
         if (controladora.tipo === '2018') {
-            console.log(controladora)
+            console.log(controladora);
             molasOptions.value.push(...controladora.dados.molas);
             placaOptions.value.push(controladora.dados.placa);
         } else if (controladora.tipo === '2023') {
@@ -384,11 +377,11 @@ const deleteDM = async (item) => {
 };
 const handleRowSelection = async (event) => {
     const edit = event.data;
-    console.log(edit)
-    isEditMode.value = true; 
-    showDialogProduto.value = true; 
+    console.log(edit);
+    isEditMode.value = true;
+    showDialogProduto.value = true;
     produtoSelecionado.value = {
-        id_item:edit.id_item,
+        id_item: edit.id_item,
         id_produto: edit.id_produto,
         Nome_Produto: edit.Nome_Produto,
         QTD: edit.QTD,
@@ -397,41 +390,41 @@ const handleRowSelection = async (event) => {
     };
 
     const [controladora, valor1, valor2, valor3] = edit.Posicao.split(' / ');
-    console.log(controladora, valor1, valor2, valor3)
+    console.log(controladora, valor1, valor2, valor3);
     produtoSelecionado.value.Controladora = controladora;
 
     if (controladora === '2018') {
-        produtoSelecionado.value.Placa = Number(valor1); 
-        produtoSelecionado.value.Motor1 = Number(valor2); 
+        produtoSelecionado.value.Placa = Number(valor1);
+        produtoSelecionado.value.Motor1 = Number(valor2);
     } else if (controladora === '2023') {
-        produtoSelecionado.value.Dip = Number(valor1);       
-        produtoSelecionado.value.Andar = Number(valor2);    
-        produtoSelecionado.value.Posicao = Number(valor3);   
+        produtoSelecionado.value.Dip = Number(valor1);
+        produtoSelecionado.value.Andar = Number(valor2);
+        produtoSelecionado.value.Posicao = Number(valor3);
     } else if (controladora === '2024') {
-        produtoSelecionado.value.Motor1 = Number(valor1);   
-    }else if (controladora === 'Locker') {
-        produtoSelecionado.value.Dip = Number(valor1);   
-        produtoSelecionado.value.Posicao = Number(valor2);   
+        produtoSelecionado.value.Motor1 = Number(valor1);
+    } else if (controladora === 'Locker') {
+        produtoSelecionado.value.Dip = Number(valor1);
+        produtoSelecionado.value.Posicao = Number(valor2);
     }
     handleControladoraChange();
 };
-const handleCancelar =() =>{
+const handleCancelar = () => {
     produtoSelecionado.value = {
-    id_item: '',
-    id_produto: '',
-    Nome_Produto: '',
-    QTD: '',
-    SKU: '',
-    Controladora: '',
-    Motor1: null,
-    Motor2: null,
-    Dip: null,
-    Andar: null,
-    Posicao: null
-  };
-  isEditMode.value = false;
-  showDialogProduto.value = false;
-}
+        id_item: '',
+        id_produto: '',
+        Nome_Produto: '',
+        QTD: '',
+        SKU: '',
+        Controladora: '',
+        Motor1: null,
+        Motor2: null,
+        Dip: null,
+        Andar: null,
+        Posicao: null
+    };
+    isEditMode.value = false;
+    showDialogProduto.value = false;
+};
 const atualizarDM = async () => {
     const data = {
         id_usuario: store.userId,
@@ -679,12 +672,26 @@ const selectAll = (index) => {
         Controladoras.value[index].dados.posicao = Array.from({ length: 14 }, (_, i) => i + 1);
     }
 };
+
+const desselectAll = (index) => {
+    if (Controladoras.value[index].tipo === '2018') {
+        Controladoras.value[index].dados.molas = Array.from({ length: 10 }, (_, i) => (i = 0));
+    }
+    if (Controladoras.value[index].tipo === '2023') {
+        Controladoras.value[index].dados.andar = Array.from({ length: 6 }, (_, i) => (i = 0));
+        Controladoras.value[index].dados.posicao = Array.from({ length: 15 }, (_, i) => (i = 0));
+    }
+    if (Controladoras.value[index].tipo === 'Locker') {
+        Controladoras.value[index].dados.posicao = Array.from({ length: 14 }, (_, i) => (i = 0));
+    }
+};
+
 const removeControladora = (index) => {
     if (!DM.ID_DM) {
-    Controladoras.value.splice(index, 1);
-  } else {
-    Controladoras.value[index].deleted = true;
-  }
+        Controladoras.value.splice(index, 1);
+    } else {
+        Controladoras.value[index].deleted = true;
+    }
 };
 </script>
 
@@ -795,8 +802,7 @@ const removeControladora = (index) => {
                                         <label for="Facial" class="ml-2"> Rec. Facial </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" value="Senha"
-                                            :binary="true" />
+                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" value="Senha" :binary="true" />
                                         <label for="Senha" class="ml-2"> Senha </label>
                                     </div>
                                 </div>
@@ -831,93 +837,106 @@ const removeControladora = (index) => {
                             </div>
                         </div>
                         <div>
-                            <Button label="Adicionar Controladora" @click="addControladora" />
-                                <div v-for="(controladora, index) in Controladoras" :key="index" class="card"
-                                v-show="!DM.ID_DM || !controladora?.deleted">
+                            <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted">
+                                <div class="flex justify-content-between flex-wrap">
                                     <h5>Controladora {{ index + 1 }}</h5>
-                                    <Dropdown v-model="controladora.tipo" :options="tipoControladoras"
-                                        placeholder="Selecione o tipo de Controladora"
-                                        @change="updateTipoControladora(index, controladora.tipo)" />
 
                                     <!-- Botão de Remoção -->
-                                    <Button icon="pi pi-trash" label="Remover" class="p-button-danger"
-                                        @click="removeControladora(index)" />
+                                    <Button icon="pi pi-trash" label="Remover" class="p-button-danger" @click="removeControladora(index)" />
+                                </div>
 
-                                    <!<!-- Controladora 2018 -->
-                                        <div v-if="controladora.tipo === '2018'">
-                                            <div class="field">
-                                                <label>Placa</label>
-                                                <InputText v-model="controladora.dados.placa" />
-                                            </div>
-                                            <div class="field">
-                                                <div class="checkbox-group">
-                                                    <Button label="Selecionar Todos" @click="selectAll(index)" />
-                                                    <div v-for="i in 10" :key="i" class="checkbox-item">
-                                                        <Checkbox v-model="controladora.dados.molas" :value="i" />
-                                                        <label>{{ i }}</label>
-                                                    </div>
-                                                </div>
+                                <div class="field mt-3 col-12">
+                                    <label class="mr-3">Modelo: </label>
+                                    <Dropdown class="" style="width: 250px" v-model="controladora.tipo" :options="tipoControladoras" placeholder="Selecione o tipo de controladora" @change="updateTipoControladora(index, controladora.tipo)" />
+                                </div>
+
+                                <!<!-- Controladora 2018 -->
+                                <div class="" v-if="controladora.tipo === '2018'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-5 p-0">Placa: </label>
+                                        <InputText class="" style="width: 250px" v-model="controladora.dados.placa" />
+                                    </div>
+
+                                    <fieldset class="field card mt-4">
+                                        <legend>Molas</legend>
+
+                                        <div class="checkbox-group mt-3" style="text-align: center">
+                                            <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
+                                                <Checkbox v-model="controladora.dados.molas" :value="i" />
+                                                <label>{{ i }}</label>
                                             </div>
                                         </div>
 
-                                        <!-- Controladora 2023 -->
-                                        <div v-if="controladora.tipo === '2023'">
-                                            <div class="field">
-                                                <label>DIP</label>
-                                                <InputText v-model="controladora.dados.dip" />
-                                            </div>
-                                            <div class="field">
-                                                <h4>Andar</h4>
-                                                <Button label="Selecionar Todos" @click="selectAll(index)" />
-                                                <div class="checkbox-group">
-                                                    <div v-for="i in 6" :key="i" class="checkbox-item">
-                                                        <Checkbox v-model="controladora.dados.andar" :value="i" />
-                                                        <label>{{ i }}</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="field">
-                                                <h4>Posição</h4>
-                                                <div class="checkbox-group">
-                                                    <div v-for="i in 15" :key="i" class="checkbox-item">
-                                                        <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                        <label>{{ i }}</label>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAll(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAll(index)" />
                                         </div>
+                                    </fieldset>
+                                </div>
 
-                                        <!-- Controladora 2024 -->
-                                        <div v-if="controladora.tipo === '2024'">
-                                            <div class="field">
-                                                <label>Placa</label>
-                                                <InputText v-model="controladora.dados.placa" />
-                                            </div>
-                                            <div class="field">
-                                                <label>Motor</label>
-                                                <InputText v-model="controladora.dados.motor" />
-                                            </div>
-                                        </div>
-
-                                        <!-- Controladora Locker -->
-                                        <div v-if="controladora.tipo === 'Locker'">
-                                            <div class="field">
-                                                <label>Dip</label>
-                                                <InputText v-model="controladora.dados.dip" />
-                                            </div>
-                                            <div class="field">
-                                                <h4>Posição</h4>
-                                                <div class="checkbox-group">
-                                                    <Button label="Selecionar Todos" @click="selectAll(index)" />
-                                                    <div v-for="i in 14" :key="i" class="checkbox-item">
-                                                        <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                        <label>{{ i }}</label>
-                                                    </div>
+                                <!-- Controladora 2023 -->
+                                <div v-if="controladora.tipo === '2023'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-6 p-0">DIP: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                    </div>
+                                    <div class="card mt-5">
+                                        <div class="field mt-3">
+                                            <h4>Andar:</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.andar" :value="i" />
+                                                    <label>{{ i }}</label>
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="field mt-6">
+                                            <h4>Posição</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAll(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAll(index)" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Controladora 2024 -->
+                                <div v-if="controladora.tipo === '2024'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-5 p-0">Placa: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.placa" />
+                                    </div>
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-5 p-0">Motor: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.motor" />
+                                    </div>
+                                </div>
+
+                                <!-- Controladora Locker -->
+                                <div v-if="controladora.tipo === 'Locker'">
+                                    <div class="field">
+                                        <label>Dip</label>
+                                        <InputText v-model="controladora.dados.dip" />
+                                    </div>
+                                    <div class="field">
+                                        <h4>Posição</h4>
+                                        <div class="checkbox-group">
+                                            <Button label="Selecionar Todos" @click="selectAll(index)" />
+                                            <div v-for="i in 14" :key="i" class="checkbox-item">
+                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                <label>{{ i }}</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
 
                         <div class="mt-5 mx-0 p-fluid grid">
                             <Button v-if="!visible" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
@@ -973,9 +992,7 @@ const removeControladora = (index) => {
                     <label for="Controladora" class="font-semibold">Controladora:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label"
-                        optionValue="value" :options="controladoraOptions" @change="handleControladoraChange"
-                        placeholder="Selecione uma controladora" />
+                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" placeholder="Selecione uma controladora" />
                 </div>
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="produtoSelecionado.Controladora === '2018'">
@@ -983,8 +1000,7 @@ const removeControladora = (index) => {
                         <label for="Dip" class="font-semibold">Placa:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions"
-                            optionLabel="label" optionValue="value" placeholder="Selecione a Placa" />
+                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Placa" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="molas" class="font-semibold">Molas:</label>
@@ -1030,15 +1046,13 @@ const removeControladora = (index) => {
                         <label for="Dip" class="font-semibold">DIP:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions"
-                            optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Posicao" class="font-semibold">Posição:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions"
-                            optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
                     </div>
                 </template>
             </div>

@@ -5,15 +5,16 @@
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
-            <Dropdown class="mt-4" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
+            <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
         </div>
 
-        <div v-if="selectedClient?.id" class="mt-8 card services-edit">
-            <h4 class="mt-2">Serviços atribuídos a {{ selectedClient.name }}</h4>
-
-            <div class="add-service">
-                <Dropdown v-model="newService" class="mt-3" style="width: 300px" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
-                <Button class="ml-3" label="Inserir" @click="addService" />
+        <div v-if="selectedClient?.id" class="mt-6 card services-edit">
+            <div class="flex justify-content-between align-items-center">
+                <h4 class="mt-3 no-break">Serviços atribuídos a {{ selectedClient.name }}</h4>
+                <div class="add-service flex align-items-center">
+                    <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
+                    <Button class="ml-3 " label="Inserir" @click="addService" />
+                </div>
             </div>
 
             <DataTable class="mt-5" :value="clientServices">
@@ -21,34 +22,36 @@
                 <Column header="Ação">
                     <template #body="slotProps">
                         <Button label="Configurar" class="mr-2" icon="pi pi-cog" @click="editService(slotProps.data)" />
-                        <Button label="Remover" icon="pi pi-trash" @click="removeService(slotProps.data)" />
+                        <Button label="Remover" class="p-button-danger" icon="pi pi-trash" @click="removeService(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
 
-            <div v-if="showConfig" class="configuracao-monitoramento">
-                <h4>Configurações para {{ selectedService.name }}</h4>
+            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 px-6" >
+                <!----><h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
 
-                <div class="field">
-                    <label for="notificationFrequency">Frequência de Notificação:</label>
-                    <Dropdown v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
-                </div>
+                <div class="flex flex-column col-12 mt-6 ml-3 " >
+                    <div class="field grid justify-content-center">
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">Frequência de Notificação:</label>
+                        <Dropdown style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
+                    </div>
 
-                <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field">
-                    <label for="time">Horário de Notificação:</label>
-                    <VueDatePicker v-model="serviceConfigs[selectedService.id].notificationTime" time-picker placeholder="Selecione o horário" />
-                </div>
+                    <div  v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">Horário de Notificação:</label>
+                        <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker placeholder="Selecione o horário" />
+                    </div>
 
-                <div class="field">
-                    <label for="notificationMethods">Métodos de Notificação:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
-                </div>
+                    <div class="field grid justify-content-center">
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationMethods">Métodos de Notificação:</label>
+                        <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
+                    </div>
 
-                <div class="field">
-                    <label for="recipients">Destinatários:</label>
-                    <MultiSelect v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
+                    <div class="field grid justify-content-center">
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">Destinatários:</label>
+                        <MultiSelect style="width: 300px"v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
+                    </div>
                 </div>
-            </div>
+            </Fieldset>
         </div>
         <div class="flex justify-content-end flex-wrap mt-8">
             <Button class="flex align-items-center justify-content-center" v-if="novo" label="Adicionar Serviço" @click="addServiceWithConfig" />
@@ -324,5 +327,11 @@ onMounted(fetchIfAdmin);
 
 .configuracao-monitordmento {
     margin-top: 20px;
+}
+
+.no-break {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>
