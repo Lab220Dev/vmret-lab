@@ -99,10 +99,16 @@ const handleDatepickerOpen = () => {
                 @open="handleDatepickerOpen"
             />
         </div>
-        <DataTable :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+        <DataTable class="mt-3" :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" 
+        :globalFilterFields="['Identificacao', 'status', 'dataHora']" 
+        selectionMode="single" 
+        :metaKeySelection="false"
+        tableStyle="min-width: 50rem; table-layout: fixed;"
+        :sortOrder="-1"
+        >
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="ID_DM" header="DM"></Column>
-            <Column field="status" header="status"></Column>
+            <Column field="Identificacao" header="DM"></Column>
+            <Column field="status" header="Status"></Column>
             <Column field="dataHora" header="Data"></Column> </DataTable
         ><LoadingSpinner v-if="loading" />
     </div>

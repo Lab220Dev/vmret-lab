@@ -706,16 +706,17 @@ const removeControladora = (index) => {
                             <DataTable
                                 v-model:filters="filters"
                                 :value="ListaDMS"
-                                selectionMode="single"
-                                tableStyle="min-width: 25%"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
                                 stripedRows
+                                paginator
+                                :rows="10"
+                                :rowsPerPageOptions="[5, 10, 20, 50]"
+                                :globalFilterFields="['ID_DM', 'Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']
+                                "selectionMode="single"
+                                tableStyle="min-width: 50rem; table-layout: fixed;" 
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                paginator
-                                :rows="10"
-                                :globalFilterFields="['id_DM', 'nome', 'email', 'nome_cliente', 'local', 'atualizado']"
+                                :sortOrder="-1"
                             >
                                 <template #header>
                                     <div class="flex justify-content-end">
@@ -727,17 +728,17 @@ const removeControladora = (index) => {
                                         </IconField>
                                     </div>
                                 </template>
-                                <Column field="ID_DM" header="Id"></Column>
-                                <Column field="Numero" header="Número"></Column>
-                                <Column field="Identificacao" header="Identificação"></Column>
-                                <Column field="ClienteNome" header="Cliente"></Column>
-                                <Column field="local" header="Localização"></Column>
-                                <Column field="Ativo" header="Ativo">
+                                <Column field="ID_DM" sortable style="width: 7%" header="ID"></Column>
+                                <Column field="Numero" sortable header="Número"></Column>
+                                <Column field="Identificacao"  sortable header="Identificação"></Column>
+                                <Column field="ClienteNome" sortable header="Cliente"></Column>
+                                <Column field="local" sortable header="Localização"></Column>
+                                <Column field="Ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
                                     </template>
                                 </Column>
-                                <Column field="Updated" header="Atualizado">
+                                <Column field="Updated" style="width: 15%" sortable header="Atualizado">
                                     <template #body="{ data }">
                                         {{ formatDate(new Date(data.Updated)) }}
                                     </template>
@@ -806,8 +807,8 @@ const removeControladora = (index) => {
                                         <label for="Senha" class="ml-2"> Senha </label>
                                     </div>
                                 </div>
-                                <Button class="mt-5" label="Adicionar Controladora" @click="addControladora" />
                             </div>
+                            <Button class="mt-7" icon="pi pi-plus" label="Adicionar Controladora" @click="addControladora" />
                         </panel>
 
                         <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
@@ -920,18 +921,23 @@ const removeControladora = (index) => {
 
                                 <!-- Controladora Locker -->
                                 <div v-if="controladora.tipo === 'Locker'">
-                                    <div class="field">
-                                        <label>Dip</label>
-                                        <InputText v-model="controladora.dados.dip" />
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-6 p-0">Dip: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
                                     </div>
-                                    <div class="field">
+                                    <div class="field card">
                                         <h4>Posição</h4>
                                         <div class="checkbox-group">
-                                            <Button label="Selecionar Todos" @click="selectAll(index)" />
-                                            <div v-for="i in 14" :key="i" class="checkbox-item">
+                                            
+                                            <div v-for="i in 14" :key="i" class="checkbox-item mt-3">
                                                 <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                 <label>{{ i }}</label>
                                             </div>
+                                        </div>
+
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAll(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAll(index)" />
                                         </div>
                                     </div>
                                 </div>

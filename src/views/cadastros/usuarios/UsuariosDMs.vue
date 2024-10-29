@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
+import { FilterMatchMode } from 'primevue/api';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { format, parseISO } from 'date-fns';
@@ -19,6 +20,10 @@ const SenhaBE = ref('');
 const errors = ref({});
 const deleteUsuarioDialog = ref(false);
 const item = ref({});
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 
 const plantas = ref([todosOption]);
 let usuario = reactive({
@@ -273,10 +278,33 @@ const resetForm = () => {
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar  Usuário DM">
                         <div class="col-12">
-                            <DataTable :value="ListaUsuario" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" paginator :rows="10">
-                                <Column field="nome" header="Nome"></Column>
-                                <Column field="login" header="Login"></Column>
-                                <Column field="ativo" header="Ativo">
+                            <DataTable 
+                            v-model:filters="filters"
+                             :value="ListaUsuario" stripedRows
+                             paginator
+                             :rows="10"
+                             :rowsPerPageOptions="[5, 10, 20, 50]"
+                             :globalFilterFields="['nome', 'login']"
+                             selectionMode="single" tableStyle="min-width: 50rem; table-layout: fixed;" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" 
+                             :sortOrder="-1" >
+
+                             <template #header>
+                                    <div class="flex justify-content-end">
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
+
+                                <Column field="nome" sortable style="width: 30%;" header="Nome"></Column>
+                                <Column field="login" sortable style="width: 50%;" header="Login">
+                                    <template #body="{ data }">
+                                        <span v-tooltip="data.login">{{ data.login }}</span>
+                                    </template></Column>
+                                <Column field="ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                                     </template>
@@ -320,19 +348,43 @@ const resetForm = () => {
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-
-                            <div class="flex align-items-center justify-content-end field col-12">
+                            
+                            <div class="flex align-items-center justify-content-end field col-12 mt-6">
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
                                 <Button style="width: 15%" class="buttons flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" />
                             </div>
+                            <Divider class="mt-4"  type="solid" />
                         </div>
                         <div class="col-12" v-if="visible">
-                            <DataTable v-model:selection="selectedVM" :value="ListaDMS" dataKey="code" tableStyle="width:100% min-width: 50rem" :size="small">
+                            <DataTable 
+                            v-model:filters="filters"
+                            v-model:selection="selectedVM" :value="ListaDMS" 
+                            stripedRows
+                            paginator
+                            :rows="10"
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            :globalFilterFields="['ID_DM', 'Identificacao']"
+                            dataKey="ID_DM" 
+                            tableStyle="min-width: 50rem; table-layout: fixed;" 
+                            :metaKeySelection="false"
+                            :size="small"
+                            :sortOrder="-1">
+                            <template #header>
+                                    <div class="flex justify-content-end">
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
                                 <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                                <Column field="ID_DM" header="Id Maquina" class="col-12 md:col-6" :style="{ width: '30%' }"> </Column>
-                                <Column field="Identificacao" header="Nome" class="col-12 md:col-6" :style="{ width: '70%' }"> </Column>
+                                <Column field="ID_DM" sortable header="DM" class="col-12 md:col-6" :style="{ width: '30%' }">
+                                </Column>
+                                <Column field="Identificacao" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '70%' }"> </Column>
                             </DataTable>
                         </div>
                     </TabPanel>
