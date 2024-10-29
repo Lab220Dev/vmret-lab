@@ -1,6 +1,6 @@
 <script setup>
 import { useToast } from 'primevue/usetoast';
-import { reactive, ref, onMounted, watch } from 'vue';
+import { reactive, ref, onMounted, watch, computed, nextTick } from 'vue';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import { FilterMatchMode } from 'primevue/api';
@@ -90,29 +90,35 @@ const motorOptions = ref([]);
 const ListaDMS = ref([]);
 
 const handleControladoraChange = () => {
-    const selectedControladora = Controladoras.value.find((c) => c.tipo === produtoSelecionado.value.Controladora);
+    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     if (!selectedControladora) return;
 
-    if (produtoSelecionado.value.Controladora === '2018') {
+    if (selectedControladora.tipo === '2018') {
         molasOptions.value = selectedControladora.dados.molas.map((mola) => ({ label: mola, value: mola }));
         placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
-    } else if (produtoSelecionado.value.Controladora === '2023') {
+    } else if (selectedControladora.tipo === '2023') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
         andarOptions.value = selectedControladora.dados.andar.map((a) => ({ label: a, value: a }));
         posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
-    } else if (produtoSelecionado.value.Controladora === '2024') {
+    } else if (selectedControladora.tipo === '2024') {
         motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
-    } else if (produtoSelecionado.value.Controladora === 'Locker') {
+    } else if (selectedControladora.tipo === 'Locker') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
         posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
     }
 };
+const tipoControladoraSelecionada = computed(() => {
+    const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
+    return controladora ? controladora.tipo : null;
+});
 const atualizarProduto = async () => {
+    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     const data = {
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...produtoSelecionado.value,
-        id_dm: DM.ID_DM
+        id_dm: DM.ID_DM,
+        tipo_controladora: selectedControladora ? selectedControladora.tipo : null
     };
     try {
         loading.value = true;
@@ -260,10 +266,19 @@ const mapControladoras = async (dm) => {
 };
 const preencherControladoraOptions = () => {
     controladoraOptions.value = Controladoras.value.map((controladora) => {
-        const id = controladora.id || 'N/A'; // Usando o ID da controladora diretamente
+        const id = controladora.id || 'N/A';
+        let identificador;
+
+        if (controladora.tipo === '2018' || controladora.tipo === '2024') {
+            identificador = controladora.dados.placa;
+        } else if (controladora.tipo === '2023' || controladora.tipo === 'Locker') {
+            identificador = controladora.dados.dip;
+        } else {
+            identificador = 'Desconhecido'; // Caso para tipos de controladora inesperados
+        }
         return {
-            label: `ID: ${id}, Tipo: ${controladora.tipo}`,
-            value: controladora.tipo
+            label: `ID: ${id}, Tipo: ${controladora.tipo}, Identificador: ${identificador}`,
+            value: controladora.id
         };
     });
 };
@@ -306,6 +321,7 @@ const preencherOpcoesControladoras = () => {
             molasOptions.value.push(...controladora.dados.molas);
             placaOptions.value.push(controladora.dados.placa);
         } else if (controladora.tipo === '2023') {
+            console.log(controladora);
             dipOptions.value.push(controladora.dados.dip);
             andarOptions.value.push(...controladora.dados.andar);
             posicaoOptions.value.push(...controladora.dados.posicao);
@@ -390,9 +406,21 @@ const handleRowSelection = async (event) => {
     };
 
     const [controladora, valor1, valor2, valor3] = edit.Posicao.split(' / ');
-    console.log(controladora, valor1, valor2, valor3);
-    produtoSelecionado.value.Controladora = controladora;
-
+    const controladoraOriginal = Controladoras.value.find((c) => {
+        if (c.tipo === controladora) {
+            if (controladora === '2018' || controladora === '2024') {
+                return c.dados.placa === Number(valor1);
+            } else if (controladora === '2023' || controladora === 'Locker') {
+                return c.dados.dip === Number(valor1);
+            }
+        }
+        return false;
+    });
+    if (controladoraOriginal) {
+        produtoSelecionado.value.Controladora = controladoraOriginal.id; 
+    } else {
+        console.warn('Controladora não encontrada para o tipo e identificador fornecidos.');
+    }
     if (controladora === '2018') {
         produtoSelecionado.value.Placa = Number(valor1);
         produtoSelecionado.value.Motor1 = Number(valor2);
@@ -406,6 +434,7 @@ const handleRowSelection = async (event) => {
         produtoSelecionado.value.Dip = Number(valor1);
         produtoSelecionado.value.Posicao = Number(valor2);
     }
+    await nextTick();
     handleControladoraChange();
 };
 const handleCancelar = () => {
@@ -426,10 +455,14 @@ const handleCancelar = () => {
     showDialogProduto.value = false;
 };
 const atualizarDM = async () => {
+    if (DM.IDcliente !== selectedClient.value.id_cliente) {
+        DM.IDcliente = selectedClient.value.id_cliente;
+    }
+    if (DM.ClienteNome !== selectedClient.value.nome_cliente) {
+        DM.ClienteNome = selectedClient.value.nome_cliente;
+    }
     const data = {
         id_usuario: store.userId,
-        IDcliente: selectedClient.value.id_cliente,
-        ClienteNome: selectedClient.value.nome_cliente,
         ...DM,
         Controladoras: Controladoras.value.map((controladora) => {
             if (!controladora.ID) {
@@ -503,11 +536,13 @@ const listarProduto = async () => {
 };
 
 const adicionarProduto = async () => {
+    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     const data = {
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         ...produtoSelecionado.value,
-        id_dm: DM.ID_DM
+        id_dm: DM.ID_DM,
+        tipo_controladora: selectedControladora ? selectedControladora.tipo : null
     };
     try {
         loading.value = true;
@@ -995,7 +1030,7 @@ const removeControladora = (index) => {
                     <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" placeholder="Selecione uma controladora" />
                 </div>
                 <!-- Exibir campos dependendo do tipo de controladora -->
-                <template v-if="produtoSelecionado.Controladora === '2018'">
+                <template v-if="tipoControladoraSelecionada === '2018'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Dip" class="font-semibold">Placa:</label>
                     </div>
@@ -1010,7 +1045,7 @@ const removeControladora = (index) => {
                     </div>
                 </template>
 
-                <template v-if="produtoSelecionado.Controladora === '2023'">
+                <template v-if="tipoControladoraSelecionada === '2023'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Dip" class="font-semibold">DIP:</label>
                     </div>
@@ -1033,7 +1068,7 @@ const removeControladora = (index) => {
                     </div>
                 </template>
 
-                <template v-if="produtoSelecionado.Controladora === '2024'">
+                <template v-if="tipoControladoraSelecionada === '2024'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Motor" class="font-semibold">Motor:</label>
                     </div>
@@ -1041,7 +1076,7 @@ const removeControladora = (index) => {
                         <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
                     </div>
                 </template>
-                <template v-if="produtoSelecionado.Controladora === 'Locker'">
+                <template v-if="tipoControladoraSelecionada === 'Locker'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Dip" class="font-semibold">DIP:</label>
                     </div>
