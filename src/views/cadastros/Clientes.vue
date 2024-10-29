@@ -26,7 +26,7 @@ const filters = ref({
 });
 let cliente = reactive({
     nome: '',
-    cpfcnpj: '',
+    cnpj: '',
     ativo: true,
     usar_api: false,
     textoretirada: ''
@@ -164,7 +164,7 @@ const loadCliente = async () => {
 const resetForm = () => {
     cliente = reactive({
         nome: '',
-        cpfcnpj: '',
+        cnpj: '',
         ativo: true,
         usar_api: false,
         textoretirada: ''
@@ -172,16 +172,59 @@ const resetForm = () => {
     structuredMenus.value = []; // Limpar a estrutura de menus ao resetar o formulário
 };
 const errors = reactive({
-    cpfcnpj: ''
+    cnpj: ''
 });
 
 const validateCNPJField = () => {
-    if (!validateCNPJ(cliente.cpfcnpj)) {
-        errors.cpfcnpj = 'CNPJ inválido';
+    const cnpj = cliente.cnpj; 
+    if (!cnpj || !validarCNPJ(cnpj)) {
+        errors.cnpj = 'CNPJ inválido';
     } else {
-        errors.cpfcnpj = '';
+        errors.cnpj = '';
     }
 };
+
+function validarCNPJ(cnpj) {
+    cnpj = cnpj.replace(/[^\d]+/g, '');
+
+    if (cnpj === '' || cnpj.length !== 14) return false;
+
+    const cnpjsInvalidos = [
+        "00000000000000", "11111111111111", "22222222222222",
+        "33333333333333", "44444444444444", "55555555555555",
+        "66666666666666", "77777777777777", "88888888888888",
+        "99999999999999"
+    ];
+    if (cnpjsInvalidos.includes(cnpj)) return false;
+
+    let tamanho = cnpj.length - 2;
+    let numeros = cnpj.substring(0, tamanho);
+    let digitos = cnpj.substring(tamanho);
+    let soma = 0;
+    let pos = tamanho - 7;
+
+    for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
+    }
+    let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if (resultado != digitos.charAt(0)) return false;
+
+    tamanho += 1;
+    numeros = cnpj.substring(0, tamanho);
+    soma = 0;
+    pos = tamanho - 7;
+
+    for (let i = tamanho; i >= 1; i--) {
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
+    }
+    resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+    if (resultado != digitos.charAt(1)) return false;
+
+    return true;
+}
+
 const formatDate = (value) => {
     if (!value) {
         return '';
@@ -255,7 +298,7 @@ onMounted(() => {
                         </template>
                         <Column field="id_cliente" sortable style="width: 7%" header="ID"></Column>
                         <Column field="nome" sortable style="width: 20%" header="Nome"></Column>
-                        <Column field="ativo" sortable style="width: 10%; text-align: center;" header="Ativo">
+                        <Column field="ativo" sortable style="width: 10%; text-align: center" header="Ativo">
                             <template #body="{ data }">
                                 <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                             </template>
@@ -283,14 +326,14 @@ onMounted(() => {
                                         <label for="id_planta">Nome:</label>
                                         <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
                                     </div>
-                                    <div :class="visible ? {'lg:col-9 md:col-9 sm:col-12': true} : {'lg:col-12 md:col-12 sm:col-12': true}">
-                                        <label for="cpfcnpj">CNPJ:</label>
-                                        <InputMask class="my-2" v-model="cliente.cpfcnpj" id="cpfcnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cpfcnpj" @blur="validateCNPJField" />
-                                        <small v-if="errors.cpfcnpj" class="p-error">{{ errors.cpfcnpj }}</small>
+                                    <div :class="visible ? { 'lg:col-9 md:col-9 sm:col-12': true } : { 'lg:col-12 md:col-12 sm:col-12': true }">
+                                        <label for="cnpj">CNPJ:</label>
+                                        <InputMask class="my-2" v-model="cliente.cnpj" id="cnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cnpj" @blur="validateCNPJField" />
+                                        <small v-if="errors.cnpj" class="p-error">{{ errors.cnpj }}</small>
                                     </div>
                                     <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
                                         <label v-if="visible">Selecione o perfil</label>
-                                       <Dropdown v-if="visible" style="width: 232px" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" /> 
+                                        <Dropdown v-if="visible" style="width: 232px" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" />
                                     </div>
 
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">

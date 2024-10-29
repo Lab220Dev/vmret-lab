@@ -288,7 +288,7 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Itens mais retirados</h5>
+                <h5 class="my-6  ml-2 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Div de busca de informações para o relatório -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
@@ -358,7 +358,7 @@ onMounted(() => {
                     </div>
                 </div>
                 <!-- DataTable do relatório -->
-                <div class="datatable-wrapper">
+                <div class="datatable-wrapper mt-6">
                     <DataTable
                         v-model:filters="filters"
                         :value="retiradas"
@@ -375,18 +375,21 @@ onMounted(() => {
                         ref="dt"
                     >
                         <template #header>
-                            <div class="flex justify-content-end">
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                </IconField>
-                            </div>
-                            <div class="flex justify-content-start">
-                                <span>Total de registros: {{ retiradas.length }}</span>
+                            <div class="flex justify-content-between align-items-center">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ retiradas.length }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
                             </div>
                         </template>
+
                         <template #empty>{{ emptyMessage }} </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
                         <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>

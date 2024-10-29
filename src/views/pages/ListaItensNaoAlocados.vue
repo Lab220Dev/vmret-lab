@@ -74,10 +74,15 @@ onMounted(() => {
             <Button label="Sincronizar" icon="pi pi-refresh" class="p-button-secondary" @click="sincronizar" />
         </div>
 
-        <DataTable v-model:filters="filters" :value="itens" stripedRows showGridlines paginator :rows="10"
-            :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
-            :globalFilterFields="['nome', 'descricao', 'codigo']" selectionMode="single"
-            :tableStyle="{ width: '100%' }">
+        <DataTable v-model:filters="filters" :value="itens" 
+        stripedRows 
+        showGridlines 
+        paginator 
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
+        :globalFilterFields="['nome', 'descricao', 'codigo']" 
+        selectionMode="single"
+        tableStyle="min-width: 50rem; table-layout: fixed;">
             <template #header>
                 <div class="flex justify-content-end">
                     <IconField iconPosition="left">
@@ -90,9 +95,9 @@ onMounted(() => {
             </template>
             <template #empty>{{ emptyMessage }}</template>
 
-            <Column field="nome" sortable header="Item"></Column>
-            <Column field="quantidadeReferencia" sortable header="Quantidade" class="text-center"></Column>
-            <Column field="ca" sortable header="CA"></Column>
+            <Column field="nome" sortable style="width: 70%" header="Item"></Column>
+            <Column field="quantidadeReferencia" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
+            <Column field="ca" sortable style="width: 15%" header="CA"></Column>
             <Column v-if="sincronizado" header="Status">
                 <template #body="slotProps">
                     <span>{{ slotProps.data.status }}</span>

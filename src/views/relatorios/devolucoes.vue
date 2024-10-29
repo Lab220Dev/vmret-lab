@@ -244,7 +244,7 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Devoluções</h5>
+                <h5 class="my-6  ml-2 text-2xl">Devoluções</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
@@ -315,7 +315,7 @@ onMounted(() => {
                 </div>
 
                 <!--  datatable do relatorio -->
-                <div class="datatable-wrapper">
+                <div class="datatable-wrapper mt-6">
                     <DataTable
                         v-model:filters="filters"
                         :value="devolucoes"
@@ -334,18 +334,21 @@ onMounted(() => {
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
-                            <div class="flex justify-content-end">
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                </IconField>
-                            </div>
-                            <div class="flex justify-content-start">
+                            <div class="flex justify-content-between align-items-center">
+                                <div class="flex justify-content-start">
                                 <span>Total de registros: {{ devolucoes.length }}</span>
                             </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
                         </template>
+
                         <template #empty> {{ emptyMessage }} </template>
                         <Column field="ID_DM" sortable header="DM"></Column>
                         <Column field="Dia" sortable header="Data"></Column>

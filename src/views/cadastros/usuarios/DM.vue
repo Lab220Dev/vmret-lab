@@ -710,7 +710,7 @@ const removeControladora = (index) => {
                                 paginator
                                 :rows="10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['ID_DM', 'Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']
+                                :globalFilterFields="['Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']
                                 "selectionMode="single"
                                 tableStyle="min-width: 50rem; table-layout: fixed;" 
                                 dataKey="id"
@@ -728,7 +728,6 @@ const removeControladora = (index) => {
                                         </IconField>
                                     </div>
                                 </template>
-                                <Column field="ID_DM" sortable style="width: 7%" header="ID"></Column>
                                 <Column field="Numero" sortable header="Número"></Column>
                                 <Column field="Identificacao"  sortable header="Identificação"></Column>
                                 <Column field="ClienteNome" sortable header="Cliente"></Column>

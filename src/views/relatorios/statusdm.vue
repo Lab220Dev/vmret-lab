@@ -5,6 +5,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+import { FilterMatchMode } from 'primevue/api';
 
 const store = useAuthStore();
 const relatorio = ref({
@@ -17,6 +18,10 @@ const loading = ref(false);
 const dms = ref([todosOption]);
 const StatusDM = ref([]);
 const dropdown1 = ref(null);
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 
 onMounted(() => {
     fetchDM();
@@ -44,22 +49,22 @@ const fetchDM = async () => {
     }
 };
 const KeepAlive = async () => {
-        const data = {
-            id_cliente: store.userIdCliente,
-            id_usuario: store.userId,
-            id_dm:relatorio.value.id_dm,
-            dia:relatorio.value.dia.toISOString()
-        };
-        try {
-            const response = await axios.post('/SDM/relatorio', data);
-            StatusDM.value = response.data;
-            if (StatusDM.value.length === 0) {
-                emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-            }
-        } catch (error) {
-            console.error('Erro ao carregar lista de dms:', error);
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
+        id_dm: relatorio.value.id_dm,
+        dia: relatorio.value.dia.toISOString()
+    };
+    try {
+        const response = await axios.post('/SDM/relatorio', data);
+        StatusDM.value = response.data;
+        if (StatusDM.value.length === 0) {
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         }
+    } catch (error) {
+        console.error('Erro ao carregar lista de dms:', error);
     }
+};
 
 const format = (date) => {
     const day = date.getDate();
@@ -78,12 +83,11 @@ const handleDatepickerOpen = () => {
 </script>
 
 <template>
-    <div class="card vh p-fluid formgrid">
+    <div class="card vh">
         <!-- Header com a Seleção de Dms -->
-        <h5 class="my-4 text-2xl">Status DM</h5>
+        <h5 class="my-6 ml-2 text-2xl">Status DM</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value"
-             placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" ref="dropdown1" @change="KeepAlive"/>
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
             <VueDatePicker
                 class="drop w-full md:w-14rem"
                 v-model="relatorio.dia"
@@ -99,17 +103,37 @@ const handleDatepickerOpen = () => {
                 @open="handleDatepickerOpen"
             />
         </div>
-        <DataTable class="mt-3" :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" 
-        :globalFilterFields="['Identificacao', 'status', 'dataHora']" 
-        selectionMode="single" 
-        :metaKeySelection="false"
-        tableStyle="min-width: 50rem; table-layout: fixed;"
-        :sortOrder="-1"
+        <DataTable
+            class="mt-3"
+            v-model:filters="filters"
+            :value="StatusDM"
+            stripedRows
+            showGridlines
+            paginator
+            :rows="10"
+            dataKey="DM"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            :globalFilterFields="['Identificacao', 'status', 'dataHora']"
+            selectionMode="single"
+            :metaKeySelection="false"
+            tableStyle="min-width: 50rem; table-layout: fixed;"
+            :sortOrder="-1"
         >
+            <template #header>
+                <div class="flex justify-content-end">
+                    <IconField iconPosition="left">
+                        <InputIcon>
+                            <i class="pi pi-search" />
+                        </InputIcon>
+                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                    </IconField>
+                </div>
+            </template>
+
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="Identificacao" header="DM"></Column>
-            <Column field="status" header="Status"></Column>
-            <Column field="dataHora" header="Data"></Column> </DataTable
+            <Column field="Identificacao" sortable style="width: 10%" header="DM"></Column>
+            <Column field="status" sortable header="Status"></Column>
+            <Column field="dataHora" sortable header="Data"></Column> </DataTable
         ><LoadingSpinner v-if="loading" />
     </div>
 </template>
