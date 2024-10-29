@@ -214,6 +214,12 @@ const router = createRouter({
             path: '/pages/notfound',
             name: 'notfound',
             component: () => import('@/views/pages/NotFound.vue')
+        },
+        {
+            path: '/evento/dados',
+            name: 'dados do evento',
+            component: () => import('@/views/evento.vue'),
+            meta: { requiresAuth: false }
         }
     ]
 });

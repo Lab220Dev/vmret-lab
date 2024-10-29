@@ -14,7 +14,6 @@ const canViewLastRecalls = ref(false); // Controle de exibição
 
 // Método de permissão
 const checkPermission = () => {
-    // Verifica a permissão do usuário
     if (store.userRole === 'Master' || store.userRole === 'Operador') {
         canViewLastRecalls.value = true; // Se for permitido, exibe os componentes
     }
@@ -55,7 +54,7 @@ const fetchUltimasRetiradas = async () => {
     };
     try {
         const response = await axios.post('/relatorioItems/ultimos', data);
-        products.value = response.data; // Atualiza os dados dos produtos
+        products.value = response.data.slice(0, 5) ; // Atualiza os dados dos produtos
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -73,7 +72,7 @@ const fetchMaisRetirados = async () => {
     };
     try {
         const response = await axios.post('/relatorioItems/listarMaisRet', data);
-        most.value = response.data; // Atualiza os dados dos produtos mais retirados
+        most.value = response.data.slice(0, 5) ;// Atualiza os dados dos produtos mais retirados
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -84,7 +83,23 @@ const fetchMaisRetirados = async () => {
         }
     }
 };
-
+const fetchEstoqueBaixo = async () => {
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    try {
+        const response = await axios.post('/Estoque/ItensEstoqueBaixo', data);
+        estoquebaixo.value = response.data.slice(0, 5) ;
+    } catch (error) {
+        if (error.response) {
+            console.error('Erro de resposta do servidor:', error.response.data);
+        } else if (error.request) {
+            console.error('Nenhuma resposta recebida:', error.request);
+        } else {
+            console.error('Erro ao configurar a requisição:', error.message);
+        }
+    }
+};
 onMounted(() => {
     // Exibe o toast se houver uma mensagem global
     if (store.getGlobalMessage) { // Usando o getter
@@ -102,82 +117,15 @@ onMounted(() => {
     checkPermission();
     if (canViewLastRecalls.value) {
         fetchUltimasRetiradas();
-        fetchMaisRetirados(); // Busca só se tiver permissão
+        fetchMaisRetirados(); 
+        fetchEstoqueBaixo();
     }
 });
-const estoquebaixo = ref([
-  { ProdutoNome: 'Produto 1', ProdutoSKU: 'SKU001', TotalQuantidade: 10 },
-  { ProdutoNome: 'Produto 2', ProdutoSKU: 'SKU002', TotalQuantidade: 15 },
-  { ProdutoNome: 'Produto 3', ProdutoSKU: 'SKU003', TotalQuantidade: 8 },
-  { ProdutoNome: 'Produto 4', ProdutoSKU: 'SKU004', TotalQuantidade: 12 },
-  { ProdutoNome: 'Produto 5', ProdutoSKU: 'SKU005', TotalQuantidade: 5 }
-]);
+const estoquebaixo = ref([]);
 </script>
 
 <template>
     <div class="grid grid-cols-12">
-        <!--cards-->
-        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
-            <div class="card mb-0">
-                <div class="flex justify-content-between mb-3">
-                    <div>
-                        <span class="block text-500 font-medium mb-3">Orders</span>
-                        <div class="text-900 font-medium text-xl">152</div>
-                    </div>
-                    <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-shopping-cart text-blue-500 text-xl"></i>
-                    </div>
-                </div>
-                <span class="text-green-500 font-medium">24 new </span>
-                <span class="text-500">since last visit</span>
-            </div>
-        </div>
-        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
-            <div class="card mb-0">
-                <div class="flex justify-content-between mb-3">
-                    <div>
-                        <span class="block text-500 font-medium mb-3">Revenue</span>
-                        <div class="text-900 font-medium text-xl">$2.100</div>
-                    </div>
-                    <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-map-marker text-orange-500 text-xl"></i>
-                    </div>
-                </div>
-                <span class="text-green-500 font-medium">%52+ </span>
-                <span class="text-500">since last week</span>
-            </div>
-        </div>
-        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
-            <div class="card">
-                <div class="flex justify-content-between mb-3">
-                    <div>
-                        <span class="block text-500 font-medium mb-3">Customers</span>
-                        <div class="text-900 font-medium text-xl">28441</div>
-                    </div>
-                    <div class="flex align-items-center justify-content-center bg-cyan-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-inbox text-cyan-500 text-xl"></i>
-                    </div>
-                </div>
-                <span class="text-green-500 font-medium">520 </span>
-                <span class="text-500">newly registered</span>
-            </div>
-        </div>
-        <div class="col-12 xl:col-3 lg:col-3 md:col-6 sm:12">
-            <div class="card mb-0">
-                <div class="flex justify-content-between mb-3">
-                    <div>
-                        <span class="block text-500 font-medium mb-3">Comments</span>
-                        <div class="text-900 font-medium text-xl">152 Unread</div>
-                    </div>
-                    <div class="flex align-items-center justify-content-center bg-purple-100 border-round" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-comment text-purple-500 text-xl"></i>
-                    </div>
-                </div>
-                <span class="text-green-500 font-medium">85 </span>
-                <span class="text-500">responded</span>
-            </div>
-        </div>
-
         <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12 ">
             <div class="card card-item">
                 <h5>Keep Alive</h5>
@@ -188,19 +136,15 @@ const estoquebaixo = ref([
                 <LastRecalls :products="products" />
             </div>
         </div>
-
         <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
             <div class="card card-item">
                 <div class="title" style="display: flex; align-items: center">
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
-
-                <!-- <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i> -->
-
                 <DataTable :rows="5" :value="estoquebaixo" responsiveLayout="scroll">
-                    <Column field="ProdutoNome" header="Item" sortable style="width: 50%"></Column>
-                    <Column field="ProdutoSKU" header="SKU" sortable style="width: 30%"></Column>
-                    <Column field="TotalQuantidade" header="Quantidade" sortable style="width: 20%"></Column>
+                    <Column field="nome" header="Item" sortable style="width: 50%"></Column>
+                    <Column field="sku" header="SKU" sortable style="width: 30%"></Column>
+                    <Column field="quantidade" header="Quantidade" sortable style="width: 20%"></Column>
                 </DataTable>
             </div>
 
