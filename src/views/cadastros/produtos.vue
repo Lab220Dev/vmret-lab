@@ -346,20 +346,18 @@ onMounted(async () => {
                         @rowSelect="handleRowSelection"
                     >
                         <template #header>
-                            <div class="flex justify-content-between align-items-center mb-4">
-                                <div class="flex justify-content-end mr-3">
+                            <div class="flex justify-content-between align-items-center mt-4">
                                     <div class="font-semibold">
                                         <span>Total de registros: {{ ListaProdutos.length }}</span>
                                     </div>
-                                </div>
-                                <div>
+                                
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
                                         <InputText v-model="filters['global'].value" placeholder="Busca" />
                                     </IconField>
-                                </div>
+                                
                             </div>
                         </template>
 

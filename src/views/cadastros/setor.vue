@@ -294,6 +294,7 @@ const SalvarProduto = async () => {
                     stripedRows 
                     selectionMode="single" tableStyle="min-width: 25%" 
                     paginator
+                    removableSort
                     :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" 
                     :sortField="'codigo'"  
                     :sortOrder="1"
@@ -302,7 +303,10 @@ const SalvarProduto = async () => {
                     :metaKeySelection="false" @rowSelect="handleRowSelection">
 
                     <template #header>
-                            <div class="flex justify-content-end align-items-center mb-4">
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                <div class="font-semibold">
+                        <span>Total de registros: {{ ListaSetor.length }}</span>
+                    </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
@@ -319,11 +323,6 @@ const SalvarProduto = async () => {
                         <Column field="nome" sortable header="Setor (Nome)"></Column>
                         <Column field="id_centro_custo" sortable header="Centro de Custo"></Column>
                     </DataTable>
-                </div>
-                <div class="flex justify-content-end mr-3">
-                    <div class="font-semibold">
-                        <span>Total de registros: {{ ListaSetor.length }}</span>
-                    </div>
                 </div>
             </TabPanel>
             <!-- fim do listar -->

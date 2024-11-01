@@ -991,10 +991,13 @@ const removeControladora = (index) => {
                     </TabPanel>
                 </TabView>
                 <div class="card" v-if="operador">
-                    <h5 class="my-2">Itens da DM</h5>
-
+                    
                     <div class="mx-0 grid">
                         <div class="col-12">
+                            <div class="flex mt-5 justify-content-between">
+                                <h5>Itens da DM</h5>
+                                <Button label="Adicionar Itens" @click="showDialogProduto = true" />
+                            </div>
                             <DataTable
                                 v-model:filters="filters"
                                 :value="ListaItens"
@@ -1012,9 +1015,12 @@ const removeControladora = (index) => {
                                 :sortOrder="1"
                                 :sortField="'SKU'"
                             >
+                            
                                 <template #header>
-                                    <div class="flex justify-content-between mb-4">
-                                        <Button label="Adicionar Itens" @click="showDialogProduto = true" />
+                                    <div class="flex justify-content-between mt-4">
+                                        <div class="font-semibold">
+                                    <span>Total de itens carregados: {{ ListaItens.length }}</span>
+                                </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
@@ -1024,7 +1030,7 @@ const removeControladora = (index) => {
                                     </div>
                                 </template>
 
-                                <Column field="SKU" style="width: 9%" header="SKU"></Column>
+                                <Column field="SKU" style="width: 9%" sortable header="SKU"></Column>
                                 <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
                                 <Column field="Posicao" sortable style="width: 40%" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
                                 <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
@@ -1034,12 +1040,7 @@ const removeControladora = (index) => {
                                     </template>
                                 </Column>
                             </DataTable>
-                            <div class="flex justify-content-between mr-3">
-                                <Button class="ml-3" style="width: 150px" label="Voltar" @click="voltar()" />
-                                <div class="font-semibold">
-                                    <span>Total de registros: {{ ListaItens.length }}</span>
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -1057,6 +1058,7 @@ const removeControladora = (index) => {
                     <Dropdown
                         v-model="produtoSelecionado.id_produto"
                         class="w-full"
+                        removableSort
                         :options="ListaProdutos"
                         :virtualScrollerOptions="{ itemSize: 30 }"
                         :filter="true"

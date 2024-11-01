@@ -372,7 +372,7 @@ onMounted(() => {
                 </template>
             </Column>
             <Column field="Quantidade" style="width: 10%" sortable header="Quant" class="text-center"></Column>
-            <Column field="ProdutoSKU" style="width: 10%" header="CA"></Column>
+            <Column field="ProdutoSKU" style="width: 10%" sortable header="CA"></Column>
         </DataTable>
 
         <Card v-if="!show">

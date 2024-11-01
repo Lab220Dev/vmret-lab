@@ -294,9 +294,10 @@ const resetForm = () => {
                                 :value="ListaUsuario"
                                 stripedRows
                                 paginator
+                                removableSort
                                 :rows="10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['id_usuario','nome', 'email', 'nome_cliente', 'role', 'last_login']"
+                                :globalFilterFields="['id_usuario', 'nome', 'email', 'nome_cliente', 'role', 'last_login']"
                                 selectionMode="single"
                                 tableStyle="min-width: 50rem; table-layout: fixed;"
                                 ref="dt"
@@ -307,7 +308,10 @@ const resetForm = () => {
                                 :sortField="'id_usuario'"
                             >
                                 <template #header>
-                                    <div class="flex justify-content-end  mb-4">
+                                    <div class="flex justify-content-between mt-4">
+                                        <div class="font-semibold">
+                                            <span>Total de registros: {{ ListaUsuario.length }}</span>
+                                        </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
@@ -316,7 +320,6 @@ const resetForm = () => {
                                         </IconField>
                                     </div>
                                 </template>
-                                <Column field="id_usuario" sortable style="width: 7%" header="ID"></Column>
                                 <Column field="nome" sortable style="width: 20%" class="table-cell" header="Nome">
                                     <template #body="{ data }">
                                         <span v-tooltip="data.nome">{{ data.nome }}</span>
@@ -335,8 +338,9 @@ const resetForm = () => {
                                 <Column field="role" sortable class="table-cell" style="width: 15%" header="Role">
                                     <template #body="{ data }">
                                         <span v-tooltip="data.role">{{ data.role }}</span>
-                                    </template></Column>
-                                <Column field="ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
+                                    </template></Column
+                                >
+                                <Column field="ativo" sortable style="width: 9%; text-align: center" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                                     </template>
@@ -353,11 +357,6 @@ const resetForm = () => {
                                 </Column>
                             </DataTable>
                         </div>
-                        <div class="flex justify-content-end mr-3">
-                    <div class="font-semibold">
-                        <span>Total de registros: {{ ListaUsuario.length }}</span>
-                    </div>
-                </div>
                     </TabPanel>
                     <TabPanel :header="visible ? 'Editar Usuário Web' : 'Adicionar Usuário Web'">
                         <!-- <h5 class="mt-4">{{ visible ? 'Editar Usuário Web' : '' }}</h5> -->

@@ -181,6 +181,7 @@ onMounted(() => {
                     v-model:filters="filters"
                     :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows
                     paginator
+                    removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
                          dataKey="id" 
@@ -190,15 +191,17 @@ onMounted(() => {
                          :sortOrder="1" @rowSelect="handleRowSelection">
 
                     <template #header>
-                            <div class="flex justify-content-end align-items-center mb-4">
-                                <div>
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                
+                        <span>Total de registros: {{ ListaFuncao.length }}</span>
+                    
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
                                         <InputText v-model="filters['global'].value" placeholder="Busca" />
                                     </IconField>
-                                </div>
+                                
                             </div>
                         </template>
 
@@ -207,11 +210,7 @@ onMounted(() => {
                         <Column field="nome" sortable header="Função (Nome)"></Column>
                         <Column field="id_centro_custo" sortable header="Centro de Custo (Nome)"></Column>
                     </DataTable>
-                    <div class="flex justify-content-end mr-3">
-                    <div class="font-semibold">
-                        <span>Total de registros: {{ ListaFuncao.length }}</span>
-                    </div>
-                </div>
+                    
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Função' : 'Adicionar Função'" v-model:activeIndex="active">
