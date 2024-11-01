@@ -4,7 +4,11 @@ import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { FilterMatchMode } from 'primevue/api';
 
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 const active = ref(0);
 const store = useAuthStore();
 const toast = useToast();
@@ -158,11 +162,39 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
-                    <DataTable :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable 
+                    v-model:filters="filters"
+                    :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" paginator
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :rows="10"
+                        stripedRows
+                        :globalFilterFields="['id_planta', 'nome']" 
+                        :sortField="'id_planta'" 
+                        :sortOrder="1" 
+                        dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+
+                        <template #header>
+                            <div class="flex justify-content-end align-items-center mb-4">
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
                         <template #empty> Nenhuma Planta adicionada. </template>
-                        <Column field="id_planta" header="Planta de Custo"></Column>
-                        <Column field="nome" header="Planta (Nome)"></Column>
+                        <Column field="id_planta" sortable header="Planta de Custo"></Column>
+                        <Column field="nome" sortable header="Planta (Nome)"></Column>
                     </DataTable>
+                </div>
+                <div class="flex justify-content-end mr-3">
+                    <div class="font-semibold">
+                        <span>Total de registros: {{ ListaPlanta.length }}</span>
+                    </div>
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Planta' : 'Adicionar Planta'">

@@ -321,6 +321,7 @@ onMounted(() => {
                         :value="devolucoes"
                         stripedRows
                         showGridlines
+                        removableSort
                         paginator
                         :rows="10"
                         :rowsPerPageOptions="[5, 10, 20, 50]"
@@ -329,8 +330,8 @@ onMounted(() => {
                         :tableStyle="{ width: '100%' }"
                         ref="dt"
                         class=""
-                        :sortField="'ID_Devolucao_Item'" 
-                        :sortOrder="-1"  
+                        :sortOrder="1"
+                        :sortField="'ProdutoSKU'"    
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>
@@ -357,7 +358,7 @@ onMounted(() => {
                         <Column field="email" sortable header="E-mail"></Column>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
                         <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
-                        <Column field="ProdutoSKU" sortable header="CA"></Column>
+                        <Column field="ProdutoSKU" header="CA"></Column>
                     </DataTable>
                 </div>
                 <Card v-if="!show">
@@ -417,5 +418,11 @@ onMounted(() => {
 .field {
     white-space: nowrap;
     text-align: left;
+}
+
+.table-cell {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 </style>

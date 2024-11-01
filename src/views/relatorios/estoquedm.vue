@@ -83,6 +83,7 @@ onMounted(() => {
             :value="EstoqueDM"
             stripedRows
             showGridlines
+            removableSort
             paginator
             :rows="10"
             dataKey="SKU"
@@ -91,7 +92,8 @@ onMounted(() => {
             selectionMode="single"
             :metaKeySelection="false"
             tableStyle="min-width: 50rem; table-layout: fixed;"
-            :sortOrder="-1"
+            :sortOrder="1"
+            :sortField="'sku'"
             :tableStyle="{ width: '100%' }"
         >
             <template #header>
@@ -110,12 +112,12 @@ onMounted(() => {
                 </div>
             </template>
 
-            <Column field="sku" sortable class="table-cell" style="width: 10%" header="SKU"></Column>
+            <Column field="sku" class="table-cell" style="width: 10%" header="SKU"></Column>
             <Column field="nome" sortable style="width: 30%" header="Produto">
                 <template #body="{ data }">
                     <span v-tooltip="data.nome">{{ data.nome }}</span>
-                </template></Column
-            >
+                </template>
+            </Column>
             <Column field="Posicao" sortable style="width: 10%; text-align: center" header="Posição"></Column>
             <Column field="quantidade" sortable style="width: 15%; text-align: center">
                 <template #header>

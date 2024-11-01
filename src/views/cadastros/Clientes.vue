@@ -284,7 +284,8 @@ onMounted(() => {
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
                         :globalFilterFields="['id_cliente', 'nome', 'last_login']"
-                        :sortOrder="-1"
+                        :sortOrder="1"
+                        :sortField="'id_cliente'"
                     >
                         <template #header>
                             <div class="flex justify-content-end">

@@ -274,7 +274,7 @@ const resetForm = () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5 class="mt-2">Usuários Dispenser Machines</h5>
+                <h4 class="mt-2">Usuários Dispenser Machines</h4>
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar  Usuário DM">
                         <div class="col-12">
@@ -286,10 +286,11 @@ const resetForm = () => {
                              :rowsPerPageOptions="[5, 10, 20, 50]"
                              :globalFilterFields="['nome', 'login']"
                              selectionMode="single" tableStyle="min-width: 50rem; table-layout: fixed;" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" 
-                             :sortOrder="-1" >
+                             :sortOrder="1"
+                             :sortField="'nome'" >
 
                              <template #header>
-                                    <div class="flex justify-content-end">
+                                    <div class="flex justify-content-end mb-4">
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />

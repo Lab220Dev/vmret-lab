@@ -334,6 +334,8 @@ onMounted(() => {
                         :globalFilterFields="['ID_DM', 'Data', 'operador', 'item', 'Quantidade', 'Mola']"
                         :tableStyle="{ width: '100%' }"
                         ref="dt"
+                        :sortField="'ID_DM'"  
+                        :sortOrder="1"
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>

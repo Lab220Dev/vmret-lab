@@ -417,7 +417,7 @@ const handleRowSelection = async (event) => {
         return false;
     });
     if (controladoraOriginal) {
-        produtoSelecionado.value.Controladora = controladoraOriginal.id; 
+        produtoSelecionado.value.Controladora = controladoraOriginal.id;
     } else {
         console.warn('Controladora não encontrada para o tipo e identificador fornecidos.');
     }
@@ -731,10 +731,10 @@ const removeControladora = (index) => {
 </script>
 
 <template>
-    <div class="grid h-full">
+    <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5 class="mt-2">Dispenser Machines</h5>
+                <h4 class="my-6 ml-2">Dispenser Machines</h4>
                 <TabView v-model:activeIndex="active" v-if="!show">
                     <TabPanel header="Listar Dispenser Machines">
                         <div class="col-12">
@@ -742,32 +742,39 @@ const removeControladora = (index) => {
                                 v-model:filters="filters"
                                 :value="ListaDMS"
                                 stripedRows
+                                removableSort
                                 paginator
                                 :rows="10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']
-                                "selectionMode="single"
-                                tableStyle="min-width: 50rem; table-layout: fixed;" 
+                                :globalFilterFields="['Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']"
+                                selectionMode="single"
+                                tableStyle="min-width: 50rem; table-layout: fixed;"
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                :sortOrder="-1"
+                                :sortOrder="1"
+                                :sortField="'Identificacao'"
                             >
                                 <template #header>
-                                    <div class="flex justify-content-end">
-                                        <IconField iconPosition="left">
-                                            <InputIcon>
-                                                <i class="pi pi-search" />
-                                            </InputIcon>
-                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                        </IconField>
-                                    </div>
-                                </template>
+                                    <div class="flex justify-content-between align-items-center">
+                                        <div class="flex justify-content-start">
+                                            <span>Total de registros: {{ ListaDMS.length }}</span>
+                                        </div>
+                                        <div>
+                                            <IconField iconPosition="left">
+                                                <InputIcon>
+                                                    <i class="pi pi-search" />
+                                                </InputIcon>
+                                                <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                            </IconField>
+                                        </div>
+                                    </div> </template
+                                ><Column field="Identificacao" header="Identificação"></Column>
                                 <Column field="Numero" sortable header="Número"></Column>
-                                <Column field="Identificacao"  sortable header="Identificação"></Column>
+
                                 <Column field="ClienteNome" sortable header="Cliente"></Column>
                                 <Column field="local" sortable header="Localização"></Column>
-                                <Column field="Ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
+                                <Column field="Ativo" sortable style="width: 9%; text-align: center" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
                                     </template>
@@ -791,15 +798,15 @@ const removeControladora = (index) => {
                                 <label for="name">Cliente:</label>
                                 <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                             </div>
-                            <div class="full lg:col-6 md:col-9 sm:col-12">
-                                <label for="email">Numero da DM:</label>
-                                <InputText class="my-2" v-model="DM.Numero" id="email" />
-                            </div>
+
                             <div class="full lg:col-6 md:col-9 sm:col-12">
                                 <label for="email">Identificação da DM:</label>
                                 <InputText class="my-2" v-model="DM.Identificacao" id="email" />
                             </div>
-
+                            <div class="full lg:col-6 md:col-9 sm:col-12">
+                                <label for="email">Numero da DM:</label>
+                                <InputText class="my-2" v-model="DM.Numero" id="email" />
+                            </div>
                             <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                 <label class="mt-0 text-nowrap" for="switch2">DM ativa?</label>
                                 <div class="grid mt-3">
@@ -962,7 +969,6 @@ const removeControladora = (index) => {
                                     <div class="field card">
                                         <h4>Posição</h4>
                                         <div class="checkbox-group">
-                                            
                                             <div v-for="i in 14" :key="i" class="checkbox-item mt-3">
                                                 <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                 <label>{{ i }}</label>
@@ -985,35 +991,57 @@ const removeControladora = (index) => {
                     </TabPanel>
                 </TabView>
                 <div class="card" v-if="operador">
-                    <h5 class="mt-2">Itens da DM</h5>
-                    <Button class="m-1" label="Adicionar Itens" @click="showDialogProduto = true" />
-                    <div class="mt-5 mx-0 p-fluid grid">
-                        <div class="lg:col-12 md:col-12 sm:col-12">
+                    <h5 class="my-2">Itens da DM</h5>
+
+                    <div class="mx-0 grid">
+                        <div class="col-12">
                             <DataTable
+                                v-model:filters="filters"
                                 :value="ListaItens"
                                 selectionMode="single"
-                                tableStyle="min-width: 25%"
+                                tableStyle="min-width: 50rem; table-layout: fixed;"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
+                                :globalFilterFields="['SKU', 'Nome_Produto', 'Posicao', 'QTD']"
                                 stripedRows
+                                removableSort
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="handleRowSelection"
                                 paginator
                                 :rows="10"
+                                :sortOrder="1"
+                                :sortField="'SKU'"
                             >
-                                <Column field="SKU" header="SKU"></Column>
-                                <Column field="Nome_Produto" header="Produto"></Column>
-                                <Column field="Posicao" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
-                                <Column field="QTD" header="QTD"></Column>
+                                <template #header>
+                                    <div class="flex justify-content-between mb-4">
+                                        <Button label="Adicionar Itens" @click="showDialogProduto = true" />
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
+
+                                <Column field="SKU" style="width: 9%" header="SKU"></Column>
+                                <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
+                                <Column field="Posicao" sortable style="width: 40%" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
+                                <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
                                     </template>
                                 </Column>
                             </DataTable>
+                            <div class="flex justify-content-between mr-3">
+                                <Button class="ml-3" style="width: 150px" label="Voltar" @click="voltar()" />
+                                <div class="font-semibold">
+                                    <span>Total de registros: {{ ListaItens.length }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <Button class="m-1" label="Voltar" @click="voltar()" />
                 </div>
                 <LoadingSpinner v-if="loading" />
             </div>
@@ -1026,7 +1054,18 @@ const removeControladora = (index) => {
                     <label for="Produto" class="font-semibold">Produto:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.id_produto" class="w-full" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" />
+                    <Dropdown
+                        v-model="produtoSelecionado.id_produto"
+                        class="w-full"
+                        :options="ListaProdutos"
+                        :virtualScrollerOptions="{ itemSize: 30 }"
+                        :filter="true"
+                        :filterBy="'label'"
+                        v-model:filters="filters"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Selecione um produto"
+                    />
                 </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Controladora" class="font-semibold">Controladora:</label>

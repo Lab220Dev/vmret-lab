@@ -3,6 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+import { FilterMatchMode } from 'primevue/api';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -11,6 +12,10 @@ const centroCusto = ref([]);
 const visible = ref(false);
 const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 
 let cdc = reactive({
     Nome: '',
@@ -143,14 +148,42 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Centros de Custo">
                 <div class="col-12">
-                    <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        <Column field="Codigo" header="Código"></Column>
-                        <Column field="Nome" header="Centro de Custo (Nome)"></Column>
+                    <DataTable 
+                    v-model:filters="filters"
+                    :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows
+                        paginator
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :rows="10"
+                         dataKey="id" 
+                         :sortField="'Codigo'"  
+                         :globalFilterFields="['Codigo', 'Nome']"
+                         :metaKeySelection="false" @rowSelect="handleRowSelection">
+                        
+                         <template #header>
+                            <div class="flex justify-content-end align-items-center mb-4">
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
+                        <Column field="Codigo" sortable header="Código"></Column>
+                        <Column field="Nome" sortable header="Centro de Custo (Nome)"></Column>
                     </DataTable>
+                </div>
+                <div class="flex justify-content-end mr-3">
+                    <div class="font-semibold">
+                        <span>Total de registros: {{ centroCusto.length }}</span>
+                    </div>
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Centro de Custo' : 'Adicionar Centro de Custo'" v-model:activeIndex="active">
-                <div class="grid">
+                <div class="grid mt-3">
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">

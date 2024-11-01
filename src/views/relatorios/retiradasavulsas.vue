@@ -337,7 +337,9 @@ onMounted(() => {
                     <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
                         :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
                         :globalFilterFields="['DM', 'Data', 'Matricula', 'Nome', 'Email', 'CodigoCa', 'Item']"
-                        :tableStyle="{ width: '100%' }" ref="dt">
+                        :tableStyle="{ width: '100%' }" ref="dt"
+                        :sortField="'CodigoCa'"
+                        :sortOrder="1"  >
                         <template #header>
                             <div class="flex justify-content-end">
                                 <IconField iconPosition="left">

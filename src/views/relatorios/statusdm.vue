@@ -109,6 +109,7 @@ const handleDatepickerOpen = () => {
             :value="StatusDM"
             stripedRows
             showGridlines
+            removableSort
             paginator
             :rows="10"
             dataKey="DM"
@@ -117,18 +118,24 @@ const handleDatepickerOpen = () => {
             selectionMode="single"
             :metaKeySelection="false"
             tableStyle="min-width: 50rem; table-layout: fixed;"
-            :sortOrder="-1"
+            :sortOrder="1"
+            :sortField="'Identificacao'"  
         >
-            <template #header>
-                <div class="flex justify-content-end">
-                    <IconField iconPosition="left">
-                        <InputIcon>
-                            <i class="pi pi-search" />
-                        </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                    </IconField>
-                </div>
-            </template>
+        <template #header>
+                            <div class="flex justify-content-between align-items-center ">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ StatusDM.length }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
 
             <template #empty> {{ emptyMessage }} </template>
             <Column field="Identificacao" sortable style="width: 10%" header="DM"></Column>

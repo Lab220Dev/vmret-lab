@@ -371,11 +371,14 @@ onMounted(() => {
                         @rowSelect="onRowSelect"
                         :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']"
                         selectionMode="single"
-                        :tableStyle="{ width: '100%' }"
+                        removableSort
+                        :sortOrder="1"
+                        :sortField="'ProdutoSKU'"                        
+                        tableStyle="min-width: 50rem; table-layout: fixed;"
                         ref="dt"
                     >
                         <template #header>
-                            <div class="flex justify-content-between align-items-center">
+                            <div class="flex justify-content-between align-items-center ">
                                 <div class="flex justify-content-start">
                                     <span>Total de registros: {{ retiradas.length }}</span>
                                 </div>
@@ -392,17 +395,17 @@ onMounted(() => {
 
                         <template #empty>{{ emptyMessage }} </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
-                        <Column field="ProdutoSKU" sortable header="CA"></Column>
+                        <Column field="quantidade_no_periodo" sortable style="width: 15%;" header="Quantidade" class="text-center"></Column>
+                        <Column field="ProdutoSKU" style="width: 15%;" header="CA"></Column>
                     </DataTable>
                     <card v-if="show" class="details-card">
                         <template #title>Detalhes do Produto</template>
                         <template #content>
-                            <DataTable :value="selectedItem" stripedRows showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                            <DataTable :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>
                                 <Column field="Data" sortable header="Data"></Column>
                                 <Column field="Quantidade" sortable header="Quantidade"> </Column>
-                                <Column field="ProdutoSKU" sortable header="SKU"></Column>
+                                <Column field="ProdutoSKU" sortable  header="SKU"></Column>
                             </DataTable>
                         </template>
                     </card>

@@ -23,23 +23,23 @@ const salvarIntegracao = () => {
 
 <template>
     <div class="card" >
-        <h1>Configurações de Integração</h1>
+        <h2 class="my-6 ml-2 text-2xl">Configurações de Integração</h2>
         <form @submit.prevent="salvarIntegracao">
             <div class="p-fluid grid">
-                <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
+                <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
                     <label for="userid">UserID API:</label>
                     <InputText class="my-2" id="userid" v-model="Integracao.UserID" type="password" />
                 </div>
-                <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
+                <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
                     <label for="senha">Senha API:</label>
                     <InputText class="my-2" id="senha" v-model="Integracao.senha" type="password" />
                 </div>
-                <div class="full lg:col-6 md:col-12 sm:col-12">
+                <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="idcliente">IdCliente API:</label>
                     <InputText class="my-2" id="idcliente" v-model="Integracao.ClienteID" type="password" />
                 </div>
-                <div class="full lg:col-6 md:col-12 sm:col-6">
-                    <label for="chave">Senha Chave:</label>
+                <div class="lg:col-6 md:col-6 sm:col-12">
+                    <label for="chave">Chave:</label>
                     <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full"
                         rows="2" cols="30" />
                 </div>

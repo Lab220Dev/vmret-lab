@@ -78,26 +78,34 @@ onMounted(() => {
         stripedRows 
         showGridlines 
         paginator 
+        removableSort
         :rows="10"
+        :sortOrder="1"
+        :sortField="'codigo'"   
         :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
         :globalFilterFields="['nome', 'descricao', 'codigo']" 
         selectionMode="single"
         tableStyle="min-width: 50rem; table-layout: fixed;">
-            <template #header>
-                <div class="flex justify-content-end">
-                    <IconField iconPosition="left">
-                        <InputIcon>
-                            <i class="pi pi-search" />
-                        </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                    </IconField>
-                </div>
-            </template>
+        <template #header>
+                            <div class="flex justify-content-between align-items-center ">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ itens.length }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
             <template #empty>{{ emptyMessage }}</template>
 
             <Column field="nome" sortable style="width: 70%" header="Item"></Column>
             <Column field="quantidadeReferencia" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
-            <Column field="ca" sortable style="width: 15%" header="CA"></Column>
+            <Column field="codigo" style="width: 15%" header="CA"></Column>
             <Column v-if="sincronizado" header="Status">
                 <template #body="slotProps">
                     <span>{{ slotProps.data.status }}</span>
