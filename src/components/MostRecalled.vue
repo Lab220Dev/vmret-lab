@@ -29,7 +29,7 @@ const props = defineProps({
         <DataTable :value="props.most" :rows="5" responsiveLayout="scroll">
             <Column field="ProdutoNome" header="Item" sortable style="width: 40%;"></Column>
             <Column field="ProdutoSKU" header="SKU" sortable style="width: 30%;"></Column>
-            <Column field="TotalQuantidade" header="Quantidade" sortable style="width: 30%;"></Column>
+            <Column field="NumeroDeRetiradas" header="Quantidade" sortable style="width: 30%;"></Column>
         </DataTable>
  
 </template>

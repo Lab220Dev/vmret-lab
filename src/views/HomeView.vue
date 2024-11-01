@@ -22,7 +22,7 @@ const checkPermission = () => {
 const products = ref([]);
 const most = ref([]);
 
-const lineData = reactive({
+const lineDataOld = reactive({
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
     datasets: [
         {
@@ -43,7 +43,7 @@ const lineData = reactive({
         }
     ]
 });
-
+const lineData = ref(null);
 const items = ref([{ label: 'Ir ao relatório', icon: 'pi pi-chevron-right' }]);
 
 const lineOptions = ref(null);
@@ -54,7 +54,7 @@ const fetchUltimasRetiradas = async () => {
     };
     try {
         const response = await axios.post('/relatorioItems/ultimos', data);
-        products.value = response.data.slice(0, 5) ; // Atualiza os dados dos produtos
+        products.value = response.data.slice(0, 5); // Atualiza os dados dos produtos
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -72,7 +72,7 @@ const fetchMaisRetirados = async () => {
     };
     try {
         const response = await axios.post('/relatorioItems/listarMaisRet', data);
-        most.value = response.data.slice(0, 5) ;// Atualiza os dados dos produtos mais retirados
+        most.value = response.data.slice(0, 5); // Atualiza os dados dos produtos mais retirados
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -89,7 +89,7 @@ const fetchEstoqueBaixo = async () => {
     };
     try {
         const response = await axios.post('/Estoque/ItensEstoqueBaixo', data);
-        estoquebaixo.value = response.data.slice(0, 5) ;
+        estoquebaixo.value = response.data.slice(0, 5);
     } catch (error) {
         if (error.response) {
             console.error('Erro de resposta do servidor:', error.response.data);
@@ -100,16 +100,35 @@ const fetchEstoqueBaixo = async () => {
         }
     }
 };
-onMounted(() => {
+const obterDadosResumo = async () => {
+    try {
+        const data = {
+            id_cliente: store.userIdCliente
+        };
+        const response = await axios.post('/SDM/resumo', data);
+
+        //console.log("Dados recebidos da API:", response.data);
+        if (response.data && response.data.labels && response.data.datasets) {
+            lineData.value = response.data;
+            //console.log("Estrutura de dados recebida:", lineData.value);
+        } else {
+            console.warn('Estrutura de dados inesperada na resposta da API.');
+        }
+    } catch (error) {
+        console.error('Erro ao obter dados do relatório:', error);
+    }
+};
+onMounted(async () => {
     // Exibe o toast se houver uma mensagem global
-    if (store.getGlobalMessage) { // Usando o getter
+    if (store.getGlobalMessage) {
+        // Usando o getter
         toast.add({
             severity: 'warn',
             summary: 'Acesso Negado',
             detail: store.getGlobalMessage,
             life: 3000
         });
-        
+
         // Limpa a mensagem global após exibir o toast
         store.clearGlobalMessage();
     }
@@ -117,19 +136,42 @@ onMounted(() => {
     checkPermission();
     if (canViewLastRecalls.value) {
         fetchUltimasRetiradas();
-        fetchMaisRetirados(); 
+        fetchMaisRetirados();
         fetchEstoqueBaixo();
+        obterDadosResumo();
     }
 });
+const chartOptions = {
+    responsive: true,
+    scales: {
+        y: {
+            type: 'category',
+            labels: ['Offline', 'Online'], // Define as categorias, sem necessidade de callback
+        },
+        x: {
+            title: {
+                display: true,
+                text: 'Horário'
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top'
+        }
+    }
+};
+
 const estoquebaixo = ref([]);
 </script>
 
 <template>
     <div class="grid grid-cols-12">
-        <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12 ">
+        <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
             <div class="card card-item">
                 <h5>Keep Alive</h5>
-                <Chart type="line" :data="lineData" :options="lineOptions" />
+                <Chart type="line" :data="lineData" :options="chartOptions" />
             </div>
 
             <div v-if="canViewLastRecalls" class="card card-item">
@@ -157,20 +199,19 @@ const estoquebaixo = ref([]);
 
 <style>
 .grid-container {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Ajusta o número de colunas automaticamente */
-  gap: 16px; /* Espaçamento entre os cards */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Ajusta o número de colunas automaticamente */
+    gap: 16px; /* Espaçamento entre os cards */
 }
 
 .card-item {
-  height: 350px; /* Defina uma altura fixa */
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Evita que o conteúdo saia do card */
+    height: 350px; /* Defina uma altura fixa */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Evita que o conteúdo saia do card */
 }
-
 </style>

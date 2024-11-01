@@ -36,11 +36,13 @@
         <Column field="Nome" header="Nome" sortable />
         <Column field="Telefone" header="Telefone" sortable />
         <Column field="Email" header="E-mail" sortable />
-        <Column field="Foto" header="Foto" sortable>
+        <Column field="dia_retirada" header="Dia" sortable />
+        <Column field="hora_retirada" header="Hora" sortable />
+        <Column field="arquivo" header="Arquivo" sortable>
             <template #body="slotProps">
                 <span>
-                    <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Foto')" class="pi pi-refresh updated-icon"></i>
-                    {{ slotProps.data.Foto }}
+                    <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('arquivo')" class="pi pi-refresh updated-icon"></i>
+                    {{ slotProps.data.arquivo }}
                 </span>
             </template>
         </Column>
@@ -49,6 +51,14 @@
                 <span>
                     <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
                     {{ slotProps.data.Retirada }}
+                </span>
+            </template>
+        </Column>
+        <Column field="Video" header="Video" sortable>
+            <template #body="slotProps">
+                <span>
+                    <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Video')" class="pi pi-refresh updated-icon"></i>
+                    {{ slotProps.data.Video }}
                 </span>
             </template>
         </Column>
