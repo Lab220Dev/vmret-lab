@@ -296,17 +296,18 @@ const resetForm = () => {
                                 paginator
                                 :rows="10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
+                                :globalFilterFields="['id_usuario','nome', 'email', 'nome_cliente', 'role', 'last_login']"
                                 selectionMode="single"
                                 tableStyle="min-width: 50rem; table-layout: fixed;"
                                 ref="dt"
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                :sortOrder="-1"
+                                :sortOrder="1"
+                                :sortField="'id_usuario'"
                             >
                                 <template #header>
-                                    <div class="flex justify-content-end">
+                                    <div class="flex justify-content-end  mb-4">
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
@@ -352,6 +353,11 @@ const resetForm = () => {
                                 </Column>
                             </DataTable>
                         </div>
+                        <div class="flex justify-content-end mr-3">
+                    <div class="font-semibold">
+                        <span>Total de registros: {{ ListaUsuario.length }}</span>
+                    </div>
+                </div>
                     </TabPanel>
                     <TabPanel :header="visible ? 'Editar Usuário Web' : 'Adicionar Usuário Web'">
                         <!-- <h5 class="mt-4">{{ visible ? 'Editar Usuário Web' : '' }}</h5> -->

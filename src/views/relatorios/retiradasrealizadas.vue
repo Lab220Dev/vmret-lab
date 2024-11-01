@@ -253,7 +253,7 @@ onMounted(() => {
 
 <template>
     <div class="card vh">
-        <h5 class="my-6  ml-2 text-2xl">Retiradas Realizadas</h5>
+        <h5 class="my-6 ml-2 text-2xl">Retiradas Realizadas</h5>
         <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
             <!-- div de busca de informações para o relatorio -->
             <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
@@ -327,17 +327,18 @@ onMounted(() => {
             v-model:filters="filters"
             :value="retiradas"
             stripedRows
+            removableSort
             showGridlines
             paginator
             :rows="10"
             :rowsPerPageOptions="[5, 10, 20, 50]"
             rowHover
             :globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-            :tableStyle="{ width: '100%' }"
+            tableStyle="min-width: 50rem; table-layout: fixed;"
             ref="dt"
             class="mt-6"
-            :sortField="'ID_Retirada'"
-            :sortOrder="-1"
+            :sortField="'ProdutoSKU'"
+            :sortOrder="1"
         >
             <!-- @rowSelect="onRowSelect"  -->
             <template #header>
@@ -357,14 +358,21 @@ onMounted(() => {
             </template>
 
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="Identificacao" sortable header="DM"></Column>
-            <Column field="Dia" sortable header="Data"></Column>
-            <Column field="Matricula" sortable header="Matricula"></Column>
+            <Column field="Identificacao" class="table-cell" sortable style="width: 12%" header="DM"></Column>
+            <Column field="Dia" sortable style="width:200px" header="Data"></Column>
+            <Column field="Matricula" sortable style="width:150px" header="Matricula"></Column>
             <Column field="Nome" sortable header="Nome"></Column>
-            <Column field="Email" sortable header="E-mail"></Column>
-            <Column field="ProdutoNome" sortable header="Item"></Column>
-            <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
-            <Column field="ProdutoSKU" sortable header="CA"></Column>
+            <Column field="Email" sortable class="table-cell" header="E-mail">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Email">{{ data.Email }}</span>
+                </template></Column>
+            <Column field="ProdutoNome" sortable class="table-cell" header="Item">
+                <template #body="{ data }">
+                    <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
+                </template>
+            </Column>
+            <Column field="Quantidade" style="width: 10%" sortable header="Quant" class="text-center"></Column>
+            <Column field="ProdutoSKU" style="width: 10%" header="CA"></Column>
         </DataTable>
 
         <Card v-if="!show">
@@ -418,6 +426,11 @@ onMounted(() => {
     }
 }
 
+.table-cell {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
 .field {
     white-space: nowrap;
     text-align: left;

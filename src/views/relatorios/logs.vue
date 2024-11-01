@@ -22,6 +22,10 @@ const operacao = ref([
     { label: 'Delete', value: 'DELETE' },
 ]);
 
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+
 const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
 const relatorio = ref({
@@ -142,16 +146,16 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card vh p-fluid formgrid">
+    <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-4 text-2xl">Log</h5>
+            <h5 class="my-6 ml-2 text-2xl">Log</h5>
             <div class="grid mt-3 mx-1 p-1">
-                <div class="field lg:col-2 md:col-6 sm:col-6">
+                <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">Usuário:</label>
                     <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-2 md:col-6 sm:col-6">
+                <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
                     <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
                         optionValue="value" placeholder="Todos" />
@@ -168,19 +172,48 @@ onMounted(() => {
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
                 </div>
-                <div class="field lg:col-2 md:col-6 sm:col-6">
+                <div class="field lg:col-12 md:col-12 sm:col-12">
                     <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
                         @click="buscar" />
                 </div>
             </div>
         </div>
-        <DataTable :value="historico" stripedRows showGridlines paginator :rows="10" dataKey="DM"
-            :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
-            <Column field="Dia" header="Data"></Column>
-            <Column field="Operacao" header="Operação"></Column>
-            <Column field="ID_Usuario" header="Usuário"></Column>
-            <Column field="Log_Web" header="Resumo"></Column>
-            <Column field="Resultado" header="Resultado"></Column>
+        <DataTable 
+        v-model:filters="filters"
+        :value="historico" 
+        stripedRows 
+        showGridlines 
+        paginator 
+        :rows="10"
+        :rowsPerPageOptions="[5, 10, 20, 50]"
+        rowHover
+        :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"  
+        dataKey="Operacao"
+        :tableStyle="{ width: '100%' }"
+        :sortOrder="1"
+        :sortField="'Operacao'"  >
+
+        <template #header>
+                            <div class="flex justify-content-between align-items-center">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ historico.length }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
+            <Column field="Dia" sortable header="Data"></Column>
+            <Column field="Operacao" sortable header="Operação"></Column>
+            <Column field="ID_Usuario" sortable header="Usuário"></Column>
+            <Column field="Log_Web" sortable header="Resumo"></Column>
+            <Column field="Resultado" sortable header="Resultado"></Column>
         </DataTable>
     </div>
 </template>

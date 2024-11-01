@@ -4,6 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { FilterMatchMode } from 'primevue/api';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -14,6 +15,10 @@ const todosOption = { label: 'Todos', value: null };
 const centroCusto = ref([todosOption]);
 const loading = ref(false);
 const deleteFuncaoDialog = ref(false);
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 
 let funcao = reactive({
     codigo: '',
@@ -172,12 +177,41 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funções">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable 
+                    v-model:filters="filters"
+                    :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows
+                    paginator
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :rows="10"
+                         dataKey="id" 
+                         :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo' ]"
+                         :sortField="'id_funcao'"  
+                         :metaKeySelection="false"
+                         :sortOrder="1" @rowSelect="handleRowSelection">
+
+                    <template #header>
+                            <div class="flex justify-content-end align-items-center mb-4">
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
                         <template #empty> Nenhuma Função adicionada. </template>
-                        <Column field="id_funcao" header="Código"></Column>
-                        <Column field="nome" header="Função (Nome)"></Column>
-                        <Column field="id_centro_custo" header="Centro de Custo (Nome)"></Column>
+                        <Column field="id_funcao" sortable header="Código"></Column>
+                        <Column field="nome" sortable header="Função (Nome)"></Column>
+                        <Column field="id_centro_custo" sortable header="Centro de Custo (Nome)"></Column>
                     </DataTable>
+                    <div class="flex justify-content-end mr-3">
+                    <div class="font-semibold">
+                        <span>Total de registros: {{ ListaFuncao.length }}</span>
+                    </div>
+                </div>
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Função' : 'Adicionar Função'" v-model:activeIndex="active">

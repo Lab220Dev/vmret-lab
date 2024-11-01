@@ -5,6 +5,7 @@ import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { FilterMatchMode } from 'primevue/api';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -25,6 +26,10 @@ const itemsSelecionadosSetor = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const centroCusto = ref([todosOption]);
 const loading = ref(false);
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 
 let setor = reactive({
     codigo: '',
@@ -283,12 +288,42 @@ const SalvarProduto = async () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Setores">
                 <div class="col-12">
-                    <DataTable :value="ListaSetor" stripedRows selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" dataKey="codigo" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable 
+                    v-model:filters="filters"
+                    :value="ListaSetor" 
+                    stripedRows 
+                    selectionMode="single" tableStyle="min-width: 25%" 
+                    paginator
+                    :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" 
+                    :sortField="'codigo'"  
+                    :sortOrder="1"
+                    dataKey="codigo"
+                    :globalFilterFields="['codigo', 'nome','id_centro_custo']" 
+                    :metaKeySelection="false" @rowSelect="handleRowSelection">
+
+                    <template #header>
+                            <div class="flex justify-content-end align-items-center mb-4">
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
                         <template #empty> Nenhum setor adicionado. </template>
-                        <Column field="codigo" header="Código"></Column>
-                        <Column field="nome" header="Setor (Nome)"></Column>
-                        <Column field="id_centro_custo" header="Centro de Custo"></Column>
+                        <Column field="codigo" sortable header="Código"></Column>
+                        <Column field="nome" sortable header="Setor (Nome)"></Column>
+                        <Column field="id_centro_custo" sortable header="Centro de Custo"></Column>
                     </DataTable>
+                </div>
+                <div class="flex justify-content-end mr-3">
+                    <div class="font-semibold">
+                        <span>Total de registros: {{ ListaSetor.length }}</span>
+                    </div>
                 </div>
             </TabPanel>
             <!-- fim do listar -->
@@ -309,7 +344,7 @@ const SalvarProduto = async () => {
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">Centro de Custo (Nome):</label>
-                                        <Dropdown class="drop" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                                        <Dropdown class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
