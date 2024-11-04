@@ -991,7 +991,6 @@ const removeControladora = (index) => {
                     </TabPanel>
                 </TabView>
                 <div class="card" v-if="operador">
-                    
                     <div class="mx-0 grid">
                         <div class="col-12">
                             <div class="flex mt-5 justify-content-between">
@@ -1001,6 +1000,8 @@ const removeControladora = (index) => {
                             <DataTable
                                 v-model:filters="filters"
                                 :value="ListaItens"
+                                rowGroupMode="subheader"
+                                groupRowsBy="modelo"
                                 selectionMode="single"
                                 tableStyle="min-width: 50rem; table-layout: fixed;"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
@@ -1015,12 +1016,11 @@ const removeControladora = (index) => {
                                 :sortOrder="1"
                                 :sortField="'SKU'"
                             >
-                            
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                    <span>Total de itens carregados: {{ ListaItens.length }}</span>
-                                </div>
+                                            <span>Total de itens carregados: {{ ListaItens.length }}</span>
+                                        </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
@@ -1032,17 +1032,33 @@ const removeControladora = (index) => {
 
                                 <Column field="SKU" style="width: 9%" sortable header="SKU"></Column>
                                 <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
-                                <Column field="Posicao" sortable style="width: 40%" header="Controladora/Placa/Motor 1/ Motor 2"></Column>
+                                <Column field="Posicao" sortable style="width: 40%" header="Controladora/Placa/Motor 1/ Motor 2">
+                                    <template #body="{ data }">
+                                        <span v-tooltip="'Controladora / Placa / Motor 1 / Motor 2'">
+                                            {{ data.Posicao }}
+                                        </span>
+                                    </template></Column
+                                >
                                 <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
                                     </template>
                                 </Column>
+                                <template #groupheader="slotProps">
+                                    <div class="flex align-items-center text-3xl gap-2">
+                                        <InputIcon>
+                                <i class="pi pi-angle-down" />
+                            </InputIcon>
+                                        <span v-tooltip="'Modelo da controladora'">
+                                            {{ slotProps.data.modelo }}
+                                        </span>
+                                    </div>
+                                </template>
                             </DataTable>
-                            
                         </div>
                     </div>
+                    <Button class="m-1" label="Voltar" @click="voltar()" />
                 </div>
                 <LoadingSpinner v-if="loading" />
             </div>
