@@ -9,7 +9,7 @@
         :rows="50"
         :rowsPerPageOptions="[50, 100, 500, 1000]"
         rowHover
-        :globalFilterFields="['Nome', 'Telefone', 'Email', 'Foto', 'Retirada']"
+        :globalFilterFields="['Nome', 'Telefone', 'Email', 'Foto', 'Retirada','dia_retirada','hora_retirada','arquivo']"
         :tableStyle="{ width: '100%' }"
         :sortField="'nome'"
         :sortOrder="1"
