@@ -339,6 +339,7 @@ onMounted(() => {
                         :globalFilterFields="['DM', 'Data', 'Matricula', 'Nome', 'Email', 'CodigoCa', 'Item']"
                         :tableStyle="{ width: '100%' }" ref="dt"
                         :sortField="'CodigoCa'"
+                        removableSort
                         :sortOrder="1"  >
                         <template #header>
                             <div class="flex justify-content-end">

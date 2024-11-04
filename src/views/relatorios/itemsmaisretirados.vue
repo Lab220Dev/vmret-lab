@@ -396,7 +396,7 @@ onMounted(() => {
                         <template #empty>{{ emptyMessage }} </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
                         <Column field="quantidade_no_periodo" sortable style="width: 15%;" header="Quantidade" class="text-center"></Column>
-                        <Column field="ProdutoSKU" style="width: 15%;" header="CA"></Column>
+                        <Column field="ProdutoSKU" sortable style="width: 15%;" header="CA"></Column>
                     </DataTable>
                     <card v-if="show" class="details-card">
                         <template #title>Detalhes do Produto</template>

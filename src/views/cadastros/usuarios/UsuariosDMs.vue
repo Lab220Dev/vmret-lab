@@ -283,6 +283,7 @@ const resetForm = () => {
                              :value="ListaUsuario" stripedRows
                              paginator
                              :rows="10"
+                             removableSort
                              :rowsPerPageOptions="[5, 10, 20, 50]"
                              :globalFilterFields="['nome', 'login']"
                              selectionMode="single" tableStyle="min-width: 50rem; table-layout: fixed;" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" 
@@ -290,7 +291,10 @@ const resetForm = () => {
                              :sortField="'nome'" >
 
                              <template #header>
-                                    <div class="flex justify-content-end mb-4">
+                                    <div class="flex justify-content-between mt-4">
+                                        <div class="font-semibold">
+                                            <span>Total de registros: {{ ListaUsuario.length }}</span>
+                                        </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
@@ -371,6 +375,7 @@ const resetForm = () => {
                             tableStyle="min-width: 50rem; table-layout: fixed;" 
                             :metaKeySelection="false"
                             :size="small"
+                            removableSort
                             :sortOrder="-1">
                             <template #header>
                                     <div class="flex justify-content-end">

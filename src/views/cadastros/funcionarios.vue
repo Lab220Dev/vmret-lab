@@ -573,36 +573,34 @@ const hideDialog = () => {
                         selectionMode="single"
                         stripedRows
                         paginator
+                        removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
                         dataKey="id"
-                        :sortField="'nome'"  
+                        :sortField="'matricula'"  
                         :sortOrder="1"
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
                     >
                         <template #header>
-                            <div class="flex justify-content-end align-items-center mb-4">
-                                <div>
+                            
+                            <div class="flex justify-content-between align-items-center mb-4">
+                                <div class="font-semibold">
+                        <span>Total de registros: {{ ListaFuncionarios.length }}</span>
+                    </div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
                                         <InputText v-model="filters['global'].value" placeholder="Busca" />
                                     </IconField>
-                                </div>
                             </div>
                         </template>
 
                         <Column field="nome" sortable header="Nome" class="col-6"></Column>
                         <Column field="matricula" sortable header="Matrícula" class="col-6"></Column>
                     </DataTable>
-                </div>
-                <div class="flex justify-content-end mr-3">
-                    <div class="font-semibold">
-                        <span>Total de registros: {{ ListaFuncionarios.length }}</span>
-                    </div>
                 </div>
             </TabPanel>
 
@@ -780,6 +778,7 @@ const hideDialog = () => {
                                             :value="funcionario.itens.filter((i) => i.action !== 'delete')"
                                             paginator
                                             :rows="10"
+                                            :sortField="'sku'" 
                                             :rowsPerPageOptions="[5, 10, 20, 50]"
                                             :globalFilterFields="['nome_produto', 'sku', 'quantidade']"
                                             tableStyle="min-width: 50rem"

@@ -167,6 +167,7 @@ onMounted(() => {
                     :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" paginator
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
+                        removableSort
                         stripedRows
                         :globalFilterFields="['id_planta', 'nome']" 
                         :sortField="'id_planta'" 
@@ -174,7 +175,10 @@ onMounted(() => {
                         dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
 
                         <template #header>
-                            <div class="flex justify-content-end align-items-center mb-4">
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                <div class="font-semibold">
+                        <span>Total de registros: {{ ListaPlanta.length }}</span>
+                    </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
@@ -190,11 +194,6 @@ onMounted(() => {
                         <Column field="id_planta" sortable header="Planta de Custo"></Column>
                         <Column field="nome" sortable header="Planta (Nome)"></Column>
                     </DataTable>
-                </div>
-                <div class="flex justify-content-end mr-3">
-                    <div class="font-semibold">
-                        <span>Total de registros: {{ ListaPlanta.length }}</span>
-                    </div>
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Planta' : 'Adicionar Planta'">

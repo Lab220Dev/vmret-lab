@@ -112,7 +112,7 @@ onMounted(() => {
                 </div>
             </template>
 
-            <Column field="sku" class="table-cell" style="width: 10%" header="SKU"></Column>
+            <Column field="sku" class="table-cell" sortable style="width: 10%" header="SKU"></Column>
             <Column field="nome" sortable style="width: 30%" header="Produto">
                 <template #body="{ data }">
                     <span v-tooltip="data.nome">{{ data.nome }}</span>

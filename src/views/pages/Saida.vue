@@ -133,11 +133,13 @@ function selectTopic(topic) {
 <template>
     <div class="card vh">
         <h2 class="my-7 text-center">Guia de Autenticação e Acesso à API</h2>
-        <p>
+<fieldset class="m-2"><p>
             Este guia técnico fornece instruções detalhadas sobre como autenticar-se na API e obter um token de acesso. Você encontrará exemplos de requisições para endpoints críticos, como relatórios de retiradas, status e estoque, utilizando
             linguagens como C#, Java, JavaScript. Cada exemplo inclui o formato do corpo da requisição e os cabeçalhos necessários para autenticação.
-        </p>
-        <Accordion class="mt-6">
+        </p>        </fieldset>
+        
+        
+        <Accordion class="mt-3">
             <AccordionTab header="Passo 1">
               <p class="mt-3">Neste passo, é abordado o processo de autenticação na API para a obtenção de um token de acesso. A requisição deve ser realizada utilizando o método POST e incluir os campos obrigatórios de "email" e "senha". Um token de acesso válido é retornado na resposta, permitindo chamadas subsequentes a outros endpoints da API. Certifique-se de tratar possíveis erros.</p>
                 <ul class="mt-5">

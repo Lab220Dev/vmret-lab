@@ -148,38 +148,39 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Centros de Custo">
                 <div class="col-12">
-                    <DataTable 
-                    v-model:filters="filters"
-                    :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="centroCusto"
+                        selectionMode="single"
+                        tableStyle="min-width: 25%"
+                        stripedRows
+                        removableSort
                         paginator
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
-                         dataKey="id" 
-                         :sortField="'Codigo'"  
-                         :globalFilterFields="['Codigo', 'Nome']"
-                         :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        
-                         <template #header>
-                            <div class="flex justify-content-end align-items-center mb-4">
-                                <div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
+                        dataKey="id"
+                        :sortField="'Codigo'"
+                        :globalFilterFields="['Codigo', 'Nome']"
+                        :metaKeySelection="false"
+                        @rowSelect="handleRowSelection"
+                    >
+                        <template #header>
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                <div class="font-semibold">
+                                    <span>Total de registros: {{ centroCusto.length }}</span>
                                 </div>
+                                <IconField iconPosition="left">
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                </IconField>
                             </div>
                         </template>
 
                         <Column field="Codigo" sortable header="Código"></Column>
                         <Column field="Nome" sortable header="Centro de Custo (Nome)"></Column>
                     </DataTable>
-                </div>
-                <div class="flex justify-content-end mr-3">
-                    <div class="font-semibold">
-                        <span>Total de registros: {{ centroCusto.length }}</span>
-                    </div>
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Centro de Custo' : 'Adicionar Centro de Custo'" v-model:activeIndex="active">
