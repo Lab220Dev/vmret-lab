@@ -402,6 +402,7 @@ onMounted(() => {
                         <template #title>Detalhes do Produto</template>
                         <template #content>
                             <DataTable :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                                <Column field="Identificacao" sortable header="DM"></Column>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>
                                 <Column field="Data" sortable header="Data"></Column>
                                 <Column field="Quantidade" sortable header="Quantidade"> </Column>
