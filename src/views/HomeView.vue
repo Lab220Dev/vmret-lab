@@ -183,10 +183,13 @@ const estoquebaixo = ref([]);
                 <div class="title" style="display: flex; align-items: center">
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
-                <DataTable :rows="5" :value="estoquebaixo" responsiveLayout="scroll">
-                    <Column field="nome" header="Item" sortable style="width: 50%"></Column>
-                    <Column field="sku" header="SKU" sortable style="width: 30%"></Column>
-                    <Column field="quantidade" header="Quantidade" sortable style="width: 20%"></Column>
+                <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoquebaixo" removableSort responsiveLayout="scroll">
+                    <Column field="nome" header="Item" sortable  style="width: 30%">
+                        <template #body="{ data }">
+                    <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
+                </template></Column>
+                    <Column field="sku" header="SKU" class="table-cell" sortable  style="width: 10%"></Column>
+                    <Column field="quantidade" header="Quant." class="table-cell" sortable  style="width: 8%"></Column>
                 </DataTable>
             </div>
 
@@ -213,5 +216,18 @@ const estoquebaixo = ref([]);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden; /* Evita que o conteúdo saia do card */
+}
+.tooltip-target {
+    cursor: pointer;
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    display: inline-block; 
+    max-width: 100%;
+}
+
+.v-tooltip {
+    max-width: 400px; 
+    white-space: normal; 
 }
 </style>
