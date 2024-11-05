@@ -68,6 +68,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/relatorios/logmaquina',
+                    name: 'logDesk',
+                    component: () => import('@/views/relatorios/logDesk.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/relatorios/Metricasdm',
                     name: 'Metricas da DM',
                     component: () => import('@/views/relatorios/MetricasDM.vue'),
