@@ -1032,11 +1032,15 @@ const removeControladora = (index) => {
 
                                 <Column field="SKU" style="width: 9%" sortable header="SKU"></Column>
                                 <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
-                                <Column field="Posicao" sortable style="width: 40%" header="Controladora/Placa/Motor 1/ Motor 2">
+                                <Column field="Posicao" sortable style="width: 40%" header="Posição">
                                     <template #body="{ data }">
-                                        <span v-tooltip="'Controladora / Placa / Motor 1 / Motor 2'">
-                                            {{ data.Posicao }}
-                                        </span>
+                                        <span v-tooltip="data.modelo === '2018' 
+                 ? 'Controladora / Placa / Motor 1 / Motor 2' 
+                 : data.modelo === '2023' 
+                   ? 'Controladora / DIP / Andar / Posição'
+                     : 'Placa / Motor'">
+  {{ data.Posicao }}
+</span>
                                     </template></Column
                                 >
                                 <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
@@ -1047,9 +1051,6 @@ const removeControladora = (index) => {
                                 </Column>
                                 <template #groupheader="slotProps">
                                     <div class="flex align-items-center text-3xl gap-2">
-                                        <InputIcon>
-                                <i class="pi pi-angle-down" />
-                            </InputIcon>
                                         <span v-tooltip="'Modelo da controladora'">
                                             {{ slotProps.data.modelo }}
                                         </span>

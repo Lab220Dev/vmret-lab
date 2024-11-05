@@ -189,9 +189,10 @@ onMounted(() => {
         rowHover
         :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"  
         dataKey="Operacao"
-        :tableStyle="{ width: '100%' }"
+        tableStyle="min-width: 50rem; table-layout: fixed;"
+        removableSort
         :sortOrder="1"
-        :sortField="'Operacao'"  >
+        :sortField="'Dia'"  >
 
         <template #header>
                             <div class="flex justify-content-between align-items-center">
@@ -209,11 +210,11 @@ onMounted(() => {
                             </div>
                         </template>
 
-            <Column field="Dia" sortable header="Data"></Column>
-            <Column field="Operacao" sortable header="Operação"></Column>
-            <Column field="ID_Usuario" sortable header="Usuário"></Column>
-            <Column field="Log_Web" sortable header="Resumo"></Column>
-            <Column field="Resultado" sortable header="Resultado"></Column>
+            <Column field="Dia" sortable style="width: 20%" header="Data"></Column>
+            <Column field="Operacao" sortable style="width: 10%" header="Operação"></Column>
+            <Column field="ID_Usuario" sortable style="width: 8%" header="Usuário"></Column>
+            <Column field="Log_Web" sortable style="width: 40%" header="Resumo"></Column>
+            <Column field="Resultado" sortable  style="width: 10%" header="Resultado"></Column>
         </DataTable>
     </div>
 </template>
