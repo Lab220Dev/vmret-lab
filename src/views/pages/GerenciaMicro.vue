@@ -215,6 +215,25 @@ const formatarTempo = (timeObj) => {
 };
 const addServiceWithConfig = async () => {
     try {
+        const missingFields = clientServices.value.some(service => {
+            const serviceConfig = serviceConfigs.value[service.id];
+            
+            return !serviceConfig.notificationFrequency || 
+                   !serviceConfig.notificationMethods.length || 
+                   !serviceConfig.recipients.length;
+        });
+
+        if (missingFields) {
+            toast.add({
+                severity: 'error',
+                summary: 'Campos obrigatórios não preenchidos',
+                detail: 'Por favor, preencha todos os campos antes de adicionar o serviço.',
+                life: 3000
+            });
+            return;
+        }
+
+        // Processar a configuração do serviço
         clientServices.value.forEach((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
             if (typeof serviceConfig.notificationTime === 'object') {
@@ -251,7 +270,17 @@ const addServiceWithConfig = async () => {
 };
 
 const addService = () => {
-    if (newService.value && !clientServices.value.some((s) => s.id === newService.value.id)) {
+    if (!newService.value) {
+        toast.add({
+            severity: 'error',
+            summary: 'Nenhum serviço selecionado',
+            detail: 'Por favor, selecione um serviço.',
+            life: 3000
+        });
+        return; 
+    }
+
+    if (!clientServices.value.some(s => s.id === newService.value.id)) {
         clientServices.value.push(newService.value);
         serviceConfigs.value[newService.value.id] = {
             notificationFrequency: null,
@@ -264,19 +293,53 @@ const addService = () => {
         selectedService.value = newService.value;
         newService.value = null;
     } else {
-        toast.add({ severity: 'warn', summary: 'Serviço duplicado', detail: 'Este serviço já foi adicionado.', life: 3000 });
+        toast.add({
+            severity: 'warn',
+            summary: 'Serviço duplicado',
+            detail: 'Este serviço já foi adicionado.',
+            life: 3000
+        });
     }
 };
 
-const removeService = (service) => {
-    clientServices.value = clientServices.value.filter((s) => s.id !== service.id);
-    delete serviceConfigs.value[service.id];
+const removeService = async (service) => {
+    try {
+        clientServices.value = clientServices.value.filter(s => s.id !== service.id);
+        delete serviceConfigs.value[service.id];
 
-    if (selectedService.value?.id === service.id) {
-        selectedService.value = null;
-        showConfig.value = false;
+        if (selectedService.value?.id === service.id) {
+            selectedService.value = null;
+            showConfig.value = false;
+        }
+        const data = {
+            id_cliente: selectedClient.value.id,
+            id_servico: service.id
+        };
+
+        
+        const response = await axios.post('/admin/cliente/deletarServico', data);
+
+        if (response.data && response.data.success) {
+            toast.add({
+                severity: 'success',
+                summary: 'Serviço removido',
+                detail: `O serviço ${service.name} foi removido com sucesso.`,
+                life: 3000
+            });
+        } else {
+            throw new Error(response.data.message || 'Erro desconhecido ao remover o serviço');
+        }
+    } catch (error) {
+        console.error('Erro ao remover serviço:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Erro ao remover o serviço',
+            detail: error.message || 'Ocorreu um erro ao tentar remover o serviço. Tente novamente.',
+            life: 3000
+        });
     }
 };
+
 const updateServiceConfig = async () => {
     try {
         clientServices.value.forEach((service) => {
