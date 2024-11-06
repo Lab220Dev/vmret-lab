@@ -11,6 +11,7 @@ const DMSelecionada = ref(null)
 const loading = ref(false);
 const Dados = ref([]);
 const validador = ref(false)
+const primeiraInteracao = ref(null)
 const Integracao = reactive({
     ClienteID:'',
     UserID:'',
@@ -27,7 +28,8 @@ const fetchDadosIniciais = async () => {
             id_usuario: store.userId
         };
         const response = await axios.post('/DM/recuperarInfo', data);
-        Dados.value = response.data;
+            primeiraInteracao.value = true;
+            Dados.value = response.data;
     } catch (error) {
         if (error.response && error.response.status === 401) {
             validador.value = true;
@@ -46,6 +48,7 @@ const fetchDadosIniciais = async () => {
 };
 
 const handleDMChange = () =>{
+    primeiraInteracao.value = false;
     const selectedDM = Dados.value.find((c) => c.ID_DM === DMSelecionada.value);
     if (selectedDM) {
         Integracao.UserID=selectedDM.UserID;
@@ -111,6 +114,7 @@ onMounted(() => {
                 placeholder="Selecione uma DM"
                 @change="handleDMChange()"
             />
+            <InlineMessage v-if="!validador && primeiraInteracao" severity="info">Selecione uma Dm</InlineMessage>
         <form @submit.prevent="salvarIntegracao">
             <div class="p-fluid grid">
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
