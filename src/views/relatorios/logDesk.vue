@@ -60,7 +60,7 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        const response = await axios.post('', data);
+        const response = await axios.post('/Log/relatoriodesk', data);
         historico.value = response.data;
     } catch (error) {
         console.error('Erro ao buscar logs:', error);
@@ -88,14 +88,10 @@ const fetchUsuario = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/usuarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        usuario.value = response.data.map(({ id_usuario,nome }) => ({
+        const response = await axios.post('/UDM/listaSimples', data);
+        usuario.value = response.data.map(({ id,nome }) => ({
             label: nome,
-            value: id_usuario
+            value: id
         }));
     } catch (error) {
         console.error('Erro ao carregar lista de usuários:', error);
@@ -107,7 +103,7 @@ const fetchFuncionarios = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/funcionarios/listar', data, {
+        const response = await axios.post('/funcionarios/listaSimples', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -124,6 +120,7 @@ const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
     if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
 };
 
 const handleDatepickerOpen = () => {
@@ -134,7 +131,7 @@ onMounted(() => {
     fetchDM();
     fetchUsuario();
     fetchFuncionarios();
-    fetchOperacao();
+    //fetchOperacao();
 });
 </script>
 
@@ -160,7 +157,7 @@ onMounted(() => {
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">Funcionario:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="funcionario" optionLabel="label"
+                    <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown4" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">

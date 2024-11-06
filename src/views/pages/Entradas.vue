@@ -10,6 +10,7 @@ const store = useAuthStore();
 const DMSelecionada = ref(null)
 const loading = ref(false);
 const Dados = ref([]);
+const validador = ref(false)
 const Integracao = reactive({
     ClienteID:'',
     UserID:'',
@@ -28,7 +29,17 @@ const fetchDadosIniciais = async () => {
         const response = await axios.post('/DM/recuperarInfo', data);
         Dados.value = response.data;
     } catch (error) {
-        console.error('Erro ao carregar Itens:', error);
+        if (error.response && error.response.status === 401) {
+            validador.value = true;
+            toast.add({
+                severity: 'warn',
+                summary: 'Info',
+                detail: `${error.response?.data?.message || 'Maquina sem integração'}`,
+                life: 3000
+            });
+        } else {
+            console.error('Erro ao carregar Itens:', error);
+        }
     } finally {
         loading.value = false;
     }
@@ -93,6 +104,7 @@ onMounted(() => {
                 :virtualScrollerOptions="{ itemSize: 30 }"
                 :filter="true"
                 :filterBy="'Identificacao'"
+                :disabled="validador"
                 v-model="DMSelecionada"
                 optionLabel="Identificacao"
                 optionValue="ID_DM"
@@ -103,27 +115,27 @@ onMounted(() => {
             <div class="p-fluid grid">
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
                     <label for="userid">UserID API:</label>
-                    <InputText class="my-2" id="userid" v-model="Integracao.UserID" type="text" />
+                    <InputText class="my-2" id="userid" v-model="Integracao.UserID" type="text" :disabled="validador"/>
                 </div>
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
                     <label for="senha">URL API:</label>
-                    <InputText class="my-2" id="senha" v-model="Integracao.URL" type="text"/>
+                    <InputText class="my-2" id="senha" v-model="Integracao.URL" type="text":disabled="validador"/>
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="idcliente">IdCliente API:</label>
-                    <InputText class="my-2" id="idcliente" v-model="Integracao.ClienteID" type="text" />
+                    <InputText class="my-2" id="idcliente" v-model="Integracao.ClienteID" type="text" :disabled="validador"/>
                 </div>                
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="chaveapi">senha API:</label>
-                    <InputText class="my-2" id="chaveapi" v-model="Integracao.ChaveAPI" type="text" />
+                    <InputText class="my-2" id="chaveapi" v-model="Integracao.ChaveAPI" type="text" :disabled="validador"/>
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="chave">Chave:</label>
                     <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full"
-                        rows="2" cols="30" />
+                        rows="2" cols="30" :disabled="validador"/>
                 </div>
                 <div class="full lg:col-12 md:col-12 sm:col-12">
-                    <Button type="submit" label="Sincronizar" icon="pi pi-check" class="mt-4" />
+                    <Button type="submit" label="Sincronizar" icon="pi pi-check" class="mt-4" :disabled="validador"/>
                 </div>
             </div>
         </form>

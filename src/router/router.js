@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { ref } from 'vue';
 import AppLayout from '@/layout/AppLayout.vue';
-
+export const isLoading = ref(false);
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -233,11 +234,14 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const token = localStorage.getItem('token');
-
+    isLoading.value = true;
     if (requiresAuth && !token) {
         next({ name: 'login' });
     } else {
         next();
     }
+});
+router.afterEach(() => {
+    isLoading.value = false; 
 });
 export default router;
