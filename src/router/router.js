@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { ref } from 'vue';
 import AppLayout from '@/layout/AppLayout.vue';
+export const isLoading = ref(false);
 import { useAuthStore } from '@/store/authStore';
 
 const router = createRouter({
@@ -79,6 +81,12 @@ const router = createRouter({
                     path: '/relatorios/logs',
                     name: 'logs',
                     component: () => import('@/views/relatorios/logs.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: '/relatorios/logmaquina',
+                    name: 'logDesk',
+                    component: () => import('@/views/relatorios/logDesk.vue'),
                     meta: { requiresAuth: true }
                 },
                 {
@@ -241,12 +249,15 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const token = localStorage.getItem('token');
-
+    isLoading.value = true;
     if (requiresAuth && !token) {
         next({ name: 'login' });
     } else {
         next();
     }
+});
+router.afterEach(() => {
+    isLoading.value = false; 
 });
 router.beforeEach((to, from, next) => {
     if (to.meta.Availbilty===false) {

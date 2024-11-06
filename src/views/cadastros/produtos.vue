@@ -24,6 +24,9 @@ const tipoProduto = ref([
     { label: 'Insumo', value: 2 },
     { label: 'Consumivel', value: 3 }
 ]);
+const currentPage = ref(1);
+const pageSize = 10;
+const totalRecords = ref(0);
 
 const selectedFile = ref(null);
 const selectedSecFile = ref(null);
@@ -76,9 +79,32 @@ const onRowSelect = async (event) => {
     loadProdutos();
 };
 
-const loadProdutos = async () => {
+// const loadProdutos = async () => {
+//     const data = {
+//         id_cliente: store.userIdCliente
+//     };
+//     try {
+//         loading.value = true;
+//         const response = await axios.post('/produtos/listar', data, {
+//             headers: {
+//                 Authorization: `Bearer ${store.token}`
+//             }
+//         });
+//         ListaProdutos.value = response.data;
+//         for (const produto of ListaProdutos.value) {
+//             produto.imagemUrl = await getImagem(produto.imagem1);
+//         }
+//     } catch (error) {
+//         console.error('Erro ao carregar produtos:', error);
+//     } finally {
+//         loading.value = false; // Desativando loading
+//     }
+// };
+const loadProdutos = async (page = 1) => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente,
+        page,
+        pageSize
     };
     try {
         loading.value = true;
@@ -87,17 +113,30 @@ const loadProdutos = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaProdutos.value = response.data;
-        for (const produto of ListaProdutos.value) {
-            produto.imagemUrl = await getImagem(produto.imagem1);
-        }
+
+        ListaProdutos.value = response.data.produtos;
+        totalRecords.value = response.data.totalRecords;
+
+        await loadImagens(ListaProdutos.value);
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
 
+// Função para carregar imagens apenas dos produtos visíveis na página atual
+const loadImagens = async (produtos) => {
+    for (const produto of produtos) {
+        produto.imagemUrl = await getImagem(produto.imagem1);
+    }
+};
+
+// Função de mudança de página no DataTable
+const onPageChange = (event) => {
+    currentPage.value = event.page + 1;
+    loadProdutos(currentPage.value);
+};
 const fetchIdPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -337,27 +376,28 @@ onMounted(async () => {
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
-                        
+                        lazy 
+                        :totalRecords="totalRecords"
                         dataKey="id"
                         :globalFilterFields="['codigo', 'nome']"
                         :sortField="'codigo'"
                         :sortOrder="1"
                         :metaKeySelection="false"
                         @rowSelect="handleRowSelection"
+                        @page="onPageChange"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
-                                    <div class="font-semibold">
-                                        <span>Total de registros: {{ ListaProdutos.length }}</span>
-                                    </div>
-                                
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
-                                
+                                <div class="font-semibold">
+                                    <span>Total de registros: {{ totalRecords }}</span>
+                                </div>
+
+                                <IconField iconPosition="left">
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                </IconField>
                             </div>
                         </template>
 

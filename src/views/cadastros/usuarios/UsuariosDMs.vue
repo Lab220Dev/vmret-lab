@@ -26,7 +26,7 @@ const filters = ref({
 });
 
 const plantas = ref([todosOption]);
-let usuario = reactive({
+const usuario = ref({
     nome: '',
     login: '',
     senha: '',
@@ -36,9 +36,15 @@ const ListaUsuario = ref([]);
 
 const onRowSelect = (event) => {
     visible.value = true;
-    usuario = event.data;
-    senha.value = usuario.senha;
-    SenhaBE.value = usuario.senha;
+    usuario.value = { ...event.data };
+    const dmIds = usuario.value.DMOptions || [];
+    selectedDM.value = ListaDMS.value.filter(dm => dmIds.includes(dm.id_dm))
+        .map(dm => ({
+            id_dm: dm.id_dm,
+            Identificacao: dm.Identificacao
+        }));
+    senha.value = usuario.value.senha;
+    SenhaBE.value = usuario.value.senha;
     senhaAlterada.value = false; // Reseta a flag de senha alterada
     active.value = 1;
 };
@@ -62,28 +68,28 @@ const validateForm = () => {
     return Object.keys(errors.value).every((key) => errors.value[key] === null);
 };
 const validateSenha = () => {
-    if (senha.value !== usuario.senha) {
+    if (senha.value !== usuario.value.senha) {
         errors.value.senha = 'A senha NÃO é a mesma';
     } else {
         errors.value.senha = null;
     }
 };
-const selectedVM = ref([]);
+const selectedDM = ref([]);
 const DMOptions = ref([]);
 const ListaDMS = ref([]);
 const isSameSenha = () => {
-    return usuario.senha === SenhaBE.value;
+    return usuario.value.senha === SenhaBE.value;
 };
 const saveUsuario = async () => {
     let data = null;
 
     if (store.userRole === 'Administrador') {
         data = {};
-        data = usuario;
+        data = usuario.value;
         data.id_usuario = store.userId;
     } else {
         data = {};
-        data = usuario;
+        data = usuario.value;
         data.id_cliente = store.userIdCliente;
         data.id_usuario = store.userId;
     }
@@ -103,18 +109,15 @@ const saveUsuario = async () => {
 const atualizarUsuario = async () => {
     loading.value = true;
     const data = {
-        ...usuario,
-        id_usuario: store.userId
+        ...usuario.value, // Copia todos os dados do usuário
+        DMOptions: selectedDM.value, // Inclui DMOptions selecionados
+        id_usuario: store.userId // Inclui o id do usuário que está atualizando
     };
     if (isSameSenha()) {
         delete data.senha;
     }
     try {
-        const response = await axios.post('/UDM/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/UDM/atualizar', data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB atualizado', life: 3000 });
 
         fetchUsuarios();
@@ -123,7 +126,7 @@ const atualizarUsuario = async () => {
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; 
     }
     loading.value = true;
 };
@@ -159,11 +162,7 @@ const fetchUsuarios = async () => {
         data.id_cliente = store.userIdCliente; 
     }
     try {
-        const response = await axios.post('/UDM/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/UDM/listar', data);
         ListaUsuario.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
@@ -182,11 +181,7 @@ const fetchDMS = async () => {
         data.id_cliente = store.userIdCliente;
     }
     try {
-        const response = await axios.post('/DM/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/DM/listarDMResumido', data);
         ListaDMS.value = response.data;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
@@ -365,13 +360,13 @@ const resetForm = () => {
                         <div class="col-12" v-if="visible">
                             <DataTable 
                             v-model:filters="filters"
-                            v-model:selection="selectedVM" :value="ListaDMS" 
+                            v-model:selection="selectedDM" :value="ListaDMS" 
                             stripedRows
                             paginator
                             :rows="10"
                             :rowsPerPageOptions="[5, 10, 20, 50]"
-                            :globalFilterFields="['ID_DM', 'Identificacao']"
-                            dataKey="ID_DM" 
+                            :globalFilterFields="['id_dm', 'Identificacao']"
+                            dataKey="id_dm" 
                             tableStyle="min-width: 50rem; table-layout: fixed;" 
                             :metaKeySelection="false"
                             :size="small"
