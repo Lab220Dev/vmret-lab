@@ -14,6 +14,8 @@ const apiKey = ref('');
 const isApiKeyVisible = ref(false);
 const selectedTopic = ref(null);
 
+const selectedTopic1 = ref(null);
+
 // Função para recuperar a chave da API
 const fetchApiKey = async () => {
     try {
@@ -41,7 +43,7 @@ const passo1 = [
         description: marked(`**Exemplo de como realizar o login e obter o token.** O corpo da requisição deve incluir os campos:
 
 - **"email"**: E-mail utilizado para logar no sistema, pode ser encontrado na aba "Cadastros > Usuários > Usuário WEB".
-- **"senha"**: Senha utilizada para logar no sistema".
+- **"senha"**: Senha utilizada para logar no sistema". 
 
 Todos os campos são obrigatórios. Se somente um ou nenhum campo for enviado, o sistema retornará 400
 Bad Request: "E-mail e senha são obrigatórios".`),
@@ -128,30 +130,143 @@ function copyToClipboard() {
 function selectTopic(topic) {
     selectedTopic.value = topic;
 }
+
+function selectTopic1(topic1) {
+    selectedTopic1.value = topic1;
+}
 </script>
 
 <template>
     <div class="card vh">
         <h2 class="my-7 text-center">Guia de Autenticação e Acesso à API</h2>
-<fieldset class="m-2"><p>
-            Este guia técnico fornece instruções detalhadas sobre como autenticar-se na API e obter um token de acesso. Você encontrará exemplos de requisições para endpoints críticos, como relatórios de retiradas, status e estoque, utilizando
-            linguagens como C#, Java, JavaScript. Cada exemplo inclui o formato do corpo da requisição e os cabeçalhos necessários para autenticação.
-        </p>        </fieldset>
-        
-        
+        <fieldset class="m-2">
+            <p>
+                Este guia técnico fornece instruções detalhadas sobre como autenticar-se na API e obter um token de acesso. Você encontrará exemplos de requisições para endpoints críticos, como relatórios de retiradas, status e estoque, utilizando
+                linguagens como C#, Java, JavaScript. Cada exemplo inclui o formato do corpo da requisição e os cabeçalhos necessários para autenticação.
+            </p>
+        </fieldset>
+
         <Accordion class="mt-3">
+            <!--- Login -->
             <AccordionTab header="Passo 1">
-              <p class="mt-3">Neste passo, é abordado o processo de autenticação na API para a obtenção de um token de acesso. A requisição deve ser realizada utilizando o método POST e incluir os campos obrigatórios de "email" e "senha". Um token de acesso válido é retornado na resposta, permitindo chamadas subsequentes a outros endpoints da API. Certifique-se de tratar possíveis erros.</p>
-                <ul class="mt-5">
-                    <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic in passo1" :key="topic.name" @click="selectTopic(topic)" style="cursor: pointer">
-                        <strong>{{ topic.name }}</strong>
+                <p class="mt-3">
+                    Neste passo, é abordado o processo de autenticação na API para a obtenção de um token de acesso. A requisição deve ser realizada utilizando o método POST e incluir os campos obrigatórios de "email" e "senha". Um token de acesso
+                    válido é retornado na resposta, permitindo chamadas subsequentes a outros endpoints da API. Certifique-se de tratar possíveis erros.
+                </p>
+                <ul class="mt-4">
+                    <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic1 in passo1" :key="topic1.name" @click="selectTopic1(topic1)" style="cursor: pointer">
+                        <strong>{{ topic1.name }}</strong>
                     </li>
                 </ul>
+
+                <div class="mt-4 card" v-if="selectedTopic1" style="margin-top: 1rem">
+                    <h4 class="mt-2">{{ selectedTopic1.name }}</h4>
+                    <p class="my-5" v-html="selectedTopic1.description"></p>
+
+                    <TabView>
+                        <!-- Axios-->
+                        <TabPanel header="JavaScript (Axios)">
+                            <pre><code>
+            
+axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }}, {
+headers: {
+'Authorization': `Bearer ${insiraotoken}`
+}
+})
+.then(response => {
+  console.log(response.data);
+})
+.catch(error => {
+  console.error('Erro:', error);
+});
+                            </code></pre>
+                        </TabPanel>
+
+                        <!-- C# -->
+                        <TabPanel header="C#">
+                            <pre><code>
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        using (var client = new HttpClient())
+        {
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", insiraotoken);
+
+            var jsonContent = new StringContent("{{ selectedTopic1.requestBody }}", Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync("{{ selectedTopic1.apiUrl }}", jsonContent);
+            response.EnsureSuccessStatusCode();
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(responseBody);
+        }
+    }
+}
+                            </code></pre>
+                        </TabPanel>
+
+                        <!-- Java -->
+                        <TabPanel header="Java">
+                            <pre><code>
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClient;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+
+public class ApiClient {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost("{{ selectedTopic1.apiUrl }}");
+
+        post.setHeader("Authorization", "Bearer " + insiraotoken);
+        post.setEntity(new StringEntity("{{ selectedTopic1.requestBody }}", ContentType.APPLICATION_JSON));
+
+        HttpResponse response = client.execute(post);
+        System.out.println(EntityUtils.toString(response.getEntity()));
+    }
+}
+                            </code></pre>
+                        </TabPanel>
+
+                        <!-- cURL -->
+                        <TabPanel header="cURL">
+                            <pre><code>
+curl -X POST "{{ selectedTopic1.apiUrl }}" \
+-H "Authorization: Bearer insiraotoken" \
+-H "Content-Type: application/json" \
+-d '{{ selectedTopic1.requestBody }}'
+                            </code></pre>
+                        </TabPanel>
+
+                        <!--Postman -->
+                        <TabPanel header="Postman">
+                            <pre><code>
+POST {{ selectedTopic1.apiUrl }}
+Authorization: Bearer insiraotoken
+Content-Type: application/json
+
+Body:
+{{ selectedTopic1.requestBody }}
+                            </code></pre>
+                        </TabPanel>
+                    </TabView>
+                </div>
             </AccordionTab>
 
+            <!-- Passo 2 - Relatórios e outros tópicos -->
             <AccordionTab header="Passo 2">
-              <p class="mt-3">Neste passo, é demonstrado como acessar diversos relatórios da API, incluindo retiradas, status, estoque e devolução. Dependendo do relatório, podem ser enviados campos obrigatórios ou opcionais. As requisições são realizadas por meio do método POST, utilizando o token de acesso obtido anteriormente. Cada exemplo apresenta uma estrutura de corpo de requisição e a URL do endpoint correspondente, permitindo a recuperação de informações específicas conforme necessário.</p>
-                <!-- Lista de Tópicos -->
+                <p class="mt-3">
+                    Neste passo, é demonstrado como acessar diversos relatórios da API, incluindo retiradas, status, estoque e devolução. Dependendo do relatório, podem ser enviados campos obrigatórios ou opcionais. As requisições são realizadas por
+                    meio do método POST, utilizando o token de acesso obtido anteriormente. Cada exemplo apresenta uma estrutura de corpo de requisição e a URL do endpoint correspondente, permitindo a recuperação de informações específicas conforme
+                    necessário.
+                </p>
                 <ul class="mt-5">
                     <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic in passo2" :key="topic.name" @click="selectTopic(topic)" style="cursor: pointer">
                         <strong>{{ topic.name }}</strong>
@@ -161,12 +276,13 @@ function selectTopic(topic) {
         </Accordion>
 
         <!-- Exemplo de Uso da API com Abas para Diferentes Linguagens -->
-        <div class="mt-6 card" v-if="selectedTopic" style="margin-top: 1rem">
-            <h4 class="mt-5">{{ selectedTopic.name }}</h4>
+        <div class="mt-4 card" v-if="selectedTopic" style="margin-top: 1rem">
+            <h4 class="mt-2">{{ selectedTopic.name }}</h4>
             <p class="my-5" v-html="selectedTopic.description"></p>
 
             <TabView>
-                <!-- Tab para Axios (JavaScript) -->
+                <!--  Axios 
+            -->
                 <TabPanel header="JavaScript (Axios)">
                     <pre><code>
             
@@ -181,10 +297,10 @@ headers: {
 .catch(error => {
   console.error('Erro:', error);
 });
-          </code></pre>
+                    </code></pre>
                 </TabPanel>
 
-                <!-- Tab para C# -->
+                <!--  C# -->
                 <TabPanel header="C#">
                     <pre><code>
 using System;
@@ -210,80 +326,57 @@ class Program
         }
     }
 }
-          </code></pre>
+                    </code></pre>
                 </TabPanel>
 
-                <!-- Tab para Java -->
+                <!--Java -->
                 <TabPanel header="Java">
                     <pre><code>
-            import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClient;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-public class Main {
-    public static void main(String[] args) {
-        try {
-            URL url = new URL("{{ selectedTopic.apiUrl }}");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + insiraotoken); // Corrigido
-            conn.setRequestProperty("Content-Type", "application/json");
+public class ApiClient {
+    public static void main(String[] args) throws Exception {
+        HttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost("{{ selectedTopic.apiUrl }}");
 
-            String jsonInputString = "{{ selectedTopic.requestBody }}";
+        post.setHeader("Authorization", "Bearer " + insiraotoken);
+        post.setEntity(new StringEntity("{{ selectedTopic.requestBody }}", ContentType.APPLICATION_JSON));
 
-            conn.setDoOutput(true);
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-                os.write(input, 0, input.length);           
-            }
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String inputLine;
-            StringBuffer content = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            conn.disconnect();
-
-            System.out.println(content.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        HttpResponse response = client.execute(post);
+        System.out.println(EntityUtils.toString(response.getEntity()));
     }
 }
-          </code></pre>
+                    </code></pre>
                 </TabPanel>
 
-                <!-- Tab para cURL -->
+                <!-- cURL -->
                 <TabPanel header="cURL">
                     <pre><code>
-            curl -X POST "{{ selectedTopic.apiUrl }}" \
--H "Authorization: Bearer ${token}" \
+curl -X POST "{{ selectedTopic.apiUrl }}" \
+-H "Authorization: Bearer insiraotoken" \
 -H "Content-Type: application/json" \
 -d '{{ selectedTopic.requestBody }}'
-          </code></pre>
+                    </code></pre>
                 </TabPanel>
 
-                <!-- Tab para Postman -->
+                <!-- Postman -->
                 <TabPanel header="Postman">
                     <pre><code>
-            POST {{ selectedTopic.apiUrl }}
-Headers:
-Authorization: Bearer ${token}
+POST {{ selectedTopic.apiUrl }}
+Authorization: Bearer insiraotoken
 Content-Type: application/json
 
-Body (raw JSON):
+Body:
 {{ selectedTopic.requestBody }}
-          </code></pre>
+                    </code></pre>
                 </TabPanel>
             </TabView>
         </div>
     </div>
-    <LoadingSpinner v-if="loading" />
 </template>
 
 <style scoped>
@@ -310,5 +403,9 @@ pre {
     padding: 1rem;
     border-radius: 4px;
     overflow-x: auto;
+}
+
+p {
+    text-indent: 20px;
 }
 </style>
