@@ -129,11 +129,7 @@ const fetchDM = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/relatorioRetiRe/listardm', data);
         dms.value = [
             todosOption,
             ...response.data.map(({ ID_DM, Identificacao }) => ({
