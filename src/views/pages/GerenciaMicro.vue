@@ -8,6 +8,8 @@
             <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
         </div>
 
+        
+
         <div v-if="selectedClient?.id" class="mt-6 card services-edit">
             <div class="flex justify-content-between align-items-center">
                 <h4 class="mt-3 no-break">Serviços atribuídos a {{ selectedClient.name }}</h4>
@@ -304,21 +306,28 @@ const addService = () => {
 
 const removeService = async (service) => {
     try {
+        // Remover o serviço da lista local
         clientServices.value = clientServices.value.filter(s => s.id !== service.id);
+
+        // Remover as configurações do serviço
         delete serviceConfigs.value[service.id];
 
+        // Se o serviço removido for o selecionado, limpar a seleção e ocultar as configurações
         if (selectedService.value?.id === service.id) {
             selectedService.value = null;
             showConfig.value = false;
         }
+
+        // Dados a serem enviados para o servidor
         const data = {
             id_cliente: selectedClient.value.id,
             id_servico: service.id
         };
 
-        
+        // Enviar a solicitação para remover o serviço no backend
         const response = await axios.post('/admin/cliente/deletarServico', data);
 
+        // Verificar a estrutura da resposta do backend
         if (response.data && response.data.success) {
             toast.add({
                 severity: 'success',
@@ -327,9 +336,11 @@ const removeService = async (service) => {
                 life: 3000
             });
         } else {
+            // Caso o backend não tenha enviado o campo 'success', ou algo inesperado
             throw new Error(response.data.message || 'Erro desconhecido ao remover o serviço');
         }
     } catch (error) {
+        // Exibir uma mensagem de erro no toast
         console.error('Erro ao remover serviço:', error);
         toast.add({
             severity: 'error',

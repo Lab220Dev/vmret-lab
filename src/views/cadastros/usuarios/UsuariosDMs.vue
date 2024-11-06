@@ -382,10 +382,8 @@ const resetForm = () => {
                                         </IconField>
                                     </div>
                                 </template>
-                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                                <Column field="id_dm" sortable header="DM" class="col-12 md:col-6" :style="{ width: '30%' }">
-                                </Column>
-                                <Column field="Identificacao" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '70%' }"> </Column>
+                                <Column selectionMode="multiple" :style="{ width: '5%' }"></Column>
+                                <Column field="Identificacao" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '80%' }"> </Column>
                             </DataTable>
                         </div>
                     </TabPanel>

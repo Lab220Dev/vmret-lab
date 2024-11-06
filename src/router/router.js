@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { ref } from 'vue';
 import AppLayout from '@/layout/AppLayout.vue';
+import { useAuthStore } from '@/store/authStore';
 export const isLoading = ref(false);
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,19 @@ const router = createRouter({
                     component: () => import('@/views/HomeView.vue'),
                     meta: { requiresAuth: true }
                 },
+                {
+                    path: '/Importacao',
+                    name: 'Importações',
+                    component: () => import('@/views/pages/Importacao.vue'),
+                    meta: { requiresAuth: true, Availbilty:false }
+                },
+                {
+                    path: '/cadastros/LiberacaoAvulsa',
+                    name: 'Liberação Avulsa',
+                    component: () => import('@/views/cadastros/LiberacaoAvulsa.vue'),
+                    meta: { requiresAuth: true, Availbilty: false }
+                },
+
                 {
                     path: '/relatorios/retiradasrealizadas',
                     name: 'retiradasrealizadas',
@@ -237,6 +251,15 @@ router.beforeEach((to, from, next) => {
     isLoading.value = true;
     if (requiresAuth && !token) {
         next({ name: 'login' });
+    } else {
+        next();
+    }
+});
+router.beforeEach((to, from, next) => {
+    if (to.meta.Availbilty===false) {
+        const authStore = useAuthStore();
+        authStore.setGlobalMessage('Pagina Indisponivel no momento');
+        next({ name: 'Dashboard' });
     } else {
         next();
     }
