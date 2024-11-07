@@ -374,9 +374,7 @@ onMounted(async () => {
                         stripedRows
                         paginator
                         removableSort
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
-                        lazy 
                         :totalRecords="totalRecords"
                         dataKey="id"
                         :globalFilterFields="['codigo', 'nome']"

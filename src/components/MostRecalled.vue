@@ -33,6 +33,10 @@ const props = defineProps({
             </template></Column>
             <Column field="ProdutoSKU" header="SKU" sortable style="width: 15%;"></Column>
             <Column field="NumeroDeRetiradas" header="Quant." sortable style="width: 15%;"></Column>
+            
+            <template #empty>
+            <div class="empty-message" style="text-align: center; padding: 20px; color: gray">Nenhuma retirada foi realizada até o momento.</div>
+        </template>
         </DataTable>
  
 </template>

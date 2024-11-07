@@ -3,7 +3,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -25,6 +25,8 @@ const dms = ref([todosOption]);
 const plantas = ref([todosOption]);
 const setor = ref([todosOption]);
 const centroCusto = ref([todosOption]);
+
+const filteredCount = ref(0);
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -66,6 +68,7 @@ const buscar = async () => {
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
+
     try {
         loading.value = true;
         const response = await axios.post('relatorioRetiRe/relatorio', data, {
@@ -74,6 +77,9 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+
+        filteredCount.value = retiradas.value.length;
+
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
             dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             showDialog.value = true;
@@ -86,9 +92,16 @@ const buscar = async () => {
     } catch (error) {
         console.error('Erro ao buscar retiradas:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = retiradas.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 const voltar = () => {
     show.value = true;
@@ -339,12 +352,14 @@ onMounted(() => {
             class="mt-6"
             :sortField="'ProdutoSKU'"
             :sortOrder="1"
+            
+            :tableStyle="{ width: '100%' }"
         >
             <!-- @rowSelect="onRowSelect"  -->
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ retiradas.length }}</span>
+                        <span>Total de registros: {{ filteredCount }}</span>
                     </div>
                     <div>
                         <IconField iconPosition="left">
@@ -358,10 +373,22 @@ onMounted(() => {
             </template>
 
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="Identificacao" class="table-cell" sortable style="width: 12%" header="DM"></Column>
-            <Column field="Dia" sortable style="width:200px" header="Data"></Column>
-            <Column field="Matricula" sortable style="width:150px" header="Matricula"></Column>
-            <Column field="Nome" sortable header="Nome"></Column>
+            <Column field="Identificacao" class="table-cell" sortable style="width: 10%" header="DM">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
+                </template></Column>
+            <Column field="Dia" sortable class="table-cell" style="width:15%" header="Data">
+            <template #body="{ data }">
+                    <span v-tooltip="data.Dia">{{ data.Dia }}</span>
+                </template></Column>
+            <Column field="Matricula" sortable class="table-cell" style="width:10%" header="Matricula">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
+                </template></Column>
+            <Column field="Nome" class="table-cell" style="width:10%" sortable header="Nome">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Nome">{{ data.Nome }}</span>
+                </template></Column>
             <Column field="Email" sortable class="table-cell" header="E-mail">
                 <template #body="{ data }">
                     <span v-tooltip="data.Email">{{ data.Email }}</span>
@@ -371,8 +398,11 @@ onMounted(() => {
                     <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
                 </template>
             </Column>
-            <Column field="Quantidade" style="width: 10%" sortable header="Quant" class="text-center"></Column>
-            <Column field="ProdutoSKU" style="width: 10%" sortable header="CA"></Column>
+            <Column field="Quantidade" style="width: 10%"  sortable header="Quant" class="text-center table-cell"></Column>
+            <Column field="ProdutoSKU" class="table-cell" style="width: 10%" sortable header="CA">
+                <template #body="{ data }">
+                    <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
+                </template></Column>
         </DataTable>
 
         <Card v-if="!show">

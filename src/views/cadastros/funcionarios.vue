@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import { isValid as validateCPF } from 'cpf-validator';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const store = useAuthStore();
 const toast = useToast();
 const selectedFile = ref(null);
@@ -32,7 +33,7 @@ let plantas = ref([]);
 let funcionario = reactive({
     id_funcionario: '',
     matricula: '',
-    senha:'',
+    senha: '',
     nome: '',
     biometria: '',
     biometria2: '',
@@ -62,6 +63,7 @@ const ListaProdutos = ref([]);
 const ListaProdutoFuncionario = ref([]);
 const ListaItemsSetor = ref([]);
 const editVisible = ref(false);
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -71,16 +73,12 @@ const selectedProduct = ref({
     sku: '',
     quantidade: 1
 });
-const itemsSelecionadosFuncionario = ref([]);
-const arquivo = ref(null);
 const ListaFuncionarios = ref([]);
 const itemDialog = ref(false);
 const deleteProductDialog = ref(false);
 const deleteFuncionarioDialog = ref(false);
 const visible = ref(false);
-const metaKey = ref(true);
 const active = ref(0);
-const items = ref({});
 const loading = ref(false);
 
 const dropdown1 = ref(null);
@@ -125,7 +123,9 @@ const loadFuncionarios = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+
         ListaFuncionarios.value = response.data;
+
     } catch (error) {
         console.error('Erro ao carregar funcionários:', error);
     } finally {
@@ -566,7 +566,7 @@ const hideDialog = () => {
     <div class="card vh">
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funcionários">
-                <div class="col-12 ">
+                <div class="col-12">
                     <DataTable
                         v-model:filters="filters"
                         :value="ListaFuncionarios"
@@ -577,24 +577,23 @@ const hideDialog = () => {
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
                         dataKey="id"
-                        :sortField="'matricula'"  
+                        :sortField="'matricula'"
                         :sortOrder="1"
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
                     >
                         <template #header>
-                            
                             <div class="flex justify-content-between align-items-center mb-4">
                                 <div class="font-semibold">
-                        <span>Total de registros: {{ ListaFuncionarios.length }}</span>
-                    </div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
+                                    <span>Total de registros: {{ ListaFuncionarios.length}}</span>
+                                </div>
+                                <IconField iconPosition="left">
+                                    <InputIcon>
+                                        <i class="pi  pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                </IconField>
                             </div>
                         </template>
 
@@ -672,25 +671,24 @@ const hideDialog = () => {
                                     <label for="status">Status:</label>
                                     <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
                                 </div>
-                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                        <label for="inicio">Hora Início:</label>
-                                        <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
-                                            <template #input-icon>
-                                                <img class="input-slot-image" :src="clockurl" />
-                                            </template>
-                                        </VueDatePicker>
-                                    </div>
-                                    <div class="full lg:col-4 md:col-6 sm:col-12">
-                                        <label for="inicio">Hora Fim:</label>
-                                        <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
-                                            <template #input-icon>
-                                                <img class="input-slot-image" :src="clockurl" />
-                                            </template>
-                                        </VueDatePicker>
-                                    </div>
+                                <div class="full lg:col-4 md:col-6 sm:col-12">
+                                    <label for="inicio">Hora Início:</label>
+                                    <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
+                                        <template #input-icon>
+                                            <img class="input-slot-image" :src="clockurl" />
+                                        </template>
+                                    </VueDatePicker>
+                                </div>
+                                <div class="full lg:col-4 md:col-6 sm:col-12">
+                                    <label for="inicio">Hora Fim:</label>
+                                    <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                        <template #input-icon>
+                                            <img class="input-slot-image" :src="clockurl" />
+                                        </template>
+                                    </VueDatePicker>
+                                </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
-                                   
                                     <Fieldset
                                         legend="Selecione os dias que o funcionário poderá retirar os
                                         Itens:"
@@ -744,28 +742,21 @@ const hideDialog = () => {
                             <div class="col-12">
                                 <TabView>
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class=""
-                                        v-model:filters="filters" :value="ListaItemsSetor" stripedRows 
-                                        paginator
-                        :rows="10"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :globalFilterFields="['nome', 'sku', 'qtd_limite']"
-                                        dataKey="sku">
+                                        <DataTable class="" v-model:filters="filters" :value="ListaItemsSetor" stripedRows paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" :globalFilterFields="['nome', 'sku', 'qtd_limite']" dataKey="sku">
+                                            <template #header>
+                                                <div class="flex justify-content-end align-items-center mb-2">
+                                                    <div>
+                                                        <IconField iconPosition="left">
+                                                            <InputIcon>
+                                                                <i class="pi pi-search" />
+                                                            </InputIcon>
+                                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                                        </IconField>
+                                                    </div>
+                                                </div>
+                                            </template>
 
-                                        <template #header>
-                            <div class="flex justify-content-end align-items-center mb-2">
-                                <div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
-                                </div>
-                            </div>
-                        </template>
-
-                                            <Column field="nome" sortable style="width:45%"  header="Nome"></Column>
+                                            <Column field="nome" sortable style="width: 45%" header="Nome"></Column>
                                             <Column field="sku" sortable header="SKU"></Column>
                                             <Column field="qtd_limite" header="Quantidade"></Column>
                                         </DataTable>
@@ -778,7 +769,7 @@ const hideDialog = () => {
                                             :value="funcionario.itens.filter((i) => i.action !== 'delete')"
                                             paginator
                                             :rows="10"
-                                            :sortField="'sku'" 
+                                            :sortField="'sku'"
                                             :rowsPerPageOptions="[5, 10, 20, 50]"
                                             :globalFilterFields="['nome_produto', 'sku', 'quantidade']"
                                             tableStyle="min-width: 50rem"
@@ -797,7 +788,7 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
-                                            <Column field="nome_produto" sortable style="width:45%" header="Nome"></Column>
+                                            <Column field="nome_produto" sortable style="width: 45%" header="Nome"></Column>
                                             <Column field="sku" sortable header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
                                             <Column style="min-width: 8rem">
