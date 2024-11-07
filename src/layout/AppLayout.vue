@@ -11,20 +11,6 @@ const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 const loading = ref(false);
 const outsideClickListener = ref(null);
 
-const router = useRouter();
-
-const onMenuItemClick = () => {
-  loading.value = true;
-};
-
-router.beforeResolve((to, from, next) => {
-  loading.value = true;
-  next();
-});
-
-router.afterEach(() => {
-  loading.value = false;
-});
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -82,7 +68,7 @@ const isOutsideClicked = (event) => {
         <div v-else class="layout-wrapper" :class="containerClass">
             <MyTopBar></MyTopBar>
             <div class="layout-sidebar">
-                <MySideBar @item-click="onMenuItemClick"></MySideBar>
+                <MySideBar></MySideBar>
             </div>
             <div class="layout-main-container">
                 <div class="layout-main">
