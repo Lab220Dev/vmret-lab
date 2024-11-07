@@ -6,9 +6,11 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
 const store = useAuthStore();
+const dataStore = useDataStore();
 const toast = useToast();
 const ListaSetor = ref([]);
 const ListaItensSetor = ref([]);
@@ -62,11 +64,7 @@ const loadSetor = async () => {
     };
     loading.value = true;
     try {
-        const response = await axios.post('/Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/Setor/listar', data);
         ListaSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao listar Setores:', error);
@@ -82,11 +80,9 @@ const adicionarSetor = async () => {
     };
     loading.value = true;
     try {
-        const response = await axios.post('/Setor/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/Setor/adicionar', data);
+        dataStore.invalidateSetorCache();
+
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor salvo com sucesso', life: 3000 });
         loadSetor();
         active.value = 0;
@@ -109,6 +105,7 @@ const deleteSetor = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
+        dataStore.invalidateSetorCache();
         deleteSetorDialog.value = false;
         loadSetor();
         active.value = 0;
@@ -133,36 +130,13 @@ const atualizarSetor = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Atualizado', life: 3000 });
+        dataStore.invalidateSetorCache();
         loadSetor();
         active.value = 0;
         resetForm();
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar setor', life: 3000 });
         console.error('Erro ao atualizar Setores:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-const loadCentroCusto = async () => {
-    loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -174,11 +148,7 @@ const fetchListaItemSetor = async () => {
         id_setor: setor.id_setor
     };
     try {
-        const response = await axios.post('/setor/itensdisponiveissetor', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/setor/itensdisponiveissetor', data);
         ItensSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao listar itens:', error);
@@ -207,10 +177,16 @@ const resetForm = () => {
 const handleRowSelection = async (event) => {
     await onRowSelect(event);
 };
-
+const loadData = async () => {
+    try {
+        centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 onMounted(() => {
     loadSetor();
-    loadCentroCusto();
+    loadData();
 });
 
 const atualizarProdutoSetor = async () => {

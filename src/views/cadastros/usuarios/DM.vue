@@ -5,11 +5,13 @@ import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { useDataStore } from '@/store/dataStore.js';
 
 const dialogMessage = ref('');
 const selectedItem = ref(null);
 const toast = useToast();
 const active = ref(0);
+const dataStore = useDataStore();
 const store = useAuthStore();
 const loading = ref(false);
 const loadingControladoras = ref(true);
@@ -357,6 +359,8 @@ const adicionarDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        dataStore.invalidateDMCache();
+
         fetchDMS();
         active.value = 0;
         resetDMForm();
@@ -380,6 +384,7 @@ const deleteDM = async (item) => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
         await fetchDMS();
     } catch (error) {
@@ -471,6 +476,7 @@ const atualizarDM = async () => {
             return controladora;
         })
     };
+    dataStore.invalidateDMCache();
     loading.value = true;
     try {
         const response = await axios.post('/DM/atualizar', data, {
@@ -570,9 +576,21 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 onMounted(() => {
+    loadData();
     fetchCliente();
     fetchDMS();
 });
+const loadData = async () => {
+    try {
+        const produtos = await dataStore.fetchProdutos(false);
+        ListaProdutos.value = produtos.map(({ value, codigo, label }) => ({
+            label: `${codigo} | ${label}`,
+            value: value
+        }));
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 const resetDMForm = () => {
     DM.Ativo = '';
     DM.Chave = '';

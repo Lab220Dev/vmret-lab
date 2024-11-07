@@ -10,14 +10,17 @@ import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import { isValid as validateCPF } from 'cpf-validator';
+import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const store = useAuthStore();
+const dataStore = useDataStore();
+
 const toast = useToast();
 const selectedFile = ref(null);
 const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
-const todosOption = { label: 'Todos', value: null };
 const errors = ref({});
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
@@ -109,7 +112,7 @@ const onRowSelect = async (event) => {
     setTempo(TempoFim, funcionario.hora_final);
     await fetchItensSetor(funcionario.id_setor);
     await getImagem(funcionario.foto);
-    await listarProduto();
+    //await listarProduto();
     active.value = 1;
     editVisible.value = true;
 };
@@ -154,6 +157,7 @@ const adicionarFuncionario = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
+        dataStore.invalidateFuncionariosCache();
         loadFuncionarios();
         active.value = 0;
         resetForm();
@@ -164,26 +168,14 @@ const adicionarFuncionario = async () => {
         loading.value = false; // Desativando loading
     }
 };
-
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
+const loadData = async () => {
     try {
-        const response = await axios.post('cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
+        plantas = dataStore.plantas || await dataStore.fetchPlantas();
+        setor = dataStore.setores || await dataStore.fetchSetores();
+        centroCusto = dataStore.cdcs || await dataStore.fetchCdc();
+        ListaProdutos.value = dataStore.produtos || await dataStore.fetchProdutos();
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao carregar dados iniciais:', error);
     }
 };
 
@@ -195,27 +187,6 @@ const fetchItensSetor = async (id_setor) => {
     try {
         const response = await axios.post('Setor/itensdisponiveissetor', data);
         ListaItemsSetor.value = response.data;
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        setor.value = [
-            todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
-                label: `Setor  ${nome}`,
-                value: id_setor
-            }))
-        ];
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
@@ -237,52 +208,6 @@ const fetchHieraquiaOptions = async () => {
         }));
     } catch (error) {
         console.error('Erro ao buscar opções de hierarquia:', error);
-    }
-};
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`,
-                value: id_planta
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-const listarProduto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        loading.value = true;
-        const response = await axios.post('/produtos/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaProdutos.value = response.data.map(({ id_produto, codigo, nome }) => ({
-            label: `${nome}`,
-            value: {
-                id_produto: id_produto,
-                nome_produto: nome,
-                sku: codigo
-            }
-        }));
-    } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-    } finally {
-        loading.value = false; // Desativando loading
     }
 };
 watch(
@@ -385,11 +310,9 @@ const getImagem = async (filename) => {
 };
 
 onMounted(() => {
+    loadData();
     loadFuncionarios();
-    fetchCentroCusto();
-    fetchSetorDiretoria();
-    fetchHieraquiaOptions();
-    fetchIdPlanta();
+     fetchHieraquiaOptions();
 });
 
 const deleteFuncionario = async () => {
@@ -402,6 +325,7 @@ const deleteFuncionario = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
+        dataStore.invalidateFuncionariosCache();
         deleteFuncionarioDialog.value = false;
         loadFuncionarios();
         active.value = 0;
@@ -519,6 +443,7 @@ const atualizarFuncionario = async () => {
         });
 
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
+        dataStore.invalidateFuncionariosCache();
         loadFuncionarios();
         active.value = 0;
         resetForm();

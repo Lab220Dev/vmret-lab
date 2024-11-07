@@ -5,8 +5,10 @@ import { useAuthStore } from '@/store/authStore.js';
 import { FilterMatchMode } from 'primevue/api';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
+const dataStore = useDataStore();
 const store = useAuthStore();
 const loading = ref(false);
 const toast = useToast();
@@ -270,8 +272,15 @@ watch(active, (newIndex, oldIndex) => {
         visible.value = false;
     }
 });
+const loadData = async () => {
+    try {
+        plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 onMounted(() => {
-    fetchIdPlanta();
+    loadData();
     fetchUsuarios();
 });
 

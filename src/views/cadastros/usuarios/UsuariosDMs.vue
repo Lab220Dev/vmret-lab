@@ -7,8 +7,10 @@ import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
+const dataStore = useDataStore();
 const store = useAuthStore();
 const loading = ref(false);
 const toast = useToast();
@@ -170,52 +172,7 @@ const fetchUsuarios = async () => {
         loading.value = false; // Desativando loading
     }
 };
-const fetchDMS = async () => {
-    loading.value = true;
-    let data = null;
 
-    if (store.userRole === 'Administrador') {
-        data = '';
-    } else {
-        data = {};
-        data.id_cliente = store.userIdCliente;
-    }
-    try {
-        const response = await axios.post('/DM/listarDMResumido', data);
-        ListaDMS.value = response.data;
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-const formatDate = (value) => {
-    if (!value) {
-        return '';
-    }
-
-    try {
-        const date = new Date(value);
-
-        if (isNaN(date)) {
-            throw new Error('Data inválida');
-        }
-
-        // Ajustar a data para o fuso horário local
-        const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const year = localDate.getFullYear();
-        const hours = String(localDate.getHours()).padStart(2, '0');
-        const minutes = String(localDate.getMinutes()).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } catch (error) {
-        console.error('Erro ao formatar data:', error);
-        return 'Data inválida';
-    }
-};
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
@@ -223,10 +180,17 @@ watch(active, (newIndex, oldIndex) => {
         visible.value = false;
     }
 });
+const loadData = async () => {
+    try {
+        plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
+        ListaDMS.value = dataStore.produtos || await dataStore.fetchProdutos();
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 onMounted(() => {
-    fetchIdPlanta();
+    loadData();
     fetchUsuarios();
-    fetchDMS();
 });
 const deleteUsuariodes = (itm) => {
     item.value = itm;

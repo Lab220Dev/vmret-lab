@@ -1,4 +1,3 @@
-// src/store/dataStore.js
 import { defineStore } from 'pinia';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore';
@@ -12,20 +11,18 @@ export const useDataStore = defineStore('data', {
         plantas: null,
         setores: null,
         cdcs: null,
-        dms: null
+        dms: null,
+        produtos: null
     }),
     actions: {
         async fetchFuncionarios() {
-            if (this.funcionarios) {
-                return this.funcionarios;
-            }
-
-            const authStore = useAuthStore();
-            const data = {
-                id_cliente: authStore.userIdCliente
-            };
+            if (this.funcionarios) return this.funcionarios;
 
             try {
+                const authStore = useAuthStore();
+                const data = {
+                    id_cliente: authStore.userIdCliente
+                };
                 const response = await axios.post('/funcionarios/listaSimples', data);
                 this.funcionarios = addTodosOption(
                     response.data.map((funcionario) => ({
@@ -63,7 +60,6 @@ export const useDataStore = defineStore('data', {
         },
 
         async fetchSetores() {
-            // Corrigido para `fetchSetores`
             if (this.setores) return this.setores;
 
             try {
@@ -74,12 +70,11 @@ export const useDataStore = defineStore('data', {
                 const response = await axios.post('/Setor/listaSimples', data);
                 this.setores = addTodosOption(
                     response.data.map((setor) => ({
-                        // Corrigido `setores` para `setor`
                         label: setor.nome,
-                        value: setor.id_setor // Corrigido `plansetoresta` para `setor`
+                        value: setor.id_setor 
                     }))
                 );
-                return this.setores; // Corrigido retorno para `this.setores`
+                return this.setores; 
             } catch (error) {
                 console.error('Erro ao carregar lista de Setores:', error);
                 throw error;
@@ -94,14 +89,14 @@ export const useDataStore = defineStore('data', {
                 const data = {
                     id_cliente: authStore.userIdCliente
                 };
-                const response = await axios.post('/cdc/listaSimples', data); 
+                const response = await axios.post('/cdc/listaSimples', data);
                 this.cdcs = addTodosOption(
                     response.data.map((cdc) => ({
                         label: cdc.Nome,
                         value: cdc.ID_CentroCusto
                     }))
                 );
-                return this.cdcs; 
+                return this.cdcs;
             } catch (error) {
                 console.error('Erro ao carregar lista de Centro de Custos:', error);
                 throw error;
@@ -129,7 +124,28 @@ export const useDataStore = defineStore('data', {
                 throw error;
             }
         },
+        async fetchProdutos() {
+            if (this.produtos) return this.produtos;
 
+            try {
+                const authStore = useAuthStore();
+                const data = {
+                    id_cliente: authStore.userIdCliente
+                };
+                const response = await axios.post('/produtos/listarResumo', data);
+                this.produtos = addTodosOption(
+                    response.data.map((produto) => ({
+                        label: produto.nome,
+                        value: produto.id_produto,
+                        codigo: produto.codigo
+                    }))
+                );
+                return this.produtos;
+            } catch (error) {
+                console.error('Erro ao carregar lista de produtos:', error);
+                throw error;
+            }
+        },
         invalidateFuncionariosCache() {
             this.funcionarios = null;
         },
@@ -144,6 +160,9 @@ export const useDataStore = defineStore('data', {
         },
         invalidateDMCache() {
             this.dms = null;
+        },
+        invalidatProdutoCache() {
+            this.produtos = null;
         }
     }
 });

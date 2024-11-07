@@ -249,12 +249,15 @@ router.beforeEach((to, from, next) => {
     const authStore = useAuthStore();
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
     const token = localStorage.getItem('token');
-    console.log(to);
     if (requiresAuth && !token) {
         next({ name: 'login' });
     } else if (to.meta.Availability === false) {
         authStore.setGlobalMessage('Página indisponível no momento');
-        next({ name: 'Dashboard' });
+        if (to.name !== 'Dashboard') {
+            next({ name: 'Dashboard' });
+        } else {
+            router.replace({ name: 'Dashboard' });
+        }
     } else {
         isLoading.value = true; // Define isLoading aqui, quando a navegação é permitida
         next();
