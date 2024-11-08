@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { ref } from 'vue';
 import AppLayout from '@/layout/AppLayout.vue';
-export const isLoading = ref(false);
 import { useAuthStore } from '@/store/authStore';
-
+export const isLoading = ref(false);
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -26,15 +25,14 @@ const router = createRouter({
                     path: '/Importacao',
                     name: 'Importações',
                     component: () => import('@/views/pages/Importacao.vue'),
-                    meta: { requiresAuth: true, Availbilty:false }
+                    meta: { requiresAuth: true, Availability: false }
                 },
                 {
                     path: '/cadastros/LiberacaoAvulsa',
                     name: 'Liberação Avulsa',
                     component: () => import('@/views/cadastros/LiberacaoAvulsa.vue'),
-                    meta: { requiresAuth: true, Availbilty: false }
+                    meta: { requiresAuth: true, Availability: false }
                 },
-
                 {
                     path: '/relatorios/retiradasrealizadas',
                     name: 'retiradasrealizadas',
@@ -59,7 +57,7 @@ const router = createRouter({
                     component: () => import('@/views/relatorios/retiradasavulsas.vue'),
                     meta: { requiresAuth: true }
                 },
-                                {
+                {
                     path: '/relatorios/historicosabastecimento',
                     name: 'historicosabastecimento',
                     component: () => import('@/views/relatorios/historicosabastecimento.vue'),
@@ -135,7 +133,7 @@ const router = createRouter({
                     path: '/cadastros/usuarios/avulsa',
                     name: 'Cadastro Liberação Avulsa',
                     component: () => import('@/views/cadastros/usuarios/Avulsa.vue'),
-                    meta: { requiresAuth: true }
+                    meta: { requiresAuth: true, Availability: false }
                 },
                 {
                     path: '/cadastros/usuarios/dm',
@@ -213,7 +211,8 @@ const router = createRouter({
                 {
                     path: '/cadastros/LiberacaoAvulsa',
                     name: 'Liberação Avulsa',
-                    component: () => import('@/views/cadastros/LiberacaoAvulsa.vue')
+                    component: () => import('@/views/cadastros/LiberacaoAvulsa.vue'),
+                    meta: { requiresAuth: true, Availability: false }
                 },
                 {
                     path: '/pages/listaItensNaoAlocados',
@@ -229,7 +228,7 @@ const router = createRouter({
                     path: '/cadastros/Importacao',
                     name: 'Importação de dados',
                     component: () => import('@/views/pages/Importacao.vue')
-                },
+                }
             ]
         },
         {
@@ -247,25 +246,24 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const authStore = useAuthStore();
+    const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
     const token = localStorage.getItem('token');
-    isLoading.value = true;
     if (requiresAuth && !token) {
         next({ name: 'login' });
+    } else if (to.meta.Availability === false) {
+        authStore.setGlobalMessage('Página indisponível no momento');
+        if (to.name !== 'Dashboard') {
+            next({ name: 'Dashboard' });
+        } else {
+            router.replace({ name: 'Dashboard' });
+        }
     } else {
+        isLoading.value = true; // Define isLoading aqui, quando a navegação é permitida
         next();
     }
 });
 router.afterEach(() => {
-    isLoading.value = false; 
-});
-router.beforeEach((to, from, next) => {
-    if (to.meta.Availbilty===false) {
-        const authStore = useAuthStore();
-        authStore.setGlobalMessage('Pagina Indisponivel no momento');
-        next({ name: 'Dashboard' });
-    } else {
-        next();
-    }
+    isLoading.value = false;
 });
 export default router;

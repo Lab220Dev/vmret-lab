@@ -8,12 +8,15 @@ import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
+const dataStore = useDataStore();
 const store = useAuthStore();
+
 const toast = useToast();
 const active = ref(0);
 const loading = ref(false);
@@ -79,27 +82,7 @@ const onRowSelect = async (event) => {
     loadProdutos();
 };
 
-// const loadProdutos = async () => {
-//     const data = {
-//         id_cliente: store.userIdCliente
-//     };
-//     try {
-//         loading.value = true;
-//         const response = await axios.post('/produtos/listar', data, {
-//             headers: {
-//                 Authorization: `Bearer ${store.token}`
-//             }
-//         });
-//         ListaProdutos.value = response.data;
-//         for (const produto of ListaProdutos.value) {
-//             produto.imagemUrl = await getImagem(produto.imagem1);
-//         }
-//     } catch (error) {
-//         console.error('Erro ao carregar produtos:', error);
-//     } finally {
-//         loading.value = false; // Desativando loading
-//     }
-// };
+
 const loadProdutos = async (page = 1) => {
     const data = {
         id_cliente: store.userIdCliente,
@@ -137,32 +120,13 @@ const onPageChange = (event) => {
     currentPage.value = event.page + 1;
     loadProdutos(currentPage.value);
 };
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
+const loadData = async () => {
     try {
-        const response = await axios.post('produtos/listarplanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-
-        // Verificar se a resposta é um array
-        if (Array.isArray(response.data)) {
-            plantasoptions.value = response.data;
-            formatedPlantaOptions.value = plantasoptions.value.map((option) => ({
-                label: `Planta ${option.id_planta}`,
-                value: option.id_planta
-            }));
-        } else {
-            console.error('A resposta da API não é um array:', response.data);
-        }
+        formatedPlantaOptions.value = dataStore.plantas || await dataStore.fetchPlantas();
     } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
+        console.error('Erro ao carregar dados iniciais:', error);
     }
 };
-
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
@@ -203,6 +167,7 @@ const saveProduto = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
+        dataStore.invalidatProdutoCache();
         loadProdutos();
         resetForm();
         active.value = 0;
@@ -229,6 +194,7 @@ const deleteProduto = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
+        dataStore.invalidatProdutoCache();
         deleteProdutoDialog.value = false;
         loadProdutos();
         active.value = 0;
@@ -290,6 +256,7 @@ const updateProduto = async () => {
         });
 
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto atualizado', life: 3000 });
+        dataStore.invalidatProdutoCache();
         loadProdutos();
         active.value = 0;
         resetForm();
@@ -358,7 +325,7 @@ const handleRowSelection = async (event) => {
 
 onMounted(async () => {
     await loadProdutos();
-    await fetchIdPlanta();
+    loadData();
 });
 </script>
 

@@ -6,8 +6,9 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { ref, onMounted, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-
+const dataStore = useDataStore();
 const showDialog = ref(false);
 const dialogMessage = ref('');
 
@@ -129,110 +130,6 @@ const exportJSON = () => {
     link.click();
     document.body.removeChild(link);
 };
-const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/relatorioItems/listardm', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        dms.value = [
-            todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`,
-                value: ID_DM
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error);
-    }
-};
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('funcionarios/listarplanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ id_planta }) => ({
-                label: `Planta  ${id_planta}`,
-                value: id_planta
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('funcionarios/listarsetor', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        setor.value = [
-            todosOption,
-            ...response.data.map(({ id_setor }) => ({
-                label: `Setor  ${id_setor}`,
-                value: id_setor
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('funcionarios/listarcentrocusto', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ id_centro_custo }) => ({
-                label: `Centro de Custo  ${id_centro_custo}`,
-                value: id_centro_custo
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
-
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({
-            label: funcionario.nome,
-            value: funcionario.id_funcionario
-        }));
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
@@ -240,16 +137,24 @@ const closeAllDropdowns = () => {
     if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
     if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
-
+const loadData = async () => {
+    try {
+        // o operador || funciona como uma função de curto circuito que via retornar o primeiro valor 'truthy' 
+        //isso valida se ele ja tem o valor armazenado ele vai pegar o valor aramzenado e não faz a chamada
+        dms.value = dataStore.dms || await dataStore.fetchListaDms();
+        plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
+        setor.value = dataStore.setores || await dataStore.fetchSetores();
+        centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
+        ListaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
 onMounted(() => {
-    fetchDM();
-    fetchIdPlanta();
-    fetchSetorDiretoria();
-    fetchFuncionarios();
-    fetchCentroCusto();
+    loadData();
 });
 </script>
 

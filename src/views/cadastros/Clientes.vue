@@ -8,7 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import MenuSelector from '@/components/MenuSelector.vue';
 import { format } from 'date-fns'; // Certifique-se de que você está importando 'format' corretamente
 import { cnpj as validateCNPJ } from 'cpf-cnpj-validator';
-
+import { useDataStore } from '@/store/dataStore.js';
 const active = ref(0);
 const show = ref(false);
 const store = useAuthStore();
@@ -19,7 +19,8 @@ const visible = ref(false);
 const deleteClienteDialog = ref(false);
 const item = ref({});
 const selectedPerfil = ref(null);
-const structuredMenus = ref([]); // Novo ref para armazenar a estrutura hierárquica dos menus
+const structuredMenus = ref([]); 
+const dataStore = useDataStore();
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -60,11 +61,7 @@ const adicionarCliente = async () => {
     };
     loading.value = true;
     try {
-        await axios.post('/admin/cliente/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await axios.post('/admin/cliente/adicionar', data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado com sucesso!', life: 3000 });
         loadCliente();
         active.value = 0;
@@ -85,11 +82,7 @@ const atualizarCliente = async () => {
     };
     loading.value = true;
     try {
-        await axios.post('/admin/cliente/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await axios.post('/admin/cliente/atualizar', data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado com sucesso!', life: 3000 });
         loadCliente();
         active.value = 0;
@@ -111,11 +104,7 @@ const deleteCliente = async (item) => {
     loading.value = true;
     let data = { id_cliente: item.id_cliente, id_usuario: store.userId };
     try {
-        await axios.post('/admin/cliente/deletar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await axios.post('/admin/cliente/deletar', data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado com sucesso.', life: 3000 });
         deleteClienteDialog.value = false;
         loadCliente();

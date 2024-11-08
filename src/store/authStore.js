@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useDataStore } from '@/store/dataStore.js';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -24,6 +25,9 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
       localStorage.removeItem('menu');
+      
+      const dataStore = useDataStore();
+      dataStore.$reset();
     },
     initializeStore() {
       const token = localStorage.getItem('token');

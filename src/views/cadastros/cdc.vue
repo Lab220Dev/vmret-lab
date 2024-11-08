@@ -4,6 +4,7 @@ import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -12,7 +13,7 @@ const centroCusto = ref([]);
 const visible = ref(false);
 const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
-
+const dataStore = useDataStore(); 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -27,7 +28,7 @@ const onRowSelect = async (event) => {
     cdc = event.data;
     visible.value = true;
     active.value = 1;
-    loadCentroCusto();
+    //loadCentroCusto();
 };
 
 const submitForm = () => {
@@ -61,11 +62,8 @@ const adicionarCentro = async () => {
         ...cdc
     };
     try {
-        const response = await axios.post('/cdc/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/cdc/adicionar', data);
+        dataStore.invalidateCDCCache();
         loadCentroCusto();
         active.value = 0;
         resetForm();
@@ -81,15 +79,8 @@ const deleteCentro = async () => {
         ID_CentroCusto: cdc.ID_CentroCusto
     };
     try {
-        await axios.post('/cdc/deleteCentro', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // const index = ListaCentro.value.findIndex((f) => f.id_centro_custo === cdc.id_centro_custo);
-        // if (index !== -1) {
-        //     ListaCentro.value.splice(index, 1);
-        // }
+        await axios.post('/cdc/deleteCentro', data);
+        dataStore.invalidateCDCCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Centro Deletado', life: 3000 });
         deleteCentroDialog.value = false;
         loadCentroCusto();
@@ -113,6 +104,7 @@ const atualizarCDC = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        dataStore.invalidateCDCCache();
         loadCentroCusto();
         active.value = 0;
         resetForm();
