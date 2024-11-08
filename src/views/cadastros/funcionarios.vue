@@ -99,6 +99,9 @@ const format = (date) => {
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
 
+const totalRecords = ref(0);
+const filteredCount = ref(0);
+
 const onRowSelect = async (event) => {
     funcionario = event.data;
     ListaProdutoFuncionario.value = funcionario.itens.map((item) => ({
@@ -127,13 +130,24 @@ const loadFuncionarios = async () => {
         });
 
         ListaFuncionarios.value = response.data;
-
+        filteredCount.value = ListaFuncionarios.value.length;
     } catch (error) {
         console.error('Erro ao carregar funcionários:', error);
     } finally {
         loading.value = false;
     }
 };
+
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = ListaFuncionarios.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 const adicionarFuncionario = async () => {
     const formData = new FormData();
@@ -169,10 +183,10 @@ const adicionarFuncionario = async () => {
 };
 const loadData = async () => {
     try {
-        plantas = dataStore.plantas || await dataStore.fetchPlantas();
-        setor = dataStore.setores || await dataStore.fetchSetores();
-        centroCusto = dataStore.cdcs || await dataStore.fetchCdc();
-        ListaProdutos.value = dataStore.produtos || await dataStore.fetchProdutos();
+        plantas = dataStore.plantas || (await dataStore.fetchPlantas());
+        setor = dataStore.setores || (await dataStore.fetchSetores());
+        centroCusto = dataStore.cdcs || (await dataStore.fetchCdc());
+        ListaProdutos.value = dataStore.produtos || (await dataStore.fetchProdutos());
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
@@ -311,7 +325,7 @@ const getImagem = async (filename) => {
 onMounted(() => {
     loadData();
     loadFuncionarios();
-     fetchHieraquiaOptions();
+    fetchHieraquiaOptions();
 });
 
 const deleteFuncionario = async () => {
@@ -508,18 +522,20 @@ const hideDialog = () => {
                         @rowSelect="onRowSelect"
                     >
                         <template #header>
-                            <div class="flex justify-content-between align-items-center mb-4">
+                            <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ ListaFuncionarios.length}}</span>
+                                    <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>
-                                        <i class="pi  pi-search" />
+                                        <i class="pi pi-search" />
                                     </InputIcon>
                                     <InputText v-model="filters['global'].value" placeholder="Busca" />
                                 </IconField>
                             </div>
                         </template>
+
+                        <template #empty> Nenhum funcionário adicionado. </template>
 
                         <Column field="nome" sortable header="Nome" class="col-6"></Column>
                         <Column field="matricula" sortable header="Matrícula" class="col-6"></Column>

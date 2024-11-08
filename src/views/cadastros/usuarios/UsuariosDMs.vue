@@ -27,6 +27,8 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
+const filteredCount = ref(0);
+
 const plantas = ref([todosOption]);
 const usuario = ref({
     nome: '',
@@ -166,12 +168,21 @@ const fetchUsuarios = async () => {
     try {
         const response = await axios.post('/UDM/listar', data);
         ListaUsuario.value = response.data;
+
+        filteredCount.value = ListaUsuario.value.length;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = ListaUsuario.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
@@ -252,7 +263,7 @@ const resetForm = () => {
                              <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>Total de registros: {{ ListaUsuario.length }}</span>
+                                            <span>Total de registros: {{ filteredCount }}</span>
                                         </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
@@ -262,6 +273,8 @@ const resetForm = () => {
                                         </IconField>
                                     </div>
                                 </template>
+
+                                <template #empty> Nenhum usuário adicionado. </template>
 
                                 <Column field="nome" sortable style="width: 30%;" header="Nome"></Column>
                                 <Column field="login" sortable style="width: 50%;" header="Login">

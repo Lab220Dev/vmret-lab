@@ -7,9 +7,7 @@
 
             <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
         </div>
-
         
-
         <div v-if="selectedClient?.id" class="mt-6 card services-edit">
             <div class="flex justify-content-between align-items-center">
                 <h4 class="mt-3 no-break">Serviços atribuídos a {{ selectedClient.name }}</h4>

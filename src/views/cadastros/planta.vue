@@ -18,6 +18,8 @@ const integracao = ref(false);
 const deletePlantaDialog = ref(false);
 const loading = ref(false);
 
+const filteredCount = ref(0);
+
 let planta = reactive({
     nome: '',
     id_planta: '',
@@ -54,12 +56,25 @@ const loadPlanta = async () => {
             }
         });
         ListaPlanta.value = response.data;
+
+        filteredCount.value = ListaPlanta.value.length;
     } catch (error) {
         console.error('Erro ao listar plantas:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = ListaPlanta.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 const adicionarPlanta = async () => {
     const data = {
@@ -162,23 +177,28 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Plantas">
                 <div class="col-12">
-                    <DataTable 
-                    v-model:filters="filters"
-                    :value="ListaPlanta" selectionMode="single" tableStyle="min-width: 25%" paginator
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="ListaPlanta"
+                        selectionMode="single"
+                        tableStyle="min-width: 25%"
+                        paginator
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
                         removableSort
                         stripedRows
-                        :globalFilterFields="['id_planta', 'nome']" 
-                        :sortField="'id_planta'" 
-                        :sortOrder="1" 
-                        dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-
+                        :globalFilterFields="['id_planta', 'nome']"
+                        :sortField="'id_planta'"
+                        :sortOrder="1"
+                        dataKey="id"
+                        :metaKeySelection="false"
+                        @rowSelect="handleRowSelection"
+                    >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                        <span>Total de registros: {{ ListaPlanta.length }}</span>
-                    </div>
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
@@ -190,7 +210,7 @@ onMounted(() => {
                             </div>
                         </template>
 
-                        <template #empty> Nenhuma Planta adicionada. </template>
+                        <template #empty> Nenhuma planta adicionada. </template>
                         <Column field="id_planta" sortable header="Planta de Custo"></Column>
                         <Column field="nome" sortable header="Planta (Nome)"></Column>
                     </DataTable>

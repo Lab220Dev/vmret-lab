@@ -40,6 +40,9 @@ const dropdownItems = ref([
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
+const filteredCount = ref(0);
+
 const deleteUsuarioDialog = ref(false);
 const onRowSelect = (event) => {
     visible.value = true;
@@ -212,6 +215,8 @@ const fetchUsuarios = async () => {
             }
         });
         ListaUsuario.value = response.data;
+
+        filteredCount.value = ListaUsuario.value.length;
     } catch (error) {
         loading.value = false; // Desativando loading
         console.error('Erro ao carregar usuários:', error);
@@ -219,6 +224,14 @@ const fetchUsuarios = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = ListaUsuario.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const fetchCliente = async () => {
     loading.value = true;
     try {
@@ -319,7 +332,7 @@ const resetForm = () => {
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>Total de registros: {{ ListaUsuario.length }}</span>
+                                            <span>Total de registros: {{ filteredCount}}</span>
                                         </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
@@ -329,6 +342,9 @@ const resetForm = () => {
                                         </IconField>
                                     </div>
                                 </template>
+
+                                <template #empty> Nenhum usuário adicionado. </template>
+
                                 <Column field="nome" sortable style="width: 20%" class="table-cell" header="Nome">
                                     <template #body="{ data }">
                                         <span v-tooltip="data.nome">{{ data.nome }}</span>

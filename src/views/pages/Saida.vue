@@ -142,7 +142,7 @@ function selectTopic1(topic1) {
         <fieldset class="m-2">
             <p>
                 Este guia técnico fornece instruções detalhadas sobre como autenticar-se na API e obter um token de acesso. Você encontrará exemplos de requisições para endpoints críticos, como relatórios de retiradas, status e estoque, utilizando
-                linguagens como C#, Java, JavaScript. Cada exemplo inclui o formato do corpo da requisição e os cabeçalhos necessários para autenticação.
+                linguagens como C#, Java e JavaScript. Cada exemplo inclui o formato do corpo da requisição e os cabeçalhos necessários para autenticação.
             </p>
         </fieldset>
 

@@ -24,6 +24,7 @@ const operacao = ref([
     { label: 'Delete', value: 'DELETE' },
 ]);
 
+ 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
