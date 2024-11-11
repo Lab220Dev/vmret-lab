@@ -321,14 +321,15 @@ const removeService = async (service) => {
         // Dados a serem enviados para o servidor
         const data = {
             id_cliente: selectedClient.value.id,
-            id_servico: service.id
+            id_servico: service.id,
+            id_usuario: store.userId
         };
 
         // Enviar a solicitação para remover o serviço no backend
         const response = await axios.post('/admin/cliente/deletarServico', data);
 
         // Verificar a estrutura da resposta do backend
-        if (response.data && response.data.success) {
+        if (response.data && response.data.status===200) {
             toast.add({
                 severity: 'success',
                 summary: 'Serviço removido',

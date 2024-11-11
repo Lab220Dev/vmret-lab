@@ -2,18 +2,17 @@
     <h1>Dados do evento</h1>
     <DataTable
         v-model:filters="filters"
-        :value="data"
+        :value="formattedData"
         stripedRows
         showGridlines
         paginator
         :rows="50"
         :rowsPerPageOptions="[50, 100, 500, 1000]"
         rowHover
-        :globalFilterFields="['Nome', 'Telefone', 'Email', 'Foto', 'Retirada','dia_retirada','hora_retirada','arquivo']"
+        :globalFilterFields="['Nome', 'Telefone', 'Email', 'Foto', 'Retirada', 'dia_retirada', 'hora_retirada', 'arquivo']"
         :tableStyle="{ width: '100%' }"
         :sortField="'nome'"
         :sortOrder="1"
-        :rowClass="rowClass"
     >
         <template #header>
             <div class="flex justify-content-between align-items-center">
@@ -36,7 +35,11 @@
         <Column field="Nome" header="Nome" sortable />
         <Column field="Telefone" header="Telefone" sortable />
         <Column field="Email" header="E-mail" sortable />
-        <Column field="dia_retirada" header="Dia" sortable />
+        <Column field="dia_retirada" header="Dia" sortable>
+            <template #body="slotProps">
+                {{ slotProps.data.dia_retirada_formatada }}
+            </template>
+        </Column>
         <Column field="hora_retirada" header="Hora" sortable />
         <Column field="arquivo" header="Arquivo" sortable>
             <template #body="slotProps">
@@ -66,8 +69,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted,h } from 'vue';
+import { ref, onMounted, onUnmounted, h, computed } from 'vue';
+const formattedData = computed(() => {
+    return data.value.map((item) => {
+        if (item.dia_retirada) {
+            const [day, month, year] = item.dia_retirada.split('/');
+            const dateInBrasilia = new Date(year, month - 1, day, 0, 0, 0);
+            dateInBrasilia.setHours(dateInBrasilia.getHours() + 3); // Ajuste para UTC-3
 
+            return {
+                ...item,
+                dia_retirada: dateInBrasilia,
+                dia_retirada_formatada: dateInBrasilia.toLocaleDateString('pt-BR') // Formato dd/mm/yyyy para exibição
+            };
+        } else {
+            return { ...item, dia_retirada: null, dia_retirada_formatada: '' };
+        }
+    });
+});
 const data = ref([]);
 const filters = ref({ global: { value: null } });
 
@@ -100,7 +119,6 @@ function rowClass(data) {
     if (data.updatedColumns && data.updatedColumns.length > 0) return 'updated-row';
     return '';
 }
-
 </script>
 
 <style>
@@ -109,7 +127,7 @@ function rowClass(data) {
 }
 
 .updated-row {
-    background-color: #fff5e6; 
+    background-color: #fff5e6;
 }
 .updated-icon {
     margin-left: 5px;
