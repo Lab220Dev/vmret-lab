@@ -82,12 +82,14 @@ const onRowSelect = async (event) => {
     loadProdutos();
 };
 
-
 const loadProdutos = async (page = 1) => {
+    const searchTerm = filters.value.global.value || ''; // Pega o valor do filtro global
+    if (searchTerm.length >= 3 || searchTerm === '') {
     const data = {
         id_cliente: store.userIdCliente,
         page,
-        pageSize
+        pageSize,
+        searchTerm // Passa o termo de busca
     };
     try {
         loading.value = true;
@@ -106,7 +108,25 @@ const loadProdutos = async (page = 1) => {
     } finally {
         loading.value = false;
     }
+}
 };
+
+const debounceTimeout = ref(null); 
+// Filtro local 
+watch(
+    () => filters.value.global.value, 
+    (newValue, oldValue) => {
+        if (debounceTimeout.value) {
+            clearTimeout(debounceTimeout.value); //Limpa o timeout anterior
+        }
+
+        // espera 2 segundos após parar de digitar
+        debounceTimeout.value = setTimeout(() => {
+            loadProdutos(currentPage.value); // Chama a função de busca
+        }, 1000); // ex : 2000ms (2 segundos)
+    },
+    { immediate: true } // Chama a busca se tiver um valor no filtro
+);
 
 // Função para carregar imagens apenas dos produtos visíveis na página atual
 const loadImagens = async (produtos) => {
@@ -120,13 +140,15 @@ const onPageChange = (event) => {
     currentPage.value = event.page + 1;
     loadProdutos(currentPage.value);
 };
+
 const loadData = async () => {
     try {
-        formatedPlantaOptions.value = dataStore.plantas || await dataStore.fetchPlantas();
+        formatedPlantaOptions.value = dataStore.plantas || (await dataStore.fetchPlantas());
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
 };
+
 const saveProduto = async () => {
     const formData = new FormData();
     if (selectedFile.value) {
@@ -341,9 +363,9 @@ onMounted(async () => {
                         stripedRows
                         paginator
                         removableSort
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="10"
-                        lazy 
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        lazy
                         :totalRecords="totalRecords"
                         dataKey="id"
                         :globalFilterFields="['codigo', 'nome']"
@@ -367,7 +389,7 @@ onMounted(async () => {
                                 </IconField>
                             </div>
                         </template>
-
+                        <template #empty> Nenhum produto adicionado. </template>
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>

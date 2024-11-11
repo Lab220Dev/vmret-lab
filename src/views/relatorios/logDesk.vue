@@ -3,9 +3,11 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+
+const filteredCount = ref(0);
 
 const store = useAuthStore();
 const toast = useToast();
@@ -13,7 +15,7 @@ const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
 const todosOption = { label: 'Todos', value: null };
-const historico = ref([]);
+const historicoDesk = ref([]);
 const dms = ref([todosOption]);
 const operacao = ref([
     { label: 'Todos', value: null },
@@ -22,13 +24,14 @@ const operacao = ref([
     { label: 'Delete', value: 'DELETE' },
 ]);
 
+ 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
 const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
-const relatorio = ref({
+const relatorioDesk = ref({
     dm: '',
     id_usuario: '',
     id_funcionario: '',
@@ -52,20 +55,30 @@ const toISODate = (date) => {
 const buscar = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm,
-        id_usuario: relatorio.value.id_usuario,
-        id_funcionario: relatorio.value.id_funcionario,
-        operacao: relatorio.value.id_operacao,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final)
+        id_dm: relatorioDesk.value.dm,
+        id_usuario: relatorioDesk.value.id_usuario,
+        id_funcionario: relatorioDesk.value.id_funcionario,
+        operacao: relatorioDesk.value.id_operacao,
+        data_inicio: toISODate(relatorioDesk.value.data_inicio),
+        data_final: toISODate(relatorioDesk.value.data_final)
     };
     try {
         const response = await axios.post('/Log/relatoriodesk', data);
-        historico.value = response.data;
+        historicoDesk.value = response.data;
+
+        filteredCount.value = historicoDesk.value.length;
+
     } catch (error) {
         console.error('Erro ao buscar logs:', error);
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = historicoDesk.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 
 const fetchDM = async () => {
@@ -140,35 +153,35 @@ onMounted(() => {
         <div class="form">
             <h5 class="my-6 ml-2 text-2xl">Log de Maquina</h5>
             <div class="grid mt-3 mx-1 p-1">
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="usuario">DMs:</label>
-                    <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
+                    <Dropdown class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
+                    <Dropdown class="drop" v-model="relatorioDesk.id_operacao" :options="operacao" optionLabel="label"
                         optionValue="value" placeholder="Todos" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="usuario">Usuário:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
+                    <Dropdown class="drop" v-model="relatorioDesk.id_usuario" :options="usuario" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="usuario">Funcionario:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
+                    <Dropdown class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown4" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
-                    <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                    <VueDatePicker class="drop" v-model="relatorioDesk.data_inicio" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Final:</label>
-                    <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                    <VueDatePicker class="drop" v-model="relatorioDesk.data_final" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
                 </div>
@@ -180,7 +193,7 @@ onMounted(() => {
         </div>
         <DataTable 
         v-model:filters="filters"
-        :value="historico" 
+        :value="historicoDesk" 
         stripedRows 
         showGridlines 
         paginator 
@@ -196,7 +209,7 @@ onMounted(() => {
         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ historico.length }}</span>
+                                    <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">

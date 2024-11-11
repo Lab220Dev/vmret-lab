@@ -13,10 +13,12 @@ const centroCusto = ref([]);
 const visible = ref(false);
 const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
-const dataStore = useDataStore(); 
+const dataStore = useDataStore();
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
+const filteredCount = ref(0);
 
 let cdc = reactive({
     Nome: '',
@@ -50,6 +52,8 @@ const loadCentroCusto = async () => {
             }
         });
         centroCusto.value = response.data;
+
+        filteredCount.value = centroCusto.value.length;
     } catch (error) {
         console.error('Erro ao listar centros de custo:', error);
     }
@@ -122,6 +126,17 @@ watch(active, (newIndex, oldIndex) => {
     }
 });
 
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = centroCusto.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
+
 const resetForm = () => {
     (cdc.Nome = ''), (cdc.Codigo = ''), (cdc.ID_CentroCusto = '');
 };
@@ -159,7 +174,7 @@ onMounted(() => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ centroCusto.length }}</span>
+                                    <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>
@@ -169,6 +184,7 @@ onMounted(() => {
                                 </IconField>
                             </div>
                         </template>
+                        <template #empty> Nenhum centro de custo adicionado. </template>
 
                         <Column field="Codigo" sortable header="Código"></Column>
                         <Column field="Nome" sortable header="Centro de Custo (Nome)"></Column>

@@ -3,7 +3,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import { useDataStore } from '@/store/dataStore.js';
@@ -11,6 +11,8 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const dataStore = useDataStore();
 const showDialog = ref(false);
 const dialogMessage = ref('');
+
+const filteredCount = ref(0);
 
 const store = useAuthStore();
 const toast = useToast();
@@ -68,6 +70,9 @@ const buscar = async () => {
             }
         });
         devolucoes.value = response.data;
+
+        filteredCount.value = devolucoes.value.length;
+
         if (Array.isArray(devolucoes.value) && devolucoes.value.length === 0) {
             dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             showDialog.value = true;
@@ -83,6 +88,14 @@ const buscar = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = devolucoes.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const voltar = () => {
     show.value = true;
     selectedItem.value = {};
@@ -242,7 +255,7 @@ onMounted(() => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                <span>Total de registros: {{ devolucoes.length }}</span>
+                                <span>Total de registros: {{ filteredCount}}</span>
                             </div>
                                 <div>
                                     <IconField iconPosition="left">

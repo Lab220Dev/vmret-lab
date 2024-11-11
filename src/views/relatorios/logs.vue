@@ -3,9 +3,11 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+
+const filteredCount = ref(0);
 
 const store = useAuthStore();
 const toast = useToast();
@@ -66,11 +68,20 @@ const buscar = async () => {
             }
         });
         historico.value = response.data;
+
+        filteredCount.value = historico.value.length;
+
     } catch (error) {
         console.error('Erro ao buscar logs:', error);
     }
 };
 
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = historico.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 const fetchDM = async () => {
     const data = {
@@ -189,15 +200,15 @@ onMounted(() => {
         rowHover
         :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"  
         dataKey="Operacao"
-        tableStyle="min-width: 50rem; table-layout: fixed;"
+        tableStyle=""
         removableSort
         :sortOrder="1"
         :sortField="'Dia'"  >
 
         <template #header>
                             <div class="flex justify-content-between align-items-center">
-                                <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ historico.length }}</span>
+                                <div >
+                                    <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">
@@ -210,11 +221,11 @@ onMounted(() => {
                             </div>
                         </template>
 
-            <Column field="Dia" sortable style="width: 20%" header="Data"></Column>
-            <Column field="Operacao" sortable style="width: 10%" header="Operação"></Column>
-            <Column field="ID_Usuario" sortable style="width: 8%" header="Usuário"></Column>
-            <Column field="Log_Web" sortable style="width: 40%" header="Resumo"></Column>
-            <Column field="Resultado" sortable  style="width: 10%" header="Resultado"></Column>
+            <Column field="Dia" sortable style="max-width: 10%" header="Data"></Column>
+            <Column field="Operacao" sortable style="max-width: 10%" header="Operação"></Column>
+            <Column field="ID_Usuario" sortable style="max-width: 8%" header="Usuário"></Column>
+            <Column field="Log_Web" sortable style="max-width: 500px" header="Resumo"></Column>
+            <Column field="Resultado" sortable  style="max-width: 10%" header="Resultado"></Column>
         </DataTable>
     </div>
 </template>

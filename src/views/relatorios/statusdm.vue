@@ -7,6 +7,8 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import { FilterMatchMode } from 'primevue/api';
 
+const filteredCount = ref(0);
+
 const store = useAuthStore();
 const relatorio = ref({
     id_dm: '',
@@ -58,6 +60,9 @@ const KeepAlive = async () => {
     try {
         const response = await axios.post('/SDM/relatorio', data);
         StatusDM.value = response.data;
+
+        filteredCount.value = StatusDM.value.length;
+
         if (StatusDM.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         }
@@ -65,6 +70,13 @@ const KeepAlive = async () => {
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = StatusDM.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 const format = (date) => {
     const day = date.getDate();
@@ -124,7 +136,7 @@ const handleDatepickerOpen = () => {
         <template #header>
                             <div class="flex justify-content-between align-items-center ">
                                 <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ StatusDM.length }}</span>
+                                    <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">

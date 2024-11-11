@@ -9,6 +9,7 @@ import { useToast } from 'primevue/usetoast'; // Importa o toast
 // Usa a store
 const store = useAuthStore();
 const toast = useToast(); // Inicializa o toast
+const emptyMessage = ref('Ainda não foi feita nenhuma retirada');
 
 const canViewLastRecalls = ref(false); // Controle de exibição
 
@@ -146,7 +147,7 @@ const chartOptions = {
     scales: {
         y: {
             type: 'category',
-            labels: ['Offline', 'Online'], // Define as categorias, sem necessidade de callback
+            labels: ['Offline', 'Online'] // Define as categorias, sem necessidade de callback
         },
         x: {
             title: {
@@ -184,12 +185,17 @@ const estoquebaixo = ref([]);
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
                 <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoquebaixo" removableSort responsiveLayout="scroll">
-                    <Column field="nome" header="Item" sortable  style="width: 30%">
+                    <Column field="nome" header="Item" sortable style="width: 30%">
                         <template #body="{ data }">
-                    <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
-                </template></Column>
-                    <Column field="sku" header="SKU" class="table-cell" sortable  style="width: 10%"></Column>
-                    <Column field="quantidade" header="Quant." class="table-cell" sortable  style="width: 8%"></Column>
+                            <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
+                        </template></Column
+                    >
+                    <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%"></Column>
+                    <Column field="quantidade" header="Quant." class="table-cell" sortable style="width: 8%"></Column>
+                    
+                    <template #empty>
+                        <div class="empty-message" style="text-align: center; padding: 20px; color: gray">Não há itens com o estoque baixo.</div>
+                    </template>
                 </DataTable>
             </div>
 
@@ -219,15 +225,15 @@ const estoquebaixo = ref([]);
 }
 .tooltip-target {
     cursor: pointer;
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    display: inline-block; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
     max-width: 100%;
 }
 
 .v-tooltip {
-    max-width: 400px; 
-    white-space: normal; 
+    max-width: 400px;
+    white-space: normal;
 }
 </style>

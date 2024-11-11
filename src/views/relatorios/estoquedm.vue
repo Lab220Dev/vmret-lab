@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
@@ -15,10 +15,13 @@ const dropdown1 = ref(null);
 const EstoqueDM = ref([]);
 const dms = ref([todosOption]);
 const store = useAuthStore();
+const emptyMessage = ref('');
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
+const filteredCount = ref(0);
 
 const fetchDM = async () => {
     const data = {
@@ -57,12 +60,22 @@ const relatorioDM = async () => {
             }
         });
         EstoqueDM.value = response.data;
+
+        filteredCount.value = EstoqueDM.value.length;
+
     } catch (error) {
         console.error('Erro ao gerar o Relatorio de Estoque das DMS:', error);
     } finally {
         loading.value = false;
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = EstoqueDM.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 onMounted(() => {
     fetchDM();
@@ -91,7 +104,6 @@ onMounted(() => {
             :globalFilterFields="['sku', 'nome', 'Posicao', 'quantidade', 'quantidademinima', 'capacidade']"
             selectionMode="single"
             :metaKeySelection="false"
-            tableStyle="min-width: 50rem; table-layout: fixed;"
             :sortOrder="1"
             :sortField="'sku'"
             :tableStyle="{ width: '100%' }"
@@ -99,7 +111,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ EstoqueDM.length }}</span>
+                        <span>Total de registros: {{ filteredCount }}</span>
                     </div>
                     <div>
                         <IconField iconPosition="left">
@@ -112,24 +124,26 @@ onMounted(() => {
                 </div>
             </template>
 
-            <Column field="sku" class="table-cell" sortable style="width: 10%" header="SKU"></Column>
-            <Column field="nome" sortable style="width: 30%" header="Produto">
+            <template #empty> {{ emptyMessage }} </template>
+
+            <Column field="sku" class="table-cell" sortable  header="SKU"></Column>
+            <Column field="nome" sortable  header="Produto">
                 <template #body="{ data }">
                     <span v-tooltip="data.nome">{{ data.nome }}</span>
                 </template>
             </Column>
-            <Column field="Posicao" sortable style="width: 10%; text-align: center" header="Posição"></Column>
-            <Column field="quantidade" sortable style="width: 15%; text-align: center">
+            <Column field="Posicao" sortable style=" text-align: center" header="Posição"></Column>
+            <Column field="quantidade" sortable style=" text-align: center">
                 <template #header>
                     <span v-tooltip="'Quantidade Atual'">Quant. Atual</span>
                 </template>
             </Column>
-            <Column field="quantidademinima" sortable style="width: 15%; text-align: center">
+            <Column field="quantidademinima" sortable style=" text-align: center">
                 <template #header>
                     <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span>
                 </template>
             </Column>
-            <Column field="capacidade" sortable style="width: 10%; text-align: center" header="Capacidade"></Column>
+            <Column field="capacidade" sortable style=" text-align: center" header="Capacidade"></Column>
         </DataTable>
         <LoadingSpinner v-if="loading" />
     </div>

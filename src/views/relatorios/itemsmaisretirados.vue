@@ -3,13 +3,15 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const showDialog = ref(false);
 const dialogMessage = ref('');
+
+const filteredCount = ref(0);
 
 const store = useAuthStore();
 const toast = useToast();
@@ -71,6 +73,9 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+
+        filteredCount.value = retiradas.value.length;
+
         if (retiradas.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
@@ -87,6 +92,14 @@ const buscar = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = retiradas.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const onRowSelect = (event) => {
     show.value = true;
     selectedItem.value = event.data.Detalhes;
@@ -374,13 +387,13 @@ onMounted(() => {
                         removableSort
                         :sortOrder="1"
                         :sortField="'ProdutoSKU'"                        
-                        tableStyle="min-width: 50rem; table-layout: fixed;"
                         ref="dt"
+            :tableStyle="{ width: '100%' }"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center ">
                                 <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ retiradas.length }}</span>
+                                    <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">

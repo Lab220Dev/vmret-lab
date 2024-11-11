@@ -101,20 +101,21 @@ onMounted(() => {
 
 <template>
     <div class="card" >
-        <h2 class="my-6 ml-2 text-2xl">Configurações de Integração</h2>
+        <h2 class="my-6  text-2xl">Configurações de Integração</h2>
             <Dropdown
                 :options="Dados"
                 :virtualScrollerOptions="{ itemSize: 30 }"
                 :filter="true"
                 :filterBy="'Identificacao'"
                 :disabled="validador"
+                class="mb-5"
                 v-model="DMSelecionada"
                 optionLabel="Identificacao"
                 optionValue="ID_DM"
                 placeholder="Selecione uma DM"
                 @change="handleDMChange()"
             />
-            <InlineMessage v-if="!validador && primeiraInteracao" severity="info">Selecione uma Dm</InlineMessage>
+            <InlineMessage v-if="!validador && primeiraInteracao" severity="info" >Selecione uma Dm</InlineMessage>
         <form @submit.prevent="salvarIntegracao">
             <div class="p-fluid grid">
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">

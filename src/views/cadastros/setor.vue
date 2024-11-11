@@ -32,6 +32,7 @@ const loading = ref(false);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+const filteredCount = ref(0);
 
 let setor = reactive({
     codigo: '',
@@ -66,6 +67,8 @@ const loadSetor = async () => {
     try {
         const response = await axios.post('/Setor/listar', data);
         ListaSetor.value = response.data;
+
+        filteredCount.value = ListaSetor.value.length;
     } catch (error) {
         console.error('Erro ao listar Setores:', error);
     } finally {
@@ -94,6 +97,13 @@ const adicionarSetor = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = ListaSetor.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
 const deleteSetor = async () => {
     let data = { id_setor: setor.id_setor };
@@ -281,7 +291,7 @@ const SalvarProduto = async () => {
                     <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                        <span>Total de registros: {{ ListaSetor.length }}</span>
+                        <span>Total de registros: {{ filteredCount}}</span>
                     </div>
                                 <div>
                                     <IconField iconPosition="left">
