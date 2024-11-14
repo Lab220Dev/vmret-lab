@@ -344,7 +344,10 @@ onMounted(() => {
                             </form>
                             <div class="mt-6" v-if="visible">
                                 <!-- Seção de Seleção de Menu -->
-                                <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil" :initialMenus="structuredMenus.value" @update:structuredMenus="structuredMenus.value = $event" />
+                                <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
+                                 :initialMenus="structuredMenus.value"
+                                 @update:structuredMenus="structuredMenus.value = $event"
+                                 :id_cliente="cliente.id_cliente" />
 
                                 <!-- Botão para Salvar Configurações -->
                                 <!-- <div class="mr-1 mt-8 grid justify-content-end"><Button v-if="selectedPerfil" label="Salvar Configurações" @click="submitMenu" /></div> -->
