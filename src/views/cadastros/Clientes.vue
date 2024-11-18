@@ -115,29 +115,6 @@ const deleteCliente = async (item) => {
     }
 };
 
-// Função atualizada para enviar a estrutura hierárquica de menus
-const submitMenu = async () => {
-    const simpleStructuredMenus = JSON.parse(JSON.stringify(structuredMenus.value.value));
-    console.log('Structured Menus Before Submission:', simpleStructuredMenus);
-    console.log('Structured Menus:', structuredMenus.value);
-    const data = {
-        id_cliente: cliente.id_cliente,
-        perfil: selectedPerfil.value,
-        menus: simpleStructuredMenus // Enviando a estrutura hierárquica de menus
-    };
-
-    loading.value = true;
-    try {
-        await axios.post('/admin/cliente/salvarMenus', data);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações de menu salvas com sucesso.', life: 3000 });
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações de menu.', life: 3000 });
-        console.error('Erro ao salvar menus:', error);
-    } finally {
-        loading.value = false;
-    }
-};
-
 const loadCliente = async () => {
     loading.value = true;
     try {
@@ -349,8 +326,6 @@ onMounted(() => {
                                  @update:structuredMenus="structuredMenus.value = $event"
                                  :id_cliente="cliente.id_cliente" />
 
-                                <!-- Botão para Salvar Configurações -->
-                                <!-- <div class="mr-1 mt-8 grid justify-content-end"><Button v-if="selectedPerfil" label="Salvar Configurações" @click="submitMenu" /></div> -->
                             </div>
                         </div>
                         <div class="mr-1 my-7 grid justify-content-end">
