@@ -46,10 +46,12 @@ const sincronizar = async () => {
     loading.value = true;
     try {
         const response = await axios.post('/naoalocados/sincronizar', data);
-        itens.value = response.data.map(item => ({
-            ...item.produto, 
-            status: item.status
-        }));
+        itens.value = response.data.flatMap(cliente => 
+            cliente.produtosComStatus.map(item => ({
+                ...item.produto,  
+                status: item.status 
+            }))
+        );
         sincronizado.value = true; 
     } catch (error) {
         console.error('Erro ao sincronizar itens:', error);
@@ -72,25 +74,38 @@ onMounted(() => {
             <Button label="Sincronizar" icon="pi pi-refresh" class="p-button-secondary" @click="sincronizar" />
         </div>
 
-        <DataTable v-model:filters="filters" :value="itens" stripedRows showGridlines paginator :rows="10"
-            :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
-            :globalFilterFields="['nome', 'descricao', 'codigo']" selectionMode="single"
-            :tableStyle="{ width: '100%' }">
-            <template #header>
-                <div class="flex justify-content-end">
-                    <IconField iconPosition="left">
-                        <InputIcon>
-                            <i class="pi pi-search" />
-                        </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                    </IconField>
-                </div>
-            </template>
+        <DataTable v-model:filters="filters" :value="itens" 
+        stripedRows 
+        showGridlines 
+        paginator 
+        removableSort
+        :rows="10"
+        :sortOrder="1"
+        :sortField="'codigo'"   
+        :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
+        :globalFilterFields="['nome', 'descricao', 'codigo']" 
+        selectionMode="single"
+        tableStyle="min-width: 50rem; table-layout: fixed;">
+        <template #header>
+                            <div class="flex justify-content-between align-items-center ">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ itens.length }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
             <template #empty>{{ emptyMessage }}</template>
 
-            <Column field="nome" sortable header="Item"></Column>
-            <Column field="quantidadeReferencia" sortable header="Quantidade" class="text-center"></Column>
-            <Column field="ca" sortable header="CA"></Column>
+            <Column field="nome" sortable style="width: 70%" header="Item"></Column>
+            <Column field="quantidadeReferencia" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
+            <Column field="codigo" style="width: 15%" header="CA"></Column>
             <Column v-if="sincronizado" header="Status">
                 <template #body="slotProps">
                     <span>{{ slotProps.data.status }}</span>

@@ -1,12 +1,12 @@
 <template>
     <div class="flex align-items-center justify-content-center flex-column">
-        <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none" accept="image/png" />
-        <div class="image-container">
-            <img :src="imageData || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
-            <button v-if="imageData" class="remove-button" @click="removeImage">×</button>
-        </div>
-        <button class="button" @click="triggerFileInput"><i class="pi pi-upload icon-left"></i> Enviar Imagem</button>
+    <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none" accept=".png, .jpeg, .jpg" />
+    <div class="image-container">
+        <img :src="imageData || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
+        <button v-if="imageData" class="remove-button" @click="removeImage">×</button>
     </div>
+    <button class="button" @click="triggerFileInput"><i class="pi pi-upload icon-left"></i> Enviar Imagem</button>
+</div>
 </template>
 
 <script setup>
@@ -36,11 +36,22 @@ const triggerFileInput = () => {
 
 const handleFileUpload = (event) => {
     const file = event.target.files[0];
+    const maxSize = 2 * 1024 * 1024; // Tamanho máximo em bytes (2MB)
+    
     if (file) {
-        if (file.type !== 'image/png') {
-            toast.add({ severity: 'error', summary: 'Erro', detail: `O arquivo ${file.name} não é um PNG.`, life: 3000 });
+        // Verifica o tipo do arquivo
+        const allowedTypes = ['image/png', 'image/jpeg'];
+        if (!allowedTypes.includes(file.type)) {
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: `O arquivo ${file.name} não é um formato de imagem suportado. Aceitos: PNG, JPEG, JPG.`,
+                life: 3000
+            });
             return;
         }
+
+        // Verifica o tamanho do arquivo
         if (file.size <= maxSize) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -49,7 +60,12 @@ const handleFileUpload = (event) => {
             };
             reader.readAsDataURL(file);
         } else {
-            toast.add({ severity: 'error', summary: 'Erro', detail:` O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`, life: 3000 });
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: `O arquivo ${file.name} é muito grande. O tamanho máximo permitido é 2MB.`,
+                life: 3000
+            });
         }
     }
 };

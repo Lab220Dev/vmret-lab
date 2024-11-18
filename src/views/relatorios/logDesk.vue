@@ -15,7 +15,7 @@ const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
 const todosOption = { label: 'Todos', value: null };
-const historico = ref([]);
+const historicoDesk = ref([]);
 const dms = ref([todosOption]);
 const operacao = ref([
     { label: 'Todos', value: null },
@@ -24,13 +24,14 @@ const operacao = ref([
     { label: 'Delete', value: 'DELETE' },
 ]);
 
+ 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
 const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
-const relatorio = ref({
+const relatorioDesk = ref({
     dm: '',
     id_usuario: '',
     id_funcionario: '',
@@ -54,22 +55,18 @@ const toISODate = (date) => {
 const buscar = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm,
-        id_usuario: relatorio.value.id_usuario,
-        id_funcionario: relatorio.value.id_funcionario,
-        operacao: relatorio.value.id_operacao,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final)
+        id_dm: relatorioDesk.value.dm,
+        id_usuario: relatorioDesk.value.id_usuario,
+        id_funcionario: relatorioDesk.value.id_funcionario,
+        operacao: relatorioDesk.value.id_operacao,
+        data_inicio: toISODate(relatorioDesk.value.data_inicio),
+        data_final: toISODate(relatorioDesk.value.data_final)
     };
     try {
-        const response = await axios.post('/Log/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        historico.value = response.data;
+        const response = await axios.post('/Log/relatoriodesk', data);
+        historicoDesk.value = response.data;
 
-        filteredCount.value = historico.value.length;
+        filteredCount.value = historicoDesk.value.length;
 
     } catch (error) {
         console.error('Erro ao buscar logs:', error);
@@ -77,22 +74,19 @@ const buscar = async () => {
 };
 
 watch(() => filters.value.global.value, () => {
-    filteredCount.value = historico.value.filter(item => {
+    filteredCount.value = historicoDesk.value.filter(item => {
         const filterValue = filters.value.global.value?.toLowerCase() || '';
         return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
     }).length;
 }, { immediate: true });
+
 
 const fetchDM = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/DM/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/DM/listar', data);
         dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({
             label: Identificacao,
             value: ID_DM
@@ -107,14 +101,10 @@ const fetchUsuario = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/usuarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        usuario.value = response.data.map(({ id_usuario,nome }) => ({
+        const response = await axios.post('/UDM/listaSimples', data);
+        usuario.value = response.data.map(({ id,nome }) => ({
             label: nome,
-            value: id_usuario
+            value: id
         }));
     } catch (error) {
         console.error('Erro ao carregar lista de usuários:', error);
@@ -126,7 +116,7 @@ const fetchFuncionarios = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/funcionarios/listar', data, {
+        const response = await axios.post('/funcionarios/listaSimples', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -143,6 +133,7 @@ const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
     if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
 };
 
 const handleDatepickerOpen = () => {
@@ -153,33 +144,44 @@ onMounted(() => {
     fetchDM();
     fetchUsuario();
     fetchFuncionarios();
+    //fetchOperacao();
 });
 </script>
 
 <template>
     <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-6 ml-2 text-2xl">Log</h5>
+            <h5 class="my-6 ml-2 text-2xl">Log de Maquina</h5>
             <div class="grid mt-3 mx-1 p-1">
-                <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="usuario">Usuário:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
+                <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <label for="usuario">DMs:</label>
+                    <Dropdown class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
+                    <Dropdown class="drop" v-model="relatorioDesk.id_operacao" :options="operacao" optionLabel="label"
                         optionValue="value" placeholder="Todos" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <label for="usuario">Usuário:</label>
+                    <Dropdown class="drop" v-model="relatorioDesk.id_usuario" :options="usuario" optionLabel="label"
+                        optionValue="value" placeholder="Todos" ref="dropdown3" />
+                </div>
+                <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <label for="usuario">Funcionario:</label>
+                    <Dropdown class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
+                        optionValue="value" placeholder="Todos" ref="dropdown4" />
+                </div>
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
-                    <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
+                    <VueDatePicker class="drop" v-model="relatorioDesk.data_inicio" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="perfil">Data Final:</label>
-                    <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
+                    <VueDatePicker class="drop" v-model="relatorioDesk.data_final" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
                 </div>
@@ -191,23 +193,22 @@ onMounted(() => {
         </div>
         <DataTable 
         v-model:filters="filters"
-        :value="historico" 
+        :value="historicoDesk" 
         stripedRows 
         showGridlines 
         paginator 
         :rows="10"
         :rowsPerPageOptions="[5, 10, 20, 50]"
         rowHover
-        :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"  
+        :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log', 'Resultado']"  
         dataKey="Operacao"
-        tableStyle=""
-        removableSort
+        :tableStyle="{ width: '100%' }"
         :sortOrder="1"
-        :sortField="'Dia'"  >
+        :sortField="'Operacao'"  >
 
         <template #header>
                             <div class="flex justify-content-between align-items-center">
-                                <div >
+                                <div class="flex justify-content-start">
                                     <span>Total de registros: {{ filteredCount }}</span>
                                 </div>
                                 <div>
@@ -221,11 +222,11 @@ onMounted(() => {
                             </div>
                         </template>
 
-            <Column field="Dia" sortable style="max-width: 10%" header="Data"></Column>
-            <Column field="Operacao" sortable style="max-width: 10%" header="Operação"></Column>
-            <Column field="ID_Usuario" sortable style="max-width: 8%" header="Usuário"></Column>
-            <Column field="Log_Web" sortable style="max-width: 500px" header="Resumo"></Column>
-            <Column field="Resultado" sortable  style="max-width: 10%" header="Resultado"></Column>
+            <Column field="Dia" sortable header="Data"></Column>
+            <Column field="Operacao" sortable header="Operação"></Column>
+            <Column field="ID_Usuario" sortable header="Usuário"></Column>
+            <Column field="Log" sortable header="Resumo"></Column>
+            <Column field="Resultado" sortable header="Resultado"></Column>
         </DataTable>
     </div>
 </template>

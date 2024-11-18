@@ -3,13 +3,15 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const showDialog = ref(false);
 const dialogMessage = ref('');
+
+const filteredCount = ref(0);
 
 const store = useAuthStore();
 const toast = useToast();
@@ -71,6 +73,9 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+
+        filteredCount.value = retiradas.value.length;
+
         if (retiradas.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
@@ -87,6 +92,14 @@ const buscar = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = retiradas.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const onRowSelect = (event) => {
     show.value = true;
     selectedItem.value = event.data.Detalhes;
@@ -288,7 +301,7 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Itens mais retirados</h5>
+                <h5 class="my-6  ml-2 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Div de busca de informações para o relatório -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
@@ -358,7 +371,7 @@ onMounted(() => {
                     </div>
                 </div>
                 <!-- DataTable do relatório -->
-                <div class="datatable-wrapper">
+                <div class="datatable-wrapper mt-6">
                     <DataTable
                         v-model:filters="filters"
                         :value="retiradas"
@@ -371,32 +384,42 @@ onMounted(() => {
                         @rowSelect="onRowSelect"
                         :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']"
                         selectionMode="single"
-                        :tableStyle="{ width: '100%' }"
+                        removableSort
+                        :sortOrder="1"
+                        :sortField="'ProdutoSKU'"                        
                         ref="dt"
+            :tableStyle="{ width: '100%' }"
                     >
                         <template #header>
-                            <div class="flex justify-content-end">
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                </IconField>
+                            <div class="flex justify-content-between align-items-center ">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
                             </div>
                         </template>
+
                         <template #empty>{{ emptyMessage }} </template>
                         <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="quantidade_no_periodo" sortable header="Quantidade" class="text-center"></Column>
-                        <Column field="ProdutoSKU" sortable header="CA"></Column>
+                        <Column field="quantidade_no_periodo" sortable style="width: 15%;" header="Quantidade" class="text-center"></Column>
+                        <Column field="ProdutoSKU" sortable style="width: 15%;" header="CA"></Column>
                     </DataTable>
                     <card v-if="show" class="details-card">
                         <template #title>Detalhes do Produto</template>
                         <template #content>
-                            <DataTable :value="selectedItem" stripedRows showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                            <DataTable :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                                <Column field="Identificacao" sortable header="DM"></Column>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>
                                 <Column field="Data" sortable header="Data"></Column>
                                 <Column field="Quantidade" sortable header="Quantidade"> </Column>
-                                <Column field="ProdutoSKU" sortable header="SKU"></Column>
+                                <Column field="ProdutoSKU" sortable  header="SKU"></Column>
                             </DataTable>
                         </template>
                     </card>

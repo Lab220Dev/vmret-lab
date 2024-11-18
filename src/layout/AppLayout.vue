@@ -4,10 +4,13 @@ import MyTopBar from './MytopBar.vue';
 import AppFooter from './AppFooter.vue';
 import MySideBar from './mysidebar.vue';
 import { useLayout } from '@/layout/composables/layout';
+import { useRouter } from 'vue-router';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
-
+const loading = ref(false);
 const outsideClickListener = ref(null);
+
 
 watch(isSidebarActive, (newVal) => {
     if (newVal) {
@@ -60,20 +63,22 @@ const isOutsideClicked = (event) => {
 </script>
 
 <template>
-    <div class="layout-wrapper" :class="containerClass">
-        <MyTopBar></MyTopBar>
-        <div class="layout-sidebar">
-            <MySideBar></MySideBar>
-        </div>
-        <div class="layout-main-container">
-            <div class="layout-main">
-                <router-view></router-view>
+    <div>
+        <LoadingSpinner v-if="loading" />
+        <div v-else class="layout-wrapper" :class="containerClass">
+            <MyTopBar></MyTopBar>
+            <div class="layout-sidebar">
+                <MySideBar></MySideBar>
             </div>
-            <AppFooter></AppFooter>
+            <div class="layout-main-container">
+                <div class="layout-main">
+                    <router-view></router-view>
+                </div>
+                <AppFooter></AppFooter>
+            </div>
         </div>
-        <div class="layout-mask"></div>
+        <Toast />
     </div>
-    <Toast />
 </template>
 
 <style lang="scss" scoped></style>

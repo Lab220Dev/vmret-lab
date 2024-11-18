@@ -3,6 +3,8 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
+import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -11,6 +13,12 @@ const centroCusto = ref([]);
 const visible = ref(false);
 const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
+const dataStore = useDataStore();
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+const filteredCount = ref(0);
 
 let cdc = reactive({
     Nome: '',
@@ -22,7 +30,7 @@ const onRowSelect = async (event) => {
     cdc = event.data;
     visible.value = true;
     active.value = 1;
-    loadCentroCusto();
+    //loadCentroCusto();
 };
 
 const submitForm = () => {
@@ -44,6 +52,8 @@ const loadCentroCusto = async () => {
             }
         });
         centroCusto.value = response.data;
+
+        filteredCount.value = centroCusto.value.length;
     } catch (error) {
         console.error('Erro ao listar centros de custo:', error);
     }
@@ -56,11 +66,8 @@ const adicionarCentro = async () => {
         ...cdc
     };
     try {
-        const response = await axios.post('/cdc/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/cdc/adicionar', data);
+        dataStore.invalidateCDCCache();
         loadCentroCusto();
         active.value = 0;
         resetForm();
@@ -76,15 +83,8 @@ const deleteCentro = async () => {
         ID_CentroCusto: cdc.ID_CentroCusto
     };
     try {
-        await axios.post('/cdc/deleteCentro', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // const index = ListaCentro.value.findIndex((f) => f.id_centro_custo === cdc.id_centro_custo);
-        // if (index !== -1) {
-        //     ListaCentro.value.splice(index, 1);
-        // }
+        await axios.post('/cdc/deleteCentro', data);
+        dataStore.invalidateCDCCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Centro Deletado', life: 3000 });
         deleteCentroDialog.value = false;
         loadCentroCusto();
@@ -108,6 +108,7 @@ const atualizarCDC = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        dataStore.invalidateCDCCache();
         loadCentroCusto();
         active.value = 0;
         resetForm();
@@ -124,6 +125,17 @@ watch(active, (newIndex, oldIndex) => {
         visible.value = false;
     }
 });
+
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = centroCusto.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 const resetForm = () => {
     (cdc.Nome = ''), (cdc.Codigo = ''), (cdc.ID_CentroCusto = '');
@@ -143,14 +155,44 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Centros de Custo">
                 <div class="col-12">
-                    <DataTable :value="centroCusto" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        <Column field="Codigo" header="Código"></Column>
-                        <Column field="Nome" header="Centro de Custo (Nome)"></Column>
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="centroCusto"
+                        selectionMode="single"
+                        tableStyle="min-width: 25%"
+                        stripedRows
+                        removableSort
+                        paginator
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :rows="10"
+                        dataKey="id"
+                        :sortField="'Codigo'"
+                        :globalFilterFields="['Codigo', 'Nome']"
+                        :metaKeySelection="false"
+                        @rowSelect="handleRowSelection"
+                    >
+                        <template #header>
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                <div class="font-semibold">
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                </div>
+                                <IconField iconPosition="left">
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                </IconField>
+                            </div>
+                        </template>
+                        <template #empty> Nenhum centro de custo adicionado. </template>
+
+                        <Column field="Codigo" sortable header="Código"></Column>
+                        <Column field="Nome" sortable header="Centro de Custo (Nome)"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
             <TabPanel :header="visible ? 'Editar Centro de Custo' : 'Adicionar Centro de Custo'" v-model:activeIndex="active">
-                <div class="grid">
+                <div class="grid mt-3">
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">

@@ -20,13 +20,13 @@ const resetPassword = async () => {
     isLoading.value = true;
     error.value = '';
     try {
-        // const response = await axios.post('/recuperar', {
-        //     email: mail.value,
-        // });
-        // if (response.status === 200) {
-        //     alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br");
-        //     forgotPassword.value = false;
-        // }
+        const response = await axios.post('/recuperar', {
+            email: mail.value,
+        });
+        if (response.status === 200) {
+            alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br");
+            forgotPassword.value = false;
+        }
     } catch (err) {
         console.error(err); // Adicione um log para depuração
         error.value = err.response?.data || 'Erro desconhecido';

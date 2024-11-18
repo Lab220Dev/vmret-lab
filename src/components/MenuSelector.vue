@@ -1,39 +1,54 @@
 <template>
-    <div>
-        <h4>Selecione os Menus:</h4>
-        <Button @click="toggleSelectAll(true)">Selecionar Todos</Button>
-        <Button @click="toggleSelectAll(false)">Desselecionar Todos</Button>
-        <div v-for="(menu, index) in filteredMenus" :key="index" class="menu-checkbox">
-            <Checkbox v-model="selectedMenus" :value="menu.name" />
-            <label>{{ menu.name }}</label>
+    <div class="card">
+        <div class="container flex justify-content-between align-items-center" style="width: 100%;">
+        <h4 class="ml-3" style="white-space: nowrap;">Selecione os Menus:</h4>
+        <div class="button-container">
+            <Button class="mr-2 mt-5 mb-4" @click="toggleSelectAll(true)">Selecionar Todos</Button>
+            <Button class="mt-5 mb-4" @click="toggleSelectAll(false)">Desselecionar Todos</Button>
+        </div>
+    </div>
+        <!-- Menus Principais -->
+        <!-- Menu em 3 colunas -->
+        <div class="menu-grid mt-6 ">
+            <div v-for="(menu, index) in filteredMenus" :key="index" class="menu-column">
+                <div class="menu-checkbox">
+                    <Checkbox class="mb-3" v-model="selectedMenus" :value="menu.name" />
+                    <label class="mx-1 mb-3 inline-flex">{{ menu.name }}</label>
 
-            <!-- Exibir Submenus -->
-            <div v-if="selectedMenus.includes(menu.name)" class="submenu-checkbox">
-                <div v-for="submenu in menu.submenus" :key="submenu.name">
-                    <Checkbox v-model="selectedSubmenus" :value="submenu.name" />
-                    <label>{{ submenu.name }}</label>
+                    <!-- Exibir Submenus -->
+                    <div v-if="selectedMenus.includes(menu.name)" class="submenu-checkbox">
+                        <div v-for="submenu in menu.submenus" :key="submenu.name">
+                            <Checkbox class="mb-3" v-model="selectedSubmenus" :value="submenu.name" />
+                            <label class="mx-1 mb-3 inline-flex">{{ submenu.name }}</label>
 
-                    <!-- Exibir Submenus de Submenus -->
-                    <div v-if="selectedSubmenus.includes(submenu.name)" class="subsubmenu-checkbox">
-                        <div v-for="subsubmenu in submenu.subsubmenus" :key="subsubmenu.name">
-                            <Checkbox v-model="selectedSubsubmenus" :value="subsubmenu.name" />
-                            <label>{{ subsubmenu.name }}</label>
+                            <!-- Exibir Subsubmenus -->
+                            <div v-if="selectedSubmenus.includes(submenu.name)" class="subsubmenu-checkbox">
+                                <div v-for="subsubmenu in submenu.subsubmenus" :key="subsubmenu.name">
+                                    <Checkbox class="mb-3" v-model="selectedSubsubmenus" :value="subsubmenu.name" />
+                                    <label class="mx-1 mb-3 inline-flex">{{ subsubmenu.name }}</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" label="Salvar Configurações" @click="submitMenu" /></div>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import axios from '@/axios.js';
+import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     selectedPerfil: Number,
-    initialMenus: Array
+    initialMenus: Array,
+    id_cliente:Number
 });
 
+const toast = useToast();
 const selectedMenus = ref([]);
 const selectedSubmenus = ref([]);
 const selectedSubsubmenus = ref([]);
@@ -42,117 +57,89 @@ const selectedSubsubmenus = ref([]);
 const structuredMenus = ref([]);
 
 const menus = {
-    1: [ // Master
+    1: [
+        // Master
         {
-            name: "Relatórios",
+            name: 'Relatórios',
             submenus: [
                 {
-                    name: "Estoque",
-                    subsubmenus: [{ name: "Estoque da DM" }]
+                    name: 'Estoque',
+                    subsubmenus: [{ name: 'Estoque da DM' }]
                 },
                 {
-                    name: "Retiradas e Devoluções",
-                    subsubmenus: [
-                        { name: "Retiradas Realizadas" },
-                        { name: "Itens Mais Retirados" },
-                        { name: "Retirada Avulsas por Exceções/Voucher" },
-                        { name: "Fichas de Retiradas" },
-                        { name: "Devoluções" }
-                    ]
+                    name: 'Retiradas e Devoluções',
+                    subsubmenus: [{ name: 'Retiradas Realizadas' }, { name: 'Itens Mais Retirados' }, { name: 'Retirada Avulsas por Exceções' }, { name: 'Fichas de Retiradas' }, { name: 'Devoluções' }]
                 },
                 {
-                    name: "Operacional",
-                    subsubmenus: [
-                        { name: "Histórico de Abastecimento" },
-                        { name: "Status DM" },
-                        { name: "Log" }
-                    ]
+                    name: 'Operacional',
+                    subsubmenus: [{ name: 'Histórico de Abastecimento' }, { name: 'Status DM' }, { name: 'Log' }]
                 }
             ]
         },
         {
-            name: "Configurações",
+            name: 'Cadastros',
             submenus: [
-                { name: "Lista de DM" },
-                { name: "Liberação Avulsa" },
-                { name: "Tema" },
-                { name: "Termo de compromisso - Ficha Retirada" }
-            ]
-        },
-        {
-            name: "Importações",
-            submenus: [{ name: "Importações" }]
-        },
-        {
-            name: "EndPoints",
-            submenus: [
-                { name: "Entrada" },
-                { name: "Saída" }
-            ]
-        },
-        {
-            name: "Cadastros",
-            submenus: [
-                { name: "Funcionários" },
+                { name: 'Funcionários' },
                 {
-                    name: "Usuários",
-                    subsubmenus: [
-                        { name: "Usuário WEB" },
-                        { name: "Usuários DMs" },
-                        { name: "Liberação Avulsa" }
-                    ]
+                    name: 'Usuários',
+                    subsubmenus: [{ name: 'Usuário WEB' }, { name: 'Usuários DMs' }, { name: 'Liberação Avulsa' }]
                 },
-                { name: "Centros de Custo" },
-                { name: "Setor/Diretoria" },
-                { name: "Função/Nível Hierárquico" },
-                { name: "Plantas" },
-                { name: "Produtos" }
+                { name: 'Centros de Custo' },
+                { name: 'Setor/Diretoria' },
+                { name: 'Função/Nível Hierárquico' },
+                { name: 'Plantas' },
+                { name: 'Produtos' }
             ]
+        },
+        {
+            name: 'EndPoints',
+            submenus: [{ name: 'Entrada' }, { name: 'Saída' }]
+        },
+        {
+            name: 'Importações',
+            submenus: [{ name: 'Importações' }]
+        },
+        {
+            name: 'Configurações',
+            submenus: [{ name: 'Lista de DM' }, { name: 'Liberação Avulsa' }, { name: 'Gerenciamento de Serviços' }, { name: 'Termo de compromisso' }]
         }
     ],
-    3: [ // Operador
+    3: [
+        // Operador
         {
-            name: "Relatórios",
+            name: 'Relatórios',
             submenus: [
                 {
-                    name: "Estoque",
-                    subsubmenus: [{ name: "Estoque da DM" }]
+                    name: 'Estoque',
+                    subsubmenus: [{ name: 'Estoque da DM' }]
                 },
                 {
-                    name: "Operacional",
-                    subsubmenus: [{ name: "Status da DM" }]
+                    name: 'Operacional',
+                    subsubmenus: [{ name: 'Status da DM' }]
                 },
                 {
-                    name: "Retiradas e Devoluções",
-                    subsubmenus: [
-                        { name: "Retiradas Realizadas" },
-                        { name: "Itens Mais Retirados" },
-                        { name: "Devoluções" }
-                    ]
+                    name: 'Retiradas e Devoluções',
+                    subsubmenus: [{ name: 'Retiradas Realizadas' }, { name: 'Itens Mais Retirados' }, { name: 'Devoluções' }]
                 }
             ]
         },
         {
-            name: "Dispenser Machines",
-            submenus: [
-                { name: "Lista de Itens não Alocados" },
-                { name: "Lista de DMs" }
-            ]
+            name: 'Dispenser Machines',
+            submenus: [{ name: 'Lista de Itens não Alocados' }, { name: 'Lista de DMs' }]
         },
         {
-            name: "Produtos",
-            submenus: [
-                { name: "Lista de Produtos" }
-            ]
+            name: 'Produtos',
+            submenus: [{ name: 'Lista de Produtos' }]
         }
     ],
-    4: [ // Avulso
+    4: [
+        // Avulso
         {
-            name: "Liberação Avulsa",
+            name: 'Liberação Avulsa',
             submenus: []
         },
         {
-            name: "Consultar Status de Liberação Avulsa",
+            name: 'Consultar Status de Liberação Avulsa',
             submenus: []
         }
     ]
@@ -163,12 +150,12 @@ const filteredMenus = computed(() => menus[props.selectedPerfil] || []);
 // Função para inicializar seleções baseadas nos menus recebidos
 onMounted(() => {
     if (props.initialMenus) {
-        props.initialMenus.forEach(menu => {
+        props.initialMenus.forEach((menu) => {
             if (!selectedMenus.value.includes(menu.name)) {
                 selectedMenus.value.push(menu.name);
-                menu.submenus?.forEach(submenu => {
+                menu.submenus?.forEach((submenu) => {
                     selectedSubmenus.value.push(submenu.name);
-                    submenu.subsubmenus?.forEach(subsubmenu => {
+                    submenu.subsubmenus?.forEach((subsubmenu) => {
                         selectedSubsubmenus.value.push(subsubmenu.name);
                     });
                 });
@@ -180,49 +167,85 @@ onMounted(() => {
 // Função para estruturar os menus selecionados em um formato hierárquico
 const buildStructuredMenus = () => {
     structuredMenus.value = filteredMenus.value
-        .filter(menu => selectedMenus.value.includes(menu.name)) // Inclui apenas menus selecionados
-        .map(menu => {
+        .filter((menu) => selectedMenus.value.includes(menu.name)) // Inclui apenas menus selecionados
+        .map((menu) => {
             const structuredSubmenus = menu.submenus
-                .filter(submenu => selectedSubmenus.value.includes(submenu.name)) // Inclui apenas submenus selecionados
-                .map(submenu => {
+                .filter((submenu) => selectedSubmenus.value.includes(submenu.name)) // Inclui apenas submenus selecionados
+                .map((submenu) => {
                     const structuredSubsubmenus = submenu.subsubmenus
-                        ? submenu.subsubmenus.filter(subsubmenu => selectedSubsubmenus.value.includes(subsubmenu.name)) // Inclui apenas subsubmenus selecionados
+                        ? submenu.subsubmenus.filter((subsubmenu) => selectedSubsubmenus.value.includes(subsubmenu.name)) // Inclui apenas subsubmenus selecionados
                         : [];
                     return { ...submenu, subsubmenus: structuredSubsubmenus };
                 });
             return { ...menu, submenus: structuredSubmenus };
         });
 };
+
+
+const submitMenu = async () => {
+    const data = {
+        id_cliente: props.id_cliente,
+        perfil: props.selectedPerfil,
+        menus: structuredMenus.value
+    };
+
+    //loading.value = true;
+    try {
+        await axios.post('/admin/cliente/salvarMenus', data);
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações de menu salvas com sucesso.', life: 3000 });
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações de menu.', life: 3000 });
+        console.error('Erro ao salvar menus:', error);
+    } finally {
+       // loading.value = false;
+    }
+};
+
 const toggleSelectAll = (selectAll) => {
-    selectedMenus.value = selectAll ? filteredMenus.value.map(menu => menu.name) : [];
-    selectedSubmenus.value = selectAll
-        ? filteredMenus.value.flatMap(menu => menu.submenus.map(submenu => submenu.name))
-        : [];
-    selectedSubsubmenus.value = selectAll
-        ? filteredMenus.value.flatMap(menu =>
-            menu.submenus.flatMap(submenu =>
-                (submenu.subsubmenus || []).map(subsubmenu => subsubmenu.name)
-            )
-        )
-        : [];
+    selectedMenus.value = selectAll ? filteredMenus.value.map((menu) => menu.name) : [];
+    selectedSubmenus.value = selectAll ? filteredMenus.value.flatMap((menu) => menu.submenus.map((submenu) => submenu.name)) : [];
+    selectedSubsubmenus.value = selectAll ? filteredMenus.value.flatMap((menu) => menu.submenus.flatMap((submenu) => (submenu.subsubmenus || []).map((subsubmenu) => subsubmenu.name))) : [];
 
     buildStructuredMenus(); // Atualizar a estrutura hierárquica
 };
 
 const emits = defineEmits(['update:structuredMenus']);
 
-watch([selectedMenus, selectedSubmenus, selectedSubsubmenus], () => {
-    buildStructuredMenus();
-    console.log("Emitting Structured Menus:", structuredMenus.value);
-    emits('update:structuredMenus', structuredMenus.value);
-}, { deep: true });
+watch(
+    [selectedMenus, selectedSubmenus, selectedSubsubmenus],
+    () => {
+        buildStructuredMenus();
+        console.log('Emitting Structured Menus:', structuredMenus.value);
+        emits('update:structuredMenus', structuredMenus.value);
+    },
+    { deep: true }
+);
 </script>
 
 <style scoped>
-.menu-checkbox,
+/* Menu em 3 colunas */
+.menu-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left; 
+    gap: 20px; /* Espaçamento entre os itens */
+    margin-left: 20px;
+}
+
+.menu-column {
+    flex-basis: 40%; /* Cada coluna ocupa 30% da largura */
+    max-width: 50%;
+}
+
+
 .submenu-checkbox,
 .subsubmenu-checkbox {
     margin-bottom: 10px;
     margin-left: 20px;
+}
+
+.botao {
+    background-color: #0ea5e9;
+    border-color: #2dabe6;
 }
 </style>

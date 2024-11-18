@@ -8,6 +8,8 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
+const filteredCount = ref(0);
+
 const showDialog = ref(false);
 const dialogMessage = ref('');
 const originalSetores = ref([]);
@@ -73,6 +75,9 @@ const buscar = async () => {
             }
         });
         retiradas.value = response.data;
+
+        filteredCount.value = retiradas.value.length;
+
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
             dialogMessage.value = 'Nenhum resultado encontrado para os filtros aplicados.';
             showDialog.value = true;
@@ -259,6 +264,14 @@ watch(
         filterSetores();
     }
 );
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = retiradas.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
@@ -337,7 +350,10 @@ onMounted(() => {
                     <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
                         :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
                         :globalFilterFields="['DM', 'Data', 'Matricula', 'Nome', 'Email', 'CodigoCa', 'Item']"
-                        :tableStyle="{ width: '100%' }" ref="dt">
+                        :tableStyle="{ width: '100%' }" ref="dt"
+                        :sortField="'CodigoCa'"
+                        removableSort
+                        :sortOrder="1"  >
                         <template #header>
                             <div class="flex justify-content-end">
                                 <IconField iconPosition="left">

@@ -1,19 +1,29 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+import { FilterMatchMode } from 'primevue/api';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-const dm = ref([]);
+
 const loading = ref(false);
 const relatorio = ref({
     id_dm: ''
 });
+const todosOption = { label: 'Todos', value: null };
+const dropdown1 = ref(null);
 const EstoqueDM = ref([]);
-const dms = ref([]);
+const dms = ref([todosOption]);
 const store = useAuthStore();
-const fetchDMS = async () => {
-    loading.value = true;
+const emptyMessage = ref('');
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+const filteredCount = ref(0);
+
+const fetchDM = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
@@ -23,23 +33,26 @@ const fetchDMS = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = response.data.map(({ ID_DM, Numero }) => ({
-            label: `${Numero}`,
-            value: ID_DM
-        }));
+        dms.value = [
+            todosOption,
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                label: `${Identificacao}`,
+                value: ID_DM
+            }))
+        ];
     } catch (error) {
-        console.error('Erro ao listar DMS:', error);
-    } finally {
-        loading.value = false;
+        console.error('Erro ao carregar lista de dms:', error);
     }
 };
+
 const relatorioDM = async () => {
     loading.value = true;
     const data = {
         id_cliente: store.userIdCliente,
         id_usuario: store.userId,
-        ...relatorio.value
+        id_dm: relatorio.value.id_dm
     };
+
     try {
         const response = await axios.post('/Estoque/relatorio', data, {
             headers: {
@@ -47,6 +60,9 @@ const relatorioDM = async () => {
             }
         });
         EstoqueDM.value = response.data;
+
+        filteredCount.value = EstoqueDM.value.length;
+
     } catch (error) {
         console.error('Erro ao gerar o Relatorio de Estoque das DMS:', error);
     } finally {
@@ -54,26 +70,80 @@ const relatorioDM = async () => {
     }
 };
 
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = EstoqueDM.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 onMounted(() => {
-    fetchDMS();
+    fetchDM();
 });
 </script>
 
 <template>
     <div class="card vh">
-        <h5 class="my-4 ml-2 text-2xl">Estoque da DM</h5>
+        <h5 class="my-6 ml-2 text-2xl">Estoque da DM</h5>
         <div class="my-2">
-            <label for="dm" class="">DM:</label>
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
+            <label for="dm" class="ml-2">DM:</label>
+            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
-        <DataTable :value="EstoqueDM" stripedRows showGridlines paginator :rows="10" dataKey="SKU" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
-            <Column field="sku" header="SKU"></Column>
-            <Column field="nome" header="Produto"></Column>
-            <Column field="Posicao" header="Posição"></Column>
-            <Column field="quantidade" header="Quantidade Atual"></Column>
-            <Column field="quantidademinima" header="Quantidade Mínima"></Column>
-            <Column field="capacidade" header="Capacidade"></Column>
+        <DataTable
+            class="mt-3"
+            v-model:filters="filters"
+            :value="EstoqueDM"
+            stripedRows
+            showGridlines
+            removableSort
+            paginator
+            :rows="10"
+            dataKey="SKU"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            :globalFilterFields="['sku', 'nome', 'Posicao', 'quantidade', 'quantidademinima', 'capacidade']"
+            selectionMode="single"
+            :metaKeySelection="false"
+            :sortOrder="1"
+            :sortField="'sku'"
+            :tableStyle="{ width: '100%' }"
+        >
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span>Total de registros: {{ filteredCount }}</span>
+                    </div>
+                    <div>
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        </IconField>
+                    </div>
+                </div>
+            </template>
+
+            <template #empty> {{ emptyMessage }} </template>
+
+            <Column field="sku" class="table-cell" sortable  header="SKU"></Column>
+            <Column field="nome" sortable  header="Produto">
+                <template #body="{ data }">
+                    <span v-tooltip="data.nome">{{ data.nome }}</span>
+                </template>
+            </Column>
+            <Column field="Posicao" sortable style=" text-align: center" header="Posição"></Column>
+            <Column field="quantidade" sortable style=" text-align: center">
+                <template #header>
+                    <span v-tooltip="'Quantidade Atual'">Quant. Atual</span>
+                </template>
+            </Column>
+            <Column field="quantidademinima" sortable style=" text-align: center">
+                <template #header>
+                    <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span>
+                </template>
+            </Column>
+            <Column field="capacidade" sortable style=" text-align: center" header="Capacidade"></Column>
         </DataTable>
         <LoadingSpinner v-if="loading" />
     </div>
@@ -117,5 +187,11 @@ onMounted(() => {
 .field {
     white-space: nowrap;
     text-align: left;
+}
+
+.table-cell {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 </style>

@@ -3,13 +3,15 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import { FilterMatchMode } from 'primevue/api';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 const showDialog = ref(false);
 const dialogMessage = ref('');
+
+const filteredCount = ref(0);
 
 const loading = ref(false);
 
@@ -76,6 +78,9 @@ const buscar = async () => {
             }
         });
         historico.value = response.data;
+
+        filteredCount.value = historico.value.length;
+
         if (historico.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
@@ -334,6 +339,8 @@ onMounted(() => {
                         :globalFilterFields="['ID_DM', 'Data', 'operador', 'item', 'Quantidade', 'Mola']"
                         :tableStyle="{ width: '100%' }"
                         ref="dt"
+                        :sortField="'ID_DM'"  
+                        :sortOrder="1"
                     >
                         <!-- @rowSelect="onRowSelect"  -->
                         <template #header>

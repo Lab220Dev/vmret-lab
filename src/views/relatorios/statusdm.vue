@@ -5,6 +5,9 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
+import { FilterMatchMode } from 'primevue/api';
+
+const filteredCount = ref(0);
 
 const store = useAuthStore();
 const relatorio = ref({
@@ -15,10 +18,12 @@ const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const todosOption = { label: 'Todos', value: null };
 const loading = ref(false);
 const dms = ref([todosOption]);
-const formatedDms = ref([]);
-const selectedDM = ref('');
 const StatusDM = ref([]);
 const dropdown1 = ref(null);
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
 
 onMounted(() => {
     fetchDM();
@@ -46,26 +51,33 @@ const fetchDM = async () => {
     }
 };
 const KeepAlive = async () => {
-    if (relatorio.id_dm || relatorio.dia) {
-        const data = {
-            id_cliente: store.userIdCliente,
-            id_usuario: store.userId
-        };
-        try {
-            const response = await axios.post('/SDM/relatorio', data, {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
-                }
-            });
-            StatusDM.value = response.data;
-            if (StatusDM.value.length === 0) {
-                emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-            }
-        } catch (error) {
-            console.error('Erro ao carregar lista de dms:', error);
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
+        id_dm: relatorio.value.id_dm,
+        dia: relatorio.value.dia.toISOString()
+    };
+    try {
+        const response = await axios.post('/SDM/relatorio', data);
+        StatusDM.value = response.data;
+
+        filteredCount.value = StatusDM.value.length;
+
+        if (StatusDM.value.length === 0) {
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         }
+    } catch (error) {
+        console.error('Erro ao carregar lista de dms:', error);
     }
 };
+
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = StatusDM.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -73,9 +85,6 @@ const format = (date) => {
 
     return `${day}/${month}/${year}`;
 };
-watch([() => relatorio.value.id_dm, () => relatorio.value.dia], () => {
-    KeepAlive();
-});
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
 };
@@ -86,11 +95,11 @@ const handleDatepickerOpen = () => {
 </script>
 
 <template>
-    <div class="card vh p-fluid formgrid">
+    <div class="card vh">
         <!-- Header com a Seleção de Dms -->
-        <h5 class="my-4 text-2xl">Status DM</h5>
+        <h5 class="my-6 ml-2 text-2xl">Status DM</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" ref="dropdown1" />
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
             <VueDatePicker
                 class="drop w-full md:w-14rem"
                 v-model="relatorio.dia"
@@ -102,13 +111,48 @@ const handleDatepickerOpen = () => {
                 :enable-time-picker="false"
                 placeholder="Selecione uma data"
                 teleport="body"
+                @update:modelValue="KeepAlive"
                 @open="handleDatepickerOpen"
             />
         </div>
-        <DataTable :value="StatusDM" stripedRows showGridlines paginator :rows="10" dataKey="DM" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+        <DataTable
+            class="mt-3"
+            v-model:filters="filters"
+            :value="StatusDM"
+            stripedRows
+            showGridlines
+            removableSort
+            paginator
+            :rows="10"
+            dataKey="DM"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            :globalFilterFields="['Identificacao', 'status', 'dataHora']"
+            selectionMode="single"
+            :metaKeySelection="false"
+            tableStyle="min-width: 50rem; table-layout: fixed;"
+            :sortOrder="1"
+            :sortField="'Identificacao'"  
+        >
+        <template #header>
+                            <div class="flex justify-content-between align-items-center ">
+                                <div class="flex justify-content-start">
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="DM" header="DM"></Column>
-            <Column field="Data" header="Data"></Column> </DataTable
+            <Column field="Identificacao" sortable style="width: 10%" header="DM"></Column>
+            <Column field="status" sortable header="Status"></Column>
+            <Column field="dataHora" sortable header="Data"></Column> </DataTable
         ><LoadingSpinner v-if="loading" />
     </div>
 </template>

@@ -5,9 +5,12 @@ import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
 const store = useAuthStore();
+const dataStore = useDataStore();
 const toast = useToast();
 const ListaSetor = ref([]);
 const ListaItensSetor = ref([]);
@@ -25,6 +28,11 @@ const itemsSelecionadosSetor = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const centroCusto = ref([todosOption]);
 const loading = ref(false);
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+const filteredCount = ref(0);
 
 let setor = reactive({
     codigo: '',
@@ -57,12 +65,10 @@ const loadSetor = async () => {
     };
     loading.value = true;
     try {
-        const response = await axios.post('/Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/Setor/listar', data);
         ListaSetor.value = response.data;
+
+        filteredCount.value = ListaSetor.value.length;
     } catch (error) {
         console.error('Erro ao listar Setores:', error);
     } finally {
@@ -77,11 +83,9 @@ const adicionarSetor = async () => {
     };
     loading.value = true;
     try {
-        const response = await axios.post('/Setor/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/Setor/adicionar', data);
+        dataStore.invalidateSetorCache();
+
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor salvo com sucesso', life: 3000 });
         loadSetor();
         active.value = 0;
@@ -94,6 +98,13 @@ const adicionarSetor = async () => {
     }
 };
 
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = ListaSetor.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
+
 const deleteSetor = async () => {
     let data = { id_setor: setor.id_setor };
     loading.value = true;
@@ -104,6 +115,7 @@ const deleteSetor = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
+        dataStore.invalidateSetorCache();
         deleteSetorDialog.value = false;
         loadSetor();
         active.value = 0;
@@ -128,36 +140,13 @@ const atualizarSetor = async () => {
             }
         });
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Atualizado', life: 3000 });
+        dataStore.invalidateSetorCache();
         loadSetor();
         active.value = 0;
         resetForm();
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar setor', life: 3000 });
         console.error('Erro ao atualizar Setores:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-const loadCentroCusto = async () => {
-    loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -169,11 +158,7 @@ const fetchListaItemSetor = async () => {
         id_setor: setor.id_setor
     };
     try {
-        const response = await axios.post('/setor/itensdisponiveissetor', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/setor/itensdisponiveissetor', data);
         ItensSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao listar itens:', error);
@@ -202,10 +187,16 @@ const resetForm = () => {
 const handleRowSelection = async (event) => {
     await onRowSelect(event);
 };
-
+const loadData = async () => {
+    try {
+        centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 onMounted(() => {
     loadSetor();
-    loadCentroCusto();
+    loadData();
 });
 
 const atualizarProdutoSetor = async () => {
@@ -283,11 +274,40 @@ const SalvarProduto = async () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Setores">
                 <div class="col-12">
-                    <DataTable :value="ListaSetor" stripedRows selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" dataKey="codigo" :metaKeySelection="false" @rowSelect="handleRowSelection">
+                    <DataTable 
+                    v-model:filters="filters"
+                    :value="ListaSetor" 
+                    stripedRows 
+                    selectionMode="single" tableStyle="min-width: 25%" 
+                    paginator
+                    removableSort
+                    :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" 
+                    :sortField="'codigo'"  
+                    :sortOrder="1"
+                    dataKey="codigo"
+                    :globalFilterFields="['codigo', 'nome','id_centro_custo']" 
+                    :metaKeySelection="false" @rowSelect="handleRowSelection">
+
+                    <template #header>
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                <div class="font-semibold">
+                        <span>Total de registros: {{ filteredCount}}</span>
+                    </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+
                         <template #empty> Nenhum setor adicionado. </template>
-                        <Column field="codigo" header="Código"></Column>
-                        <Column field="nome" header="Setor (Nome)"></Column>
-                        <Column field="id_centro_custo" header="Centro de Custo"></Column>
+                        <Column field="codigo" sortable header="Código"></Column>
+                        <Column field="nome" sortable header="Setor (Nome)"></Column>
+                        <Column field="id_centro_custo" sortable header="Centro de Custo"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
@@ -309,7 +329,7 @@ const SalvarProduto = async () => {
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">Centro de Custo (Nome):</label>
-                                        <Dropdown class="drop" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                                        <Dropdown class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">

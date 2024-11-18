@@ -4,6 +4,10 @@ import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
+
+const dataStore = useDataStore();
 
 const active = ref(0);
 const store = useAuthStore();
@@ -15,6 +19,12 @@ const centroCusto = ref([todosOption]);
 const loading = ref(false);
 const deleteFuncaoDialog = ref(false);
 
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+const filteredCount = ref(0);
+
 let funcao = reactive({
     codigo: '',
     nome: '',
@@ -25,7 +35,7 @@ const onRowSelect = (event) => {
     funcao = event.data;
     visible.value = true;
     active.value = 1;
-    loadFuncao();
+    //loadFuncao();
 };
 
 const submitForm = () => {
@@ -42,18 +52,28 @@ const loadFuncao = async () => {
     };
     loading.value = true;
     try {
-        const response = await axios.post('/funcao/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/funcao/listar', data);
         ListaFuncao.value = response.data;
+
+        filteredCount.value = ListaFuncao.value.length;
     } catch (error) {
         console.error('Erro ao listar Funções e Diretorias:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
+
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = ListaFuncao.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
+
 const adicionarFuncao = async () => {
     const data = {
         id_usuario: store.userId,
@@ -161,9 +181,16 @@ const loadCentroCusto = async () => {
         loading.value = false; // Desativando loading
     }
 };
+const loadData = async () => {
+    try {
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 onMounted(() => {
     loadFuncao();
-    loadCentroCusto();
+    loadData();
 });
 </script>
 
@@ -172,11 +199,40 @@ onMounted(() => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funções">
                 <div class="col-12">
-                    <DataTable :value="ListaFuncao" selectionMode="single" tableStyle="min-width: 25%" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="handleRowSelection">
-                        <template #empty> Nenhuma Função adicionada. </template>
-                        <Column field="id_funcao" header="Código"></Column>
-                        <Column field="nome" header="Função (Nome)"></Column>
-                        <Column field="id_centro_custo" header="Centro de Custo (Nome)"></Column>
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="ListaFuncao"
+                        selectionMode="single"
+                        tableStyle="min-width: 25%"
+                        stripedRows
+                        paginator
+                        removableSort
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :rows="10"
+                        dataKey="id"
+                        :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo']"
+                        :sortField="'id_funcao'"
+                        :metaKeySelection="false"
+                        :sortOrder="1"
+                        @rowSelect="handleRowSelection"
+                    >
+                        <template #header>
+                            <div class="flex justify-content-between align-items-center mt-4">
+                                <span>Total de registros: {{ filteredCount }}</span>
+
+                                <IconField iconPosition="left">
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                </IconField>
+                            </div>
+                        </template>
+
+                        <template #empty> Nenhuma função adicionada </template>
+                        <Column field="id_funcao" sortable header="Código"></Column>
+                        <Column field="nome" sortable header="Função (Nome)"></Column>
+                        <Column field="id_centro_custo" sortable header="Centro de Custo (Nome)"></Column>
                     </DataTable>
                 </div>
             </TabPanel>

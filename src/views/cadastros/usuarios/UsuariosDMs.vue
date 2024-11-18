@@ -2,12 +2,15 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
+import { FilterMatchMode } from 'primevue/api';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useDataStore } from '@/store/dataStore.js';
 
 const active = ref(0);
+const dataStore = useDataStore();
 const store = useAuthStore();
 const loading = ref(false);
 const toast = useToast();
@@ -20,8 +23,14 @@ const errors = ref({});
 const deleteUsuarioDialog = ref(false);
 const item = ref({});
 
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+const filteredCount = ref(0);
+
 const plantas = ref([todosOption]);
-let usuario = reactive({
+const usuario = ref({
     nome: '',
     login: '',
     senha: '',
@@ -31,9 +40,15 @@ const ListaUsuario = ref([]);
 
 const onRowSelect = (event) => {
     visible.value = true;
-    usuario = event.data;
-    senha.value = usuario.senha;
-    SenhaBE.value = usuario.senha;
+    usuario.value = { ...event.data };
+    const dmIds = usuario.value.DMOptions || [];
+    selectedDM.value = ListaDMS.value.filter(dm => dmIds.includes(dm.id_dm))
+        .map(dm => ({
+            id_dm: dm.id_dm,
+            Identificacao: dm.Identificacao
+        }));
+    senha.value = usuario.value.senha;
+    SenhaBE.value = usuario.value.senha;
     senhaAlterada.value = false; // Reseta a flag de senha alterada
     active.value = 1;
 };
@@ -57,37 +72,33 @@ const validateForm = () => {
     return Object.keys(errors.value).every((key) => errors.value[key] === null);
 };
 const validateSenha = () => {
-    if (senha.value !== usuario.senha) {
+    if (senha.value !== usuario.value.senha) {
         errors.value.senha = 'A senha NÃO é a mesma';
     } else {
         errors.value.senha = null;
     }
 };
-const selectedVM = ref([]);
+const selectedDM = ref([]);
 const DMOptions = ref([]);
 const ListaDMS = ref([]);
 const isSameSenha = () => {
-    return usuario.senha === SenhaBE.value;
+    return usuario.value.senha === SenhaBE.value;
 };
 const saveUsuario = async () => {
     let data = null;
 
     if (store.userRole === 'Administrador') {
         data = {};
-        data = usuario;
+        data = usuario.value;
         data.id_usuario = store.userId;
     } else {
         data = {};
-        data = usuario;
+        data = usuario.value;
         data.id_cliente = store.userIdCliente;
         data.id_usuario = store.userId;
     }
     try {
-        const response = await axios.post('/UDM/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/UDM/adicionar', data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 });
 
         fetchUsuarios();
@@ -102,18 +113,15 @@ const saveUsuario = async () => {
 const atualizarUsuario = async () => {
     loading.value = true;
     const data = {
-        ...usuario,
-        id_usuario: store.userId
+        ...usuario.value, // Copia todos os dados do usuário
+        DMOptions: selectedDM.value, // Inclui DMOptions selecionados
+        id_usuario: store.userId // Inclui o id do usuário que está atualizando
     };
     if (isSameSenha()) {
         delete data.senha;
     }
     try {
-        const response = await axios.post('/UDM/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/UDM/atualizar', data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB atualizado', life: 3000 });
 
         fetchUsuarios();
@@ -122,7 +130,7 @@ const atualizarUsuario = async () => {
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; 
     }
     loading.value = true;
 };
@@ -152,74 +160,30 @@ const fetchUsuarios = async () => {
     let data = null;
 
     if (store.userRole === 'Administrador') {
-        data = ''; // Set to an empty string if the role is "Administrador"
+        data = ''; 
     } else {
-        data = {}; // Initialize data as an empty object
-        data.id_cliente = store.userIdCliente; // Set the value property
+        data = {}; 
+        data.id_cliente = store.userIdCliente; 
     }
     try {
-        const response = await axios.post('/UDM/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/UDM/listar', data);
         ListaUsuario.value = response.data;
+
+        filteredCount.value = ListaUsuario.value.length;
     } catch (error) {
         console.error('Erro ao carregar usuários:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
-const fetchDMS = async () => {
-    loading.value = true;
-    let data = null;
 
-    if (store.userRole === 'Administrador') {
-        data = '';
-    } else {
-        data = {};
-        data.id_cliente = store.userIdCliente;
-    }
-    try {
-        const response = await axios.post('/DM/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaDMS.value = response.data;
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-const formatDate = (value) => {
-    if (!value) {
-        return '';
-    }
+watch(() => filters.value.global.value, () => {
+    filteredCount.value = ListaUsuario.value.filter(item => {
+        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
+    }).length;
+}, { immediate: true });
 
-    try {
-        const date = new Date(value);
-
-        if (isNaN(date)) {
-            throw new Error('Data inválida');
-        }
-
-        // Ajustar a data para o fuso horário local
-        const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const year = localDate.getFullYear();
-        const hours = String(localDate.getHours()).padStart(2, '0');
-        const minutes = String(localDate.getMinutes()).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } catch (error) {
-        console.error('Erro ao formatar data:', error);
-        return 'Data inválida';
-    }
-};
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
@@ -227,10 +191,17 @@ watch(active, (newIndex, oldIndex) => {
         visible.value = false;
     }
 });
+const loadData = async () => {
+    try {
+        plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
+        ListaDMS.value = dataStore.produtos || await dataStore.fetchProdutos();
+    } catch (error) {
+        console.error('Erro ao carregar dados iniciais:', error);
+    }
+};
 onMounted(() => {
-    fetchIdPlanta();
+    loadData();
     fetchUsuarios();
-    fetchDMS();
 });
 const deleteUsuariodes = (itm) => {
     item.value = itm;
@@ -273,14 +244,44 @@ const resetForm = () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h5 class="mt-2">Usuários Dispenser Machines</h5>
+                <h4 class="mt-2">Usuários Dispenser Machines</h4>
                 <TabView v-model:activeIndex="active">
                     <TabPanel header="Listar  Usuário DM">
                         <div class="col-12">
-                            <DataTable :value="ListaUsuario" selectionMode="single" tableStyle="min-width: 25%" :rowsPerPageOptions="[5, 10, 20, 50]" stripedRows dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" paginator :rows="10">
-                                <Column field="nome" header="Nome"></Column>
-                                <Column field="login" header="Login"></Column>
-                                <Column field="ativo" header="Ativo">
+                            <DataTable 
+                            v-model:filters="filters"
+                             :value="ListaUsuario" stripedRows
+                             paginator
+                             :rows="10"
+                             removableSort
+                             :rowsPerPageOptions="[5, 10, 20, 50]"
+                             :globalFilterFields="['nome', 'login']"
+                             selectionMode="single" tableStyle="min-width: 50rem; table-layout: fixed;" dataKey="id" :metaKeySelection="false" @rowSelect="onRowSelect" 
+                             :sortOrder="1"
+                             :sortField="'nome'" >
+
+                             <template #header>
+                                    <div class="flex justify-content-between mt-4">
+                                        <div class="font-semibold">
+                                            <span>Total de registros: {{ filteredCount }}</span>
+                                        </div>
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
+
+                                <template #empty> Nenhum usuário adicionado. </template>
+
+                                <Column field="nome" sortable style="width: 30%;" header="Nome"></Column>
+                                <Column field="login" sortable style="width: 50%;" header="Login">
+                                    <template #body="{ data }">
+                                        <span v-tooltip="data.login">{{ data.login }}</span>
+                                    </template></Column>
+                                <Column field="ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                                     </template>
@@ -324,19 +325,42 @@ const resetForm = () => {
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-
-                            <div class="flex align-items-center justify-content-end field col-12">
+                            
+                            <div class="flex align-items-center justify-content-end field col-12 mt-6">
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
                                 <Button style="width: 15%" class="buttons flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" />
                             </div>
+                            <Divider class="mt-4"  type="solid" />
                         </div>
                         <div class="col-12" v-if="visible">
-                            <DataTable v-model:selection="selectedVM" :value="ListaDMS" dataKey="code" tableStyle="width:100% min-width: 50rem" :size="small">
-                                <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                                <Column field="ID_DM" header="Id Maquina" class="col-12 md:col-6" :style="{ width: '30%' }"> </Column>
-                                <Column field="Identificacao" header="Nome" class="col-12 md:col-6" :style="{ width: '70%' }"> </Column>
+                            <DataTable 
+                            v-model:filters="filters"
+                            v-model:selection="selectedDM" :value="ListaDMS" 
+                            stripedRows
+                            paginator
+                            :rows="10"
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            :globalFilterFields="['id_dm', 'Identificacao']"
+                            dataKey="id_dm" 
+                            tableStyle="min-width: 50rem; table-layout: fixed;" 
+                            :metaKeySelection="false"
+                            :size="small"
+                            removableSort
+                            :sortOrder="-1">
+                            <template #header>
+                                    <div class="flex justify-content-end">
+                                        <IconField iconPosition="left">
+                                            <InputIcon>
+                                                <i class="pi pi-search" />
+                                            </InputIcon>
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        </IconField>
+                                    </div>
+                                </template>
+                                <Column selectionMode="multiple" :style="{ width: '5%' }"></Column>
+                                <Column field="Identificacao" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '80%' }"> </Column>
                             </DataTable>
                         </div>
                     </TabPanel>
