@@ -39,12 +39,16 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import axios from '@/axios.js';
+import { useToast } from 'primevue/usetoast';
 
 const props = defineProps({
     selectedPerfil: Number,
-    initialMenus: Array
+    initialMenus: Array,
+    id_cliente:Number
 });
 
+const toast = useToast();
 const selectedMenus = ref([]);
 const selectedSubmenus = ref([]);
 const selectedSubsubmenus = ref([]);
@@ -176,6 +180,27 @@ const buildStructuredMenus = () => {
             return { ...menu, submenus: structuredSubmenus };
         });
 };
+
+
+const submitMenu = async () => {
+    const data = {
+        id_cliente: props.id_cliente,
+        perfil: props.selectedPerfil,
+        menus: structuredMenus.value
+    };
+
+    //loading.value = true;
+    try {
+        await axios.post('/admin/cliente/salvarMenus', data);
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações de menu salvas com sucesso.', life: 3000 });
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações de menu.', life: 3000 });
+        console.error('Erro ao salvar menus:', error);
+    } finally {
+       // loading.value = false;
+    }
+};
+
 const toggleSelectAll = (selectAll) => {
     selectedMenus.value = selectAll ? filteredMenus.value.map((menu) => menu.name) : [];
     selectedSubmenus.value = selectAll ? filteredMenus.value.flatMap((menu) => menu.submenus.map((submenu) => submenu.name)) : [];
