@@ -319,7 +319,7 @@ const resetForm = () => {
                                 removableSort
                                 :rows="10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['id_usuario', 'nome', 'email', 'nome_cliente', 'role', 'last_login']"
+                                :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
                                 selectionMode="single"
                                 tableStyle="min-width: 50rem; table-layout: fixed;"
                                 ref="dt"
@@ -327,7 +327,7 @@ const resetForm = () => {
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
                                 :sortOrder="1"
-                                :sortField="'id_usuario'"
+                                :sortField="'nome'"
                             >
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
