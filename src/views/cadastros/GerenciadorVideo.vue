@@ -1,0 +1,57 @@
+<template>
+    <div>
+      <h1>Gerenciamento de Vídeos</h1>
+      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+      <div v-else>
+        <ConfigInitial v-if="isFirstSetup" :dmList="ListaDMS"/>
+        <RegularUpload v-else />
+      </div>
+      <LoadingSpinner v-if="loading" />
+    </div>
+  </template>
+  
+  <script setup>
+  import { reactive, ref, onMounted, watch, computed, nextTick } from 'vue';
+  import axios from '@/axios.js';
+  import ConfigInitial from '@/components/PrimeiraConfiVideo.vue'; // Componente para configuração inicial
+  import RegularUpload from '@/components/VideoUpload.vue'; // Componente para uploads regulares
+  import LoadingSpinner from '@/components/LoadingSpinner.vue';
+  import { useToast } from 'primevue/usetoast';
+  import { useAuthStore } from '@/store/authStore.js';
+
+  const store = useAuthStore();
+  const toast = useToast();
+  const loading = ref(true); // Estado de carregamento
+  const errorMessage = ref(''); // Mensagem de erro
+  const isFirstSetup = ref(false); // Verifica se é a primeira configuração
+  const ListaDMS = ref([]);
+
+  const admin = () => {
+    return store.userRole === 'Administrador';
+};
+
+  const fetchDMS = async () => {
+    loading.value = true;
+    const data = admin() ? {} : { id_cliente: store.userIdCliente };
+    try {
+        const response = await axios.post('/DM/listar', data);
+        ListaDMS.value = response.data;
+        isFirstSetup.value = ListaDMS.value.every((dm) => dm.Video === 'N');
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar DMs', life: 3000 });
+        console.error('Erro ao carregar usuários:', error);
+    } finally {
+        loading.value = false; 
+    }
+};
+  
+  onMounted(fetchDMS);
+  </script>
+  
+  <style scoped>
+  .error {
+    color: red;
+    font-weight: bold;
+  }
+  </style>
+  

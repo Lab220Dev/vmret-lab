@@ -228,6 +228,11 @@ const router = createRouter({
                     path: '/cadastros/Importacao',
                     name: 'Importação de dados',
                     component: () => import('@/views/pages/Importacao.vue')
+                },
+                {
+                    path: '/cadastros/Video',
+                    name: 'Gerenciador de Videos',
+                    component: () => import('@/views/cadastros/GerenciadorVideo.vue')
                 }
             ]
         },
@@ -240,6 +245,12 @@ const router = createRouter({
             path: '/evento/dados',
             name: 'dados do evento',
             component: () => import('@/views/evento.vue'),
+            meta: { requiresAuth: false }
+        },
+        {
+            path: '/evento/SoulElite24',
+            name: 'dados do evento SoulElite24',
+            component: () => import('@/views/eventoSoulElite.vue'),
             meta: { requiresAuth: false }
         }
     ]

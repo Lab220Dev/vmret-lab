@@ -12,6 +12,12 @@ const selectedItem = ref(null);
 const toast = useToast();
 const active = ref(0);
 const dataStore = useDataStore();
+const todosOption = {
+    label: 'Todos',
+    value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false },
+    usar_api: false
+};
+
 const store = useAuthStore();
 const loading = ref(false);
 const loadingControladoras = ref(true);
@@ -63,7 +69,7 @@ const showDialogDItem = ref(false);
 const showDialogProduto = ref(false);
 const ListaProdutos = ref([]);
 const ListaClientes = ref([]);
-const selectedClient = ref({ id_cliente: null, nome_cliente: '', usar_api: false });
+const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false });
 const visible = ref(false);
 const ListaItens = ref([]);
 const filters = ref({
@@ -152,6 +158,7 @@ const fetchDMS = async () => {
         });
         ListaDMS.value = response.data;
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar DMs', life: 3000 });
         console.error('Erro ao carregar usuários:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -170,19 +177,10 @@ const confirmDelete = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post(
-            '/DM/deleteItem',
-
-            {
+        const response = await axios.post('/DM/deleteItem',{
                 id_item: selectedItem.value.id_item,
                 id_usuario: store.userId
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
-                }
-            }
-        );
+            });
 
         fetchItemDM();
 
@@ -217,6 +215,7 @@ const fetchItemDM = async () => {
         });
         ListaItens.value = response.data;
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar itens da DM', life: 3000 });
         console.error('Erro ao carregar Itens:', error);
     } finally {
         loading.value = false;
@@ -224,10 +223,13 @@ const fetchItemDM = async () => {
 };
 
 const onRowSelect = async (event) => {
+    if (!event || !event.data) {
+        console.error('Seleção inválida na tabela.');
+        return;
+    }
     try {
         DM = event.data;
         visible.value = true;
-        console.log(DM);
         await mapControladoras(DM);
         configurarClienteSelecionado(DM);
         configurarVisibilidade();
@@ -237,9 +239,9 @@ const onRowSelect = async (event) => {
     }
 };
 const configurarClienteSelecionado = (dm) => {
-    const client = ListaClientes.value.find((client) => client.value.id_cliente === dm.ID_Cliente);
+    const client = ListaClientes.value.find((client) => client.value?.id_cliente === dm.ID_Cliente);
     if (client) {
-        selectedClient.value = client.value;
+        selectedClient.value = { ...client.value };
         usarApi.value = client.value.usar_api ?? false;
     } else {
         selectedClient.value = null;
@@ -360,11 +362,12 @@ const adicionarDM = async () => {
             }
         });
         dataStore.invalidateDMCache();
-
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM adicionada com sucesso', life: 3000 });
         fetchDMS();
         active.value = 0;
         resetDMForm();
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar DM', life: 3000 });
         console.error('Erro ao adicionar DM:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -379,11 +382,7 @@ const deleteDM = async (item) => {
     };
     loading.value = true;
     try {
-        await axios.post('/DM/delete', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await axios.post('/DM/delete', data);
         dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
         await fetchDMS();
@@ -484,10 +483,12 @@ const atualizarDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM atualizada com sucesso', life: 3000 });
         fetchDMS();
         active.value = 0;
         resetDMForm();
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar DM', life: 3000 });
         console.error('Erro ao atualizar DM:', error);
     } finally {
         loading.value = false;
@@ -520,11 +521,11 @@ const formatDate = (value) => {
 };
 
 const listarProduto = async () => {
+    loading.value = true;
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
-        loading.value = true;
         const response = await axios.post('/produtos/listar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
@@ -535,6 +536,7 @@ const listarProduto = async () => {
             value: id_produto
         }));
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos', life: 3000 });
         console.error('Erro ao carregar produtos:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -557,10 +559,12 @@ const adicionarProduto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto adicionado com sucesso', life: 3000 });
         showDialogProduto.value = false;
         resetProdutoSelecionado();
         fetchItemDM();
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar produto', life: 3000 });
         console.error('Erro ao carregar produtos:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -581,14 +585,18 @@ onMounted(() => {
     fetchDMS();
 });
 const loadData = async () => {
+    loading.value = true;
     try {
-        const produtos = await dataStore.fetchProdutos(false);
+        const produtos = await dataStore.fetchProdutos();
         ListaProdutos.value = produtos.map(({ value, codigo, label }) => ({
             label: `${codigo} | ${label}`,
             value: value
         }));
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);
+    } finally {
+        loading.value = false;
     }
 };
 const resetDMForm = () => {
@@ -613,7 +621,9 @@ const resetDMForm = () => {
     DM.UserID = '';
     DM.Versao = '';
     DM.Devolucao = '';
+    DM.ID_Cliente = null;
     Controladoras.value = [];
+    selectedClient.value = { id_cliente: '', nome_cliente: '', usar_api: false };
     nextValues['2018'].placa = 12;
     nextValues['2023'].dip = 2;
     nextValues['Locker'].dip = 2;
@@ -636,25 +646,21 @@ const resetProdutoSelecionado = () => {
 const fetchCliente = async () => {
     loading.value = true;
     try {
-        const response = await axios.post(
-            '/admin/cliente/listar',
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${store.token}`
-                }
-            }
-        );
-        ListaClientes.value = response.data.map((cliente) => ({
-            label: cliente.nome,
-            value: {
-                id_cliente: cliente.id_cliente,
-                nome_cliente: cliente.nome,
+        const response = await axios.post('/admin/cliente/listar',{});
+        ListaClientes.value = [
+            todosOption,
+            ...response.data.map((cliente) => ({
+                label: cliente.nome,
+                value: {
+                    id_cliente: cliente.id_cliente,
+                    nome_cliente: cliente.nome,
+                    usar_api: cliente.usar_api
+                },
                 usar_api: cliente.usar_api
-            },
-            usar_api: cliente.usar_api
-        }));
+            }))
+        ];
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar clientes', life: 3000 });
         console.error('Erro ao carregar clientes:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -665,14 +671,13 @@ watch(
     (newClienteId) => {
         const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
         if (client) {
-            selectedClient.value = client.value; // Atualiza selectedClient com o cliente selecionado
+            selectedClient.value = { ...client.value }; // Atualiza selectedClient com o cliente selecionado
             usarApi.value = client.value.usar_api ?? false; // Verifica se usar_api é nulo e define como false
         } else {
             usarApi.value = false; // Define usarApi como false se o cliente não for encontrado
         }
     }
 );
-
 const addControladora = () => {
     Controladoras.value.push({
         ID: null,
@@ -1052,13 +1057,9 @@ const removeControladora = (index) => {
                                 <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
                                 <Column field="Posicao" sortable style="width: 40%" header="Posição">
                                     <template #body="{ data }">
-                                        <span v-tooltip="data.modelo === '2018' 
-                 ? 'Controladora / Placa / Motor 1 / Motor 2' 
-                 : data.modelo === '2023' 
-                   ? 'Controladora / DIP / Andar / Posição'
-                     : 'Placa / Motor'">
-  {{ data.Posicao }}
-</span>
+                                        <span v-tooltip="data.modelo === '2018' ? 'Controladora / Placa / Motor 1 / Motor 2' : data.modelo === '2023' ? 'Controladora / DIP / Andar / Posição' : 'Placa / Motor'">
+                                            {{ data.Posicao }}
+                                        </span>
                                     </template></Column
                                 >
                                 <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
