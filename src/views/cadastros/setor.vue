@@ -40,8 +40,8 @@ let setor = reactive({
     id_centro_custo: ''
 });
 const produtoSelecionado = ref({
-    id_produto:'',
-    quantidade:''
+    id_produto: '',
+    quantidade: ''
 });
 const onRowSelect = (event) => {
     setor = event.data;
@@ -49,6 +49,12 @@ const onRowSelect = (event) => {
     editVisible.value = true;
     fetchProdutoSetor();
     fetchListaItemSetor();
+};
+
+const onRowSelectItem = (event) => {
+    // Atribuir o item selecionado ao `item`
+    item.value = { ...event.data }; // Cria uma cópia do item selecionado
+    itemDialog.value = true; // Abre o dialog de edição
 };
 
 const submitForm = () => {
@@ -98,12 +104,16 @@ const adicionarSetor = async () => {
     }
 };
 
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = ListaSetor.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
-    }).length;
-}, { immediate: true });
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = ListaSetor.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 const deleteSetor = async () => {
     let data = { id_setor: setor.id_setor };
@@ -187,9 +197,10 @@ const resetForm = () => {
 const handleRowSelection = async (event) => {
     await onRowSelect(event);
 };
+
 const loadData = async () => {
     try {
-        centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
@@ -202,19 +213,41 @@ onMounted(() => {
 const atualizarProdutoSetor = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        ...ListaItensSelecionados
+        id_produto: item.value.id_produto,
+        id_setor: item.value.id_setor,
+        qtd_limite: item.value.quantidade
     };
+
+    loading.value = true;
     try {
         const response = await axios.post('/setor/atualizarproduto', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
         });
+
         loadSetor();
-        active.value = 0;
+        fetchListaItemSetor();
+        active.value = 1;
+        
         resetForm();
+        itemDialog.value = false;
+        toast.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Produto atualizado com sucesso!',
+            life: 3000
+        });
     } catch (error) {
-        console.error('Erro ao atualizar os produtos do setor Setor:', error);
+        console.error('Erro ao atualizar o produto:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Erro ao atualizar o produto. Verifique a quantidade e tente novamente.',
+            life: 3000
+        });
+    } finally {
+        loading.value = false; // Desativar carregamento
     }
 };
 
@@ -229,10 +262,10 @@ const fetchProdutoSetor = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        ListaItensSetor.value = response.data.map(({ id_produto,nome }) => ({
-                label: nome,
-                value: id_produto
-            }));
+        ListaItensSetor.value = response.data.map(({ id_produto, nome }) => ({
+            label: nome,
+            value: id_produto
+        }));
     } catch (error) {
         console.error('Erro ao recuperar os produtos do setor:', error);
     }
@@ -254,8 +287,7 @@ const SalvarProduto = async () => {
             }
         });
         fetchListaItemSetor();
-        visible.value = false; 
-        resetForm(); 
+        visible.value = false;
         toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
         console.log('Resposta do servidor:', response.data);
     } catch (error) {
@@ -266,6 +298,37 @@ const SalvarProduto = async () => {
     }
 };
 
+const deletarProduto = async () => {
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_produto: item.value.id_produto,
+        id_setor: item.value.id_setor
+    };
+
+    loading.value = true;
+    try {
+        await axios.post('/setor/deletarProduto', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+
+        fetchListaItemSetor();
+
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso', life: 3000 });
+        deleteProductDialog.value = false;
+    } catch (error) {
+        console.error('Erro ao deletar produto:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o produto', life: 3000 });
+    } finally {
+        loading.value = false;
+    }
+};
+
+const deleteProduct = async (itm) => {
+    item.value = itm;
+    deleteProductDialog.value = true;
+};
 </script>
 
 <template>
@@ -274,25 +337,28 @@ const SalvarProduto = async () => {
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Setores">
                 <div class="col-12">
-                    <DataTable 
-                    v-model:filters="filters"
-                    :value="ListaSetor" 
-                    stripedRows 
-                    selectionMode="single" tableStyle="min-width: 25%" 
-                    paginator
-                    removableSort
-                    :rowsPerPageOptions="[5, 10, 20, 50]" :rows="10" 
-                    :sortField="'codigo'"  
-                    :sortOrder="1"
-                    dataKey="codigo"
-                    :globalFilterFields="['codigo', 'nome','id_centro_custo']" 
-                    :metaKeySelection="false" @rowSelect="handleRowSelection">
-
-                    <template #header>
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="ListaSetor"
+                        stripedRows
+                        selectionMode="single"
+                        tableStyle="min-width: 25%"
+                        paginator
+                        removableSort
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :rows="10"
+                        :sortField="'codigo'"
+                        :sortOrder="1"
+                        dataKey="codigo"
+                        :globalFilterFields="['codigo', 'nome', 'id_centro_custo']"
+                        :metaKeySelection="false"
+                        @rowSelect="handleRowSelection"
+                    >
+                        <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                        <span>Total de registros: {{ filteredCount}}</span>
-                    </div>
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
@@ -314,7 +380,7 @@ const SalvarProduto = async () => {
             <!-- fim do listar -->
             <!-- inicio do adicionar-->
             <TabPanel :header="editVisible ? 'Editar Setor' : 'Adicionar Setor'" v-model:activeIndex="active">
-                <div class="grid ">
+                <div class="grid">
                     <div class="col-12">
                         <div class="card">
                             <form @submit.prevent="submitForm">
@@ -341,21 +407,42 @@ const SalvarProduto = async () => {
                                     <TabView v-if="editVisible">
                                         <TabPanel header="Itens Disponíveis para o Setor">
                                             <Button class="my-3" @click="visible = true" label="Adicionar" />
-                                            <DataTable class="" :value="ItensSetor" stripedRows dataKey="sku" v-model="setor.itemsSelecionadosSetor">
-                                                <Column field="sku" header="SKU"></Column>
-                                                <Column field="nome" header="nome"></Column>
+                                            <DataTable
+                                                class=""
+                                                paginator
+                                                removableSort
+                                                :rowsPerPageOptions="[5, 10, 20, 50]"
+                                                :rows="10"
+                                                :value="ItensSetor"
+                                                stripedRows
+                                                dataKey="sku"
+                                                v-model="setor.itemsSelecionadosSetor"
+                                                @rowSelect="onRowSelectItem"
+                                            >
+                                                <Column field="sku" sortable header="SKU"></Column>
+                                                <Column field="nome" header="Nome"></Column>
                                                 <Column field="qtd_limite" header="Quantidade"></Column>
                                                 <Column field="dias" header="Prazo"></Column>
+                                                <Column style="width: 10%">
+                                                    <template #body="slotProps">
+                                                        <Button icon="pi pi-pencil" outlined rounded severity="info" @click="onRowSelectItem(slotProps)" />
+                                                    </template> </Column
+                                                ><Column style="width: 10%">
+                                                    <template #body="slotProps">
+                                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteProduct(slotProps.data)" />
+                                                    </template>
+                                                </Column>
                                             </DataTable>
                                         </TabPanel>
                                     </TabView>
 
-                                    <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
+                                    <!-- dialogo editar item-->
+                                    <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-2">
                                         <div>
                                             <div class="p-fluid formgrid grid">
                                                 <div class="field lg:col-12 md:col-6 sm:col-4">
                                                     <label class="mr-2" for="name">Nome:</label>
-                                                    <InputText disabled v-model="item.name" id="name" type="text"></InputText>
+                                                    <InputText disabled v-model="item.nome" id="name" type="text"></InputText>
                                                 </div>
                                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                                     <label class="mr-2" for="Quantidade">Quantidade:</label>
@@ -365,14 +452,16 @@ const SalvarProduto = async () => {
                                         </div>
                                         <template #footer>
                                             <Button label="Cancelar" icon="pi pi-times" text @click="itemDialog = false" />
-                                            <Button label="Salvar" icon="pi pi-check" text @click="SalvarProduto" />
+                                            <Button label="Salvar" icon="pi pi-check" text @click="atualizarProdutoSetor" />
                                         </template>
                                     </Dialog>
+
+                                    <!-- dialogo adicionar item-->
                                     <Dialog v-model:visible="visible" modal header="Adicionar Itens do Setor">
-                                        <div class="grid">
+                                        <div class="grid ">
                                             <div class="col-12">
-                                                <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                                                <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaItensSetor"optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+                                                <label for="Produto" class=" font-semibold col-2">Produto: </label>
+                                                <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaItensSetor" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                                             </div>
                                             <div class="col-12">
                                                 <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
@@ -384,18 +473,22 @@ const SalvarProduto = async () => {
                                             <Button type="button" label="Adicionar" @click="SalvarProduto"></Button>
                                         </div>
                                     </Dialog>
+
+                                    <!-- dialogo deletar produto-->
                                     <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
                                         <div class="confirmation-content">
-                                            <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                                            <i  style="font-size: 2rem" />
                                             <span v-if="item"
-                                                >Você tem certeza que quer deletar o Item <b>{{ item.name }}</b> ?</span
+                                                >Você tem certeza que quer deletar o Item <b>{{ item.nome }}</b> ?</span
                                             >
                                         </div>
                                         <template #footer>
                                             <Button label="Não" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                                            <Button label="Sim" icon="pi pi-check" text @click="deleteProduct" />
+                                            <Button label="Sim" icon="pi pi-check" text @click="deletarProduto" />
                                         </template>
                                     </Dialog>
+
+                                    <!-- dialogo deletar setor-->
                                     <Dialog header="Deletar setor?" v-model:visible="deleteSetorDialog" style="width: 400px" :modal="true" :closable="false">
                                         <div class="confirmation-content">
                                             <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
