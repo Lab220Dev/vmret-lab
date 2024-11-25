@@ -3,7 +3,7 @@
         <h1>Gerenciamento de Vídeos</h1>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div v-else>
-            <ConfigInitial v-if="isFirstSetup" :dmList="ListaDMS" />
+            <ConfigInitial v-if="isFirstSetup" :dmList="ListaDMS" @setup-concluido="handleSetupCompleted" />
             <RegularUpload v-else :dmList="ListaDMS" @update-video="handleVideoUpdate" />
         </div>
         <LoadingSpinner v-if="loading" />
@@ -37,6 +37,10 @@ const handleVideoUpdate = async ({ dmId, video }) => {
     
     await fetchDMS();
 };
+const handleSetupCompleted = () => {
+    isFirstSetup.value = false; 
+};
+
 const fetchDMS = async () => {
     loading.value = true;
     const data = admin() ? {} : { id_cliente: store.userIdCliente };

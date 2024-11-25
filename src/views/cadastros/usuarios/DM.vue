@@ -1060,8 +1060,8 @@ const removeControladora = (index) => {
                                         <span v-tooltip="data.modelo === '2018' ? 'Controladora / Placa / Motor 1 / Motor 2' : data.modelo === '2023' ? 'Controladora / DIP / Andar / Posição' : 'Placa / Motor'">
                                             {{ data.Posicao }}
                                         </span>
-                                    </template></Column
-                                >
+                                    </template>
+                                </Column>
                                 <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">

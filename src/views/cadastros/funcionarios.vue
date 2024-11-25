@@ -223,7 +223,7 @@ const listarProdutosDisponiveis = () => {
     const addedIds = new Set(ListaItemsSetor.value.map(item => item.id_produto));
 
     // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
-    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter(produto => !addedIds.has(produto.id_produto)));
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter(produto => !addedIds.has(produto.value)));
 
 };
 

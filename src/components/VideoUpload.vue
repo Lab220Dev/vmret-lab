@@ -118,7 +118,8 @@ const uploadVideo = async () => {
     if (selectedDM.value.video === 'N') {
         generatedName = `DM-${selectedDM.value.Identificacao}-v1`;
     } else {
-        const atual = selectedDM.value.Video.match(/-v(\d+)$/);
+        console.log(selectedDM.value.Video)
+        const atual = selectedDM.value.Video.match(/-v(\d+)(\.mp4)?$/);
         if (atual) {
             // Incrementa o número da versão se encontrado
             const proximaVersao = parseInt(atual[1], 10) + 1;
@@ -147,13 +148,13 @@ const uploadVideo = async () => {
         toast.add({
             severity: 'success',
             summary: 'Sucesso',
-            detail: `Vídeo "${selectedFile.value.name}" enviado com sucesso!`,
+            detail: `Vídeo "${generatedName}" enviado com sucesso!`,
             life: 3000
         });
 
         emit('update-video', {
             dmId: selectedDM.value.ID_DM,
-            video: selectedFile.value.name
+            video: generatedName
         });
 
         closeDialog();
@@ -166,6 +167,7 @@ const uploadVideo = async () => {
             life: 3000
         });
     } finally {
+        isUploading.value = false;
         loading.value = false;
     }
 };

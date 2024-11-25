@@ -28,16 +28,22 @@
                     </li>
                 </ul>
             </div>
+            <!-- Botão de conclusão depende de vídeos enviados -->
+            <Button
+                label="Setup de Vídeo Concluído"
+                icon="pi pi-check"
+                @click="finalizarSetup"
+                :disabled="!isAnyVideoUploaded"
+            />
         </div>
 
         <p v-else>Configuração inicial concluída!</p>
     </div>
 </template>
 
-
 <script setup>
 import axios from '@/axios.js';
-import { ref, computed, defineProps } from 'vue';
+import { ref, computed, defineProps, defineEmits } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
@@ -49,8 +55,8 @@ const selectedDM = ref(null); // DM selecionada
 const filesToUpload = ref([]); // Lista de arquivos para upload
 const isUploading = ref(false);
 const fileError = ref('');
+const uploadedVideos = ref(0); // Contador de vídeos enviados com sucesso
 
-// Opções de DM para exibição
 const dmOptions = computed(() =>
     props.dmList.map((dm) => ({
         label: dm.Identificacao,
@@ -58,7 +64,9 @@ const dmOptions = computed(() =>
     }))
 );
 
-// Abrir seletor de arquivos
+const emit = defineEmits(['setup-concluido']);
+const isAnyVideoUploaded = computed(() => uploadedVideos.value > 0);
+
 const triggerFileInput = () => {
     fileError.value = '';
     const fileInput = document.querySelector('input[type="file"]');
@@ -67,7 +75,10 @@ const triggerFileInput = () => {
     }
 };
 
-// Gerenciar arquivos selecionados
+const finalizarSetup = () => {
+    emit('setup-concluido');
+};
+
 const handleFiles = (event) => {
     const files = event.target.files;
 
@@ -97,19 +108,17 @@ const handleFiles = (event) => {
             continue;
         }
 
-        // Gerar nome dinamicamente
         const generatedName = `DM-${selectedDM.value.label}-v1`;
 
         filesToUpload.value.push({
             file,
-            dmId: selectedDM.value,
+            dmId: selectedDM.value.value,
             customName: generatedName,
             progress: 0,
         });
     }
 };
 
-// Fazer upload de vídeos
 const uploadVideos = async () => {
     if (filesToUpload.value.length === 0) {
         toast.add({
@@ -126,7 +135,7 @@ const uploadVideos = async () => {
     for (const item of filesToUpload.value) {
         const formData = new FormData();
         formData.append('video', item.file);
-        formData.append('dmId', selectedDM.value.value);
+        formData.append('dmId', item.dmId);
         formData.append('customName', item.customName);
 
         try {
@@ -138,6 +147,8 @@ const uploadVideos = async () => {
                     item.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                 },
             });
+
+            uploadedVideos.value++; // Incrementa o contador de vídeos enviados com sucesso
 
             toast.add({
                 severity: 'success',
@@ -156,35 +167,7 @@ const uploadVideos = async () => {
         }
     }
 
-    // Limpar lista após o upload
     filesToUpload.value = [];
     isUploading.value = false;
 };
 </script>
-
-
-<style scoped>
-.config-inicial {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.dm-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.file-upload {
-    margin-top: 20px;
-}
-
-.error {
-    color: red;
-    font-size: 0.9em;
-}
-
-button {
-    margin-top: 10px;
-}
-</style>

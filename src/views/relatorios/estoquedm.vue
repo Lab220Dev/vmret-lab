@@ -62,7 +62,6 @@ const relatorioDM = async () => {
         EstoqueDM.value = response.data;
 
         filteredCount.value = EstoqueDM.value.length;
-
     } catch (error) {
         console.error('Erro ao gerar o Relatorio de Estoque das DMS:', error);
     } finally {
@@ -70,12 +69,16 @@ const relatorioDM = async () => {
     }
 };
 
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = EstoqueDM.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
-    }).length;
-}, { immediate: true });
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = EstoqueDM.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 onMounted(() => {
     fetchDM();
@@ -126,24 +129,30 @@ onMounted(() => {
 
             <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="sku" class="table-cell" sortable  header="SKU"></Column>
-            <Column field="nome" sortable  header="Produto">
+            <Column field="sku" class="table-cell" sortable header="SKU"></Column>
+            <Column field="nome" sortable header="Produto">
                 <template #body="{ data }">
                     <span v-tooltip="data.nome">{{ data.nome }}</span>
                 </template>
             </Column>
-            <Column field="Posicao" sortable style=" text-align: center" header="Posição"></Column>
-            <Column field="quantidade" sortable style=" text-align: center">
+            <Column field="Posicao" sortable style="text-align: center" header="Posição">
+                <template #body="{ data }">
+                    <span v-tooltip="data.modelo === '2018' ? 'Placa / Motor 1 ' : data.modelo === '2023' ? ' Andar / Posição' : 'Placa / Motor'">
+                        {{ data.Posicao }}
+                    </span>
+                </template>
+            </Column>
+            <Column field="quantidade" sortable style="text-align: center">
                 <template #header>
                     <span v-tooltip="'Quantidade Atual'">Quant. Atual</span>
                 </template>
             </Column>
-            <Column field="quantidademinima" sortable style=" text-align: center">
+            <Column field="quantidademinima" sortable style="text-align: center">
                 <template #header>
                     <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span>
                 </template>
             </Column>
-            <Column field="capacidade" sortable style=" text-align: center" header="Capacidade"></Column>
+            <Column field="capacidade" sortable style="text-align: center" header="Capacidade"></Column>
         </DataTable>
         <LoadingSpinner v-if="loading" />
     </div>
