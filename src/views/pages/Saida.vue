@@ -168,11 +168,7 @@ function selectTopic1(topic1) {
                         <TabPanel header="JavaScript (Axios)">
                             <pre><code>
             
-axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }}, {
-headers: {
-'Authorization': `Bearer ${insiraotoken}`
-}
-})
+axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }})
 .then(response => {
   console.log(response.data);
 })
@@ -196,8 +192,6 @@ class Program
     {
         using (var client = new HttpClient())
         {
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", insiraotoken);
-
             var jsonContent = new StringContent("{{ selectedTopic1.requestBody }}", Encoding.UTF8, "application/json");
 
             var response = await client.PostAsync("{{ selectedTopic1.apiUrl }}", jsonContent);
@@ -224,8 +218,6 @@ public class ApiClient {
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost("{{ selectedTopic1.apiUrl }}");
-
-        post.setHeader("Authorization", "Bearer " + insiraotoken);
         post.setEntity(new StringEntity("{{ selectedTopic1.requestBody }}", ContentType.APPLICATION_JSON));
 
         HttpResponse response = client.execute(post);
@@ -239,7 +231,6 @@ public class ApiClient {
                         <TabPanel header="cURL">
                             <pre><code>
 curl -X POST "{{ selectedTopic1.apiUrl }}" \
--H "Authorization: Bearer insiraotoken" \
 -H "Content-Type: application/json" \
 -d '{{ selectedTopic1.requestBody }}'
                             </code></pre>
@@ -249,7 +240,6 @@ curl -X POST "{{ selectedTopic1.apiUrl }}" \
                         <TabPanel header="Postman">
                             <pre><code>
 POST {{ selectedTopic1.apiUrl }}
-Authorization: Bearer insiraotoken
 Content-Type: application/json
 
 Body:
@@ -272,19 +262,16 @@ Body:
                         <strong>{{ topic.name }}</strong>
                     </li>
                 </ul>
-            </AccordionTab>
-        </Accordion>
+                <!-- Exemplo de Uso da API com Abas para Diferentes Linguagens -->
+                <div class="mt-4 card" v-if="selectedTopic" style="margin-top: 1rem">
+                    <h4 class="mt-2">{{ selectedTopic.name }}</h4>
+                    <p class="my-5" v-html="selectedTopic.description"></p>
 
-        <!-- Exemplo de Uso da API com Abas para Diferentes Linguagens -->
-        <div class="mt-4 card" v-if="selectedTopic" style="margin-top: 1rem">
-            <h4 class="mt-2">{{ selectedTopic.name }}</h4>
-            <p class="my-5" v-html="selectedTopic.description"></p>
-
-            <TabView>
-                <!--  Axios 
+                    <TabView>
+                        <!--  Axios 
             -->
-                <TabPanel header="JavaScript (Axios)">
-                    <pre><code>
+                        <TabPanel header="JavaScript (Axios)">
+                            <pre><code>
             
 axios.post('{{ selectedTopic.apiUrl }}', {{ selectedTopic.requestBody }}, {
 headers: {
@@ -298,11 +285,11 @@ headers: {
   console.error('Erro:', error);
 });
                     </code></pre>
-                </TabPanel>
+                        </TabPanel>
 
-                <!--  C# -->
-                <TabPanel header="C#">
-                    <pre><code>
+                        <!--  C# -->
+                        <TabPanel header="C#">
+                            <pre><code>
 using System;
 using System.Net.Http;
 using System.Text;
@@ -327,11 +314,11 @@ class Program
     }
 }
                     </code></pre>
-                </TabPanel>
+                        </TabPanel>
 
-                <!--Java -->
-                <TabPanel header="Java">
-                    <pre><code>
+                        <!--Java -->
+                        <TabPanel header="Java">
+                            <pre><code>
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -351,21 +338,21 @@ public class ApiClient {
     }
 }
                     </code></pre>
-                </TabPanel>
+                        </TabPanel>
 
-                <!-- cURL -->
-                <TabPanel header="cURL">
-                    <pre><code>
+                        <!-- cURL -->
+                        <TabPanel header="cURL">
+                            <pre><code>
 curl -X POST "{{ selectedTopic.apiUrl }}" \
 -H "Authorization: Bearer insiraotoken" \
 -H "Content-Type: application/json" \
 -d '{{ selectedTopic.requestBody }}'
                     </code></pre>
-                </TabPanel>
+                        </TabPanel>
 
-                <!-- Postman -->
-                <TabPanel header="Postman">
-                    <pre><code>
+                        <!-- Postman -->
+                        <TabPanel header="Postman">
+                            <pre><code>
 POST {{ selectedTopic.apiUrl }}
 Authorization: Bearer insiraotoken
 Content-Type: application/json
@@ -373,9 +360,11 @@ Content-Type: application/json
 Body:
 {{ selectedTopic.requestBody }}
                     </code></pre>
-                </TabPanel>
-            </TabView>
-        </div>
+                        </TabPanel>
+                    </TabView>
+                </div>
+            </AccordionTab>
+        </Accordion>
     </div>
 </template>
 
