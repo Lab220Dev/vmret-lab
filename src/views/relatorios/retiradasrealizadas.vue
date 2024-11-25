@@ -46,12 +46,25 @@ const relatorio = ref({
     data_final: new Date()
 });
 const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
+            const dia = date.getDate().toString().padStart(2, '0');
+            const mes = (date.getMonth() + 1).toString().padStart(2, '0'); 
+            const ano = date.getFullYear();
+            return `${dia}/${mes}/${ano}`;
+        };
 
-    return `${day}/${month}/${year}`;
+        const formatDate = (date) => {
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0'); 
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`; // Formato de data: dd/MM/yyyy
 };
+
+const formatTime = (date) => {
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`; // Formato de hora: HH:mm
+};
+
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
@@ -78,6 +91,7 @@ const buscar = async () => {
         });
         retiradas.value = response.data;
 
+        // Atualizando a contagem de registros após a resposta da API
         filteredCount.value = retiradas.value.length;
 
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
@@ -142,7 +156,11 @@ const fetchDM = async () => {
         id_cliente: store.userIdCliente
     };
     try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data);
+        const response = await axios.post('/relatorioRetiRe/listardm', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
         dms.value = [
             todosOption,
             ...response.data.map(({ ID_DM, Identificacao }) => ({
@@ -369,13 +387,17 @@ onMounted(() => {
             </template>
 
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="Identificacao" class="table-cell" sortable style="width: 10%" header="DM">
+            <Column field="Identificacao" class="table-cell" sortable style="width: 8%" header="DM">
                 <template #body="{ data }">
                     <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
                 </template></Column>
-            <Column field="Dia" sortable class="table-cell" style="width:15%" header="Data">
+            <Column field="Dia" sortable class="table-cell" style="width:10%" header="Data">
             <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ data.Dia }}</span>
+                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
+                </template></Column>
+                <Column field="Hora" sortable class="table-cell" style="width:7%" header="Hora">
+            <template #body="{ data }">
+                    <span v-tooltip="data.Hora">{{ formatTime(new Date(data.Dia)) }}</span>
                 </template></Column>
             <Column field="Matricula" sortable class="table-cell" style="width:10%" header="Matricula">
                 <template #body="{ data }">
@@ -389,7 +411,7 @@ onMounted(() => {
                 <template #body="{ data }">
                     <span v-tooltip="data.Email">{{ data.Email }}</span>
                 </template></Column>
-            <Column field="ProdutoNome" sortable class="table-cell" header="Item">
+            <Column field="ProdutoNome" style="width: 20%" sortable class="table-cell" header="Item">
                 <template #body="{ data }">
                     <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
                 </template>

@@ -21,11 +21,13 @@ const selectedFile = ref(null);
 const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
+
 const errors = ref({});
 const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
 ]);
+
 const imageUrl = ref(null);
 let centroCusto = ref([]);
 let setor = ref([]);
@@ -61,7 +63,9 @@ let funcionario = reactive({
     nomearquivo: '',
     itens: []
 });
+
 const ListaProdutos = ref([]);
+const ListaProdutosDisponiveis = reactive([]);
 const ListaProdutoFuncionario = ref([]);
 const ListaItemsSetor = ref([]);
 const editVisible = ref(false);
@@ -69,6 +73,7 @@ const editVisible = ref(false);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
 const selectedProduct = ref({
     id_produto: null,
     nome: '',
@@ -99,7 +104,6 @@ const format = (date) => {
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
 
-const totalRecords = ref(0);
 const filteredCount = ref(0);
 
 const onRowSelect = async (event) => {
@@ -181,12 +185,16 @@ const adicionarFuncionario = async () => {
         loading.value = false; // Desativando loading
     }
 };
+
 const loadData = async () => {
     try {
         plantas = dataStore.plantas || (await dataStore.fetchPlantas());
         setor = dataStore.setores || (await dataStore.fetchSetores());
         centroCusto = dataStore.cdcs || (await dataStore.fetchCdc());
-        ListaProdutos.value = dataStore.produtos || (await dataStore.fetchProdutos());
+        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
+
+        //excluindo a opção 'Todos' e obtendo os outros dados
+        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
@@ -197,13 +205,28 @@ const fetchItensSetor = async (id_setor) => {
         id_cliente: store.userIdCliente,
         id_setor: id_setor
     };
+
     try {
         const response = await axios.post('Setor/itensdisponiveissetor', data);
+
+        // Armazena os itens do setor em ListaItemsSetor
         ListaItemsSetor.value = response.data;
+
+        listarProdutosDisponiveis();
     } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
+        console.error('Erro ao listar itens:', error);
     }
 };
+
+const listarProdutosDisponiveis = () => {
+
+    const addedIds = new Set(ListaItemsSetor.value.map(item => item.id_produto));
+
+    // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter(produto => !addedIds.has(produto.id_produto)));
+
+};
+
 const fetchHieraquiaOptions = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -223,6 +246,7 @@ const fetchHieraquiaOptions = async () => {
         console.error('Erro ao buscar opções de hierarquia:', error);
     }
 };
+
 watch(
     TempoInicio,
     (newTime) => {
@@ -382,32 +406,30 @@ const resetForm = () => {
     TempoFim.value = null;
 };
 
-const SalvarProduto = () => {
-    if (!selectedProduct.value.id_produto || !selectedProduct.value.quantidade) {
-        toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecione um produto e quantidade', life: 3000 });
-        return;
-    }
-
-    const index = funcionario.itens.findIndex((i) => i.id_produto === selectedProduct.value.id_produto);
-
-    if (index !== -1) {
-        funcionario.itens[index] = {
-            ...selectedProduct.value,
-            action: 'update'
-        };
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item atualizado com sucesso!', life: 3000 });
-    } else {
-        funcionario.itens.push({
-            ...selectedProduct.value,
-            action: 'new'
+const SalvarProduto = async () => {
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
+        id_funcionario: funcionario.id_funcionario,
+        id_produto: selectedProduct.value.id_produto,
+        quantidade: selectedProduct.value.quantidade
+    };
+    loading.value = true;
+    try {
+        const response = await axios.post('/funcionarios/adicionarItem', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
         });
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Novo item adicionado com sucesso!', life: 3000 });
-    }
-    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
-
-    visible.value = false;
-    if (itemDialog.value) {
-        itemDialog.value = false;
+        fetchItensSetor();
+        visible.value = false;
+        toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
+        console.log('Resposta do servidor:', response.data);
+    } catch (error) {
+        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -695,7 +717,7 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
-
+                                            <template #empty> Nenhum item adicionado. </template>
                                             <Column field="nome" sortable style="width: 45%" header="Nome"></Column>
                                             <Column field="sku" sortable header="SKU"></Column>
                                             <Column field="qtd_limite" header="Quantidade"></Column>
@@ -764,11 +786,12 @@ const hideDialog = () => {
                 <Button label="Salvar" icon="pi pi-check" text @click="SalvarProduto" />
             </template>
         </Dialog>
-        <Dialog v-model:visible="visible" modal header="Adicionar Itens do Funcionário">
+
+        <Dialog v-model:visible="visible" :modal="true" header="Adicionar Itens do Funcionário">
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                    <Dropdown v-model="selectedProduct" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct.id_produto" :options="ListaProdutosDisponiveis" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>

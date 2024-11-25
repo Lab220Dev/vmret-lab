@@ -14,7 +14,6 @@ const dataStore = useDataStore();
 const store = useAuthStore();
 const loading = ref(false);
 const toast = useToast();
-const todosOption = { label: 'Todos', value: null };
 const visible = ref(false);
 const senha = ref('');
 const senhaAlterada = ref(false);
@@ -22,14 +21,18 @@ const SenhaBE = ref('');
 const errors = ref({});
 const deleteUsuarioDialog = ref(false);
 const item = ref({});
-
+const selectedDM = ref(null);
+const DMOptions = ref([]);
+const ListaDMS = ref([]);
+const isSameSenha = () => {
+    return usuario.value.senha === SenhaBE.value;
+};
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
 const filteredCount = ref(0);
 
-const plantas = ref([todosOption]);
 const usuario = ref({
     nome: '',
     login: '',
@@ -78,12 +81,7 @@ const validateSenha = () => {
         errors.value.senha = null;
     }
 };
-const selectedDM = ref([]);
-const DMOptions = ref([]);
-const ListaDMS = ref([]);
-const isSameSenha = () => {
-    return usuario.value.senha === SenhaBE.value;
-};
+
 const saveUsuario = async () => {
     let data = null;
 
@@ -134,27 +132,7 @@ const atualizarUsuario = async () => {
     }
     loading.value = true;
 };
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ id_planta }) => ({
-                label: `Planta  ${id_planta}`,
-                value: id_planta
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
+
 const fetchUsuarios = async () => {
     loading.value = true;
     let data = null;
@@ -191,22 +169,29 @@ watch(active, (newIndex, oldIndex) => {
         visible.value = false;
     }
 });
+
 const loadData = async () => {
     try {
-        plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
-        ListaDMS.value = dataStore.produtos || await dataStore.fetchProdutos();
+        const dms = dataStore.dms || await dataStore.fetchListaDms();
+
+        //excluindo a opção 'Todos' e obtendo os outros dados
+        ListaDMS.value = dms.filter(dm => dm.label !== 'Todos');
+
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
 };
+
 onMounted(() => {
     loadData();
     fetchUsuarios();
 });
+
 const deleteUsuariodes = (itm) => {
     item.value = itm;
     deleteUsuarioDialog.value = true;
 };
+
 const deleteUsuario = async (item) => {
     loading.value = true;
     let data = { id: item.id, id_usuario: store.userId };
@@ -342,13 +327,13 @@ const resetForm = () => {
                             paginator
                             :rows="10"
                             :rowsPerPageOptions="[5, 10, 20, 50]"
-                            :globalFilterFields="['id_dm', 'Identificacao']"
-                            dataKey="id_dm" 
+                            :globalFilterFields="['label']"
+                            dataKey="value" 
                             tableStyle="min-width: 50rem; table-layout: fixed;" 
                             :metaKeySelection="false"
                             :size="small"
                             removableSort
-                            :sortOrder="-1">
+                            :sortOrder="1">
                             <template #header>
                                     <div class="flex justify-content-end">
                                         <IconField iconPosition="left">
@@ -360,7 +345,7 @@ const resetForm = () => {
                                     </div>
                                 </template>
                                 <Column selectionMode="multiple" :style="{ width: '5%' }"></Column>
-                                <Column field="Identificacao" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '80%' }"> </Column>
+                                <Column field="label" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '80%' }"> </Column>
                             </DataTable>
                         </div>
                     </TabPanel>

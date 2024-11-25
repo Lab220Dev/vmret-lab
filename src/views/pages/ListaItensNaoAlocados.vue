@@ -83,7 +83,7 @@ onMounted(() => {
         :sortOrder="1"
         :sortField="'codigo'"   
         :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
-        :globalFilterFields="['nome', 'descricao', 'codigo']" 
+        :globalFilterFields="['nome', 'quantidadeReferencia', 'codigo']" 
         selectionMode="single"
         tableStyle="min-width: 50rem; table-layout: fixed;">
         <template #header>
@@ -105,7 +105,7 @@ onMounted(() => {
 
             <Column field="nome" sortable style="width: 70%" header="Item"></Column>
             <Column field="quantidadeReferencia" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
-            <Column field="codigo" style="width: 15%" header="CA"></Column>
+            <Column field="codigo" sortable style="width: 15%" header="CA"></Column>
             <Column v-if="sincronizado" header="Status">
                 <template #body="slotProps">
                     <span>{{ slotProps.data.status }}</span>

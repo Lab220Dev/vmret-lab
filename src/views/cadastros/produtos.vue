@@ -365,16 +365,16 @@ onMounted(async () => {
                         removableSort
                         :rows="10"
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        lazy
                         :totalRecords="totalRecords"
                         dataKey="id"
+                        lazy
                         :globalFilterFields="['codigo', 'nome']"
                         :sortField="'codigo'"
                         :sortOrder="1"
                         :metaKeySelection="false"
                         @rowSelect="handleRowSelection"
                         @page="onPageChange"
-                    >
+                    ><!--lazy-->
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">

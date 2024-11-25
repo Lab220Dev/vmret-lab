@@ -792,7 +792,7 @@ const removeControladora = (index) => {
                                             </IconField>
                                         </div>
                                     </div> </template
-                                ><Column field="Identificacao" header="Identificação"></Column>
+                                ><Column field="Identificacao" sortable header="Identificação"></Column>
                                 <Column field="Numero" sortable header="Número"></Column>
 
                                 <Column field="ClienteNome" sortable header="Cliente"></Column>

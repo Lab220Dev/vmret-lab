@@ -1,19 +1,22 @@
 <template>
     <div class="card">
-        <h2>Gerenciamento de Serviços</h2>
+        <h2 class="mt-6">Gerenciamento de Serviços</h2>
         <hr />
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
             <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
         </div>
-        
-        <div v-if="selectedClient?.id" class="mt-6 card services-edit">
-            <div class="flex justify-content-between align-items-center">
-                <h4 class="mt-3 no-break">Serviços atribuídos a {{ selectedClient.name }}</h4>
+
+        <div v-if="selectedClient?.id" class="mt-8 card services-edit">
+            <div class="flex mt-4 justify-content-between align-items-center">
+                <h4 class="mt-3 no-break">
+                    Serviços atribuídos:
+                    <span v-if="isAdmin">{{ selectedClient.name }}</span>
+                </h4>
                 <div class="add-service flex align-items-center">
                     <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
-                    <Button class="ml-3 " label="Inserir" @click="addService" />
+                    <Button class="ml-3" label="Inserir" @click="addService" />
                 </div>
             </div>
 
@@ -22,21 +25,37 @@
                 <Column header="Ação">
                     <template #body="slotProps">
                         <Button label="Configurar" class="mr-2" icon="pi pi-cog" @click="editService(slotProps.data)" />
-                        <Button label="Remover" class="p-button-danger" icon="pi pi-trash" @click="removeService(slotProps.data)" />
+                        <Button label="Remover" class="p-button-danger" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
 
-            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 px-6" >
-                <!----><h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
+            <!-- Caixa de diálogo para confirmação de deleção -->
+            <Dialog header="Deletar Serviço" v-model:visible="deleteServiceDialog" style="width: 400px" :modal="true" :closable="true">
+                <div class="confirmation-content text-justify">
+                    <i class="" style="font-size: 2rem"></i>
+                    <span>
+                        Você tem certeza que deseja deletar o serviço <b>{{ selectedService?.name }}</b
+                        >?
+                    </span>
+                </div>
+                <template #footer>
+                    <Button label="Não" icon="pi pi-times" @click="deleteServiceDialog = false" class="p-button-text" />
+                    <Button label="Sim" icon="pi pi-check" @click="removeService(selectedService)" class="p-button-danger" />
+                </template>
+            </Dialog>
 
-                <div class="flex flex-column col-12 mt-6 ml-3 " >
+            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 px-6">
+                <!---->
+                <h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
+
+                <div class="flex flex-column col-12 mt-6 ml-3">
                     <div class="field grid justify-content-center">
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">Frequência de Notificação:</label>
                         <Dropdown style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
                     </div>
 
-                    <div  v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
+                    <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">Horário de Notificação:</label>
                         <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker placeholder="Selecione o horário" />
                     </div>
@@ -48,7 +67,7 @@
 
                     <div class="field grid justify-content-center">
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">Destinatários:</label>
-                        <MultiSelect style="width: 300px"v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
+                        <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
                     </div>
                 </div>
             </Fieldset>
@@ -69,8 +88,26 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios';
 
+const openDeleteDialog = (service) => {
+    // Verifique se o 'service' foi passado corretamente
+    if (!service || !service.id) {
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Serviço não encontrado.',
+            life: 3000
+        });
+        return;
+    }
+
+    selectedService.value = { ...service }; // Armazenar o serviço a ser removido
+    deleteServiceDialog.value = true; // Exibir o diálogo
+};
+
 const store = useAuthStore();
 const isAdmin = ref(false);
+
+const deleteServiceDialog = ref(false);
 
 const toast = useToast();
 const availableClients = ref([]);
@@ -126,40 +163,62 @@ const fetchServicos = async () => {
             id_cliente: store.userIdCliente
         };
         const response = await axios.post('/admin/cliente/listarServicos', data);
-        const cliente = response.data[0];
-        selectedClient.value = {
-            id: cliente.id_cliente,
-            name: cliente.nome,
-            servicos: cliente.servicos
-        };
-        clientServices.value = cliente.servicos.map((servico) => ({
-            id: servico.id_servico,
-            name: servico.nome
-        }));
-        await fetchRecipients(cliente.id_cliente);
-        if (selectedClient.value.servicos.length > 0) {
-            selectedClient.value.servicos.forEach((servico) => {
-                serviceConfigs.value[servico.id_servico] = {
-                    notificationFrequency: servico.notificacoes[0]?.frequencia || null,
-                    notificationMethods: servico.notificacoes
-                        .map((n) => {
-                            const method = notificationMethods.value.find((m) => m.value === n.tipo_notificacao);
-                            return method ? method.value : null;
-                        })
-                        .filter(Boolean),
-                    recipients: servico.notificacoes.map((n) => n.id_funcionario_responsavel),
-                    notificationTime: servico.notificacoes[0]?.hora_notificacao || null,
-                    monitoringTime: servico.monitoringTime || null
-                };
-            });
-            novo.value = false;
+
+        // Verifique se a resposta contém dados e se não é um array vazio
+        if (response.data && response.data.length > 0) {
+            const cliente = response.data[0]; // Acesse o primeiro cliente, se existir
+
+            // Atribua valores de forma segura
+            selectedClient.value = {
+                id: cliente.id_cliente,
+                name: cliente.nome,
+                servicos: cliente.servicos || [] // Caso 'servicos' seja indefinido, use um array vazio
+            };
+
+            // Caso 'cliente.servicos' seja um array válido, mapeie os serviços
+            if (Array.isArray(cliente.servicos) && cliente.servicos.length > 0) {
+                clientServices.value = cliente.servicos.map((servico) => ({
+                    id: servico.id_servico,
+                    name: servico.nome
+                }));
+            } else {
+                clientServices.value = []; // Caso não haja serviços
+            }
+
+            // Chama a função para buscar os destinatários, apenas se 'cliente.id_cliente' existir
+            await fetchRecipients(cliente.id_cliente);
+
+            // Se houver serviços, processa as configurações de cada serviço
+            if (selectedClient.value.servicos && selectedClient.value.servicos.length > 0) {
+                selectedClient.value.servicos.forEach((servico) => {
+                    serviceConfigs.value[servico.id_servico] = {
+                        notificationFrequency: servico.notificacoes[0]?.frequencia || null,
+                        notificationMethods: servico.notificacoes
+                            .map((n) => {
+                                const method = notificationMethods.value.find((m) => m.value === n.tipo_notificacao);
+                                return method ? method.value : null;
+                            })
+                            .filter(Boolean),
+                        recipients: servico.notificacoes.map((n) => n.id_funcionario_responsavel),
+                        notificationTime: servico.notificacoes[0]?.hora_notificacao || null,
+                        monitoringTime: servico.monitoringTime || null
+                    };
+                });
+                novo.value = false;
+            } else {
+                clientServices.value = []; // Caso não haja serviços, limpa a lista
+            }
         } else {
-            clientServices.value = [];
+            // Se não houver dados, trate de forma adequada
+            console.log('Nenhum dado encontrado para o cliente');
+            selectedClient.value = { id: store.userIdCliente }; // Limpa o cliente selecionado
+            clientServices.value = []; // Limpa os serviços
         }
     } catch (error) {
         console.error('Erro ao carregar clientes:', error);
     }
 };
+
 const fetchRecipients = async (idCliente) => {
     try {
         const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
@@ -215,19 +274,17 @@ const formatarTempo = (timeObj) => {
 };
 const addServiceWithConfig = async () => {
     try {
-        const missingFields = clientServices.value.some(service => {
+        const missingFields = clientServices.value.some((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
-            
-            return !serviceConfig.notificationFrequency || 
-                   !serviceConfig.notificationMethods.length || 
-                   !serviceConfig.recipients.length;
+
+            return !serviceConfig.notificationFrequency || !serviceConfig.notificationMethods.length || !serviceConfig.recipients.length;
         });
 
         if (missingFields) {
             toast.add({
                 severity: 'error',
                 summary: 'Campos obrigatórios não preenchidos',
-                detail: 'Por favor, preencha todos os campos antes de adicionar o serviço.',
+                detail: 'Por favor, preencha todos os campos de Configurações antes de adicionar o serviço.',
                 life: 3000
             });
             return;
@@ -259,7 +316,7 @@ const addServiceWithConfig = async () => {
             id_cliente: selectedClient.value.id,
             servicos: servicesConfigData
         };
-
+        
         await axios.post('/admin/cliente/adicionarServico', data);
 
         toast.add({ severity: 'success', summary: 'Serviços adicionados com sucesso!', life: 3000 });
@@ -277,10 +334,10 @@ const addService = () => {
             detail: 'Por favor, selecione um serviço.',
             life: 3000
         });
-        return; 
+        return;
     }
 
-    if (!clientServices.value.some(s => s.id === newService.value.id)) {
+    if (!clientServices.value.some((s) => s.id === newService.value.id)) {
         clientServices.value.push(newService.value);
         serviceConfigs.value[newService.value.id] = {
             notificationFrequency: null,
@@ -305,7 +362,9 @@ const addService = () => {
 const removeService = async (service) => {
     try {
         // Remover o serviço da lista local
-        clientServices.value = clientServices.value.filter(s => s.id !== service.id);
+        clientServices.value = clientServices.value.filter((s) => s.id !== service.id);
+
+        deleteServiceDialog.value = false;
 
         // Remover as configurações do serviço
         delete serviceConfigs.value[service.id];
@@ -323,21 +382,23 @@ const removeService = async (service) => {
             id_usuario: store.userId
         };
 
+        // Debug: Verificar os dados antes de enviar
+        console.log('Dados enviados para remoção do serviço:', data);
+
         // Enviar a solicitação para remover o serviço no backend
         const response = await axios.post('/admin/cliente/deletarServico', data);
 
+        // Debug: Verificar a resposta da API
+        console.log('Resposta da API:', response);
+
         // Verificar a estrutura da resposta do backend
-        if (response.data && response.data.status===200) {
-            toast.add({
-                severity: 'success',
-                summary: 'Serviço removido',
-                detail: `O serviço ${service.name} foi removido com sucesso.`,
-                life: 3000
-            });
-        } else {
-            // Caso o backend não tenha enviado o campo 'success', ou algo inesperado
-            throw new Error(response.data.message || 'Erro desconhecido ao remover o serviço');
-        }
+        response.status === 200;
+        toast.add({
+            severity: 'success',
+            summary: 'Serviço removido',
+            detail: `O serviço ${service.name} foi removido com sucesso.`,
+            life: 3000
+        });
     } catch (error) {
         // Exibir uma mensagem de erro no toast
         console.error('Erro ao remover serviço:', error);
@@ -378,9 +439,10 @@ const updateServiceConfig = async () => {
             servicos: servicesConfigData
         };
 
+
         await axios.post('/admin/cliente/atualizarServico', data);
 
-        toast.add({ severity: 'success', summary: 'Serviços Atualizado com sucesso!', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Serviço atualizado com sucesso!', life: 3000 });
     } catch (error) {
         console.error('Erro ao adicionar os serviços:', error);
         toast.add({ severity: 'error', summary: 'Erro ao atualizar os serviços', life: 3000 });
