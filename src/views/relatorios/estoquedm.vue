@@ -137,7 +137,7 @@ onMounted(() => {
             </Column>
             <Column field="Posicao" sortable style="text-align: center" header="Posição">
                 <template #body="{ data }">
-                    <span v-tooltip="data.modelo === '2018' ? 'Placa / Motor 1 ' : data.modelo === '2023' ? ' Andar / Posição' : 'Placa / Motor'">
+                    <span v-tooltip="data.modelo === '2018' ? 'Placa / Mola ' : data.modelo === '2023' ? ' Andar / Posição' : 'Placa / Motor'">
                         {{ data.Posicao }}
                     </span>
                 </template>
