@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,nextTick  } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { marked } from 'marked';
 import axios from '@/axios.js';
@@ -15,6 +15,7 @@ const isApiKeyVisible = ref(false);
 const selectedTopic = ref(null);
 
 const selectedTopic1 = ref(null);
+
 
 // Função para recuperar a chave da API
 const fetchApiKey = async () => {
@@ -129,11 +130,24 @@ function copyToClipboard() {
 
 function selectTopic(topic) {
     selectedTopic.value = topic;
+    nextTick(() => {
+        const detailsCard = document.querySelector('.details-card-passo2');
+        if (detailsCard) {
+            detailsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
 }
 
 function selectTopic1(topic1) {
     selectedTopic1.value = topic1;
+    nextTick(() => {
+        const detailsCard = document.querySelector('.details-card');
+        if (detailsCard) {
+            detailsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
 }
+
 </script>
 
 <template>
@@ -159,7 +173,7 @@ function selectTopic1(topic1) {
                     </li>
                 </ul>
 
-                <div class="mt-4 card" v-if="selectedTopic1" style="margin-top: 1rem">
+                <div class="mt-4 card details-card" v-if="selectedTopic1" style="margin-top: 1rem">
                     <h4 class="mt-2">{{ selectedTopic1.name }}</h4>
                     <p class="my-5" v-html="selectedTopic1.description"></p>
 
@@ -263,7 +277,7 @@ Body:
                     </li>
                 </ul>
                 <!-- Exemplo de Uso da API com Abas para Diferentes Linguagens -->
-                <div class="mt-4 card" v-if="selectedTopic" style="margin-top: 1rem">
+                <div class="mt-4 card details-card-passo2" v-if="selectedTopic" style="margin-top: 1rem">
                     <h4 class="mt-2">{{ selectedTopic.name }}</h4>
                     <p class="my-5" v-html="selectedTopic.description"></p>
 
