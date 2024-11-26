@@ -102,7 +102,18 @@ const handleControladoraChange = () => {
     if (!selectedControladora) return;
 
     if (selectedControladora.tipo === '2018') {
-        molasOptions.value = selectedControladora.dados.molas.map((mola) => ({ label: mola, value: mola }));
+        const molasOcupadas = ListaItens.value
+            .filter(item => {
+                const [tipo, identificador] = item.Posicao.replace(/\s/g, '').split('/');
+                return tipo === '2018' && Number(identificador) === selectedControladora.dados.placa;
+            })
+            .map(item => {
+                const [tipo,identificador , mola1,mola2] = item.Posicao.replace(/\s/g, '').split('/');
+                return Number(mola1); 
+            });
+            const molasDisponiveis = selectedControladora.dados.molas.filter(mola => !molasOcupadas.includes(mola));
+        molasOptions.value = molasDisponiveis.map(mola => ({ label: mola, value: mola }));
+        //molasOptions.value = selectedControladora.dados.molas.map((mola) => ({ label: mola, value: mola }));
         placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
     } else if (selectedControladora.tipo === '2023') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
