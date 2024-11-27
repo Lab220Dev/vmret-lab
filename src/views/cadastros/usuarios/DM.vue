@@ -81,6 +81,7 @@ const produtoSelecionado = ref({
     Porta: '',
     Placa: '',
     Posicao: '',
+    Andar: '',
     Dip: '',
     Motor1: '',
     Motor2: '',
@@ -103,16 +104,16 @@ const handleControladoraChange = () => {
 
     if (selectedControladora.tipo === '2018') {
         const molasOcupadas = ListaItens.value
-            .filter(item => {
+            .filter((item) => {
                 const [tipo, identificador] = item.Posicao.replace(/\s/g, '').split('/');
                 return tipo === '2018' && Number(identificador) === selectedControladora.dados.placa;
             })
-            .map(item => {
-                const [tipo,identificador , mola1,mola2] = item.Posicao.replace(/\s/g, '').split('/');
-                return Number(mola1); 
+            .map((item) => {
+                const [tipo, identificador, mola1, mola2] = item.Posicao.replace(/\s/g, '').split('/');
+                return Number(mola1);
             });
-            const molasDisponiveis = selectedControladora.dados.molas.filter(mola => !molasOcupadas.includes(mola));
-        molasOptions.value = molasDisponiveis.map(mola => ({ label: mola, value: mola }));
+        const molasDisponiveis = selectedControladora.dados.molas.filter((mola) => !molasOcupadas.includes(mola));
+        molasOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
         //molasOptions.value = selectedControladora.dados.molas.map((mola) => ({ label: mola, value: mola }));
         placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
     } else if (selectedControladora.tipo === '2023') {
@@ -126,6 +127,35 @@ const handleControladoraChange = () => {
         posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
     }
 };
+
+const handleAndarChange = () => {
+    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
+    const molasOcupadas = ListaItens.value
+        .filter((item) => {
+            const [tipo, identificador, Andar, Posicao] = item.Posicao.replace(/\s/g, '').split('/');
+            return tipo === '2023' && Number(identificador) === selectedControladora.dados.dip && produtoSelecionado.value.Andar === Number(Andar);
+        })
+        .map((item) => {
+            const [tipo, identificador, Andar, Posicao] = item.Posicao.replace(/\s/g, '').split('/');
+            return Number(Posicao);
+        });
+    const molasDisponiveis = selectedControladora.dados.posicao.filter((mola) => !molasOcupadas.includes(mola));
+    // posicaoOptions.value = [{ label: selectedControladora.dados.posicao, value: selectedControladora.dados.posicao }];
+    posicaoOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
+    posicaoOptions.value.sort((a, b) => a.value - b.value);
+};
+
+const validarAndarSelecionado = () => {
+    const Andar = produtoSelecionado.value.Andar;
+    if (!Andar) {
+        produtoSelecionado.value.Posicao = '';
+        produtoSelecionado.value.Andar = '';
+
+        toast.add({ severity: 'warn', summary: 'Erro', detail: 'Selecione um andar antes de selecionar uma posição.', life: 3000 }); //warn de seleção de andar
+        return;
+    }
+};
+
 const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     return controladora ? controladora.tipo : null;
@@ -188,10 +218,10 @@ const confirmDelete = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post('/DM/deleteItem',{
-                id_item: selectedItem.value.id_item,
-                id_usuario: store.userId
-            });
+        const response = await axios.post('/DM/deleteItem', {
+            id_item: selectedItem.value.id_item,
+            id_usuario: store.userId
+        });
 
         fetchItemDM();
 
@@ -555,6 +585,10 @@ const listarProduto = async () => {
 };
 
 const adicionarProduto = async () => {
+    if (!validarCampos()) {
+        return; //se falhar não continua
+    }
+
     const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     const data = {
         id_usuario: store.userId,
@@ -565,7 +599,7 @@ const adicionarProduto = async () => {
     };
     try {
         loading.value = true;
-        const response = await axios.post('/DM/adicionarItens', data, {
+        const response = await axios.post('/DM/adicionarItensDM', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`
             }
@@ -575,10 +609,34 @@ const adicionarProduto = async () => {
         resetProdutoSelecionado();
         fetchItemDM();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar produto', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar produto, verifique os campos e tente novamente.', life: 3000 });
         console.error('Erro ao carregar produtos:', error);
     } finally {
         loading.value = false; // Desativando loading
+    }
+};
+
+const validarCampos = () => {
+    try {
+        if (produtoSelecionado.value.Controladora === '') {
+            toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios para adicionar o item.', life: 3000 });
+            return false;
+        }
+        if (tipoControladoraSelecionada.value === '2018') {
+            if (produtoSelecionado.value.id_produto === '' || !produtoSelecionado.value.Controladora || !produtoSelecionado.value.Placa || !produtoSelecionado.value.Motor1) {
+                toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios para a controladora 2018.', life: 3000 });
+                return false; // Falha
+            }
+        } else if (tipoControladoraSelecionada.value === '2023') {
+            if (produtoSelecionado.value.id_produto === '' || !produtoSelecionado.value.Controladora || !produtoSelecionado.value.Dip || !produtoSelecionado.value.Andar || !produtoSelecionado.value.Posicao) {
+                toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios para a controladora 2023.', life: 3000 });
+                return false; // Falha
+            }
+        }
+        return true;
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Por favor, preencha todos os campos obrigatórios.', life: 3000 });
+        return false;
     }
 };
 
@@ -590,19 +648,21 @@ watch(active, (newIndex, oldIndex) => {
     }
 });
 
-onMounted(() => {
-    loadData();
-    fetchCliente();
-    fetchDMS();
+onMounted(async () => {
+    await loadData();
+    await fetchCliente();
+    await fetchDMS();
 });
 const loadData = async () => {
     loading.value = true;
     try {
-        const produtos = await dataStore.fetchProdutos();
+        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
         ListaProdutos.value = produtos.map(({ value, codigo, label }) => ({
             label: `${codigo} | ${label}`,
             value: value
         }));
+
+        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);
@@ -650,14 +710,16 @@ const resetProdutoSelecionado = () => {
         Porta: '',
         Motor1: '',
         Motor2: '',
-        Controladora: ''
+        Controladora: '',
+        Posicao: '',
+        Andar: ''
     };
 };
 
 const fetchCliente = async () => {
     loading.value = true;
     try {
-        const response = await axios.post('/admin/cliente/listar',{});
+        const response = await axios.post('/admin/cliente/listar', {});
         ListaClientes.value = [
             todosOption,
             ...response.data.map((cliente) => ({
@@ -802,8 +864,10 @@ const removeControladora = (index) => {
                                                 <InputText v-model="filters['global'].value" placeholder="Busca" />
                                             </IconField>
                                         </div>
-                                    </div> </template
-                                ><Column field="Identificacao" sortable header="Identificação"></Column>
+                                    </div>
+                                </template>
+                                <template #empty> Nenhuma DM adicionada. </template>
+                                <Column field="Identificacao" sortable header="Identificação"></Column>
                                 <Column field="Numero" sortable header="Número"></Column>
 
                                 <Column field="ClienteNome" sortable header="Cliente"></Column>
@@ -1048,7 +1112,7 @@ const removeControladora = (index) => {
                                 paginator
                                 :rows="10"
                                 :sortOrder="1"
-                                :sortField="'SKU'"
+                                :sortField="'Posicao'"
                             >
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
@@ -1063,6 +1127,8 @@ const removeControladora = (index) => {
                                         </IconField>
                                     </div>
                                 </template>
+
+                                <template #empty> Nenhum item adicionado. </template>
 
                                 <Column field="SKU" style="width: 9%" sortable header="SKU"></Column>
                                 <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
@@ -1150,14 +1216,14 @@ const removeControladora = (index) => {
                         <label for="Andar" class="font-semibold">Andar:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" placeholder="Selecione o andar" />
+                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" placeholder="Selecione o andar" @change="handleAndarChange" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Posicao" class="font-semibold">Posição:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" @change="validarAndarSelecionado" />
                     </div>
                 </template>
 
