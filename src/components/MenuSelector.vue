@@ -101,7 +101,7 @@ const menus = {
         },
         {
             name: 'Configurações',
-            submenus: [{ name: 'Lista de DM' }, { name: 'Liberação Avulsa' }, { name: 'Gerenciamento de Serviços' }, { name: 'Termo de compromisso' }]
+            submenus: [{ name: 'Lista de DM' }, { name: 'Liberação Avulsa' }, { name: 'Gerenciamento de Serviços' }, { name: 'Cadastro de Video' }, { name: 'Termo de compromisso' }]
         }
     ],
     3: [
