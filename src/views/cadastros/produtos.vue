@@ -31,6 +31,10 @@ const currentPage = ref(1);
 const pageSize = 10;
 const totalRecords = ref(0);
 
+const imageUploader = ref(null);
+const imageUploader2 = ref(null);
+const imageUploader3 = ref(null);
+
 const selectedFile = ref(null);
 const selectedSecFile = ref(null);
 const selectedInfoFile = ref(null);
@@ -339,6 +343,9 @@ const resetForm = () => {
     imagePrinc.value = imagePlaceholder;
     imageSec.value = imagePlaceholder;
     imageInfo.value = imagePlaceholder;
+    imageUploader.value?.clearImageData();
+    imageUploader2.value?.clearImageData();
+    imageUploader3.value?.clearImageData();
 };
 
 const handleRowSelection = async (event) => {
@@ -447,15 +454,15 @@ onMounted(async () => {
                                 <!-- Grid de Upload de Imagens -->
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Principal:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'principal')" :externalImages="imagePrinc" />
+                                    <ImageUpload ref="imageUploader" @fileSelected="(file) => handleFileSelected(file, 'principal')" @clearImage="handleClearImage" :externalImages="imagePrinc" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Imagem<br />Secundária:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'secundaria')" :externalImages="imageSec" />
+                                    <ImageUpload ref="imageUploader2" @fileSelected="(file) => handleFileSelected(file, 'secundaria')" @clearImage="handleClearImage" :externalImages="imageSec" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
                                     <h4 class="titulo">Informações<br />Adicionais:</h4>
-                                    <ImageUpload @fileSelected="(file) => handleFileSelected(file, 'info')" :externalImages="imageInfo" />
+                                    <ImageUpload ref="imageUploader3" @fileSelected="(file) => handleFileSelected(file, 'info')" @clearImage="handleClearImage" :externalImages="imageInfo" />
                                 </div>
                             </div>
                         </div>
