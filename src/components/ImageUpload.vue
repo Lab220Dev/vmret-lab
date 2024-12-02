@@ -11,7 +11,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits,defineExpose  } from 'vue';
 import imageUrl from '@/assets/images/placeholder4.png';
 import { useToast } from 'primevue/usetoast';
 
@@ -75,6 +75,16 @@ const removeImage = () => {
     emit('fileSelected', null);
 };
 
+const clearImageData = () => {
+    imageData.value = null; 
+    if (fileInput.value) {
+        fileInput.value.value = ''; 
+    }
+    emit('clearImage'); 
+};
+defineExpose({
+    clearImageData
+});
 watch(
     () => props.externalImages,
     (newVal) => {

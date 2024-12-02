@@ -85,7 +85,8 @@ const produtoSelecionado = ref({
     Dip: '',
     Motor1: '',
     Motor2: '',
-    Controladora: ''
+    Controladora: '',
+    Capacidade: ''
 });
 const isEditMode = ref(false);
 const Controladoras = ref([]);
@@ -103,7 +104,7 @@ const handleControladoraChange = () => {
     if (!selectedControladora) return;
 
     if (selectedControladora.tipo === '2018') {
-        const molasOcupadas = ListaItens.value
+        let molasOcupadas = ListaItens.value
             .filter((item) => {
                 const [tipo, identificador] = item.Posicao.replace(/\s/g, '').split('/');
                 return tipo === '2018' && Number(identificador) === selectedControladora.dados.placa;
@@ -112,9 +113,11 @@ const handleControladoraChange = () => {
                 const [tipo, identificador, mola1, mola2] = item.Posicao.replace(/\s/g, '').split('/');
                 return Number(mola1);
             });
+        if (isEditMode && produtoSelecionado.value.Motor1) {
+            molasOcupadas = molasOcupadas.filter((mola) => mola !== produtoSelecionado.value.Motor1);
+        }
         const molasDisponiveis = selectedControladora.dados.molas.filter((mola) => !molasOcupadas.includes(mola));
         molasOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
-        //molasOptions.value = selectedControladora.dados.molas.map((mola) => ({ label: mola, value: mola }));
         placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
     } else if (selectedControladora.tipo === '2023') {
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
@@ -447,7 +450,8 @@ const handleRowSelection = async (event) => {
         Nome_Produto: edit.Nome_Produto,
         QTD: edit.QTD,
         SKU: edit.SKU,
-        Controladora: ''
+        Controladora: '',
+        Capacidade: edit.Capacidade
     };
 
     const [controladora, valor1, valor2, valor3] = edit.Posicao.split(' / ');
@@ -1249,6 +1253,12 @@ const removeControladora = (index) => {
                         <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
                     </div>
                 </template>
+                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center flex">
+                    <label for="Capacidade" class="font-semibold">Capacidade:</label>
+                </div>
+                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 justify-content-end">
+                    <InputNumber inputId="Capacidade" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix="unidades" />
+                </div>
             </div>
         </div>
 
