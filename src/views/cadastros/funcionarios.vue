@@ -41,7 +41,7 @@ let funcionario = reactive({
     nome: '',
     biometria: '',
     biometria2: '',
-    data_admissao: new Date().toDateString(),
+    data_admissao: null,
     CPF: '',
     RG: '',
     CTPS: '',
@@ -381,7 +381,7 @@ const resetForm = () => {
     funcionario.senha = '';
     funcionario.biometria = '';
     funcionario.biometria2 = '';
-    funcionario.data_admissao = new Date().toDateString();
+    funcionario.data_admissao = null;
     funcionario.CPF = '';
     funcionario.RG = '';
     funcionario.CTPS = '';
@@ -623,7 +623,7 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" ref="dropdown3" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" ref="dropdown3"  />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
@@ -750,6 +750,7 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
+                                            <template #empty> Nenhum item adicionado. </template>
                                             <Column field="nome_produto" sortable style="width: 45%" header="Nome"></Column>
                                             <Column field="sku" sortable header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>

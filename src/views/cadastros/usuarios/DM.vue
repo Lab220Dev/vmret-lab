@@ -379,7 +379,7 @@ const configurarVisibilidade = () => {
     if (!admin()) {
         show.value = true;
         fetchItemDM();
-        listarProduto();
+        loadData(); //o listarProduto estava dando erro, trocar aqui caso haja algum comportamento estranho na listagem de produtos
         preencherOpcoesControladoras();
         preencherControladoraOptions();
         operador.value = true;
@@ -1161,7 +1161,7 @@ const removeControladora = (index) => {
             </div>
         </div>
     </div>
-    <Dialog class="" header="Adicionar Produto" :visible.sync="showDialogProduto" :modal="true" :closable="false">
+    <Dialog class="" :header="isEditMode ? 'Editar Produto' : 'Adicionar Produto'" :visible.sync="showDialogProduto" :modal="true" :closable="false">
         <div class="box card">
             <div class="grid">
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">

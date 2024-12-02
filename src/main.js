@@ -115,6 +115,39 @@ const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
+// Configurar PrimeVue com tradução
+app.use(PrimeVue, {
+    locale: {
+        startsWith: 'Começa com',
+        contains: 'Contém',
+        notContains: 'Não contém',
+        endsWith: 'Termina com',
+        equals: 'Igual a',
+        notEquals: 'Diferente de',
+        noFilter: 'Sem filtro',
+        lt: 'Menor que',
+        lte: 'Menor ou igual a',
+        gt: 'Maior que',
+        gte: 'Maior ou igual a',
+        is: 'É',
+        isNot: 'Não é',
+        before: 'Antes de',
+        after: 'Depois de',
+        dateIs: 'Data é',
+        dateIsNot: 'Data não é',
+        dateBefore: 'Data antes de',
+        dateAfter: 'Data depois de',
+        clear: 'Limpar',
+        apply: 'Aplicar',
+        matchAll: 'Corresponde a todos',
+        matchAny: 'Corresponde a qualquer',
+        addRule: 'Adicionar regra',
+        removeRule: 'Remover regra',
+        accept: 'Aceitar',
+        reject: 'Rejeitar',
+    }
+});
+
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
