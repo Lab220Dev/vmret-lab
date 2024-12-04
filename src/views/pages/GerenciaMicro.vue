@@ -165,29 +165,29 @@ const fetchServicos = async () => {
         const response = await axios.post('/admin/cliente/listarServicos', data);
 
         // Verifique se a resposta contém dados e se não é um array vazio
-        if (response.data && response.data.length > 0) {
-            const cliente = response.data[0]; // Acesse o primeiro cliente, se existir
+        if (response.status >= 200 && response.status < 300) {
+            const cliente = response.data[0]|| {}; // Acesse o primeiro cliente, se existir
 
             // Atribua valores de forma segura
             selectedClient.value = {
-                id: cliente.id_cliente,
-                name: cliente.nome,
+                id: cliente.id_cliente || store.userIdCliente, 
+                name: cliente.nome || '',
                 servicos: cliente.servicos || [] // Caso 'servicos' seja indefinido, use um array vazio
             };
 
-            // Caso 'cliente.servicos' seja um array válido, mapeie os serviços
-            if (Array.isArray(cliente.servicos) && cliente.servicos.length > 0) {
-                clientServices.value = cliente.servicos.map((servico) => ({
-                    id: servico.id_servico,
-                    name: servico.nome
-                }));
-            } else {
-                clientServices.value = []; // Caso não haja serviços
-            }
+            // Mapeie os serviços, se houver
+            clientServices.value = Array.isArray(cliente.servicos)
+                ? cliente.servicos.map((servico) => ({
+                      id: servico.id_servico,
+                      name: servico.nome
+                  }))
+                : [];
 
             // Chama a função para buscar os destinatários, apenas se 'cliente.id_cliente' existir
-            await fetchRecipients(cliente.id_cliente);
-
+            const recipientId = cliente.id_cliente || store.userIdCliente;
+            if (recipientId) {
+                await fetchRecipients(recipientId);
+            }
             // Se houver serviços, processa as configurações de cada serviço
             if (selectedClient.value.servicos && selectedClient.value.servicos.length > 0) {
                 selectedClient.value.servicos.forEach((servico) => {
@@ -316,7 +316,7 @@ const addServiceWithConfig = async () => {
             id_cliente: selectedClient.value.id,
             servicos: servicesConfigData
         };
-        
+
         await axios.post('/admin/cliente/adicionarServico', data);
 
         toast.add({ severity: 'success', summary: 'Serviços adicionados com sucesso!', life: 3000 });
@@ -438,7 +438,6 @@ const updateServiceConfig = async () => {
             id_cliente: selectedClient.value.id,
             servicos: servicesConfigData
         };
-
 
         await axios.post('/admin/cliente/atualizarServico', data);
 
