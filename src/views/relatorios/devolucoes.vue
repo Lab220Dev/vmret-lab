@@ -8,6 +8,7 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
 const dataStore = useDataStore();
 const showDialog = ref(false);
 const dialogMessage = ref('');
@@ -16,6 +17,7 @@ const filteredCount = ref(0);
 
 const store = useAuthStore();
 const toast = useToast();
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
@@ -23,27 +25,34 @@ const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 const devolucoes = ref([]);
 const todosOption = { label: 'Todos', value: null };
-const ListaFuncionarios = ref(null);
+
 const dms = ref([todosOption]);
 const plantas = ref([todosOption]);
-const setor = ref([todosOption]);
+//const setor = ref([todosOption]);
 const centroCusto = ref([todosOption]);
+
+const ListaFuncionariosOriginal = ref([]);
+const ListaFuncionarios = ref([]);
+
+const ListaSetorOriginal = ref([]);
+const ListaSetor = ref([]);
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const show = ref(true);
 const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
-    dm: '',
+    id_dm: '',
     id_planta: '',
-    id_centro_custo: '',
+    ID_CentroCusto: '',
     id_setor: '',
     id_funcionario: '',
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     data_final: new Date()
 });
+
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -51,13 +60,15 @@ const format = (date) => {
 
     return `${day}/${month}/${year}`;
 };
+
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
+
 const buscar = async () => {
     const data = {
         id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
+        id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm,
         id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
@@ -143,13 +154,40 @@ const loadData = async () => {
         //isso valida se ele ja tem o valor armazenado ele vai pegar o valor aramzenado e não faz a chamada
         dms.value = dataStore.dms || await dataStore.fetchListaDms();
         plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
-        setor.value = dataStore.setores || await dataStore.fetchSetores();
+        ListaSetor.value = dataStore.setores || await dataStore.fetchSetores();
         centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
         ListaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
 };
+
+const filterSetor = () => {
+    if (relatorio.value.ID_CentroCusto) {
+        // Filtra os setores de acordo com o centro de custo selecionado
+        ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
+            setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null
+        );
+    } else {
+        ListaSetor.value = ListaSetorOriginal.value;
+    }
+};
+
+const filterFuncionarios = () => {
+  // Verifica se há ao menos um filtro selecionado
+  if (relatorio.value.id_setor || relatorio.value.id_planta) {
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+      const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
+      const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
+
+      return matchesSetor && matchesPlanta;
+    });
+  } else {
+    // Se não tiver filtro, exibe todos os funcionários
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+  }
+};
+
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
@@ -166,20 +204,20 @@ onMounted(() => {
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
+                        <label for="id_dm">DM:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
-                    </div>
+                    
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor"/>
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
+                    </div><div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+                        <label for="planta">Planta:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
@@ -280,7 +318,7 @@ onMounted(() => {
                     </DataTable>
                 </div>
                 <Card v-if="!show">
-                    <template #title>{{ selectedItem.dm }}</template>
+                    <template #title>{{ selectedItem.id_dm }}</template>
                     <template #content>
                         <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
                     </template>

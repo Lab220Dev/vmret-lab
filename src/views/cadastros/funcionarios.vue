@@ -28,7 +28,10 @@ const status = ref([
     { label: 'Inativo', value: 'Inativo' }
 ]);
 
-const imageUrl = ref(null);
+//IMAGEM
+const imageUploader = ref(null);
+const imageUrl = ref(imagePlaceholder);
+
 let centroCusto = ref([]);
 let setor = ref([]);
 let hieraquiaoptions = ref([]);
@@ -75,7 +78,7 @@ const filters = ref({
 });
 
 const selectedProduct = ref({
-    id_produto: null,
+    id_produto: '',
     nome: '',
     sku: '',
     quantidade: 1
@@ -86,6 +89,7 @@ const deleteProductDialog = ref(false);
 const deleteFuncionarioDialog = ref(false);
 const visible = ref(false);
 const active = ref(0);
+const activeItens = ref(0);
 const loading = ref(false);
 
 const dropdown1 = ref(null);
@@ -115,10 +119,17 @@ const onRowSelect = async (event) => {
     setTempo(TempoInicio, funcionario.hora_inicial);
     setTempo(TempoFim, funcionario.hora_final);
     await fetchItensSetor(funcionario.id_setor);
+    imageUploader.value?.clearImageData(); 
     await getImagem(funcionario.foto);
-    //await listarProduto();
     active.value = 1;
     editVisible.value = true;
+};
+
+const setorChange = async (event) => {
+    const idSetorSelecionado = event.value; // Pegando o valor do setor selecionado
+    if (idSetorSelecionado) {
+        await fetchItensSetor(idSetorSelecionado);
+    }
 };
 
 const loadFuncionarios = async () => {
@@ -135,8 +146,10 @@ const loadFuncionarios = async () => {
 
         ListaFuncionarios.value = response.data;
         filteredCount.value = ListaFuncionarios.value.length;
+
+        resetTable();
+        resetItens();
     } catch (error) {
-        console.error('Erro ao carregar funcionários:', error);
     } finally {
         loading.value = false;
     }
@@ -179,7 +192,6 @@ const adicionarFuncionario = async () => {
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao adicionar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
@@ -195,9 +207,7 @@ const loadData = async () => {
 
         //excluindo a opção 'Todos' e obtendo os outros dados
         ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
-    } catch (error) {
-        console.error('Erro ao carregar dados iniciais:', error);
-    }
+    } catch (error) {}
 };
 
 const fetchItensSetor = async (id_setor) => {
@@ -213,18 +223,14 @@ const fetchItensSetor = async (id_setor) => {
         ListaItemsSetor.value = response.data;
 
         listarProdutosDisponiveis();
-    } catch (error) {
-        console.error('Erro ao listar itens:', error);
-    }
+    } catch (error) {}
 };
 
 const listarProdutosDisponiveis = () => {
-
-    const addedIds = new Set(ListaItemsSetor.value.map(item => item.id_produto));
+    const addedIds = new Set(ListaItemsSetor.value.map((item) => item.id_produto));
 
     // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
-    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter(produto => !addedIds.has(produto.value)));
-
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter((produto) => !addedIds.has(produto.value)));
 };
 
 const fetchHieraquiaOptions = async () => {
@@ -242,9 +248,7 @@ const fetchHieraquiaOptions = async () => {
             label: ` ${hieraquiaoptions.id_funcao}`,
             value: hieraquiaoptions.id_funcao
         }));
-    } catch (error) {
-        console.error('Erro ao buscar opções de hierarquia:', error);
-    }
+    } catch (error) {}
 };
 
 watch(
@@ -275,10 +279,16 @@ watch(
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
+        resetItens();
         loadFuncionarios();
         editVisible.value = false;
     }
 });
+
+const resetTable = () => {
+    activeItens.value = 0;
+    resetItens();
+};
 
 function formatarTempo(time, baseDate = new Date()) {
     const hours = time.hours.toString().padStart(2, '0');
@@ -306,7 +316,6 @@ const validateForm = () => {
     errors.value = {};
     cpfvalidate();
     validateEmail();
-    console.log(errors.value);
     return Object.keys(errors.value).length === 0;
 };
 
@@ -341,7 +350,6 @@ const getImagem = async (filename) => {
         const { image, mimeType } = response.data;
         imageUrl.value = `data:${mimeType};base64,${image}`;
     } catch (error) {
-        console.error('Erro ao carregar imagem:', error);
         return imagePlaceholder;
     }
 };
@@ -350,6 +358,7 @@ onMounted(() => {
     loadData();
     loadFuncionarios();
     fetchHieraquiaOptions();
+    fetchItensSetor();
 });
 
 const deleteFuncionario = async () => {
@@ -375,6 +384,9 @@ const deleteFuncionario = async () => {
 };
 
 const resetForm = () => {
+    funcionario.foto = null; 
+    imageUrl.value = imagePlaceholder; 
+
     funcionario.id_funcionario = '';
     funcionario.matricula = '';
     funcionario.nome = '';
@@ -393,6 +405,7 @@ const resetForm = () => {
     funcionario.id_funcao = '';
     funcionario.id_planta = '';
     funcionario.id_setor = '';
+
     funcionario.segunda = false;
     funcionario.terca = false;
     funcionario.quarta = false;
@@ -400,13 +413,29 @@ const resetForm = () => {
     funcionario.sexta = false;
     funcionario.sabado = false;
     funcionario.domingo = false;
+
     funcionario.itemsSelecionadosFuncionario = [];
+
     selectedFile.value = null;
     TempoInicio.value = null;
     TempoFim.value = null;
+    imageUploader.value?.clearImageData(); 
+    ListaItemsSetor.value = [];
 };
 
+const resetItens = () => {
+    selectedProduct.value = {
+    id_produto: '',
+    nome: '',
+    sku: '',
+    quantidade: null
+}
+}
+
 const SalvarProduto = async () => {
+    if (!validarCampos()) {
+        return; //se falhar não continua
+    }
     const data = {
         id_cliente: store.userIdCliente,
         id_usuario: store.userId,
@@ -421,17 +450,45 @@ const SalvarProduto = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        fetchItensSetor();
+        ListaProdutoFuncionario.value = [];
+        ListaProdutoFuncionario.value = response.data.dados[0];
         visible.value = false;
+        resetItens();
         toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
-        console.log('Resposta do servidor:', response.data);
     } catch (error) {
-        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
     } finally {
         loading.value = false;
     }
 };
+
+const listarProdutosFiltrados = () => {
+    const idsSetor = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); //setor
+
+    const idsAdicionados = new Set(ListaProdutoFuncionario.value.map((item) => item.id_produto)); //funcionario(datatable)
+
+    const itensFiltrados = ListaProdutos.value.filter(
+        (produto) => !idsSetor.has(produto.value) && !idsAdicionados.has(produto.value) //o restante
+    );
+
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...itensFiltrados); //atualizando a lista
+
+
+    if (itensFiltrados.length === 0) {
+        toast.add({
+            severity: 'warn',
+            summary: 'Nenhum item disponível',
+            detail: 'Todos os itens já foram adicionados ao setor ou ao funcionário.',
+            life: 3000
+        });
+    }
+};
+
+const abrirDialogAdicionarItem = () => {
+    listarProdutosFiltrados();
+    visible.value = true; // Mostre o diálogo
+};
+
 
 const editItem = (selectedItem) => {
     selectedProduct.value = { ...selectedItem };
@@ -454,14 +511,10 @@ const atualizarFuncionario = async () => {
 
     const { foto, itens, ...restOfFuncionario } = funcionario;
 
-    // Remove itens duplicados antes de enviar
-    const itensUnicos = Array.from(new Set(itens.map((item) => item.id_produto))) // Remove duplicados com base no id_produto
-        .map((id_produto) => itens.find((item) => item.id_produto === id_produto)); // Mapeia os itens únicos de volta
+    const itensUnicos = Array.from(new Set(itens.map((item) => item.id_produto))).map((id_produto) => itens.find((item) => item.id_produto === id_produto));
 
-    // Adiciona os itens únicos ao FormData
     formData.append('itens', JSON.stringify(itensUnicos));
 
-    // Adiciona as demais propriedades do funcionário, incluindo a foto se ela estiver no `restOfFuncionario`
     Object.entries(restOfFuncionario).forEach(([key, value]) => {
         formData.append(key, value);
     });
@@ -483,7 +536,6 @@ const atualizarFuncionario = async () => {
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao atualizar o funcionário:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
     } finally {
         loading.value = false;
@@ -505,15 +557,84 @@ const confirmDeleteProduct = (item) => {
     selectedProduct.value = { ...item };
     deleteProductDialog.value = true;
 };
-const deleteProduct = () => {
-    const index = funcionario.itens.findIndex((i) => i.id_produto === selectedProduct.value.id_produto);
+const deleteProduct = async () => {
+    let data = {
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
+        id_funcionario: funcionario.id_funcionario,
+        id_produto: selectedProduct.value.id_produto,
+        quantidade: selectedProduct.value.quantidade
+    };
 
-    if (index !== -1) {
-        funcionario.itens[index].action = 'delete';
-        //ListaProdutoFuncionario.value = funcionario.itens.filter(i => i.action !== 'delete');
+    try {
+        loading.value = true;
+
+        const res = await axios.post('/funcionarios/deleteItem', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+
+        if (res.data && res.data.items) {
+            ListaProdutoFuncionario.value = res.data.items;
+        }
+
+        resetItens();
+
+        toast.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Item deletado com sucesso!',
+            life: 3000
+        });
+
+        deleteProductDialog.value = false;
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Erro ao deletar o item',
+            life: 3000
+        });
+        console.error(error);
+    } finally {
+        loading.value = false;
     }
-    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
-    deleteProductDialog.value = false;
+};
+
+const validarCampos = () => {
+    try {
+        if (!selectedProduct.value.id_produto) {
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Selecione o item.',
+                life: 3000
+            });
+            return false;
+        }
+
+        if (!selectedProduct.value.quantidade || selectedProduct.value.quantidade <= 0) {
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Preencha a quantidade com um valor válido.',
+                life: 3000
+            });
+            return false;
+        }
+
+        return true; // Campos válidos
+    } catch (error) {
+        console.error(error); // Para depuração
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Por favor, preencha todos os campos obrigatórios.',
+            life: 3000
+        });
+        return false;
+    }
 };
 
 const hideDialog = () => {
@@ -623,7 +744,7 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" ref="dropdown3"  />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" @change="setorChange" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
@@ -691,7 +812,8 @@ const hideDialog = () => {
                                 </div>
 
                                 <div class="full mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
-                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl" />
+                                    <ImageUpload ref="imageUploader"  @fileSelected="handleFileSelected" 
+                                    @clearImage="handleClearImage"  :externalImages="imageUrl" />
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
@@ -702,9 +824,20 @@ const hideDialog = () => {
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
-                                <TabView>
+                                <TabView v-model:activeIndex="activeItens">
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class="" v-model:filters="filters" :value="ListaItemsSetor" stripedRows paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" :globalFilterFields="['nome', 'sku', 'qtd_limite']" dataKey="sku">
+                                        <DataTable
+                                            class=""
+                                            v-model:filters="filters"
+                                            :value="ListaItemsSetor"
+                                            stripedRows
+                                            paginator
+                                            removableSort
+                                            :rows="10"
+                                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                                            :globalFilterFields="['nome', 'sku', 'qtd_limite']"
+                                            dataKey="sku"
+                                        >
                                             <template #header>
                                                 <div class="flex justify-content-end align-items-center mb-2">
                                                     <div>
@@ -724,11 +857,11 @@ const hideDialog = () => {
                                         </DataTable>
                                     </TabPanel>
                                     <TabPanel header="Itens do Funcionario">
-                                        <Button class="mt-3 justify-content-end" label="Adicionar Itens" @click="visible = true" />
+                                        <Button class="mt-3 justify-content-end" label="Adicionar Itens" @click="abrirDialogAdicionarItem" />
                                         <DataTable
                                             class="mt-3"
                                             v-model:filters="filters"
-                                            :value="funcionario.itens.filter((i) => i.action !== 'delete')"
+                                            :value="ListaProdutoFuncionario"
                                             paginator
                                             :rows="10"
                                             :sortField="'sku'"
@@ -769,7 +902,7 @@ const hideDialog = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :draggable="false" :modal="true" class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -788,7 +921,7 @@ const hideDialog = () => {
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="visible" :modal="true" header="Adicionar Itens do Funcionário">
+        <Dialog v-model:visible="visible" :modal="true" :draggable="false" header="Adicionar Itens do Funcionário">
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
@@ -796,7 +929,7 @@ const hideDialog = () => {
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber variant="filled" id="Quantidade"  v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -805,7 +938,7 @@ const hideDialog = () => {
                 <Button type="button" label="Adicionar" @click="SalvarProduto"></Button>
             </div>
         </Dialog>
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
+        <Dialog v-model:visible="deleteProductDialog" :draggable="false" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                 <span v-if="selectedProduct.id_produto"
@@ -817,7 +950,7 @@ const hideDialog = () => {
                 <Button label="Sim" icon="pi pi-check" text @click="deleteProduct()" />
             </template>
         </Dialog>
-        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" :draggable="false" style="width: 400px" :modal="true" :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">

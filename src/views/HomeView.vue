@@ -185,12 +185,12 @@ const estoquebaixo = ref([]);
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
                 <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoquebaixo" removableSort responsiveLayout="scroll">
+                    <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%"></Column>
                     <Column field="nome" header="Item" sortable style="width: 30%">
                         <template #body="{ data }">
                             <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
                         </template></Column
                     >
-                    <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%"></Column>
                     <Column field="quantidade" header="Quant." class="table-cell" sortable style="width: 8%"></Column>
                     
                     <template #empty>

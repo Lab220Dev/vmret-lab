@@ -24,7 +24,7 @@
                 <Column field="name" header="Serviço"></Column>
                 <Column header="Ação">
                     <template #body="slotProps">
-                        <Button label="Configurar" class="mr-2" icon="pi pi-cog" @click="editService(slotProps.data)" />
+                        <Button label="Configurar" class="mr-2 configuracao-monitoramento" icon="pi pi-cog" @click="editService(slotProps.data)" />
                         <Button label="Remover" class="p-button-danger" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
@@ -157,6 +157,7 @@ const fetchClientes = async () => {
         console.error('Erro ao carregar clientes:', error);
     }
 };
+
 const fetchServicos = async () => {
     try {
         const data = {
@@ -263,7 +264,14 @@ const onClientSelected = async () => {
 const editService = (service) => {
     selectedService.value = service;
     showConfig.value = true;
+
+    // Rolagem suave 
+    const configSection = document.querySelector('.configuracao-monitoramento');  //área onde as configurações aparecem
+    if (configSection) {
+        configSection.scrollIntoView({ behavior: 'smooth' });
+    }
 };
+
 const formatarTempo = (timeObj) => {
     if (timeObj && timeObj.hours !== undefined && timeObj.minutes !== undefined) {
         const hours = String(timeObj.hours).padStart(2, '0');
@@ -448,6 +456,7 @@ const updateServiceConfig = async () => {
         toast.add({ severity: 'error', summary: 'Erro ao atualizar os serviços', life: 3000 });
     }
 };
+
 onMounted(fetchIfAdmin);
 </script>
 

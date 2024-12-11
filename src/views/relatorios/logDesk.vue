@@ -9,6 +9,8 @@ import { useAuthStore } from '@/store/authStore.js';
 
 const filteredCount = ref(0);
 
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
+
 const store = useAuthStore();
 const toast = useToast();
 const dropdown1 = ref(null);
@@ -46,6 +48,19 @@ const format = (date) => {
     const year = date.getFullYear();
 
     return `${day}/${month}/${year}`;
+};
+
+const formatDate = (date) => {
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`; // Formato de data: dd/MM/yyyy
+};
+
+const formatTime = (date) => {
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`; // Formato de hora: HH:mm
 };
 
 const toISODate = (date) => {
@@ -221,8 +236,18 @@ onMounted(() => {
                                 </div>
                             </div>
                         </template>
+                        <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="Dia" sortable header="Data"></Column>
+            <Column field="dataHora" sortable header="Data">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
+                </template></Column
+            >
+            <Column field="Hora" sortable header="Hora">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Dia">{{ formatTime(new Date(data.Dia)) }}</span>
+                </template></Column
+            >
             <Column field="Operacao" sortable header="Operação"></Column>
             <Column field="ID_Usuario" sortable header="Usuário"></Column>
             <Column field="Log" sortable header="Resumo"></Column>

@@ -21,12 +21,14 @@ const operacao = ref([
     { label: 'Todos', value: null },
     { label: 'Insert', value: 'INSERT' },
     { label: 'Update', value: 'UPDATE' },
-    { label: 'Delete', value: 'DELETE' },
+    { label: 'Delete', value: 'DELETE' }
 ]);
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 
 const ListaFuncionarios = ref([todosOption]);
 const usuario = ref([]);
@@ -45,6 +47,19 @@ const format = (date) => {
     const year = date.getFullYear();
 
     return `${day}/${month}/${year}`;
+};
+
+const formatDate = (date) => {
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`; // Formato de data: dd/MM/yyyy
+};
+
+const formatTime = (date) => {
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`; // Formato de hora: HH:mm
 };
 
 const toISODate = (date) => {
@@ -70,18 +85,21 @@ const buscar = async () => {
         historico.value = response.data;
 
         filteredCount.value = historico.value.length;
-
     } catch (error) {
         console.error('Erro ao buscar logs:', error);
     }
 };
 
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = historico.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
-    }).length;
-}, { immediate: true });
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = historico.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 const fetchDM = async () => {
     const data = {
@@ -93,10 +111,13 @@ const fetchDM = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({
-            label: Identificacao,
-            value: ID_DM
-        }))];
+        dms.value = [
+            todosOption,
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                label: Identificacao,
+                value: ID_DM
+            }))
+        ];
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error);
     }
@@ -112,7 +133,7 @@ const fetchUsuario = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        usuario.value = response.data.map(({ id_usuario,nome }) => ({
+        usuario.value = response.data.map(({ id_usuario, nome }) => ({
             label: nome,
             value: id_usuario
         }));
@@ -163,69 +184,97 @@ onMounted(() => {
             <div class="grid mt-3 mx-1 p-1">
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">Usuário:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label"
-                        optionValue="value" placeholder="Todos" ref="dropdown3" />
+                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label"
-                        optionValue="value" placeholder="Todos" />
+                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
-                    <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
-                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
+                    <VueDatePicker
+                        class="drop"
+                        v-model="relatorio.data_inicio"
+                        showIcon
+                        :showOnFocus="false"
+                        :format="format"
+                        auto-apply
+                        locale="pt-BR"
+                        @open="handleDatepickerOpen"
+                        :enable-time-picker="false"
+                        teleport="body"
+                        placeholder="Selecione uma data inicial"
+                    />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">Data Final:</label>
-                    <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
-                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
+                    <VueDatePicker
+                        class="drop"
+                        v-model="relatorio.data_final"
+                        showIcon
+                        :showOnFocus="false"
+                        :format="format"
+                        auto-apply
+                        locale="pt-BR"
+                        @open="handleDatepickerOpen"
+                        :enable-time-picker="false"
+                        teleport="body"
+                        placeholder="Selecione uma data final"
+                    />
                 </div>
                 <div class="field lg:col-12 md:col-12 sm:col-12">
-                    <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
-                        @click="buscar" />
+                    <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                 </div>
             </div>
         </div>
-        <DataTable 
-        v-model:filters="filters"
-        :value="historico" 
-        stripedRows 
-        showGridlines 
-        paginator 
-        :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-        rowHover
-        :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"  
-        dataKey="Operacao"
-        tableStyle=""
-        removableSort
-        :sortOrder="1"
-        :sortField="'Dia'"  >
+        <DataTable
+            v-model:filters="filters"
+            :value="historico"
+            stripedRows
+            showGridlines
+            paginator
+            :rows="10"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            rowHover
+            :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"
+            dataKey="Operacao"
+            tableStyle=""
+            removableSort
+            :sortOrder="1"
+            :sortField="'Dia'"
+        >
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span>Total de registros: {{ filteredCount }}</span>
+                    </div>
+                    <div>
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        </IconField>
+                    </div>
+                </div>
+            </template>
 
-        <template #header>
-                            <div class="flex justify-content-between align-items-center">
-                                <div >
-                                    <span>Total de registros: {{ filteredCount }}</span>
-                                </div>
-                                <div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
-                                </div>
-                            </div>
-                        </template>
+            <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="Dia" sortable style="max-width: 10%" header="Data"></Column>
+            <Column field="dataHora" sortable header="Data">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
+                </template></Column
+            >
+            <Column field="Hora" sortable header="Hora">
+                <template #body="{ data }">
+                    <span v-tooltip="data.Dia">{{ formatTime(new Date(data.Dia)) }}</span>
+                </template></Column
+            >
             <Column field="Operacao" sortable style="max-width: 10%" header="Operação"></Column>
             <Column field="ID_Usuario" sortable style="max-width: 8%" header="Usuário"></Column>
             <Column field="Log_Web" sortable style="max-width: 500px" header="Resumo"></Column>
-            <Column field="Resultado" sortable  style="max-width: 10%" header="Resultado"></Column>
+            <Column field="Resultado" sortable style="max-width: 10%" header="Resultado"></Column>
         </DataTable>
     </div>
 </template>

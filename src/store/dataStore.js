@@ -48,9 +48,9 @@ export const useDataStore = defineStore('data', {
                 };
                 const response = await axios.post('/plantas/listaSimples', data);
                 this.plantas = addTodosOption(
-                    response.data.map((planta) => ({
-                        label: planta.nome,
-                        value: planta.id_planta
+                    response.data.map(({ nome, id_planta }) => ({
+                        label: `Planta  ${nome}`,
+                        value: id_planta
                     }))
                 );
                 return this.plantas;
@@ -70,9 +70,10 @@ export const useDataStore = defineStore('data', {
                 };
                 const response = await axios.post('/Setor/listaSimples', data);
                 this.setores = addTodosOption(
-                    response.data.map((setor) => ({
-                        label: setor.nome,
-                        value: setor.id_setor 
+                    response.data.map(({ id_setor, nome, id_centro_custo }) => ({
+                        label: `Setor  ${nome}`,
+                        value: id_setor, 
+                        id_centro_custo
                     }))
                 );
                 return this.setores; 
@@ -92,9 +93,9 @@ export const useDataStore = defineStore('data', {
                 };
                 const response = await axios.post('/cdc/listaSimples', data);
                 this.cdcs = addTodosOption(
-                    response.data.map((cdc) => ({
-                        label: cdc.Nome,
-                        value: cdc.ID_CentroCusto
+                    response.data.map(({ ID_CentroCusto, Nome }) => ({
+                        label: `Centro de Custo  ${Nome}`,
+                        value: ID_CentroCusto
                     }))
                 );
                 return this.cdcs;

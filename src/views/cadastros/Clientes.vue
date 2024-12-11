@@ -44,6 +44,20 @@ const onRowSelect = (event) => {
     active.value = 1; //altera o índice ativo para a próxima etapa/página.
     visible.value = true; //Torna o formulário visível.
     structuredMenus.value = cliente.menus || []; //Carrega os menus estruturados, se existirem.
+    console.log('Menus Estruturados:', structuredMenus.value);  
+};
+
+const resetForm = () => {//função responsável por limpar o formulário e reiniciar seus valores
+    //Reseta o objeto `cliente` para seus valores iniciais, utilizando `reactive` para tornar as mudanças reativas
+    cliente = reactive({
+        nome: '', //Nome do cliente, inicializado como uma string vazia
+        cnpj: '', // CNPJ do cliente, inicializado como uma string vazia
+        ativo: true, // Estado de ativação do cliente, inicializado como `true` (ativo)
+        usar_api: false, // Se o cliente pode ou não usar API, inicializado como `false`
+        textoretirada: '' // Campo de texto adicional relacionado ao cliente, inicializado como uma string vazia
+    });
+    // Limpa a estrutura de menus associada ao cliente
+    structuredMenus.value = [];
 };
 
 const submitForm = () => {
@@ -115,31 +129,8 @@ const deleteCliente = async (item) => {
     }
 };
 
-// Função atualizada para enviar a estrutura hierárquica de menus
-const submitMenu = async () => {
-    const simpleStructuredMenus = JSON.parse(JSON.stringify(structuredMenus.value.value));
-    console.log('Structured Menus Before Submission:', simpleStructuredMenus);
-    console.log('Structured Menus:', structuredMenus.value);
-    const data = {
-        id_cliente: cliente.id_cliente,
-        perfil: selectedPerfil.value,
-        menus: simpleStructuredMenus // Enviando a estrutura hierárquica de menus
-    };
+const loadCliente = async () => {//função responsável por carregar a lista de clientes do servidor
 
-    loading.value = true;
-    try {
-        await axios.post('/admin/cliente/salvarMenus', data);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Configurações de menu salvas com sucesso.', life: 3000 });
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar configurações de menu.', life: 3000 });
-        console.error('Erro ao salvar menus:', error);
-    } finally {
-        loading.value = false;
-    }
-};
-
-//função responsável por carregar a lista de clientes do servidor
-const loadCliente = async () => {
     loading.value = true; //Marca o início do carregamento de dados, alterando a variável `loading` para true
 
     try {
@@ -157,21 +148,7 @@ const loadCliente = async () => {
     }
 };
 
-//função responsável por limpar o formulário e reiniciar seus valores
-const resetForm = () => {
-    //Reseta o objeto `cliente` para seus valores iniciais, utilizando `reactive` para tornar as mudanças reativas
-    cliente = reactive({
-        nome: '', //Nome do cliente, inicializado como uma string vazia
-        cnpj: '', // CNPJ do cliente, inicializado como uma string vazia
-        ativo: true, // Estado de ativação do cliente, inicializado como `true` (ativo)
-        usar_api: false, // Se o cliente pode ou não usar API, inicializado como `false`
-        textoretirada: '' // Campo de texto adicional relacionado ao cliente, inicializado como uma string vazia
-    });
-    // Limpa a estrutura de menus associada ao cliente
-    structuredMenus.value = [];
-};
-
-const errors = reactive({
+const errors = reactive({//Responsável por armazenar os erros de cnpj
     cnpj: ''
 });
 
@@ -245,7 +222,6 @@ const formatDate = (value) => {
     if (!value) {
         return '';
     }
-
     try {
         const date = new Date(value); // Converte o valor para um objeto `Date`
 
@@ -328,7 +304,6 @@ onMounted(() => {
                     <!-- Campos para pesquisa global -->
                     <!-- Ordem de ordenação inicial -->
                     <!-- Campo inicial para ordenação -->
-                
                         <template #header>
                             <div class="flex justify-content-end">
                                 <!--Caixa de pesquisa para busca global -->
@@ -386,9 +361,8 @@ onMounted(() => {
                                     <!--campo para selecionar o perfil, aparece apenas se visible for verdadeiro -->
                                     <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
                                         <label v-if="visible">Selecione o perfil</label>
-                                        <Dropdown v-if="visible" style="width: 232px" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" />
+                                        <Dropdown v-if="visible" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" />
                                     </div>
-
                                     <!--Campo para ativar ou desativar a integração via API-->
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                         <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
@@ -412,9 +386,7 @@ onMounted(() => {
                                 <!-- Seção de Seleção de Menu -->
                                 <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil"
                                  :initialMenus="structuredMenus.value"
-                                 @update:structuredMenus="structuredMenus.value = $event"
                                  :id_cliente="cliente.id_cliente" />
-
                             </div>
                         </div>
                         <!--botões para salvar ou voltar -->

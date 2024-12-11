@@ -11,8 +11,11 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 const showDialog = ref(false);
 const dialogMessage = ref('');
 
+const filteredCount = ref(0);
+
 const store = useAuthStore();
 const toast = useToast();
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
@@ -20,41 +23,45 @@ const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 const retiradas = ref([]);
 const todosOption = { label: 'Todos', value: null };
-const ListaFuncionarios = ref(null);
+
 const dms = ref([todosOption]);
 const plantas = ref([todosOption]);
-const setor = ref([todosOption]);
+//const setor = ref([todosOption]);
 const centroCusto = ref([todosOption]);
 
-const filteredCount = ref(0);
+const ListaFuncionariosOriginal = ref([]);
+const ListaFuncionarios = ref([]);
+
+const ListaSetorOriginal = ref([]);
+const ListaSetor = ref([]);
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const show = ref(true);
 const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
     id_dm: '',
-    id_planta: '',
+    id_planta: null,
     ID_CentroCusto: '',
-    id_setor: '',
-    id_funcionario: '',
+    id_setor: null,
+    id_funcionario: null,
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     data_final: new Date()
 });
-const format = (date) => {
-            const dia = date.getDate().toString().padStart(2, '0');
-            const mes = (date.getMonth() + 1).toString().padStart(2, '0'); 
-            const ano = date.getFullYear();
-            return `${dia}/${mes}/${ano}`;
-        };
 
-        const formatDate = (date) => {
+const format = (date) => {
     const dia = date.getDate().toString().padStart(2, '0');
-    const mes = (date.getMonth() + 1).toString().padStart(2, '0'); 
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+};
+
+const formatDate = (date) => {
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
     const ano = date.getFullYear();
     return `${dia}/${mes}/${ano}`; // Formato de data: dd/MM/yyyy
 };
@@ -81,7 +88,6 @@ const buscar = async () => {
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final)
     };
-
     try {
         loading.value = true;
         const response = await axios.post('relatorioRetiRe/relatorio', data, {
@@ -94,6 +100,7 @@ const buscar = async () => {
         // Atualizando a contagem de registros após a resposta da API
         filteredCount.value = retiradas.value.length;
 
+        // mostra o diálogo se não houver resultados
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
             dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
             showDialog.value = true;
@@ -110,12 +117,16 @@ const buscar = async () => {
     }
 };
 
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = retiradas.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
-    }).length;
-}, { immediate: true });
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = retiradas.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
 const voltar = () => {
     show.value = true;
@@ -151,6 +162,7 @@ const exportJSON = () => {
     link.click();
     document.body.removeChild(link);
 };
+
 const fetchDM = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -172,6 +184,7 @@ const fetchDM = async () => {
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
+
 const fetchIdPlanta = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -194,6 +207,7 @@ const fetchIdPlanta = async () => {
         console.error('Erro ao buscar opções de plantas:', error);
     }
 };
+
 const fetchSetorDiretoria = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -204,17 +218,21 @@ const fetchSetorDiretoria = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        setor.value = [
+        ListaSetorOriginal.value = [
             todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
+            ...response.data.map(({ id_setor, nome, id_centro_custo }) => ({
                 label: `Setor  ${nome}`,
-                value: id_setor
+                value: id_setor, 
+                id_centro_custo
             }))
         ];
+        // Inicialize a lista de setores com todos os dados
+        ListaSetor.value = ListaSetorOriginal.value;
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
 };
+
 const fetchCentroCusto = async () => {
     const data = {
         id_cliente: store.userIdCliente
@@ -237,27 +255,59 @@ const fetchCentroCusto = async () => {
     }
 };
 
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_funcionario
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+const filterSetor = () => {
+    if (relatorio.value.ID_CentroCusto) {
+        // Filtra os setores de acordo com o centro de custo selecionado
+        ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
+            setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null
+        );
+    } else {
+        ListaSetor.value = ListaSetorOriginal.value;
     }
 };
+
+const filterFuncionarios = () => {
+  // Verifica se há ao menos um filtro selecionado
+  if (relatorio.value.id_setor || relatorio.value.id_planta) {
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+      const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
+      const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
+
+      return matchesSetor && matchesPlanta;
+    });
+  } else {
+    // Se não tiver filtro, exibe todos os funcionários
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+  }
+};
+
+const fetchFuncionarios = async () => {
+  const data = {
+    id_cliente: store.userIdCliente
+  };
+  try {
+    const response = await axios.post('/funcionarios/listar', data, {
+      headers: {
+        Authorization: `Bearer ${store.token}`
+      }
+    });
+    ListaFuncionariosOriginal.value = [
+      todosOption,
+      ...response.data.map((funcionario) => ({
+        label: funcionario.nome,
+        value: funcionario.id_funcionario,
+        id_setor: funcionario.id_setor,
+        id_planta : funcionario.id_planta
+      }))
+    ];
+    // Inicialize a lista de funcionários com todos os dados
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+
+  } catch (error) {
+    console.error('Erro ao carregar funcionários:', error);
+  }
+};
+
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
@@ -287,17 +337,17 @@ onMounted(() => {
                 <label for="dm">DM:</label>
                 <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
             </div>
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                <label for="planta">Planta:</label>
-                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
-            </div>
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Centro de Custo:</label>
-                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor" />
             </div>
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Setor:</label>
-                <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
+                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
+            </div>
+            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+                <label for="planta">Planta:</label>
+                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
             </div>
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Funcionário:</label>
@@ -366,7 +416,6 @@ onMounted(() => {
             class="mt-6"
             :sortField="'ProdutoSKU'"
             :sortOrder="1"
-            
             :tableStyle="{ width: '100%' }"
         >
             <!-- @rowSelect="onRowSelect"  -->
@@ -390,37 +439,44 @@ onMounted(() => {
             <Column field="Identificacao" class="table-cell" sortable style="width: 8%" header="DM">
                 <template #body="{ data }">
                     <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
-                </template></Column>
-            <Column field="Dia" sortable class="table-cell" style="width:10%" header="Data">
-            <template #body="{ data }">
+                </template></Column
+            >
+            <Column field="Dia" sortable class="table-cell" style="width: 10%" header="Data">
+                <template #body="{ data }">
                     <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
-                </template></Column>
-                <Column field="Hora" sortable class="table-cell" style="width:7%" header="Hora">
-            <template #body="{ data }">
+                </template></Column
+            >
+            <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
+                <template #body="{ data }">
                     <span v-tooltip="data.Hora">{{ formatTime(new Date(data.Dia)) }}</span>
-                </template></Column>
-            <Column field="Matricula" sortable class="table-cell" style="width:10%" header="Matricula">
+                </template></Column
+            >
+            <Column field="Matricula" sortable class="table-cell" style="width: 10%" header="Matricula">
                 <template #body="{ data }">
                     <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
-                </template></Column>
-            <Column field="Nome" class="table-cell" style="width:10%" sortable header="Nome">
+                </template></Column
+            >
+            <Column field="Nome" class="table-cell" style="width: 10%" sortable header="Nome">
                 <template #body="{ data }">
                     <span v-tooltip="data.Nome">{{ data.Nome }}</span>
-                </template></Column>
+                </template></Column
+            >
             <Column field="Email" sortable class="table-cell" header="E-mail">
                 <template #body="{ data }">
                     <span v-tooltip="data.Email">{{ data.Email }}</span>
-                </template></Column>
+                </template></Column
+            >
             <Column field="ProdutoNome" style="width: 20%" sortable class="table-cell" header="Item">
                 <template #body="{ data }">
                     <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
                 </template>
             </Column>
-            <Column field="Quantidade" style="width: 10%"  sortable header="Quant" class="text-center table-cell"></Column>
+            <Column field="Quantidade" style="width: 10%" sortable header="Quant" class="text-center table-cell"></Column>
             <Column field="ProdutoSKU" class="table-cell" style="width: 10%" sortable header="CA">
                 <template #body="{ data }">
                     <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
-                </template></Column>
+                </template></Column
+            >
         </DataTable>
 
         <Card v-if="!show">

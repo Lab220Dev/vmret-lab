@@ -1,26 +1,26 @@
 <script setup>
-import { useToast } from 'primevue/usetoast';
-import { reactive, ref, onMounted, watch, computed, nextTick } from 'vue';
-import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios.js';
-import { FilterMatchMode } from 'primevue/api';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { useDataStore } from '@/store/dataStore.js';
+import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
+import { reactive, ref, onMounted, watch, computed, nextTick } from 'vue'; // Hooks do Vue.js
+import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação de usuário
+import axios from '@/axios.js'; // Instância Axios para requisições HTTP
+import { FilterMatchMode } from 'primevue/api'; // Modo de filtro global para PrimeVue
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de loading
+import { useDataStore } from '@/store/dataStore.js'; // Store para dados gerais
 
-const dialogMessage = ref('');
-const selectedItem = ref(null);
-const toast = useToast();
-const active = ref(0);
-const dataStore = useDataStore();
-const todosOption = {
-    label: 'Todos',
-    value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false },
-    usar_api: false
-};
+// Variáveis reativas para gerenciar o estado do componente
+const dialogMessage = ref(''); // Mensagem do diálogo
+const selectedItem = ref(null); // Item selecionado
+const toast = useToast(); // Função de notificação de toast
+const active = ref(0); // Controle de estado ativo
+const dataStore = useDataStore(); // Acesso ao store de dados
+const todosOption = { label: 'Todos', value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false }, usar_api: false }; // Opção de "todos"
 
+// Store de autenticação
 const store = useAuthStore();
-const loading = ref(false);
-const loadingControladoras = ref(true);
+const loading = ref(false); // Controle de loading
+const loadingControladoras = ref(true); // Controle de loading de controladoras
+
+// Objeto reativo para armazenar dados do DM (Dispositivo de Monitoramento)
 let DM = reactive({
     Ativo: false,
     Chave: '',
@@ -45,37 +45,55 @@ let DM = reactive({
     Devolucao: false
 });
 
+// Tipos de controladoras
 const tipoControladoras = ['2018', '2023', '2024', 'Locker'];
 
+// Mapeamento de valores para cada tipo de controladora
 const nextValues = reactive({
     2018: { placa: 12 },
     2023: { dip: 2 },
     Locker: { dip: 3 },
     2024: { placa: 101 }
 });
+
+// Máximo de controladoras para cada tipo
 const maxControladoras = {
     2018: 16,
     2023: 90,
     Locker: Infinity,
     2024: Infinity
 };
+
+// Função para contar as controladoras por tipo
 const countControladoras = (tipo) => {
     return Controladoras.value.filter((controladora) => controladora.tipo === tipo).length;
 };
+
+// Controle de operador
 const operador = ref(false);
+
+// Controle de exibição de diálogos
 const show = ref(false);
 const showDialogDVM = ref(false);
 const showDialogDItem = ref(false);
 const showDialogProduto = ref(false);
+
+// Listas de produtos, clientes e itens
 const ListaProdutos = ref([]);
 const ListaClientes = ref([]);
 const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false });
 const visible = ref(false);
 const ListaItens = ref([]);
+
+// Filtros de busca
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
+// Controle de uso de API
 const usarApi = ref(false);
+
+// Objeto de produto selecionado
 const produtoSelecionado = ref({
     id_produto: '',
     Porta: '',
@@ -88,7 +106,11 @@ const produtoSelecionado = ref({
     Controladora: '',
     Capacidade: ''
 });
+
+// Variáveis para controlar o modo de edição
 const isEditMode = ref(false);
+
+// Listas de controladoras e opções
 const Controladoras = ref([]);
 const controladoraOptions = ref([]);
 const molasOptions = ref([]);
@@ -99,6 +121,7 @@ const placaOptions = ref([]);
 const motorOptions = ref([]);
 const ListaDMS = ref([]);
 
+// Função para manipular mudanças na controladora selecionada
 const handleControladoraChange = () => {
     const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     if (!selectedControladora) return;
@@ -131,6 +154,7 @@ const handleControladoraChange = () => {
     }
 };
 
+// Função para manipular mudanças no andar selecionado
 const handleAndarChange = () => {
     const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     const molasOcupadas = ListaItens.value
@@ -143,26 +167,29 @@ const handleAndarChange = () => {
             return Number(Posicao);
         });
     const molasDisponiveis = selectedControladora.dados.posicao.filter((mola) => !molasOcupadas.includes(mola));
-    // posicaoOptions.value = [{ label: selectedControladora.dados.posicao, value: selectedControladora.dados.posicao }];
     posicaoOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
     posicaoOptions.value.sort((a, b) => a.value - b.value);
 };
 
+// Função para validar o andar selecionado
 const validarAndarSelecionado = () => {
     const Andar = produtoSelecionado.value.Andar;
     if (!Andar) {
         produtoSelecionado.value.Posicao = '';
         produtoSelecionado.value.Andar = '';
 
-        toast.add({ severity: 'warn', summary: 'Erro', detail: 'Selecione um andar antes de selecionar uma posição.', life: 3000 }); //warn de seleção de andar
+        toast.add({ severity: 'warn', summary: 'Erro', detail: 'Selecione um andar antes de selecionar uma posição.', life: 3000 });
         return;
     }
 };
 
+// Computed para obter o tipo da controladora selecionada
 const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     return controladora ? controladora.tipo : null;
 });
+
+// Função para atualizar o produto selecionado
 const atualizarProduto = async () => {
     const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     const data = {
@@ -185,6 +212,8 @@ const atualizarProduto = async () => {
         isEditMode.value = false;
     }
 };
+
+// Função para buscar DMs
 const fetchDMS = async () => {
     loading.value = true;
     let data = null;
@@ -209,13 +238,21 @@ const fetchDMS = async () => {
     }
 };
 
-const deleteItem = async (item) => {
+/**
+ * Função chamada quando o usuário deseja excluir um item.
+ * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
+ */
+ const deleteItem = async (item) => {
     dialogMessage.value = `Você tem certeza que deseja excluir o item ${item.Nome_Produto}?`;
     showDialogDItem.value = true;
     selectedItem.value = item;
 };
 
-const confirmDelete = async () => {
+/**
+ * Função chamada para confirmar a exclusão do item.
+ * Realiza a requisição para excluir o item e atualiza a lista de itens.
+ */
+ const confirmDelete = async () => {
     if (!selectedItem.value) return;
     console.log(selectedItem.value);
     loading.value = true;
@@ -226,6 +263,7 @@ const confirmDelete = async () => {
             id_usuario: store.userId
         });
 
+        // Atualiza a lista de itens após exclusão
         fetchItemDM();
 
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item excluído com sucesso', life: 3000 });
@@ -239,12 +277,20 @@ const confirmDelete = async () => {
     }
 };
 
-const cancelDelete = () => {
+/**
+ * Função chamada para cancelar a exclusão de um item.
+ * Apenas fecha o diálogo sem realizar nenhuma ação.
+ */
+ const cancelDelete = () => {
     showDialogDItem.value = false;
     selectedItem.value = null;
 };
 
-const fetchItemDM = async () => {
+/**
+ * Função para carregar os itens associados ao DM (Dispositivo de Monitoramento).
+ * Realiza uma requisição para listar os itens e os exibe na interface.
+ */
+ const fetchItemDM = async () => {
     loading.value = true;
     try {
         const data = {
@@ -266,7 +312,11 @@ const fetchItemDM = async () => {
     }
 };
 
-const onRowSelect = async (event) => {
+/**
+ * Função chamada ao selecionar uma linha de DM na tabela.
+ * Preenche as informações relacionadas ao DM selecionado e suas controladoras.
+ */
+ const onRowSelect = async (event) => {
     if (!event || !event.data) {
         console.error('Seleção inválida na tabela.');
         return;
@@ -282,7 +332,11 @@ const onRowSelect = async (event) => {
         loadingControladoras.value = false;
     }
 };
-const configurarClienteSelecionado = (dm) => {
+/**
+ * Função para configurar as informações do cliente selecionado a partir do DM.
+ * Mapeia o cliente para as opções de uso de API.
+ */
+ const configurarClienteSelecionado = (dm) => {
     const client = ListaClientes.value.find((client) => client.value?.id_cliente === dm.ID_Cliente);
     if (client) {
         selectedClient.value = { ...client.value };
@@ -292,7 +346,11 @@ const configurarClienteSelecionado = (dm) => {
         usarApi.value = false;
     }
 };
-const mapControladoras = async (dm) => {
+/**
+ * Função para mapear as controladoras do DM.
+ * Preenche as informações relacionadas às controladoras e ajusta a contagem inicial de valores.
+ */
+ const mapControladoras = async (dm) => {
     Controladoras.value = dm.Controladoras.map((controladora) => {
         return {
             id: controladora.ID,
@@ -312,7 +370,10 @@ const mapControladoras = async (dm) => {
 
     ajustarContagemInicial();
 };
-const preencherControladoraOptions = () => {
+/**
+ * Função para preencher as opções de controladoras disponíveis para seleção.
+ */
+ const preencherControladoraOptions = () => {
     controladoraOptions.value = Controladoras.value.map((controladora) => {
         const id = controladora.id || 'N/A';
         let identificador;
@@ -330,7 +391,10 @@ const preencherControladoraOptions = () => {
         };
     });
 };
-const ajustarContagemInicial = () => {
+/**
+ * Função para ajustar a contagem inicial dos valores das controladoras com base nas existentes.
+ */
+ const ajustarContagemInicial = () => {
     const placasExistentes2018 = Controladoras.value.filter((controladora) => controladora.tipo === '2018').map((controladora) => controladora.dados.placa);
 
     if (placasExistentes2018.length > 0) {
@@ -356,7 +420,10 @@ const ajustarContagemInicial = () => {
     }
 };
 
-const preencherOpcoesControladoras = () => {
+/**
+ * Função para preencher as opções de controladoras, incluindo molas, dips, andares, posições e motores.
+ */
+ const preencherOpcoesControladoras = () => {
     molasOptions.value = [];
     dipOptions.value = [];
     andarOptions.value = [];
@@ -1239,6 +1306,7 @@ const removeControladora = (index) => {
                         <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
                     </div>
                 </template>
+                
                 <template v-if="tipoControladoraSelecionada === 'Locker'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Dip" class="font-semibold">DIP:</label>
@@ -1253,11 +1321,11 @@ const removeControladora = (index) => {
                         <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
                     </div>
                 </template>
-                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center flex">
+                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center ">
                     <label for="Capacidade" class="font-semibold">Capacidade:</label>
                 </div>
-                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 justify-content-end">
-                    <InputNumber inputId="Capacidade" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix="unidades" />
+                <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
+                    <InputNumber inputId="Capacidade" class="w-full"v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades"/>
                 </div>
             </div>
         </div>

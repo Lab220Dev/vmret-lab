@@ -24,11 +24,15 @@ const toast = useToast();
 const emptyMessage = ref('Ainda não foi feita nenhuma busca');
 const todosOption = { label: 'Todos', value: null };
 const historico = ref([]);
-const ListaFuncionarios = ref([todosOption]);
+//const ListaFuncionarios = ref([todosOption]);
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const retiradas = ref([]);
 const plantas = ref([todosOption]);
+
+const ListaFuncionariosOriginal = ref([]);
+const ListaFuncionarios = ref([]);
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -109,24 +113,43 @@ const fetchIdPlanta = async () => {
 };
 
 const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({
-            label: funcionario.nome, 
-            value: funcionario 
-        }));
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
+  const data = {
+    id_cliente: store.userIdCliente
+  };
+  try {
+    const response = await axios.post('/funcionarios/listar', data, {
+      headers: {
+        Authorization: `Bearer ${store.token}`
+      }
+    });
+    ListaFuncionariosOriginal.value = [
+      todosOption,
+      ...response.data.map((funcionario) => ({
+        label: funcionario.nome,
+        value: funcionario.id_funcionario,
+        id_planta : funcionario.id_planta
+      }))
+    ];
+    // Inicialize a lista de funcionários com todos os dados
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+
+  } catch (error) {
+    console.error('Erro ao carregar funcionários:', error);
+  }
 };
 
+const filterFuncionarios = () => {
+  if (relatorio.value.id_planta) {
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+      const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
+
+      return matchesPlanta;
+    });
+  } else {
+    // Se não tiver filtro, exibe todos os funcionários
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+  }
+};
 
 const generatePDF = async () => {
     if (!selectedItem.value.nome) {
@@ -294,7 +317,7 @@ onMounted(() => {
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" @change="filterFuncionarios" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>

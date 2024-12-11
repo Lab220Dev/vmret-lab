@@ -23,23 +23,31 @@ const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 const retiradas = ref([]);
 const todosOption = { label: 'Todos', value: null };
-const ListaFuncionarios = ref(null);
+
 const dms = ref([todosOption]);
 const plantas = ref([todosOption]);
-const setor = ref([todosOption]);
+//const setor = ref([todosOption]);
 const centroCusto = ref([todosOption]);
+
+const ListaFuncionariosOriginal = ref([]);
+const ListaFuncionarios = ref([]);
+
+const ListaSetorOriginal = ref([]);
+const ListaSetor = ref([]);
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+
 const show = ref(false);
 const selectedItem = ref([]);
 const loading = ref(false);
 const relatorio = ref({
-    dm: '',
-    id_planta: '',
-    id_centro_custo: '',
-    id_setor: '',
-    id_funcionario: '',
+    id_dm: '',
+    id_planta: null,
+    ID_CentroCusto: '',
+    id_setor: null,
+    id_funcionario: null,
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     data_final: new Date()
 });
@@ -57,7 +65,7 @@ const buscar = async () => {
     const data = {
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
+        id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm,
         id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
         id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
         id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
@@ -74,6 +82,7 @@ const buscar = async () => {
         });
         retiradas.value = response.data;
 
+        // Atualizando a contagem de registros após a resposta da API
         filteredCount.value = retiradas.value.length;
 
         if (retiradas.value.length === 0) {
@@ -222,13 +231,16 @@ const fetchSetorDiretoria = async () => {
                 Authorization: `Bearer ${store.token}`
             }
         });
-        setor.value = [
+        ListaSetorOriginal.value = [
             todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
+            ...response.data.map(({ id_setor, nome, id_centro_custo }) => ({
                 label: `Setor  ${nome}`,
-                value: id_setor
+                value: id_setor, 
+                id_centro_custo
             }))
         ];
+        // Inicialize a lista de setores com todos os dados
+        ListaSetor.value = ListaSetorOriginal.value;
     } catch (error) {
         console.error('Erro ao buscar setores/diretorias:', error);
     }
@@ -256,27 +268,59 @@ const fetchCentroCusto = async () => {
     }
 };
 
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_funcionario
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+const filterSetor = () => {
+    if (relatorio.value.ID_CentroCusto) {
+        // Filtra os setores de acordo com o centro de custo selecionado
+        ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
+            setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null
+        );
+    } else {
+        ListaSetor.value = ListaSetorOriginal.value;
     }
 };
+
+const filterFuncionarios = () => {
+  // Verifica se há ao menos um filtro selecionado
+  if (relatorio.value.id_setor || relatorio.value.id_planta) {
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+      const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
+      const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
+
+      return matchesSetor && matchesPlanta;
+    });
+  } else {
+    // Se não tiver filtro, exibe todos os funcionários
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+  }
+};
+
+const fetchFuncionarios = async () => {
+  const data = {
+    id_cliente: store.userIdCliente
+  };
+  try {
+    const response = await axios.post('/funcionarios/listar', data, {
+      headers: {
+        Authorization: `Bearer ${store.token}`
+      }
+    });
+    ListaFuncionariosOriginal.value = [
+      todosOption,
+      ...response.data.map((funcionario) => ({
+        label: funcionario.nome,
+        value: funcionario.id_funcionario,
+        id_setor: funcionario.id_setor,
+        id_planta : funcionario.id_planta
+      }))
+    ];
+    // Inicialize a lista de funcionários com todos os dados
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+
+  } catch (error) {
+    console.error('Erro ao carregar funcionários:', error);
+  }
+};
+
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
@@ -304,27 +348,27 @@ onMounted(() => {
                 <h5 class="my-6  ml-2 text-2xl">Itens mais retirados</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Div de busca de informações para o relatório -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="dm">DM:</label>
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                        <label for="id_dm">DM:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
-                    </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor" />
                     </div>
-                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
                     </div>
-                    <div class="field xl:col-6 lg:col-6 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
+                        <label for="planta">Planta:</label>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
+                    </div>
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
                         <VueDatePicker
                             class="drop"
@@ -341,7 +385,7 @@ onMounted(() => {
                             placeholder="Selecione uma data inicial"
                         />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker
                             class="drop"
@@ -358,15 +402,15 @@ onMounted(() => {
                             placeholder="Selecione uma data final"
                         />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <!-- Botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-3 md:col-6 sm:col-6">
                         <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
                 </div>
