@@ -1,43 +1,77 @@
 <script setup>
-import { ref, reactive } from 'vue';
-
+import { ref, reactive } from 'vue';//reactive e ref são usados para reatividade
+/**
+ * Propriedades do componente.
+ *
+ * @typedef {Object} Props
+ * @property {string|null} header - O título do bloco.
+ * @property {string|null} code - O código que será exibido no bloco (geralmente em formato de código).
+ * @property {boolean} recent - Define se o bloco é recente. Exibe a badge "New" se verdadeiro.
+ * @property {boolean} free - Define se o bloco é gratuito. Exibe a badge "Free" se verdadeiro.
+ * @property {string|null} containerClass - Classe adicional para o container do bloco.
+ * @property {string|null} previewStyle - Estilo customizado para a visualização do bloco.
+ */
 const props = defineProps({
-    header: {
-        type: String,
-        default: null
-    },
-    code: null,
-    recent: {
-        type: Boolean,
-        default: false
-    },
-    free: {
-        type: Boolean,
-        default: false
-    },
-    containerClass: null,
-    previewStyle: null
+    header: { 
+        type: String, 
+        default: null 
+    }, //o `header` recebe uma string ou nulo (título do bloco)
+    code: null, // `code` pode ser qualquer tipo (geralmente uma string com o código a ser exibido)
+    recent: { 
+        type: Boolean, 
+        default: false 
+    }, // `recent` recebe um booleano (indica se o bloco é recente)
+    free: { 
+        type: Boolean, 
+        default: false 
+    }, // `free` recebe um booleano (indica se o bloco é gratuito)
+    containerClass: null, // `containerClass` pode ser qualquer tipo (classe adicional para o container)
+    previewStyle: null // `previewStyle` pode ser qualquer tipo (estilo customizado para o preview)
 });
 
-const BlockView = reactive({
-    PREVIEW: 0,
-    CODE: 1
+/**
+ * Enumeração dos estados possíveis de visualização do bloco.
+ * 
+ * @readonly
+ * @enum {number}
+ */
+ const BlockView = reactive({
+    PREVIEW: 0, // Visualização do Preview
+    CODE: 1 // Visualização do Código
 });
-const blockView = ref(0);
 
-function activateView(event, blockViewValue) {
+/**
+ * Variável reativa que controla a visualização ativa do bloco.
+ *
+ * @type {Ref<number>}
+ */
+const blockView = ref(0); // `blockView` armazena o estado da visualização ativa (Preview ou Código)
+
+/**
+ * Ativa a visualização desejada (Preview ou Código).
+ * 
+ * @param {Event} event - O evento de clique.
+ * @param {number} blockViewValue - O valor da visualização a ser ativada.
+ */
+ function activateView(event, blockViewValue) {
     blockView.value = blockViewValue;
-    event.preventDefault();
+    event.preventDefault(); // Evita o comportamento padrão do clique
 }
 
+/**
+ * Copia o código para a área de transferência.
+ * 
+ * @param {Event} event - O evento de clique.
+ */
 async function copyCode(event) {
-    await navigator.clipboard.writeText(props.code);
-    event.preventDefault();
+    await navigator.clipboard.writeText(props.code); // Copia o conteúdo de `props.code` para a área de transferência
+    event.preventDefault(); // Evita o comportamento padrão do clique
 }
 </script>
 
 <template>
     <div class="block-section">
+        <!-- Cabeçalho do bloco -->
         <div class="block-header">
             <span class="block-title">
                 <span>{{ header }}</span>
@@ -45,24 +79,32 @@ async function copyCode(event) {
                 <span class="badge-free" v-if="free">Free</span>
             </span>
             <div class="block-actions">
-                <a tabindex="0" :class="{ 'block-action-active': blockView === BlockView.PREVIEW }" @click="activateView($event, BlockView.PREVIEW)"><span>Preview</span></a>
+                <!-- Botões para alternar entre visualizações -->
+                <a tabindex="0" :class="{ 'block-action-active': blockView === BlockView.PREVIEW }" @click="activateView($event, BlockView.PREVIEW)">
+                    <span>Preview</span>
+                </a>
                 <a :tabindex="'0'" :class="{ 'block-action-active': blockView === BlockView.CODE }" @click="activateView($event, BlockView.CODE)">
                     <span>Code</span>
                 </a>
-                <a :tabindex="0" class="block-action-copy" @click="copyCode($event)" v-tooltip.focus.bottom="{ value: 'Copied to clipboard' }"><i class="pi pi-copy"></i></a>
+                <!-- Botão para copiar o código -->
+                <a :tabindex="0" class="block-action-copy" @click="copyCode($event)" v-tooltip.focus.bottom="{ value: 'Copied to clipboard' }">
+                    <i class="pi pi-copy"></i>
+                </a>
             </div>
         </div>
-        <div class="block-content">
+          <!-- Conteúdo do bloco -->
+          <div class="block-content">
+            <!-- Exibe o conteúdo do preview se a visualização ativa for o Preview -->
             <div :class="containerClass" :style="previewStyle" v-if="blockView == BlockView.PREVIEW">
                 <slot></slot>
             </div>
+            <!-- Exibe o código se a visualização ativa for o Code -->
             <div v-if="blockView === BlockView.CODE">
                 <pre class="app-code"><code>{{code}}</code></pre>
             </div>
         </div>
     </div>
 </template>
-
 <style scoped lang="scss">
 .block-section {
     margin-bottom: 4rem;

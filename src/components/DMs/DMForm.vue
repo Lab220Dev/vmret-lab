@@ -1,85 +1,119 @@
-
 <template>
     <div class="mt-5 mx-0 p-fluid grid">
-      <div class="full lg:col-12 md:col-12 sm:col-12">
-        <label for="name">Cliente:</label>
-        <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes"
-                  optionLabel="label" optionValue="value" placeholder="Selecione um" />
-      </div>
-      <div class="full lg:col-6 md:col-9 sm:col-12">
-        <label for="Numero">Numero da DM:</label>
-        <InputText class="my-2" v-model="DM.Numero" id="Numero" />
-      </div>
-      <div class="full lg:col-6 md:col-9 sm:col-12">
-        <label for="Identificacao">Identificação da DM:</label>
-        <InputText class="my-2" v-model="DM.Identificacao" id="Identificacao" />
-      </div>
-      <Button label="Salvar" icon="pi pi-check" @click="saveDM" class="full mt-4 mr-2" />
+        <!-- Seção para seleção de cliente -->
+        <div class="full lg:col-12 md:col-12 sm:col-12">
+            <label for="name">Cliente:</label>
+            <!-- Dropdown para selecionar o cliente -->
+            <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes"
+                      optionLabel="label" optionValue="value" placeholder="Selecione um" />
+        </div>
+
+        <!-- Seção para inserção do número da DM -->
+        <div class="full lg:col-6 md:col-9 sm:col-12">
+            <label for="Numero">Numero da DM:</label>
+            <InputText class="my-2" v-model="DM.Numero" id="Numero" />
+        </div>
+
+        <!-- Seção para inserção da identificação da DM -->
+        <div class="full lg:col-6 md:col-9 sm:col-12">
+            <label for="Identificacao">Identificação da DM:</label>
+            <InputText class="my-2" v-model="DM.Identificacao" id="Identificacao" />
+        </div>
+
+        <!-- Botão para salvar a DM -->
+        <Button label="Salvar" icon="pi pi-check" @click="saveDM" class="full mt-4 mr-2" />
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, watch, onMounted } from 'vue';
-  import { useAuthStore } from '@/store/authStore.js';
-  import axios from '@/axios.js';
-  
-  const DM = ref({
-      Numero: '',
-      Identificacao: '',
-  });
-  const selectedClient = ref(null);
-  const ListaClientes = ref([]);
-  const store = useAuthStore();
-  
-  const saveDM = async () => {
-      const data = {
-          id_usuario: store.userId,
-          ...DM.value
-      };
-      try {
-          const response = await axios.post('/DM/adicionar', data, {
-              headers: {
-                  Authorization: `Bearer ${store.token}`
-              }
-          });
-          emit('dm-saved');
-      } catch (error) {
-          console.error('Erro ao adicionar DM:', error);
-      }
-  };
-  
-  onMounted(() => {
-      fetchClientes();
-  });
-  
-  const fetchClientes = async () => {
-      try {
-          const response = await axios.post('/admin/cliente/listar', {}, {
-              headers: {
-                  Authorization: `Bearer ${store.token}`
-              }
-          });
-          ListaClientes.value = response.data.map((cliente) => ({
-              label: cliente.nome,
-              value: {
-                  id_cliente: cliente.id_cliente,
-                  nome_cliente: cliente.nome,
-                  usar_api: cliente.usar_api
-              }
-          }));
-      } catch (error) {
-          console.error('Erro ao carregar clientes:', error);
-      }
-  };
-  
-  watch(
-      () => DM.value.IDcliente,
-      (newClienteId) => {
-          const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
-          if (client) {
-              selectedClient.value = client.value;
-          }
-      }
-  );
-  </script>
-  
+</template>
+
+<script setup>
+import { ref, watch, onMounted } from 'vue'; // ref é usado para reatividade, onMounted é um hook(função especial) para executar código ao montar o componente, watch observa mudanças em valores reativos
+import { useAuthStore } from '@/store/authStore.js'; //Usando a store de autenticação para pegar dados do usuário autenticado
+import axios from '@/axios.js';//Instância configurada do Axios para fazer requisições HTTP
+
+/**
+ * Propriedades do componente.
+ *
+ * @typedef {Object} Props
+ * @property {string} Numero - Número da DM (Documento de Medição).
+ * @property {string} Identificacao - Identificação única para a DM.
+ * @property {Object} selectedClient - Cliente selecionado para a DM.
+ * @property {Array} ListaClientes - Lista de clientes disponíveis para seleção.
+ */
+
+const DM = ref({
+    Numero: '', // Número da DM
+    Identificacao: '', // Identificação da DM
+});
+const selectedClient = ref(null); // Cliente selecionado
+const ListaClientes = ref([]); // Lista de clientes disponíveis
+const store = useAuthStore(); // Acesso ao estado de autenticação
+
+/**
+ * Função chamada ao clicar no botão "Salvar".
+ * Envia os dados da DM para a API para ser adicionada.
+ *
+ * @async
+ * @function saveDM
+ */
+const saveDM = async () => {
+    const data = {
+        id_usuario: store.userId, // ID do usuário (do store de autenticação)
+        ...DM.value, // Dados da DM
+    };
+
+    try {
+        const response = await axios.post('/DM/adicionar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`, // Envia o token para autenticação
+            }
+        });
+        emit('dm-saved'); // Emite evento para o componente pai de que a DM foi salva
+    } catch (error) {
+        console.error('Erro ao adicionar DM:', error); // Caso ocorra erro ao salvar
+    }
+};
+
+/**
+ * Função chamada para buscar a lista de clientes.
+ *
+ * @async
+ * @function fetchClientes
+ */
+const fetchClientes = async () => {
+    try {
+        const response = await axios.post('/admin/cliente/listar', {}, {
+            headers: {
+                Authorization: `Bearer ${store.token}`, // Envia o token para autenticação
+            }
+        });
+
+        // Mapeia os dados dos clientes para o formato esperado pelo Dropdown
+        ListaClientes.value = response.data.map((cliente) => ({
+            label: cliente.nome, // Nome do cliente
+            value: {
+                id_cliente: cliente.id_cliente, // ID do cliente
+                nome_cliente: cliente.nome, // Nome do cliente
+                usar_api: cliente.usar_api, // Se o cliente usa API
+            }
+        }));
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error); // Caso ocorra erro ao carregar os clientes
+    }
+};
+
+// Chama fetchClientes quando o componente é montado
+onMounted(() => {
+    fetchClientes();
+});
+
+// Observa mudanças no ID do cliente na DM e atualiza a seleção no Dropdown
+watch(
+    () => DM.value.IDcliente,
+    (newClienteId) => {
+        const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
+        if (client) {
+            selectedClient.value = client.value; // Atualiza o cliente selecionado
+        }
+    }
+);
+</script>

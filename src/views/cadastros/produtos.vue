@@ -310,7 +310,6 @@ const getImagem = async (filename) => {
             return imageUrl;
         }
     } catch (error) {
-        console.error('Error fetching image:', error);
         return imagePlaceholder;
     }
 };

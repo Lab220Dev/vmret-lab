@@ -71,20 +71,31 @@ const KeepAlive = async () => {
     }
 };
 
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = StatusDM.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
-    }).length;
-}, { immediate: true });
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = StatusDM.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+);
 
-const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
+const formatDate = (date) => {
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const ano = date.getFullYear();
+    return `${dia}/${mes}/${ano}`; // Formato de data: dd/MM/yyyy
 };
+
+const formatTime = (date) => {
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`; // Formato de hora: HH:mm
+};
+
+
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
 };
@@ -105,7 +116,7 @@ const handleDatepickerOpen = () => {
                 v-model="relatorio.dia"
                 showIcon
                 :showOnFocus="false"
-                :format="format"
+                :format="formatDate"
                 locale="pt-BR"
                 auto-apply
                 :enable-time-picker="false"
@@ -131,29 +142,39 @@ const handleDatepickerOpen = () => {
             :metaKeySelection="false"
             tableStyle="min-width: 50rem; table-layout: fixed;"
             :sortOrder="1"
-            :sortField="'Identificacao'"  
+            :sortField="'Identificacao'"
         >
-        <template #header>
-                            <div class="flex justify-content-between align-items-center ">
-                                <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ filteredCount }}</span>
-                                </div>
-                                <div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
-                                </div>
-                            </div>
-                        </template>
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div class="flex justify-content-start">
+                        <span>Total de registros: {{ filteredCount }}</span>
+                    </div>
+                    <div>
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        </IconField>
+                    </div>
+                </div>
+            </template>
 
             <template #empty> {{ emptyMessage }} </template>
-            <Column field="Identificacao" sortable style="width: 10%" header="DM"></Column>
+            <Column field="Identificacao" sortable header="DM"></Column>
             <Column field="status" sortable header="Status"></Column>
-            <Column field="dataHora" sortable header="Data"></Column> </DataTable
-        ><LoadingSpinner v-if="loading" />
+            <Column field="dataHora" sortable header="Data">
+                <template #body="{ data }">
+                    <span v-tooltip="data.dataHora">{{ formatDate(new Date(data.dataHora)) }}</span>
+                </template></Column
+            >
+            <Column field="Hora" sortable header="Hora">
+                <template #body="{ data }">
+                    <span v-tooltip="data.dataHora">{{ formatTime(new Date(data.dataHora)) }}</span>
+                </template></Column
+            >
+        </DataTable>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
