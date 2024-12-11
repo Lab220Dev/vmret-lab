@@ -49,10 +49,16 @@ const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
-
     return `${day}/${month}/${year}`;
 };
-
+const formatTabela = (date) => {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month}/${year} - ${horas}:${minutos}`;
+};
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
@@ -62,9 +68,6 @@ const buscar = async () => {
         id_usuario: store.userId,
         id_cliente: store.userIdCliente,
         id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
-        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
         id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
         data_inicio: toISODate(relatorio.value.data_inicio),
         data_final: toISODate(relatorio.value.data_final),
@@ -72,11 +75,7 @@ const buscar = async () => {
     };
     try {
         loading.value = true;
-        const response = await axios.post('', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('/HistoricoAbastecimento/relatorio', data);
         historico.value = response.data;
 
         filteredCount.value = historico.value.length;
@@ -317,13 +316,6 @@ onMounted(() => {
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
-
-                    <!-- <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
-                    </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
-                    </div> -->
                 </div>
                 <!--  datatable do relatorio -->
                 <div class="datatable-wrapper">
@@ -339,7 +331,7 @@ onMounted(() => {
                         :globalFilterFields="['ID_DM', 'Data', 'operador', 'item', 'Quantidade', 'Mola']"
                         :tableStyle="{ width: '100%' }"
                         ref="dt"
-                        :sortField="'ID_DM'"  
+                        :sortField="'ID_DM'"
                         :sortOrder="1"
                     >
                         <!-- @rowSelect="onRowSelect"  -->
@@ -354,12 +346,15 @@ onMounted(() => {
                             </div>
                         </template>
                         <template #empty>{{ emptyMessage }} </template>
-                        <Column field="ID_DM" sortable header="DM"></Column>
-                        <Column field="Data" sortable header="Data"></Column>
-                        <Column field="operador" sortable header="Operador"></Column>
-                        <Column field="item" sortable header="Item"></Column>
-                        <Column field="Quantidade" sortable header="Quantidade" class="text-center"></Column>
-                        <Column field="Mola" sortable header="Mola"></Column>
+                        <Column field="Maquina" sortable header="DM"></Column>
+                        <Column field="Dia" sortable class="table-cell" style="width: 25%" header="Data">
+                            <template #body="{ data }">
+                                {{ formatTabela(new Date(data.Dia)) }}
+                            </template></Column>
+                        <Column field="Operador" sortable header="Operador"></Column>
+                        <Column field="Nome_Produto" sortable header="Item"></Column>
+                        <Column field="quantidade_abastecido" sortable header="Quantidade" class="text-center"></Column>
+                        <Column field="posicao" sortable header="Posição"></Column>
                     </DataTable>
                 </div>
                 <Card v-if="!show">
