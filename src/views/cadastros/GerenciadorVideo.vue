@@ -1,6 +1,7 @@
 <template>
-    <div>
-        <h1>Gerenciamento de Vídeos</h1>
+    <div class="card vh">
+        <h3 class="mt-6 mb-4">Gerenciamento de Vídeos</h3>
+        <hr/>
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div v-else>
             <ConfigInitial v-if="isFirstSetup" :dmList="ListaDMS" @setup-concluido="handleSetupCompleted" />
@@ -39,6 +40,9 @@ const handleVideoUpdate = async ({ dmId, video }) => {
 };
 const handleSetupCompleted = () => {
     isFirstSetup.value = false; 
+
+    fetchDMS();
+
 };
 
 const fetchDMS = async () => {

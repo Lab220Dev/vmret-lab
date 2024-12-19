@@ -411,7 +411,7 @@ onMounted(async () => {
             <TabPanel :header="visible ? 'Editar Produto' : 'Adicionar Produto'">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="my-6">
                             <!--form de cadastro de novo produto-->
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-6 md:col-6 sm:col-6">

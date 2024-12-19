@@ -1,22 +1,27 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, reactive } from 'vue';
-import { useLayout } from '@/layout/composables/layout';
-import { useRouter } from 'vue-router';
-import { useCountdownStore } from '@/store/countdown';
+import { ref, onMounted, onBeforeUnmount, reactive } from 'vue'; // Importa funções do Vue para reatividade e ciclo de vida do componente
+import { useLayout } from '@/layout/composables/layout'; // Acessa funções relacionadas ao layout
+import { useRouter } from 'vue-router'; // Usado para navegação entre as rotas
+import { useCountdownStore } from '@/store/countdown'; // Acessa o store que controla o tempo de contagem regressiva
 import imageUrl from '@/assets/images/LogoDMBranco.png';
-import MyMenu from './myMenu.vue';
-import VueCountdown from '@chenfengyuan/vue-countdown';
-import { useAuthStore } from '@/store/authStore.js';
+import VueCountdown from '@chenfengyuan/vue-countdown'; // Importa o componente VueCountdown para exibir o tempo de contagem regressiva
+import { useAuthStore } from '@/store/authStore.js'; // Acessa o store de autenticação para obter dados do usuário
 
+// Desestruturação de funções do layout
 const { onMenuToggle } = useLayout();
+
+// Acessa o store de autenticação
+const store = useAuthStore();
+const router = useRouter();
 
 const outsideClickListener = ref(null);
 const topbarMenuActive = ref(true);
-const router = useRouter();
-const store = useAuthStore();
+
+// Obtém o nome e a role (papel) do usuário no sistema a partir do store
 const nome = store.userName;
 const role = store.userRole;
 
+// Acessa o store de contagem regressiva
 const countdownStore = useCountdownStore();
 const millisecondsRemaining = countdownStore.millisecondsRemaining;
 
@@ -71,13 +76,6 @@ const fazerLogoff = () => {
     store.logout();
     router.push({ name: 'login' });
 };
-
-/*const confirmLogoff = () => {
-    if (confirm('Deseja realmente efetuar logoff?')) {
-        fazerLogoff();
-    }
-};
-*/
 
 function startCountdown() {
     return true;
@@ -156,7 +154,7 @@ const toggle = (event) => {
 .relogio {
     font-size: 10pt;
     font-weight: bold;
-    color: #EFAE33;
+    color: #efae33;
     padding-top: 0px;
     margin-left: 0px;
     margin-right: 10px;

@@ -689,7 +689,7 @@ const hideDialog = () => {
             <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="mt-5">
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-8 md:col-6 sm:col-12">

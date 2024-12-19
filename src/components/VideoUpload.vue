@@ -1,14 +1,12 @@
 <template>
-    <div>
-        <h2>Uploads Regulares</h2>
-        
+    <div class="my-7">
         <!-- Tabela que exibe a lista de DMs e vídeos associados -->
-        <DataTable :value="dmOptions" responsiveLayout="scroll">
-            <Column field="Identificacao" header="DM"></Column>
+        <DataTable class="" :value="dmOptions"  responsiveLayout="scroll">
+            <Column field="Identificacao" header="DM"> </Column>
             <Column field="Video" header="Vídeo Associado"></Column>
-            
+
             <!-- Coluna de Ações: Editar DM -->
-            <Column header="Ações">
+            <Column header="Ações" style="width: 10%">
                 <template #body="slotProps">
                     <!-- Botão de Editar: Exibe o diálogo de associar vídeo -->
                     <Button label="Editar" icon="pi pi-pencil" class="p-button-sm p-button-warning" @click="editDM(slotProps.data)" />
@@ -17,27 +15,32 @@
         </DataTable>
 
         <!-- Diálogo para associar vídeo -->
-        <Dialog v-model:visible="showDialog" header="Associar Vídeo" :closable="false">
-            <form @submit.prevent="uploadVideo">
+        <Dialog v-model:visible="showDialog" header="Editar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false">
+            <hr class="my-0" />
+            <form class="card formdevideo mx-4 my-3 py-3" @submit.prevent="uploadVideo">
                 <!-- Campo de seleção de arquivo (oculto) -->
                 <input type="file" accept="video/mp4" ref="fileInput" @change="handleFile" style="display: none" />
-                
+
                 <!-- Botão para abrir o seletor de arquivos -->
                 <Button label="Selecionar Arquivo" icon="pi pi-folder-open" @click="triggerFileInput" />
-                
+
                 <!-- Pré-visualização do vídeo selecionado -->
-                <video id="video-preview" controls v-show="selectedFile" width="240" height="200" class="mt-2" />
-                
-                <div v-if="selectedFile">
-                    <p><strong>Arquivo Selecionado:</strong> {{ selectedFile.name }}</p>
-                </div>
-                
-                <!-- Botões de ação para salvar ou cancelar -->
-                <div class="button-group">
-                    <Button label="Salvar" icon="pi pi-check" class="p-button-sm p-button-success" :disabled="!selectedFile || isUploading" @click="uploadVideo" />
-                    <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
-                </div>
+                <video autoplay loop id="video-preview" v-show="selectedFile" width="140" height="240" class="mt-3 p-0 mx-auto" />
             </form>
+            <div class="mt-6 name-file" v-if="selectedFile">
+                <p class="text-sm "><strong>Arquivo Selecionado:</strong></p>
+                <p class="text-sm file-name ">
+                    <span class="tooltip-target" v-tooltip="selectedFile.name">{{ selectedFile.name }}</span>
+                </p>
+            </div>
+
+            <hr />
+            <!-- Botões de ação para salvar ou cancelar -->
+
+            <div class="button-group flex justify-content-between mt-3">
+                <Button label="Salvar" icon="pi pi-check" class="p-button-sm p-button-success" :disabled="!selectedFile || isUploading" @click="uploadVideo" />
+                <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
+            </div>
         </Dialog>
 
         <!-- Spinner de carregamento enquanto o vídeo está sendo enviado -->
@@ -55,7 +58,6 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa a funç
 const props = defineProps({
     dmList: Array // Recebe a lista de DMs (Dispositivos de Mídia) como prop
 });
-
 // Computed para mapear as DMs para a tabela
 const dmOptions = computed(() => props.dmList);
 
@@ -107,7 +109,8 @@ const handleFile = (event) => {
         return;
     }
 
-    if (file.size > 5 * 1024 * 1024) { // Limite de tamanho do arquivo (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        // Limite de tamanho do arquivo (5MB)
         toast.add({
             severity: 'error',
             summary: 'Erro de Arquivo',
@@ -116,7 +119,7 @@ const handleFile = (event) => {
         });
         return;
     }
-    
+
     selectedFile.value = file; // Salva o arquivo selecionado
     let video = document.getElementById('video-preview');
     let reader = new FileReader();
@@ -127,6 +130,14 @@ const handleFile = (event) => {
         video.src = reader.result;
     });
 };
+
+const handleFileUpdate = (updatedFile) => {
+  // Atualiza o arquivo na lista (se necessário)
+  const fileIndex = props.dmList.findIndex(file => file.ID_DM === updatedFile.ID_DM);
+  if (fileIndex !== -1) {
+    props.dmList[fileIndex] = updatedFile;
+  }
+}
 
 // Função para realizar o upload do vídeo
 const uploadVideo = async () => {
@@ -181,8 +192,8 @@ const uploadVideo = async () => {
 
         toast.add({
             severity: 'success',
-            summary: 'Sucesso',
-            detail: `Vídeo "${generatedName}" enviado com sucesso!`,
+                summary: 'Upload Concluído',
+                detail: `Arquivo "${selectedFile.value.name}" foi enviado como "${generatedName}"`,
             life: 3000
         });
 
@@ -217,18 +228,52 @@ const closeDialog = () => {
 </script>
 
 <style scoped>
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 1rem;
+
+/* Estilos para a exibição de tooltip */
+.tooltip-target {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
 }
 
-.file-list {
-    margin-top: 1rem;
+/* Estilos para o tooltip, permitindo múltiplas linhas de texto */
+.v-tooltip {
+    max-width: 400px;
+    white-space: normal;
+}
+
+.formdevideo {
+    display: grid;
+}
+
+/* Forçar o z-index para a máscara de fundo do diálogo */
+.p-dialog {
+    background: rgba(0, 0, 0, 0.568) !important;
+    z-index: 99999 !important;
 }
 
 .error {
     color: red;
     font-weight: bold;
+}
+
+.name-file {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 280px;  /* Limite de largura para o nome do arquivo */
+    display: block;
+}
+
+.file-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;  /* Garante que o nome se ajuste ao container */
+    display: inline-block;
+    vertical-align: middle;
 }
 </style>
