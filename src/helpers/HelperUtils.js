@@ -1,6 +1,7 @@
 import { format } from 'date-fns-tz';
 import { parseISO, isValid, parse } from 'date-fns';
-
+import { useAuthStore } from '@/store/authStore.js';
+const store = useAuthStore();
 /**
  * Gera um conteúdo CSV com base nos campos e nos dados fornecidos.
  * @param {string[]} fields - Os campos que serão usados como cabeçalho no CSV.
@@ -95,4 +96,32 @@ export const setTempo = (tempoRef, isoString) => {
  */
 export const closeAllDropdowns = (dropdowns) => {
   dropdowns.forEach((dropdown) => dropdown.value?.hide());
+};
+
+export const generateCustomVideoName = (dm, existingVideo) => {
+  if (!existingVideo || existingVideo === 'N') {
+    return `DM-${dm}-v1`;
+  }
+  const match = existingVideo.match(/-v(\d+)(\.mp4)?$/);
+  const nextVersion = match ? parseInt(match[1], 10) + 1 : 1;
+  return `DM-${dm}-v${nextVersion}`;
+};
+
+export const getFileExtension = (fileType) => {
+  if (fileType === 'image/jpeg') return '.jpg';
+  if (fileType === 'image/png') return '.png';
+  return '';
+};
+/**
+ * Enriquece qualquer objeto com dados adicionais.
+ *
+ * @param {Object} target - Objeto a ser enriquecido.
+ * @returns {Object} - Objeto enriquecido.
+ */
+export const enrichData = (target) => {
+  return {
+    ...target,
+    id_cliente: store.userIdCliente,
+    id_usuario: store.userId,
+  };
 };

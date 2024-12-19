@@ -50,9 +50,11 @@
 
 <script setup>
 import { ref, defineProps, defineEmits, computed } from 'vue'; // Funções do Vue para reatividade e manipulação de props
-import axios from '@/axios.js'; // Importa o axios para realizar requisições HTTP
 import { useToast } from 'primevue/usetoast'; // Biblioteca para exibição de notificações
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa a função de toast para exibir notificações
+import videoService from '@/services/videoService';
+import {  generateCustomVideoName } from '@/helpers/HelperUtils';
+import {  isValidVideoFile  } from '@/helpers/HelperValidacao.js';
 
 // Propriedades recebidas pelo componente, espera uma lista de DMs
 const props = defineProps({
@@ -97,25 +99,14 @@ const handleFile = (event) => {
         });
         return;
     }
-
-    // Validações do arquivo
-    if (!file.type.includes('mp4')) {
+    // Validação do arquivo usando o helper
+    const validation = isValidVideoFile(file);
+    if (!validation.valid) {
         toast.add({
             severity: 'error',
             summary: 'Erro de Arquivo',
-            detail: 'Apenas arquivos .mp4 são permitidos.',
-            life: 3000
-        });
-        return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-        // Limite de tamanho do arquivo (5MB)
-        toast.add({
-            severity: 'error',
-            summary: 'Erro de Arquivo',
-            detail: 'O tamanho do arquivo não pode exceder 5MB.',
-            life: 3000
+            detail: validation.error,
+            life: 3000,
         });
         return;
     }
@@ -141,81 +132,37 @@ const handleFileUpdate = (updatedFile) => {
 
 // Função para realizar o upload do vídeo
 const uploadVideo = async () => {
-    // Valida se há um arquivo selecionado
-    if (!selectedFile.value) {
-        toast.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Nenhum arquivo selecionado.',
-            life: 3000
-        });
-        return;
-    }
+  if (!selectedFile.value) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Nenhum arquivo selecionado.', life: 3000 });
+    return;
+  }
 
-    isUploading.value = true; // Inicia o processo de upload
-    uploadProgress.value = 0; // Reseta o progresso
+  const validation = isValidVideoFile(selectedFile.value);
+  if (!validation.valid) {
+    toast.add({ severity: 'error', summary: 'Erro de Arquivo', detail: validation.error, life: 3000 });
+    return;
+  }
 
-    const formData = new FormData();
-    let generatedName;
+  const customName = generateCustomVideoName(selectedDM.value.Identificacao, selectedDM.value.Video);
 
-    // Geração de nome do arquivo (incluindo versão)
-    if (selectedDM.value.video === 'N') {
-        generatedName = `DM-${selectedDM.value.Identificacao}-v1`; // Inicia com v1
-    } else {
-        const atual = selectedDM.value.Video.match(/-v(\d+)(\.mp4)?$/);
-        if (atual) {
-            // Incrementa a versão do vídeo se já houver um arquivo
-            const proximaVersao = parseInt(atual[1], 10) + 1;
-            generatedName = `DM-${selectedDM.value.Identificacao}-v${proximaVersao}`;
-        } else {
-            console.warn(`Formato inesperado no campo Video: "${selectedDM.value.Video}". Iniciando como v1.`);
-            generatedName = `DM-${selectedDM.value.Identificacao}-v1`; // Valor padrão para nome de vídeo
-        }
-    }
-
-    // Prepara o FormData para envio
-    formData.append('video', selectedFile.value);
-    formData.append('dmId', selectedDM.value.ID_DM);
-    formData.append('customName', generatedName);
-
-    try {
-        loading.value = true; // Mostra o carregamento
-        // Envia o arquivo via axios
-        await axios.post('/video/upload', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: (progressEvent) => {
-                uploadProgress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-            }
-        });
-
-        toast.add({
-            severity: 'success',
-                summary: 'Upload Concluído',
-                detail: `Arquivo "${selectedFile.value.name}" foi enviado como "${generatedName}"`,
-            life: 3000
-        });
-
-        // Emite evento de atualização de vídeo para o componente pai
-        emit('update-video', {
-            dmId: selectedDM.value.ID_DM,
-            video: generatedName
-        });
-
-        closeDialog(); // Fecha o diálogo
-    } catch (error) {
-        console.error('Erro ao enviar vídeo:', error);
-        toast.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: `Falha ao enviar o vídeo "${selectedFile.value.name}".`,
-            life: 3000
-        });
-    } finally {
-        isUploading.value = false; // Finaliza o processo de upload
-        loading.value = false; // Finaliza o carregamento
-    }
+  try {
+    isUploading.value = true;
+    await videoService.uploadVideo(
+      selectedFile.value,
+      selectedDM.value.ID_DM,
+      customName,
+      (progressEvent) => {
+        uploadProgress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+      }
+    );
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: `Arquivo enviado como "${customName}"`, life: 3000 });
+    emit('update-video', { dmId: selectedDM.value.ID_DM, video: customName });
+    closeDialog();
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao enviar o vídeo.', life: 3000 });
+  } finally {
+    isUploading.value = false;
+  }
 };
 
 // Função para fechar o diálogo

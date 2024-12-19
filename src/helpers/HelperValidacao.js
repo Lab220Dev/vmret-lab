@@ -1,7 +1,6 @@
 import { useDataStore } from '@/store/dataStore';
 import { isValid as validateCPF } from 'cpf-validator';
 
-
 /**
  * Valida CPF usando a biblioteca cpf-validator.
  * @param {string} cpf - CPF a ser validado.
@@ -79,34 +78,45 @@ export const isPlantaExists = async (planta) => {
 
 export const validarCNPJ = (cnpj) => {
     cnpj = cnpj.replace(/[^\d]+/g, '');
-  
+
     if (cnpj === '' || cnpj.length !== 14) return false;
-  
+
     const cnpjsInvalidos = ['00000000000000', '11111111111111', '22222222222222', '33333333333333'];
-  
+
     if (cnpjsInvalidos.includes(cnpj)) return false;
-  
+
     let tamanho = cnpj.length - 2;
     let numeros = cnpj.substring(0, tamanho);
     let digitos = cnpj.substring(tamanho);
-    let soma = 0, pos = tamanho - 7;
-  
+    let soma = 0,
+        pos = tamanho - 7;
+
     for (let i = tamanho; i >= 1; i--) {
-      soma += numeros.charAt(tamanho - i) * pos--;
-      if (pos < 2) pos = 9;
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
     }
     let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
     if (resultado != digitos.charAt(0)) return false;
-  
+
     tamanho++;
     numeros = cnpj.substring(0, tamanho);
     soma = 0;
     pos = tamanho - 7;
-  
+
     for (let i = tamanho; i >= 1; i--) {
-      soma += numeros.charAt(tamanho - i) * pos--;
-      if (pos < 2) pos = 9;
+        soma += numeros.charAt(tamanho - i) * pos--;
+        if (pos < 2) pos = 9;
     }
     resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
     return resultado == digitos.charAt(1);
-  };
+};
+
+export const isValidVideoFile = (file) => {
+    if (!file.type.includes('mp4')) {
+        return { valid: false, error: 'Apenas arquivos .mp4 são permitidos.' };
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };
+    }
+    return { valid: true };
+};

@@ -1,7 +1,6 @@
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
 import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import { useAuthStore } from '@/store/authStore.js';
@@ -9,6 +8,10 @@ import ImageUpload from '@/components/ImageUpload.vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
+import produtoService from '@/services/produtoService';
+import { resetProdutoForm } from '@/helpers/formHelper';
+import { getFileExtension } from '@/helpers/HelperUtils';
+import { enrichProdutoData } from '@/helpers/HelperProduto.js';
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
@@ -20,7 +23,6 @@ const store = useAuthStore();
 const toast = useToast();
 const active = ref(0);
 const loading = ref(false);
-let plantasoptions = ref([]);
 let formatedPlantaOptions = ref([]);
 const tipoProduto = ref([
     { label: 'EPI', value: 1 },
@@ -87,38 +89,27 @@ const onRowSelect = async (event) => {
 };
 
 const loadProdutos = async (page = 1) => {
-    const searchTerm = filters.value.global.value || ''; // Pega o valor do filtro global
-    if (searchTerm.length >= 3 || searchTerm === '') {
-    const data = {
-        id_cliente: store.userIdCliente,
-        page,
-        pageSize,
-        searchTerm // Passa o termo de busca
-    };
+    const searchTerm = filters.value.global.value || '';
+    const data = { id_cliente: store.userIdCliente, page, pageSize, searchTerm };
+
     try {
         loading.value = true;
-        const response = await axios.post('/produtos/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-
+        const response = await produtoService.listarProdutos(data, store.token);
         ListaProdutos.value = response.data.produtos;
         totalRecords.value = response.data.totalRecords;
-
         await loadImagens(ListaProdutos.value);
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos.', life: 3000 });
     } finally {
         loading.value = false;
     }
-}
 };
 
-const debounceTimeout = ref(null); 
-// Filtro local 
+const debounceTimeout = ref(null);
+// Filtro local
 watch(
-    () => filters.value.global.value, 
+    () => filters.value.global.value,
     (newValue, oldValue) => {
         if (debounceTimeout.value) {
             clearTimeout(debounceTimeout.value); //Limpa o timeout anterior
@@ -154,166 +145,88 @@ const loadData = async () => {
 };
 
 const saveProduto = async () => {
-    const formData = new FormData();
-    if (selectedFile.value) {
-        const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
-        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png'; // Define a extensão com base no tipo MIME
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`;
-        formData.append('imagem1', nomeArquivoPrincipal);
-        formData.append('file_principal', selectedFile.value);
-    }
-
-    if (selectedInfoFile.value) {
-        const fileType = selectedInfoFile.value.type;
-        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png';
-        const nomeArquivoInfo = `produto_${produto.nome}_${produto.codigo}_info${Date.now()}${fileExtension}`;
-        formData.append('imagemdetalhe', nomeArquivoInfo);
-        formData.append('file_info', selectedInfoFile.value);
-    }
-
-    if (selectedSecFile.value) {
-        const fileType = selectedSecFile.value.type;
-        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png';
-        const nomeArquivoSecundario = `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`;
-        formData.append('imagem2', nomeArquivoSecundario);
-        formData.append('file_secundario', selectedSecFile.value);
-    }
-
-    Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, typeof value === 'string' ? value : String(value));
-    });
-    formData.append('id_cliente', store.userIdCliente);
-
     try {
         loading.value = true;
-        const response = await axios.post('/produtos/adicionar', formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
+        await produtoService.adicionarProduto(
+            enrichProdutoData(produto, store.userId, store.userIdCliente),
+            {
+                selectedFile: selectedFile.value,
+                selectedSecFile: selectedSecFile.value,
+                selectedInfoFile: selectedInfoFile.value
             }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 });
-        dataStore.invalidatProdutoCache();
+        );
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto salvo com sucesso!', life: 3000 });
         loadProdutos();
         resetForm();
         active.value = 0;
     } catch (error) {
-        console.error('Erro ao adicionar o produto:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o produto', life: 3000 });
+        console.error('Erro ao salvar produto:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar produto.', life: 3000 });
     } finally {
-        loading.value = false; // Desativando loading
-        active.value = 0; // Mude a aba para listar produtos
+        loading.value = false;
     }
 };
 
 const deleteProduto = async () => {
-    let data = {
+    const data = {
         id_produto: produto.id_produto,
         id_usuario: store.userId,
         id_cliente: store.userIdCliente
     };
+
     try {
         loading.value = true;
-        await axios.post('/produtos/deleteProduto', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto Deletado', life: 3000 });
-        dataStore.invalidatProdutoCache();
-        deleteProdutoDialog.value = false;
+        await produtoService.deletarProduto(data, store.token);
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso!', life: 3000 });
         loadProdutos();
+        resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]);
+        deleteProdutoDialog.value = false;
         active.value = 0;
-        resetForm();
-    } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o produto', life: 3000 });
+    } catch (error) {
+        console.error('Erro ao deletar produto:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar produto.', life: 3000 });
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
-    active.value = 0;
 };
 
 const updateProduto = async () => {
-    const formData = new FormData();
-
-    // Adiciona os dados do produto ao FormData
-    Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, typeof value === 'string' ? value : String(value));
-    });
-
-    // Função para obter a extensão do arquivo com base no tipo MIME
-    const getFileExtension = (fileType) => {
-        if (fileType === 'image/jpeg') return '.jpg';
-        if (fileType === 'image/png') return '.png';
-        return ''; // Default if file type is not supported
-    };
-
-    if (selectedFile.value) {
-        formData.delete('imagem1');
-        const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
-        const fileExtension = getFileExtension(fileType); // Obtém a extensão com base no tipo MIME
-        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`);
-        formData.append('file_principal', selectedFile.value);
-    }
-
-    if (selectedInfoFile.value) {
-        formData.delete('imagemdetalhe');
-        const fileType = selectedInfoFile.value.type;
-        const fileExtension = getFileExtension(fileType);
-        formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}${fileExtension}`);
-        formData.append('file_info', selectedInfoFile.value);
-    }
-
-    if (selectedSecFile.value) {
-        formData.delete('imagem2');
-        const fileType = selectedSecFile.value.type;
-        const fileExtension = getFileExtension(fileType);
-        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`);
-        formData.append('file_secundario', selectedSecFile.value);
-    }
-
-    try {
-        loading.value = true;
-        await axios.post('/produtos/atualizar', formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto atualizado', life: 3000 });
-        dataStore.invalidatProdutoCache();
-        loadProdutos();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao atualizar o produto:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  try {
+    loading.value = true;
+    await produtoService.atualizarProduto(
+      enrichProdutoData(produto, store.userId, store.userIdCliente),
+      {
+        selectedFile: selectedFile.value,
+        selectedSecFile: selectedSecFile.value,
+        selectedInfoFile: selectedInfoFile.value,
+      }
+    );
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto atualizado com sucesso!', life: 3000 });
+    loadProdutos();
+    resetForm();
+    active.value = 0;
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar produto.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
 const getImagem = async (filename) => {
-    if (!filename) {
-        return imagePlaceholder;
-    }
+    if (!filename) return imagePlaceholder;
+
     try {
-        const response = await axios.get(`/image/produto/${store.userIdCliente}/${filename}`, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await produtoService.obterImagem(store.userIdCliente, filename);
         if (response.status === 200) {
             const { image, mimeType } = response.data;
-            const imageUrl = `data:${mimeType};base64,${image}`;
-            return imageUrl;
+            return `data:${mimeType};base64,${image}`;
         }
     } catch (error) {
-        return imagePlaceholder;
+        console.error('Erro ao carregar imagem:', error);
     }
+    return imagePlaceholder;
 };
-
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
@@ -323,25 +236,7 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    delete produto.imagem1;
-    delete produto.imagem2;
-    delete produto.imagemdetalhe;
-    Object.assign(produto, {
-        codigo: '',
-        id_planta: '',
-        id_tipoProduto: '',
-        id_categoria: '',
-        nome: '',
-        descricao: ' ',
-        unidade_medida: '',
-        validadedias: 0
-    });
-    selectedFile.value = null;
-    selectedSecFile.value = null;
-    selectedInfoFile.value = null;
-    imagePrinc.value = imagePlaceholder;
-    imageSec.value = imagePlaceholder;
-    imageInfo.value = imagePlaceholder;
+    resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]);
     imageUploader.value?.clearImageData();
     imageUploader2.value?.clearImageData();
     imageUploader3.value?.clearImageData();
@@ -380,7 +275,7 @@ onMounted(async () => {
                         :metaKeySelection="false"
                         @rowSelect="handleRowSelection"
                         @page="onPageChange"
-                    ><!--lazy-->
+                        ><!--lazy-->
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
