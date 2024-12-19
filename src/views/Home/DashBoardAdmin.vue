@@ -27,8 +27,8 @@ import SumarioAdmin from '@/components/SumarioAdmin.vue';
 import Heatmap from '@/components/Heatmap.vue';
 import Notificacoes from '@/components/TabelaNotificacoes.vue';
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js';
 import Spinner from '@/components/LoadingSpinner.vue'
+import dashboardService from '@/services/dashboardService';
 const dados = ref({});
 const lista = ref([]);
 const notifcacoes = ref([]);
@@ -38,21 +38,17 @@ const toast = useToast();
 const fetchData = async () => {
     loading.value = true;
      try {
-        const [resumoResponse, dmsResponse, notiResponse] = await Promise.all([
-            axios.post('/dashboard/DadosClientes'),
-            axios.post('/dashboard/ResumoDados'),
-            axios.post('/dashboard/UltimasNotificacoes'),
-        ]);
-        dados.value = resumoResponse.data;
-        lista.value = dmsResponse.data;
-        notifcacoes.value = notiResponse.data;
+        const result = await dashboardService.fetchAdminData();
+    dados.value = result.dados;
+    lista.value = result.lista;
+    notifcacoes.value = result.notificacoes;
+
     } catch (error) {
         console.error('Erro nas requisições:', error); 
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao carregar dados do dashboard', life: 3000 });
     }finally{
         loading.value = false;
         console.log('Spinner desativado:', loading.value);
-
     }
 };
 const formattedListanoti = computed(() => {

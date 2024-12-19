@@ -1,19 +1,14 @@
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios.js';
 import { FilterMatchMode } from 'primevue/api';
-import { useDataStore } from '@/store/dataStore.js';
-
+import cdcService from '@/services/cdcService';
+import { resetCDCForm } from '@/helpers/formHelper'
 const active = ref(0);
-const store = useAuthStore();
 const toast = useToast();
 const centroCusto = ref([]);
 const visible = ref(false);
-const ListaCentro = ref([]);
 const deleteCentroDialog = ref(false);
-const dataStore = useDataStore();
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -30,97 +25,50 @@ const onRowSelect = async (event) => {
     cdc = event.data;
     visible.value = true;
     active.value = 1;
-    //loadCentroCusto();
-};
-
-const submitForm = () => {
-    if (visible.value) {
-        atualizarCDC();
-    } else {
-        adicionarCentro();
-    }
 };
 
 const loadCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = response.data;
-
-        filteredCount.value = centroCusto.value.length;
-    } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
-    }
+  try {
+    centroCusto.value = await cdcService.listarCentrosDeCusto();
+    filteredCount.value = centroCusto.value.length;
+  } catch (error) {
+    console.error(error.message);
+  }
 };
 
-const adicionarCentro = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId,
-        ...cdc
-    };
-    try {
-        const response = await axios.post('/cdc/adicionar', data);
-        dataStore.invalidateCDCCache();
-        loadCentroCusto();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao adicionar centro de custo:', error);
+const submitForm = async () => {
+  try {
+    if (visible.value) {
+      await cdcService.atualizarCentro(cdc);
+      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro atualizado!' });
+    } else {
+      await cdcService.adicionarCentro(cdc);
+      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro adicionado!' });
     }
+    loadCentroCusto();
+    resetCDCForm(cdc);
+    active.value = 0;
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: error.message });
+  }
 };
 
 const deleteCentro = async () => {
-    let data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ID_CentroCusto: cdc.ID_CentroCusto
-    };
-    try {
-        await axios.post('/cdc/deleteCentro', data);
-        dataStore.invalidateCDCCache();
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Centro Deletado', life: 3000 });
-        deleteCentroDialog.value = false;
-        loadCentroCusto();
-        active.value = 0;
-        resetForm();
-    } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o centro de custo', life: 3000 });
-    }
-    active.value = 0;
-};
-
-const atualizarCDC = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...cdc
-    };
-    try {
-        const response = await axios.post('/cdc/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        dataStore.invalidateCDCCache();
-        loadCentroCusto();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao atualizar centros de custo:', error);
-    }
+  try {
+    await cdcService.deletarCentro(cdc);
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro deletado!' });
+    deleteCentroDialog.value = false;
+    loadCentroCusto();
+    resetCDCForm(cdc);
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o centro de custo' });
+  }
 };
 
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
+        resetCDCForm(cdc);
         loadCentroCusto();
         visible.value = false;
     }
@@ -136,10 +84,6 @@ watch(
     },
     { immediate: true }
 );
-
-const resetForm = () => {
-    (cdc.Nome = ''), (cdc.Codigo = ''), (cdc.ID_CentroCusto = '');
-};
 
 const handleRowSelection = async (event) => {
     await onRowSelect(event);

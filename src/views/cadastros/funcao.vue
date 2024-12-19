@@ -2,10 +2,11 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
+import funcaoService from '@/services/funcaoService';
+import { resetFuncaoForm } from '@/helpers/formHelper';
 
 const dataStore = useDataStore();
 
@@ -25,42 +26,44 @@ const filters = ref({
 
 const filteredCount = ref(0);
 
-let funcao = reactive({
-    codigo: '',
-    nome: '',
-    id_centro_custo: ''
-});
+let funcao = reactive(resetFuncaoForm());
 
 const onRowSelect = (event) => {
     funcao = event.data;
     visible.value = true;
     active.value = 1;
-    //loadFuncao();
 };
 
-const submitForm = () => {
-    if (visible.value) {
-        atualizarFuncao();
-    } else {
-        adicionarFuncao();
-    }
-};
-
-const loadFuncao = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
+const submitForm = async () => {
+  try {
     loading.value = true;
-    try {
-        const response = await axios.post('/funcao/listar', data);
-        ListaFuncao.value = response.data;
-
-        filteredCount.value = ListaFuncao.value.length;
-    } catch (error) {
-        console.error('Erro ao listar Funções e Diretorias:', error);
-    } finally {
-        loading.value = false; // Desativando loading
+    if (visible.value) {
+      await funcaoService.atualizarFuncao(funcao);
+      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função atualizada' });
+    } else {
+      await funcaoService.adicionarFuncao(funcao);
+      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função adicionada' });
     }
+    loadFuncoes();
+    active.value = 0;
+    funcao = reactive(resetFuncaoForm());
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar função' });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadFuncoes = async () => {
+  loading.value = true;
+  try {
+    ListaFuncao.value = await funcaoService.listarFuncoes();
+    filteredCount.value = ListaFuncao.value.length;
+  } catch (error) {
+    console.error(error.message);
+  } finally {
+    loading.value = false;
+  }
 };
 
 watch(
@@ -74,113 +77,31 @@ watch(
     { immediate: true }
 );
 
-const adicionarFuncao = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...funcao
-    };
-    loading.value = true;
-    try {
-        const response = await axios.post('/funcao/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadFuncao();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao adicionar Funções e Diretorias:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-
 const deleteFuncao = async () => {
-    let data = { id_funcao: funcao.id_funcao, id_usuario: store.userId };
-    loading.value = true;
-    try {
-        await axios.post('/funcao/deletar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Função Deletada', life: 3000 });
-        deleteFuncaoDialog.value = false;
-        loadFuncao();
-        active.value = 0;
-        resetForm();
-    } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a função', life: 3000 });
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  loading.value = true;
+  try {
+    await funcaoService.deletarFuncao(funcao.id_funcao);
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função deletada' });
+    loadFuncoes();
+    deleteFuncaoDialog.value = false;
+    funcao = reactive(resetFuncaoForm());
     active.value = 0;
-};
-
-const atualizarFuncao = async () => {
-    loading.value = true;
-    const data = {
-        ...funcao
-    };
-    try {
-        const response = await axios.post('/funcao/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadFuncao();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao atualizar Funções e Diretorias:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  } catch (error) {
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar função' });
+  } finally {
+    loading.value = false;
+  }
 };
 
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
-        loadFuncao();
+        funcao = reactive(resetFuncaoForm());
+        loadFuncoes();
         visible.value = false;
     }
 });
 
-const resetForm = () => {
-    (funcao.codigo = ''), (funcao.nome = ''), (funcao.id_centro_custo = '');
-};
-
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
-
-const loadCentroCusto = async () => {
-    loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `DM  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
 const loadData = async () => {
     try {
         centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
@@ -189,8 +110,8 @@ const loadData = async () => {
     }
 };
 onMounted(() => {
-    loadFuncao();
-    loadData();
+  loadFuncoes();
+  loadData();
 });
 </script>
 
@@ -214,7 +135,7 @@ onMounted(() => {
                         :sortField="'id_funcao'"
                         :metaKeySelection="false"
                         :sortOrder="1"
-                        @rowSelect="handleRowSelection"
+                        @rowSelect="onRowSelect"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">

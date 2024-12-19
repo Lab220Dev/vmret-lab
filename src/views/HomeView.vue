@@ -1,9 +1,16 @@
 <script setup>
 import { onMounted, shallowRef , defineAsyncComponent } from 'vue';
 import { useAuthStore } from '@/store/authStore';
+import { useToast } from 'primevue/usetoast';
 
+const toast = useToast();
 const store = useAuthStore(); 
 const atual = shallowRef(null); 
+const checkPermission = () => {
+    if (store.userRole === 'Master' || store.userRole === 'Operador') {
+        canViewLastRecalls.value = true; 
+    }
+};
 const DashPorTipo = () => {
     const userRole = store.userRole;
 
@@ -26,6 +33,16 @@ const DashPorTipo = () => {
 };
 
 onMounted(() => {
+    if (store.getGlobalMessage) {
+        toast.add({
+            severity: 'warn',
+            summary: 'Acesso Negado',
+            detail: store.getGlobalMessage,
+            life: 3000
+        });
+        store.clearGlobalMessage();
+    }
+
     DashPorTipo();
 });
 </script>

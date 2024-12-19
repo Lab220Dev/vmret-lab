@@ -4,25 +4,17 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from '@/axios.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-
-import { useAuthStore } from '@/store/authStore';
-import { useDataStore } from '@/store/dataStore.js';
+import dashboardService from '@/services/dashboardService';
 import Estoque from '@/components/Estoque.vue';
-const store = useAuthStore();
-const dataStore = useDataStore();
 const estoque = ref([])
 const maquinas = ref([])
 const loading = ref(false);
 const fetchData = async () => {
     loading.value = true;
-    const data = { id_cliente: store.userIdCliente };
     try {
-        // Dados para Tabela de Estoque
-        const repostaEstoqueBaixo = await axios.post('/Estoque/outro', data);
-        estoque.value = repostaEstoqueBaixo.data;
-        maquinas.value = dataStore.dms || await dataStore.fetchListaDms();
+        const result = await dashboardService.fetchOperadorData();
+        estoque.value = result.estoque;
+        maquinas.value = result.maquinas;
 
     } catch (error) {
         console.error('Erro ao carregar dados do Master:', error);

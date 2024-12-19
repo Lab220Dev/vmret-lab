@@ -1,351 +1,352 @@
 <template>
-  <div class="card">
-    <!-- Dropdown para Seleção do Tipo de Importação -->
-    <Dropdown 
-      v-model="selectedImportType" 
-      :options="importTypes" 
-      optionLabel="label" 
-      optionValue="value" 
-      placeholder="Selecione o Tipo de Importação" 
-      @change="onImportTypeChange" 
-    />
+    <div class="card justify-content-center">
+        <Stepper v-model:activeStep="active">
+            <!-- Passo 1: Seleção e Upload -->
+            <StepperPanel>
+                <template #header="{ index, clickCallback }">
+                    <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
+                        <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
+                            <i class="pi pi-list" />
+                        </span>
+                    </button>
+                </template>
+                <template #content="{ nextCallback }">
+                    <div class="flex flex-column gap-2 mx-auto" style="min-height: 16rem; max-width: 20rem">
+                        <div class="text-center mt-3 mb-3 text-xl font-semibold">Selecione o Tipo de Importação</div>
+                        <Dropdown v-model="selectedImportType" :options="importTypes" optionLabel="label" optionValue="value" placeholder="Selecione o Tipo de Importação" @change="carregarComponente" />
+                        <div v-if="selectedImportType" class="mt-3">
+                            <FileUpload mode="basic" chooseLabel="Selecionar Arquivo" @select="handleFileUpload" accept=".csv" />
+                        </div>
+                        <p v-if="uploadError" class="text-red-500">{{ uploadError }}</p>
+                        <Button label="Próximo" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" :disabled="!fileUploaded" />
+                    </div>
+                </template>
+            </StepperPanel>
 
-    <!-- Mensagem de Erro para Tipos Não Implementados -->
-    <div v-if="showErrorMessage" class="p-mt-3">
-      <Message severity="error">Funcionalidade ainda não implementada.</Message>
+            <!-- Passo 2: Validação Dinâmica -->
+            <StepperPanel>
+                <template #header="{ index, clickCallback }">
+                    <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
+                        <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
+                            <i class="pi pi-cog" />
+                        </span>
+                    </button>
+                </template>
+                <template #content="{ prevCallback, nextCallback }">
+                    <div>
+                        <component v-if="componenteAtual" :is="componenteAtual" :fileData="fileData" @dados-validos="handleDadosValidos" @dados-invalidos="handleDadosInvalidos" @mapeamento-completo="updateValidacaoConcluida" />
+                        <div class="flex justify-content-between mt-4">
+                            <Button label="Voltar" icon="pi pi-arrow-left" @click="prevCallback" />
+                            <Button label="Próximo" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="nextCallback" />
+                        </div>
+                    </div>
+                </template>
+            </StepperPanel>
+
+            <!-- Passo 3: Resumo e Edição -->
+            <StepperPanel>
+                <template #header="{ index, clickCallback }">
+                    <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
+                        <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
+                            <i class="pi pi-check-circle" />
+                        </span>
+                    </button>
+                </template>
+                <template #content="{ prevCallback }">
+                    <div class="flex flex-column gap-2 mx-auto" style="min-height: 16rem; max-width: 100%">
+                        <!-- Resumo Geral -->
+                        <div class="summary">
+                            <h3 class="text-center">Resumo da Importação</h3>
+                            <div class="summary-cards flex gap-3 justify-content-center">
+                                <div class="card summary-card">
+                                    <h4>Registros Processados</h4>
+                                    <p class="summary-value">{{ dadosValidos.length + dadosInvalidos.length }}</p>
+                                </div>
+                                <div class="card summary-card">
+                                    <h4>Registros Válidos</h4>
+                                    <p class="summary-value text-green-500">{{ dadosValidos.length }}</p>
+                                </div>
+                                <div class="card summary-card">
+                                    <h4>Registros Inválidos</h4>
+                                    <p class="summary-value text-red-500">{{ dadosInvalidos.length }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contêiner Gráfico e Tabela -->
+                        <div class="chart-table-container">
+                            <!-- Gráfico de Pizza -->
+                            <div class="chart-container">
+                                <Chart type="pie" :data="chartData" style="max-width: 300px; margin: auto" />
+                            </div>
+                        </div>
+
+                        <div v-if="dadosInvalidos.length">
+                            <div class="toggle-container">
+                                <span>Editar na Plataforma:</span>
+                                <InputSwitch v-model="isEditingEnabled" />
+                            </div>
+
+                            <!-- Modo de edição habilitado -->
+                            <div v-if="isEditingEnabled">
+                                <h4>Registros Inválidos</h4>
+                                <DataTable
+                                    :value="dadosInvalidos"
+                                    editMode="cell"
+                                    class="p-datatable-sm"
+                                    @cell-edit-complete="onCellEditComplete"
+                                    @cell-edit-cancel="onCellEditCancel"
+                                    scrollable
+                                    scrollHeight="200px"
+                                    :virtualScrollerOptions="{ itemSize: 20 }"
+                                >
+                                    <Column v-for="field in fields" :key="field" :field="field" :header="fieldLabels[field] || field" :style="{ backgroundColor: '#fff5f5' }">
+                                        <template #editor="{ data, field }">
+                                            <InputText v-model="data[field]" />
+                                        </template>
+                                    </Column>
+                                    <Column field="errors" header="Erro" :body="formatErrors" :style="{ color: 'red' }" />
+                                </DataTable>
+                                <Button label="Revalidar Dados" icon="pi pi-refresh" class="mt-3" @click="revalidateData" />
+                            </div>
+
+                            <!-- Modo de edição desabilitado -->
+                            <div v-else>
+                                <h4>Registros Inválidos</h4>
+                                <DataTable :value="dadosInvalidos" class="p-datatable-sm" scrollable scrollHeight="400px">
+                                    <!-- Coluna Nome Completo Congelada -->
+                                    <Column field="Nome" header="Nome Completo" frozen alignFrozen="left" style="min-width: 200px; background-color: #f9f9f9; font-weight: bold" />
+
+                                    <!-- Outras Colunas -->
+                                    <Column v-for="field in fields.filter((f) => f !== 'Nome')" :key="field" :field="field" :header="fieldLabels[field]" style="min-width: 150px" />
+
+                                    <!-- Coluna de Erros -->
+                                    <Column field="errors" header="Erro" :body="formatErrors" style="min-width: 200px; color: red" />
+                                </DataTable>
+                                <Button label="Baixar CSV com Erros" icon="pi pi-download" class="mt-3 p-button-secondary" @click="downloadErrors" />
+                                <FileUpload mode="basic" chooseLabel="Reenviar Arquivo Corrigido" @select="handleFileReupload" accept=".csv" />
+                            </div>
+                        </div>
+
+                        <!-- Mensagem quando não houver erros -->
+                        <div v-else>
+                            <p class="text-center text-green-500 mt-4">Todos os registros foram validados com sucesso!</p>
+                        </div>
+                    </div>
+                    <!-- Botão de Envio -->
+                    <div class="flex justify-content-end mt-4">
+                        <Button label="Enviar Dados" icon="pi pi-send" class="p-button-success" @click="submitData" />
+                    </div>
+                    <!-- Botão Voltar -->
+                    <div class="flex pt-4 justify-content-start">
+                        <Button label="Voltar" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
+                    </div>
+                </template>
+            </StepperPanel>
+        </Stepper>
     </div>
-
-    <!-- Upload de Arquivo -->
-    <FileUpload
-      v-if="showFileUpload"
-      mode="basic"
-      chooseLabel="Selecionar Arquivo"
-      @select="handleFileUpload"
-      accept=".csv"
-    />
-
-    <!-- Mapeamento das Colunas -->
-    <div v-if="fileData.length && selectedImportType === 'funcionarios'" class="mapping-section">
-      <h3>Mapeamento das Colunas</h3>
-      
-      <div class="columns-mapping">
-        <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
-          <div class="expected-column">{{ expected }}</div>
-          <div class="document-column">
-            <Dropdown 
-              v-model="mappedColumns[expected]" 
-              :options="fileColumns" 
-              optionLabel="label" 
-              optionValue="value" 
-              placeholder="Selecione a Coluna"
-            />
-          </div>
-        </div>
-      </div>
-
-      <Button label="Construir Tabela de Dados" @click="buildDataTable" class="p-mt-3" />
-    </div>
-
-    <!-- Resumo dos Dados Importados -->
-    <div v-if="dataTableBuilt" class="import-summary">
-      <h3>Resumo da Importação</h3>
-      <p>Total de Registros: {{ fileData.length }}</p>
-      <p>Número de Registros com Erros: {{ invalidData.length }}</p>
-      <p>Número de Novos Registros: {{ newRecords.length }}</p>
-
-      <!-- Tabela de Dados Inválidos -->
-      <div v-if="invalidData.length" class="p-mt-3">
-        <h4>Dados Inválidos</h4>
-        <DataTable :value="invalidData" editable="cell">
-          <Column 
-            v-for="field in currentFields" 
-            :key="field" 
-            :field="field" 
-            :header="fieldLabels[field]"
-            :style="getCellStyle(rowData.errors, field)"
-            editor="input" 
-          />
-        </DataTable>
-      </div>
-
-      <!-- Tabela de Dados Válidos -->
-      <div v-if="newRecords.length" class="p-mt-3">
-        <h4>Dados Válidos</h4>
-        <DataTable :value="newRecords">
-          <Column 
-            v-for="field in currentFields" 
-            :key="field" 
-            :field="field" 
-            :header="fieldLabels[field]"
-          />
-        </DataTable>
-      </div>
-
-      <!-- Botão de Envio -->
-      <Button label="Enviar para o Backend" @click="submitData" :disabled="invalidData.length > 0" />
-    </div>
-  </div>
-  <LoadingSpinner v-if="loading" />
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore';
-import Papa from 'papaparse';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { ref, shallowRef, defineAsyncComponent, computed, watch } from 'vue';
+import Stepper from 'primevue/stepper';
+import StepperPanel from 'primevue/stepperpanel';
+import Dropdown from 'primevue/dropdown';
+import FileUpload from 'primevue/fileupload';
+import Button from 'primevue/button';
+import Chart from 'primevue/chart';
+import DataTable from 'primevue/datatable';
 
-const toast = useToast();
-const store = useAuthStore();
-
+import { normalizeDate, generateCSV, downloadCSV } from '@/helpers/HelperUtils';
+import { processFileUpload, processFileReupload, revalidateData,formatErrors,exportInvalidData } from '@/helpers/HelperImportacao.js';
+import { validateRow, getFieldLabels } from '@/helpers/HelperImportacao.js';
+// Estados reativos
+const active = ref(0);
 const selectedImportType = ref(null);
+const fileUploaded = ref(false);
 const fileData = ref([]);
-const invalidData = ref([]);
-const newRecords = ref([]);
-const showErrorMessage = ref(false);
-const showFileUpload = ref(false);
-const dataTableBuilt = ref(false);
-const mappedColumns = ref({});
-const fileColumns = ref([]);
-const expectedColumns = ref([]);
-const loading = ref(false);
+const dadosValidos = ref([]);
+const dadosInvalidos = ref([]);
+const uploadError = ref(null);
+const componenteAtual = shallowRef(null);
+const validacaoConcluida = ref(false);
+const isEditingEnabled = ref(false);
+const fields = computed(() => Object.keys(fieldLabels.value));
+const fieldLabels = ref({});
 
-const fieldLabels = {
-  'Nome': 'Nome',
-  'Matricula': 'Matrícula',
-  'Data de Admissão': 'Data de Admissão',
-  'CPF': 'CPF',
-  'RG': 'RG',
-  'CTPS': 'CTPS',
-  'Email': 'Email',
-  'Centro de Custo': 'Centro de Custo',
-  'Planta': 'Planta',
-  'Setor': 'Setor',
-  'Função': 'Função',
-  'Status': 'Status',
-  'Hora Inicial': 'Hora Inicial',
-  'Hora Final': 'Hora Final',
-  'Segunda': 'Segunda',
-  'Terça': 'Terça',
-  'Quarta': 'Quarta',
-  'Quinta': 'Quinta',
-  'Sexta': 'Sexta',
-  'Sábado': 'Sábado',
-  'Domingo': 'Domingo'
+// Carregar componente dinamicamente
+const carregarComponente = () => {
+    switch (selectedImportType.value) {
+        case 'funcionarios':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoFuncionario.vue'));
+            break;
+        case 'produtos':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoProduto.vue'));
+            break;
+        case 'centro_custo':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoCdc.vue'));
+            break;
+        default:
+            componenteAtual.value = null;
+    }
+    fieldLabels.value = getFieldLabels(selectedImportType.value);
 };
-
-const currentFields = computed(() => {
-  return expectedColumns.value.filter(column => mappedColumns.value[column]);
-});
-
+const updateValidacaoConcluida = (estado) => {
+    validacaoConcluida.value = estado;
+};
+// Tipos de importação
 const importTypes = ref([
-  { label: 'Centro Custo', value: 'cdc' },
-  { label: 'Função', value: 'funcao' },
-  { label: 'Setores', value: 'setor' },
-  { label: 'Produto', value: 'produto' },
-  { label: 'Itens do Setor', value: 'Itens' },
-  { label: 'Planta', value: 'planta' },
-  { label: 'Funcionário', value: 'funcionarios' }
+    { label: 'Funcionário', value: 'funcionarios' },
+    { label: 'Produto', value: 'produtos' },
+    { label: 'Centro de Custo', value: 'centro_custo' }
 ]);
-
-const fieldsByImportType = {
-  funcionarios: [
-    'Nome', 'Matricula', 'Data de Admissão', 'CPF', 'RG', 'CTPS', 'Email', 
-    'Centro de Custo', 'Planta', 'Setor', 'Função', 'Status', 
-    'Hora Inicial', 'Hora Final', 'Segunda', 'Terça', 'Quarta', 
-    'Quinta', 'Sexta', 'Sábado', 'Domingo'
-  ]
+const downloadErrors = () => {
+    exportInvalidData(fields.value, dadosInvalidos.value);
 };
-
-const onImportTypeChange = () => {
-  if (selectedImportType.value === 'funcionarios') {
-    expectedColumns.value = fieldsByImportType[selectedImportType.value];
-    showErrorMessage.value = false;
-    showFileUpload.value = true;
-  } else {
-    showErrorMessage.value = true;
-    showFileUpload.value = false;
-    expectedColumns.value = [];
-  }
-};
-
-// Função para normalizar texto (remover acentos, espaços e caracteres especiais) e converter para camelCase
-function normalizarChave(texto) {
-  return texto
-    .normalize("NFD") // Decompor caracteres acentuados
-    .replace(/[\u0300-\u036f]/g, "") // Remover acentos
-    .replace(/[^a-zA-Z0-9]/g, ' ') // Remover caracteres especiais
-    .replace(/\s+(.)/g, function(match, group1) { 
-      return group1.toUpperCase(); 
-    }) // Convertendo para camelCase
-    .replace(/\s/g, '') // Remover espaços restantes
-    .replace(/^(.)/, function(match, group1) {
-      return group1.toLowerCase();
-    }); // Converter a primeira letra para minúscula
-}
-
-// Função para validar as linhas
-const validateRow = (row) => {
-  const errors = {};
-
-  // Validações básicas para determinar se a linha é válida
-  if (!row.Nome || row.Nome.trim() === '') {
-    errors.Nome = 'Nome é obrigatório';
-  }
-  if (!row.Matricula || row.Matricula.trim() === '') {
-    errors.Matricula = 'Matrícula é obrigatória';
-  }
-  if (!row.CPF || !isValidCPF(row.CPF)) {
-    errors.CPF = 'CPF inválido';
-  }
-
-  // Adicione outras validações conforme necessário
-
-  return Object.keys(errors).length > 0 ? errors : null;
-};
-
-// Exemplo de validação de CPF (pode ser substituída pela lógica real)
-const isValidCPF = (cpf) => {
-  // Lógica para validar CPF
-  return cpf.length === 14; // Simplificado para o exemplo
-};
-
-// Passo 1: Carregar o arquivo e fazer o mapeamento automático
+// Eventos
 const handleFileUpload = (event) => {
-  const file = event.files[0];
-  Papa.parse(file, {
-    header: true,
-    dynamicTyping: true,
-    skipEmptyLines: true,
-    complete: (results) => {
-      if (results && results.meta && results.data.length > 0) {
-        fileColumns.value = results.meta.fields.map(field => ({ label: field, value: field }));
-        fileData.value = results.data;
-        prefillMappedColumns();
-
-        // Exibir o mapeamento ao usuário
-        // O mapeamento será ajustado manualmente pelo usuário antes de prosseguir
-      } else {
-        console.error("Erro ao processar o arquivo CSV: Dados ou cabeçalho ausentes.");
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Arquivo CSV inválido.', life: 3000 });
-      }
-    },
-    error: (error) => {
-      console.error("Erro ao processar o arquivo CSV:", error);
-      toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao processar o arquivo CSV.', life: 3000 });
-    }
-  });
+    processFileUpload(
+        event.files[0],
+        (data) => {
+            fileData.value = data;
+            fileUploaded.value = true;
+        },
+        (error) => {
+            uploadError.value = error;
+        }
+    );
+};
+// Processar o reupload do arquivo corrigido
+const handleFileReupload = (event) => {
+    processFileReupload(
+        event.files[0],
+        (data) => {
+            const { validData, remainingInvalidData } = revalidateData(data, validateRow, selectedImportType.value);
+            dadosValidos.value.push(...validData);
+            dadosInvalidos.value = remainingInvalidData;
+        },
+        (error) => console.error(error)
+    );
 };
 
-// Função para pré-mapear as colunas
-const prefillMappedColumns = () => {
-  expectedColumns.value.forEach((expected) => {
-    // Procura uma coluna fornecida que seja similar à coluna esperada
-    const matchedColumn = fileColumns.value.find(fileColumn => isSimilar(expected, fileColumn.value));
-    if (matchedColumn) {
-      mappedColumns.value[expected] = matchedColumn.value; // Mapeamento bem-sucedido
-    } else {
-      console.warn(`Coluna não mapeada: ${expected}`);
-      mappedColumns.value[expected] = ''; // Deixa em branco se não mapeado
-    }
-  });
+const handleDadosValidos = (dados) => {
+    dadosValidos.value = dados;
 };
 
-// Passo 2: Revisão Manual do Mapeamento
-// O usuário faz os ajustes manuais no mapeamento através da interface.
-
-// Passo 3: Processar os dados após confirmação do mapeamento
-const buildDataTable = () => {
-  invalidData.value = [];
-  newRecords.value = [];
-
-  // Agora que o usuário confirmou o mapeamento, processamos os dados
-  fileData.value.forEach(row => {
-    const validationErrors = validateRow(row);
-    const mappedRow = {};
-
-    expectedColumns.value.forEach((expected) => {
-      const column = mappedColumns.value[expected];
-      mappedRow[expected] = column && row[column] !== undefined ? row[column] : null;
-    });
-
-    if (validationErrors) {
-      invalidData.value.push({ ...mappedRow, errors: validationErrors });
-    } else if (!row.existingRecord) {
-      newRecords.value.push(mappedRow);
-    }
-  });
-
-  dataTableBuilt.value = true; // Agora podemos construir a tabela com os dados corretos
+const handleDadosInvalidos = (dados) => {
+    dadosInvalidos.value = dados;
 };
+// Dados do Gráfico
+const chartData = computed(() => ({
+    labels: ['Válidos', 'Inválidos'],
+    datasets: [
+        {
+            data: [dadosValidos.value.length, dadosInvalidos.value.length],
+            backgroundColor: ['#4caf50', '#f44336']
+        }
+    ]
+}));
 
-// Função para verificar a similaridade das colunas
-const isSimilar = (expected, actual) => {
-  return expected.toLowerCase().replace(/\s+/g, '') === actual.toLowerCase().replace(/\s+/g, '');
+const submitData = () => {
+    // Enviar dados válidos para o backend
+    console.log('Enviando dados válidos:', validData.value);
 };
+// Função chamada quando a edição é concluída
+const onCellEditComplete = (event) => {
+    const { data, newValue, field } = event;
+    data[field] = newValue;
+    const errors = validateRow(data, selectedImportType.value); // Revalida a linha inteira após edição
+    data.errors = errors;
 
-// Função para estilizar as células com base em erros
-const getCellStyle = (errors, field) => {
-  return errors && errors[field] ? 'background-color: #fdd; border-color: #f00;' : '';
-};
-
-// Função para enviar os dados para o backend, normalizando as chaves no momento do envio
-const submitData = async () => {
-  loading.value = true;
-  try {
-    const normalizedRecords = newRecords.value.map(record => {
-      const normalizedRecord = {};
-      Object.keys(record).forEach(key => {
-        const normalizedKey = normalizarChave(key);
-        normalizedRecord[normalizedKey] = record[key];
-      });
-      return normalizedRecord;
-    });
-
-    const response = await axios.post('/import/mass', {
-      tipo: selectedImportType.value,
-      id_cliente: store.userIdCliente,
-      data: normalizedRecords
-    });
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Dados enviados com sucesso!', life: 3000 });
-  } catch (error) {
-    const errorMessage = `Erro na importação: ${error.response?.data?.error || 'Erro desconhecido.'}`;
-    toast.add({ severity: 'error', summary: 'Erro', detail: errorMessage, life: 5000 });
-    console.error('Erro ao enviar dados:', error);
-  } finally {
-        loading.value = false; // Desativando loading
+    if (Object.keys(errors).length === 0) {
+        // Se não houver erros, mover para os dados válidos
+        dadosValidos.value.push(data);
+        dadosInvalidos.value = dadosInvalidos.value.filter((row) => row !== data);
     }
 };
+// Função chamada ao cancelar a edição
+const onCellEditCancel = (event) => {
+    console.log('Edição cancelada para:', event);
+};
+watch(selectedImportType, () => {
+    fieldLabels.value = getFieldLabels(selectedImportType.value);
+});
 </script>
 
 <style scoped>
+.card {
+    padding: 2rem;
+}
+
+.p-stepper {
+    flex-basis: 40rem;
+}
+
 .columns-mapping {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .column-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .expected-column {
-  flex: 1;
-  font-weight: bold;
+    font-weight: bold;
+    width: 30%;
 }
 
-.document-column {
-  flex: 2;
+.text-red-500 {
+    color: red;
+}
+.summary {
+    margin-bottom: 2rem;
 }
 
-.import-summary {
-  margin-top: 20px;
+.summary-cards {
+    display: flex;
+    gap: 1rem;
 }
 
-.p-mt-3 {
-  margin-top: 1rem;
+.summary-card {
+    text-align: center;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.summary-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.invalid-table,
+.valid-table {
+    margin-top: 2rem;
+}
+
+.p-datatable-sm {
+    font-size: 0.875rem;
+}
+.chart-table-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.chart-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.invalid-table {
+    flex: 2;
 }
 </style>

@@ -4,6 +4,7 @@ import LastRecalls from '@/components/LastRecalls.vue';
 import MostRecalled from '@/components/MostRecalled.vue';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore';
+import dashboardService from '@/services/dashboardService';
 
 const store = useAuthStore();
 const produtos = ref([]);
@@ -15,21 +16,11 @@ const fetchData = async () => {
     const data = { id_cliente: store.userIdCliente };
 
     try {
-        // Dados para "Last Recalls"
-        const ultimasretiradas = await axios.post('/relatorioItems/ultimos', data);
-        produtos.value = ultimasretiradas.data.slice(0, 5);
-
-        // Dados para "Most Recalled"
-        const maisretiradosResponse = await axios.post('/relatorioItems/listarMaisRet', data);
-        maisretirados.value = maisretiradosResponse.data.slice(0, 5);
-
-        // Dados para "Keep Alive" (Gráfico)
-        const respostaKeepAlive = await axios.post('/SDM/resumo', data);
-        dadosDM.value = respostaKeepAlive.data;
-
-        // Dados para "Itens com Estoque Baixo"
-        const repostaEstoqueBaixo = await axios.post('/Estoque/ItensEstoqueBaixo', data);
-        estoqueBaixo.value = repostaEstoqueBaixo.data.slice(0, 5);
+        const result = await dashboardService.fetchMasterData();
+        produtos.value = result.produtos;
+        maisretirados.value = result.maisRetirados;
+        dadosDM.value =result.keepAlive;
+        estoqueBaixo.value = result.estoqueBaixo;
     } catch (error) {
         console.error('Erro ao carregar dados do Master:', error);
     }
