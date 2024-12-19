@@ -228,7 +228,7 @@ onMounted(() => {
             <TabPanel :header="visible ? 'Editar Cliente' : 'Adicionar Cliente'">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="mt-5">
                             <!--Formulário para adicionar ou editar um cliente -->
                             <form @submit.prevent="submitForm">
                                 <div class="mt-5 mx-0 p-fluid grid">

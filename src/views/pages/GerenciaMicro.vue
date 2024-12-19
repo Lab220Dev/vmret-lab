@@ -1,6 +1,6 @@
 <template>
     <div class="card">
-        <h2 class="mt-6">Gerenciamento de Serviços</h2>
+        <h3 class="mt-6">Cadastro de Serviços</h3>
         <hr />
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
@@ -10,10 +10,10 @@
 
         <div v-if="selectedClient?.id" class="mt-8 card services-edit">
             <div class="flex mt-4 justify-content-between align-items-center">
-                <h4 class="mt-3 no-break">
+                <h5 class="mt-3 no-break">
                     Serviços atribuídos:
                     <span v-if="isAdmin">{{ selectedClient.name }}</span>
-                </h4>
+                </h5>
                 <div class="add-service flex align-items-center">
                     <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
                     <Button class="ml-3" label="Inserir" @click="addService" />
@@ -21,6 +21,7 @@
             </div>
 
             <DataTable class="mt-5" :value="clientServices">
+                <template #empty>Não há serviços cadastrados.</template>
                 <Column field="name" header="Serviço"></Column>
                 <Column header="Ação">
                     <template #body="slotProps">
@@ -45,7 +46,7 @@
                 </template>
             </Dialog>
 
-            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 px-6">
+            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 px-6 pb-8">
                 <!---->
                 <h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
 
@@ -69,14 +70,14 @@
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">Destinatários:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
                     </div>
-                </div>
-            </Fieldset>
-        </div>
-        <div class="flex justify-content-end flex-wrap mt-8">
+                <div class="flex justify-content-end flex-wrap mt-8">
             <Button class="flex align-items-center justify-content-center" v-if="novo" label="Adicionar Serviço" @click="addServiceWithConfig" />
 
             <Button class="flex align-items-center justify-content-center" v-else label="Atualizar Serviços" @click="updateServiceConfig" />
+        </div></div>
+            </Fieldset>
         </div>
+        
     </div>
 </template>
 

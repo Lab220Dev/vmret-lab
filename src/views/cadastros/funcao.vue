@@ -160,7 +160,7 @@ onMounted(() => {
             <TabPanel :header="visible ? 'Editar Função' : 'Adicionar Função'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="mt-5">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
