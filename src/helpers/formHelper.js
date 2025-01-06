@@ -4,6 +4,7 @@
  * @param {string} filterValue - Valor da busca para filtrar os dados.
  * @returns {Object[]} - A lista de dados filtrada.
  */
+
 export const applyGlobalFilter = (dataList, filterValue) => {
     const filter = filterValue?.toLowerCase() || '';
     return dataList.filter((item) =>

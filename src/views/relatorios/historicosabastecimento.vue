@@ -1,56 +1,57 @@
 <script setup>
-import VueDatePicker from '@vuepic/vue-datepicker';
-import { FilterMatchMode } from 'primevue/api';
-import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted, watch } from 'vue';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import VueDatePicker from '@vuepic/vue-datepicker';  // Importação do componente de date picker
+import { FilterMatchMode } from 'primevue/api';  // Importação do tipo de filtro para o componente DataTable
+import { useToast } from 'primevue/usetoast';  // Importação do serviço de Toast para exibir mensagens
+import '@vuepic/vue-datepicker/dist/main.css';  // Importação do CSS do VueDatePicker
+import { ref, onMounted, watch } from 'vue';  // Importação das funções reativas e de ciclo de vida do Vue
+import axios from '@/axios.js';  // Importação do axios configurado para requisições HTTP
+import { useAuthStore } from '@/store/authStore.js';  // Importação do store para autenticação
+import LoadingSpinner from '@/components/LoadingSpinner.vue';  // Importação do componente de spinner de carregamento
 
-const showDialog = ref(false);
-const dialogMessage = ref('');
-
-const filteredCount = ref(0);
-
-const loading = ref(false);
-
-const store = useAuthStore();
-const toast = useToast();
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
-const dropdown1 = ref(null);
-const dropdown2 = ref(null);
-const dropdown3 = ref(null);
-const dropdown4 = ref(null);
-const dropdown5 = ref(null);
-const historico = ref([]);
-const todosOption = { label: 'Todos', value: null };
-const ListaOperador = ref(null);
-const dms = ref([todosOption]);
-const plantas = ref([todosOption]);
-const setor = ref([todosOption]);
-const centroCusto = ref([todosOption]);
-const filters = ref({
+// Definindo referências reativas
+const showDialog = ref(false);  // Flag para exibir o modal de mensagem
+const dialogMessage = ref('');  // Mensagem exibida no modal
+const filteredCount = ref(0);  // Contagem de registros filtrados
+const loading = ref(false);  // Flag para exibir o loading spinner
+const store = useAuthStore();  // Usando o store para autenticação
+const toast = useToast();  // Usando o serviço de toast para exibir mensagens
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');  // Mensagem padrão quando não há dados
+const dropdown1 = ref(null);  // Referência para o primeiro dropdown (DM)
+const dropdown2 = ref(null);  // Referência para o segundo dropdown (Planta)
+const dropdown3 = ref(null);  // Referência para o terceiro dropdown (Setor)
+const dropdown4 = ref(null);  // Referência para o quarto dropdown (Centro de Custo)
+const dropdown5 = ref(null);  // Referência para o quinto dropdown (Operador)
+const historico = ref([]);  // Dados do histórico de abastecimento
+const todosOption = { label: 'Todos', value: null };  // Opção "Todos" para os filtros
+const ListaOperador = ref(null);  // Lista de operadores
+const dms = ref([todosOption]);  // Lista de DM's
+const plantas = ref([todosOption]);  // Lista de plantas
+const setor = ref([todosOption]);  // Lista de setores
+const centroCusto = ref([todosOption]);  // Lista de centros de custo
+const filters = ref({  // Filtros globais para o DataTable
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const show = ref(true);
-const selectedItem = ref([]);
-const relatorio = ref({
+const show = ref(true);  // Flag para exibir a busca ou o resultado
+const selectedItem = ref([]);  // Item selecionado (para exibir mais detalhes)
+const relatorio = ref({  // Dados do relatório
     dm: '',
     id_planta: '',
     id_centro_custo: '',
     id_setor: '',
     id_operador: '',
-    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    data_final: new Date()
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),  // Data inicial (1º dia do mês atual)
+    data_final: new Date()  // Data final (data atual)
 });
 
+// Função para formatar data (dia/mês/ano)
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 };
+
+// Função para formatar data com horas e minutos
 const formatTabela = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;
@@ -59,80 +60,90 @@ const formatTabela = (date) => {
     const minutos = date.getMinutes().toString().padStart(2, '0');
     return `${day}/${month}/${year} - ${horas}:${minutos}`;
 };
+
+// Função para converter data para ISO (utilizada nas requisições)
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
 
+// Função para buscar o histórico de abastecimento
 const buscar = async () => {
     const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final),
-        id_operador: relatorio.value.id_operador
+        id_usuario: store.userId,  // ID do usuário autenticado
+        id_cliente: store.userIdCliente,  // ID do cliente
+        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,  // Filtro por DM
+        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,  // Filtro por funcionário
+        data_inicio: toISODate(relatorio.value.data_inicio),  // Data de início
+        data_final: toISODate(relatorio.value.data_final),  // Data final
+        id_operador: relatorio.value.id_operador  // Filtro por operador
     };
     try {
-        loading.value = true;
-        const response = await axios.post('/HistoricoAbastecimento/relatorio', data);
-        historico.value = response.data;
+        loading.value = true;  // Ativa o loading
+        const response = await axios.post('/HistoricoAbastecimento/relatorio', data);  // Requisição para obter o histórico
+        historico.value = response.data;  // Armazena os dados do histórico
 
-        filteredCount.value = historico.value.length;
+        filteredCount.value = historico.value.length;  // Conta o número de registros encontrados
 
         if (historico.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';  // Mensagem caso não haja dados
         } else {
-            emptyMessage.value = '';
+            emptyMessage.value = '';  // Limpa a mensagem de erro se houver dados
         }
     } catch (error) {
-        console.error('Erro ao buscar histórico:', error);
+        console.error('Erro ao buscar histórico:', error);  // Erro na requisição
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;  // Desativa o loading após a resposta
     }
 };
+
+// Função para voltar à tela inicial
 const voltar = () => {
-    show.value = true;
-    selectedItem.value = {};
+    show.value = true;  // Exibe o painel de busca
+    selectedItem.value = {};  // Limpa o item selecionado
 };
-const dt = ref(null);
 
+// Função para gerar CSV
 const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
+    const headers = Object.keys(data[0]).join(',');  // Gera cabeçalhos com base nas chaves dos objetos
+    const rows = data.map((row) => Object.values(row).join(',')).join('\n');  // Converte os dados em formato CSV
+    return `${headers}\n${rows}`;  // Retorna o conteúdo CSV
 };
 
+// Função para exportar CSV
 const exportCSV = () => {
-    const csvContent = generateCSV(historico.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'HistoricoAbastecimento.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csvContent = generateCSV(historico.value);  // Gera o CSV com os dados do histórico
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });  // Cria um blob com o conteúdo CSV
+    const link = document.createElement('a');  // Cria um link para download
+    const url = URL.createObjectURL(blob);  // Cria uma URL temporária para o blob
+    link.setAttribute('href', url);  // Atribui a URL ao link
+    link.setAttribute('download', 'HistoricoAbastecimento.csv');  // Define o nome do arquivo
+    document.body.appendChild(link);  // Adiciona o link ao DOM
+    link.click();  // Simula um clique no link para baixar o arquivo
+    document.body.removeChild(link);  // Remove o link do DOM
 };
+
+// Função para exportar JSON
 const exportJSON = () => {
-    const jsonContent = JSON.stringify(historico.value, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'HistoricoAbastecimento.json');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const jsonContent = JSON.stringify(historico.value, null, 2);  // Converte os dados para formato JSON
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });  // Cria um blob com o conteúdo JSON
+    const link = document.createElement('a');  // Cria um link para download
+    const url = URL.createObjectURL(blob);  // Cria uma URL temporária para o blob
+    link.setAttribute('href', url);  // Atribui a URL ao link
+    link.setAttribute('download', 'HistoricoAbastecimento.json');  // Define o nome do arquivo
+    document.body.appendChild(link);  // Adiciona o link ao DOM
+    link.click();  // Simula um clique no link para baixar o arquivo
+    document.body.removeChild(link);  // Remove o link do DOM
 };
+
+// Função para carregar DM's
 const fetchDM = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente  // ID do cliente
     };
     try {
         const response = await axios.post('/relatorioRetiRe/listardm', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}`  // Token de autenticação
             }
         });
         dms.value = [
@@ -141,41 +152,44 @@ const fetchDM = async () => {
                 label: `${Identificacao}`,
                 value: ID_DM
             }))
-        ];
+        ];  // Atualiza a lista de DM's com os dados da resposta
     } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error);
+        console.error('Erro ao carregar lista de dms:', error);  // Erro ao carregar DM's
     }
 };
+
+// Função para carregar as plantas
 const fetchIdPlanta = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente  // ID do cliente
     };
     try {
         const response = await axios.post('plantas/listar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}`  // Token de autenticação
             }
         });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
         plantas.value = [
             todosOption,
             ...response.data.map(({ nome, id_planta }) => ({
                 label: `Planta  ${nome}`,
                 value: id_planta
             }))
-        ];
+        ];  // Atualiza a lista de plantas com os dados da resposta
     } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
+        console.error('Erro ao buscar opções de plantas:', error);  // Erro ao buscar plantas
     }
 };
+
+// Função para carregar setores
 const fetchSetorDiretoria = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente  // ID do cliente
     };
     try {
         const response = await axios.post('Setor/listar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}`  // Token de autenticação
             }
         });
         setor.value = [
@@ -184,19 +198,21 @@ const fetchSetorDiretoria = async () => {
                 label: `Setor  ${nome}`,
                 value: id_setor
             }))
-        ];
+        ];  // Atualiza a lista de setores com os dados da resposta
     } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
+        console.error('Erro ao buscar setores/diretorias:', error);  // Erro ao buscar setores
     }
 };
+
+// Função para carregar centros de custo
 const fetchCentroCusto = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente  // ID do cliente
     };
     try {
         const response = await axios.post('cdc/listar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}`  // Token de autenticação
             }
         });
         centroCusto.value = [
@@ -205,20 +221,21 @@ const fetchCentroCusto = async () => {
                 label: `Centro de Custo  ${Nome}`,
                 value: ID_CentroCusto
             }))
-        ];
+        ];  // Atualiza a lista de centros de custo com os dados da resposta
     } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
+        console.error('Erro ao buscar centros de custo:', error);  // Erro ao buscar centros de custo
     }
 };
 
+// Função para carregar operadores
 const fetchOperador = async () => {
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente  // ID do cliente
     };
     try {
         const response = await axios.post('/funcionarios/listarOperarios', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}`  // Token de autenticação
             }
         });
         ListaOperador.value = [
@@ -227,28 +244,33 @@ const fetchOperador = async () => {
                 label: funcionario.nome,
                 value: funcionario.id_operador
             }))
-        ];
+        ];  // Atualiza a lista de operadores com os dados da resposta
     } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
+        console.error('Erro ao carregar usuários:', error);  // Erro ao carregar operadores
     }
 };
+
+// Função para fechar todos os dropdowns
 const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();  // Fecha o dropdown do DM
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();  // Fecha o dropdown da planta
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();  // Fecha o dropdown do setor
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();  // Fecha o dropdown do centro de custo
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();  // Fecha o dropdown do operador
 };
 
+// Função para tratar o evento de abertura do date picker
 const handleDatepickerOpen = () => {
-    closeAllDropdowns();
+    closeAllDropdowns();  // Fecha todos os dropdowns ao abrir o date picker
 };
+
+// Carrega os dados ao montar o componente
 onMounted(() => {
-    fetchDM();
-    fetchIdPlanta();
-    fetchSetorDiretoria();
-    fetchOperador();
-    fetchCentroCusto();
+    fetchDM();  // Carrega a lista de DM's
+    fetchIdPlanta();  // Carrega a lista de plantas
+    fetchSetorDiretoria();  // Carrega a lista de setores
+    fetchOperador();  // Carrega a lista de operadores
+    fetchCentroCusto();  // Carrega a lista de centros de custo
 });
 </script>
 

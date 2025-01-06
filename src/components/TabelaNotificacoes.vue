@@ -1,23 +1,42 @@
 <template>
-    <DataTable :value="validListanoti" :responsiveLayout="'scroll'" class="card">
-      <Column field="cliente" header="Cliente"></Column>
-      <Column field="tipo" header="Tipo"></Column>
-      <Column field="date" header="Data"></Column>
-      <Column field="status" header="Status"></Column>
-      <template #empty>
-            <p class="text-center">Sem notificações disponíveis</p>
-        </template>
-    </DataTable>
-  </template>
-  
-  <script setup>
-import { computed } from 'vue';
-  const props = defineProps({
-    listanoti: Array,
-    default: () => []
-  });
-  const validListanoti = computed(() => {
-    return Array.isArray(props.listanoti) ? props.listanoti : [];
+  <!-- Componente DataTable exibindo a lista de notificações -->
+  <DataTable :value="validListanoti" :responsiveLayout="'scroll'" class="card">
+    
+    <!-- Coluna 'cliente' para exibir o nome do cliente -->
+    <Column field="cliente" header="Cliente"></Column>
+    
+    <!-- Coluna 'tipo' para exibir o tipo da notificação -->
+    <Column field="tipo" header="Tipo"></Column>
+    
+    <!-- Coluna 'date' para exibir a data da notificação -->
+    <Column field="date" header="Data"></Column>
+    
+    <!-- Coluna 'status' para exibir o status da notificação -->
+    <Column field="status" header="Status"></Column>
+
+    <!-- Template personalizado para exibição quando não há dados -->
+    <template #empty>
+      <!-- Mensagem de 'vazio' quando não há notificações disponíveis -->
+      <p class="text-center">Sem notificações disponíveis</p>
+    </template>
+  </DataTable>
+</template>
+
+<script setup>
+import { computed } from 'vue';  // Importa a função 'computed' do Vue para definir uma propriedade computada
+
+// Define as propriedades que o componente espera receber
+const props = defineProps({
+  listanoti: {  // Propriedade 'listanoti' que deve ser um array
+      type: Array,  // Espera um valor do tipo Array
+      default: () => []  // Se não for fornecido, o valor padrão será um array vazio
+  }
 });
-  </script>
-  
+
+// Computed para garantir que 'listanoti' seja um array válido
+const validListanoti = computed(() => {
+  // Verifica se a propriedade 'listanoti' é um array
+  // Se for, retorna a lista; se não for, retorna um array vazio
+  return Array.isArray(props.listanoti) ? props.listanoti : [];
+});
+</script>

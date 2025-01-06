@@ -1,242 +1,215 @@
-/**
- * Importa a função `defineStore` do Pinia, usada para criar e gerenciar stores reativos.
- */
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'; // Importa a função 'defineStore' da biblioteca Pinia para criar uma store
+import axios from '@/axios.js'; // Importa a instância do axios configurada para chamadas API
+import { useAuthStore } from '@/store/authStore'; // Importa a store de autenticação para acessar informações do usuário
 
-/**
- * Importa a instância `axios`, configurada para facilitar as requisições HTTP.
- */
-import axios from '@/axios.js';
-
-/**
- * Importa o store `useAuthStore`, que é usado para acessar dados relacionados ao usuário autenticado.
- */
-import { useAuthStore } from '@/store/authStore';
-
-/**
- * Define uma opção 'Todos' que será adicionada no início de listas de seleção.
- */
+// Define uma opção "Todos" que será utilizada como o primeiro item nas listas carregadas
 const todosOption = { label: 'Todos', value: null };
 
-/**
- * Função auxiliar que adiciona a opção 'Todos' no começo de qualquer lista de opções.
- * @param {Array} list - A lista original de itens.
- * @returns {Array} A lista com a opção 'Todos' no início.
- */
+// Função que adiciona a opção "Todos" no início de uma lista
 const addTodosOption = (list) => [todosOption, ...list];
 
-/**
- * Cria e exporta o store `useDataStore`, que gerencia os dados compartilhados da aplicação,
- * como funcionários, plantas, setores, centros de custo (CDCs), DMs e produtos.
- */
+// Define a store 'data' utilizando Pinia
 export const useDataStore = defineStore('data', {
-  /**
-   * Define o estado inicial do store, que armazena listas de dados como funcionários, plantas, setores, etc.
-   * @returns {Object} O estado inicial com as propriedades para armazenar as listas de dados.
-   */
-  state: () => ({
-    funcionarios: null, // Lista de funcionários, inicialmente vazia.
-    plantas: null, // Lista de plantas, inicialmente vazia.
-    setores: null, // Lista de setores, inicialmente vazia.
-    cdcs: null, // Lista de centros de custo (CDCs), inicialmente vazia.
-    dms: null, // Lista de DMs, inicialmente vazia.
-    produtos: null // Lista de produtos, inicialmente vazia.
-  }),
+    state: () => ({
+        // Inicializa o estado da store com variáveis para armazenar as listas de dados
+        funcionarios: null,  // Lista de funcionários
+        plantas: null,       // Lista de plantas
+        setores: null,       // Lista de setores
+        cdcs: null,          // Lista de Centros de Custo
+        dms: null,           // Lista de DMs (Documentos)
+        produtos: null       // Lista de produtos
+    }),
 
-  /**
-   * Define as ações do store, que são métodos que manipulam ou obtêm dados e atualizam o estado do store.
-   */
-  actions: {
-    
-    /**
-     * Faz a requisição para obter a lista de funcionários e armazena no estado.
-     * Caso a lista já tenha sido carregada, retorna diretamente os dados.
-     * @returns {Array} A lista de funcionários com a opção 'Todos' no início.
-     */
-    async fetchFuncionarios() {
-      if (this.funcionarios) return this.funcionarios; // Se a lista já existe, retorna ela diretamente.
+    actions: {
+        /**
+         * Carrega a lista de funcionários.
+         * Se os dados já estiverem carregados, retorna os dados em cache.
+         * @returns {Array} Lista de funcionários
+         * @throws {Error} Se houver erro na requisição
+         */
+        async fetchFuncionarios() {
+            if (this.funcionarios) return this.funcionarios; // Se os dados de funcionários já estiverem carregados, retorna os dados em cache
 
-      try {
-        const authStore = useAuthStore(); // Obtém o store de autenticação.
-        const data = {
-          id_cliente: authStore.userIdCliente // Passa o ID do cliente autenticado na requisição.
-        };
-        const response = await axios.post('/funcionarios/listaSimples', data); // Faz a requisição para obter os funcionários.
-        this.funcionarios = addTodosOption( // Adiciona a opção 'Todos' na lista de funcionários.
-          response.data.map((funcionario) => ({
-            label: funcionario.nome, // Nome do funcionário.
-            value: funcionario.id_funcionario // ID do funcionário.
-          }))
-        );
-        return this.funcionarios;
-      } catch (error) {
-        console.error('Erro ao carregar lista de funcionários:', error); // Exibe erro no console, caso ocorra.
-        throw error; // Lança o erro para ser tratado por quem chamou a função.
-      }
-    },
+            try {
+                const authStore = useAuthStore(); // Obtém a store de autenticação para pegar o id_cliente
+                const data = {
+                    id_cliente: authStore.userIdCliente // Prepara os dados com id_cliente do usuário logado
+                };
 
-    /**
-     * Faz a requisição para obter a lista de plantas e armazena no estado.
-     * @returns {Array} A lista de plantas com a opção 'Todos' no início.
-     */
-    async fetchPlantas() {
-      if (this.plantas) return this.plantas; // Se a lista de plantas já foi carregada, retorna ela diretamente.
+                const response = await axios.post('/funcionarios/listaSimples', data); // Faz a requisição para carregar a lista de funcionários
+                this.funcionarios = addTodosOption( // Adiciona a opção "Todos" na lista de funcionários
+                    response.data.map((funcionario) => ({
+                        label: funcionario.nome, // Nome do funcionário como rótulo
+                        value: funcionario.id_funcionario // ID do funcionário como valor
+                    }))
+                );
+                return this.funcionarios; // Retorna a lista de funcionários
+            } catch (error) {
+                console.error('Erro ao carregar lista de funcionários:', error); // Se houver erro, exibe no console
+                throw error; // Lança o erro para ser tratado externamente
+            }
+        },
 
-      try {
-        const authStore = useAuthStore();
-        const data = { id_cliente: authStore.userIdCliente };
-        const response = await axios.post('/plantas/listaSimples', data);
-        this.plantas = addTodosOption(
-          response.data.map(({ nome, id_planta }) => ({
-            label: `Planta  ${nome}`, // Formata o nome da planta.
-            value: id_planta // ID da planta.
-          }))
-        );
-        return this.plantas;
-      } catch (error) {
-        console.error('Erro ao carregar lista de plantas:', error);
-        throw error;
-      }
-    },
+        /**
+         * Carrega a lista de plantas.
+         * @returns {Array} Lista de plantas
+         * @throws {Error} Se houver erro na requisição
+         */
+        async fetchPlantas() {
+            if (this.plantas) return this.plantas; // Retorna os dados em cache se já estiverem carregados
 
-    /**
-     * Faz a requisição para obter a lista de setores e armazena no estado.
-     * @returns {Array} A lista de setores com a opção 'Todos' no início.
-     */
-    async fetchSetores() {
-      if (this.setores) return this.setores; // Se a lista de setores já foi carregada, retorna ela diretamente.
+            try {
+                const authStore = useAuthStore(); // Obtém a store de autenticação para pegar o id_cliente
+                const data = {
+                    id_cliente: authStore.userIdCliente // Prepara os dados com id_cliente
+                };
 
-      try {
-        const authStore = useAuthStore();
-        const data = { id_cliente: authStore.userIdCliente };
-        const response = await axios.post('/Setor/listaSimples', data);
-        this.setores = addTodosOption(
-          response.data.map(({ id_setor, nome, id_centro_custo }) => ({
-            label: `Setor  ${nome}`, // Formata o nome do setor.
-            value: id_setor, // ID do setor.
-            id_centro_custo // ID do centro de custo relacionado.
-          }))
-        );
-        return this.setores;
-      } catch (error) {
-        console.error('Erro ao carregar lista de Setores:', error);
-        throw error;
-      }
-    },
+                const response = await axios.post('/plantas/listaSimples', data); // Faz a requisição para carregar a lista de plantas
+                this.plantas = addTodosOption( // Adiciona a opção "Todos" na lista de plantas
+                    response.data.map(({ nome, id_planta }) => ({
+                        label: `Planta  ${nome}`, // Rótulo da planta
+                        value: id_planta // ID da planta como valor
+                    }))
+                );
+                return this.plantas; // Retorna a lista de plantas
+            } catch (error) {
+                console.error('Erro ao carregar lista de plantas:', error); // Exibe erro no console caso a requisição falhe
+                throw error; // Lança o erro
+            }
+        },
 
-    /**
-     * Faz a requisição para obter a lista de centros de custo (CDCs) e armazena no estado.
-     * @returns {Array} A lista de centros de custo (CDCs) com a opção 'Todos' no início.
-     */
-    async fetchCdc() {
-      if (this.cdcs) return this.cdcs; // Se a lista de centros de custo já foi carregada, retorna ela diretamente.
+        /**
+         * Carrega a lista de setores.
+         * @returns {Array} Lista de setores
+         * @throws {Error} Se houver erro na requisição
+         */
+        async fetchSetores() {
+            if (this.setores) return this.setores; // Se os dados de setores já estiverem carregados, retorna os dados em cache
 
-      try {
-        const authStore = useAuthStore();
-        const data = { id_cliente: authStore.userIdCliente };
-        const response = await axios.post('/cdc/listaSimples', data);
-        this.cdcs = addTodosOption(
-          response.data.map(({ ID_CentroCusto, Nome }) => ({
-            label: `Centro de Custo  ${Nome}`, // Formata o nome do centro de custo.
-            value: ID_CentroCusto // ID do centro de custo.
-          }))
-        );
-        return this.cdcs;
-      } catch (error) {
-        console.error('Erro ao carregar lista de Centro de Custos:', error);
-        throw error;
-      }
-    },
+            try {
+                const authStore = useAuthStore(); // Obtém a store de autenticação para pegar o id_cliente
+                const data = {
+                    id_cliente: authStore.userIdCliente // Prepara os dados com id_cliente
+                };
 
-    /**
-     * Faz a requisição para obter a lista de DMs e armazena no estado.
-     * @returns {Array} A lista de DMs com a opção 'Todos' no início.
-     */
-    async fetchListaDms() {
-      if (this.dms) return this.dms; // Se a lista de DMs já foi carregada, retorna ela diretamente.
+                const response = await axios.post('/Setor/listaSimples', data); // Faz a requisição para carregar a lista de setores
+                this.setores = addTodosOption( // Adiciona a opção "Todos" na lista de setores
+                    response.data.map(({ id_setor, nome, id_centro_custo }) => ({
+                        label: `Setor  ${nome}`, // Rótulo do setor
+                        value: id_setor, // ID do setor como valor
+                        id_centro_custo // ID do centro de custo associado ao setor
+                    }))
+                );
+                return this.setores; // Retorna a lista de setores
+            } catch (error) {
+                console.error('Erro ao carregar lista de Setores:', error); // Exibe erro no console se a requisição falhar
+                throw error; // Lança o erro
+            }
+        },
 
-      try {
-        const authStore = useAuthStore();
-        const data = { id_cliente: authStore.userIdCliente };
-        const response = await axios.post('/DM/listarDMResumido', data);
-        this.dms = addTodosOption(
-          response.data.map((dm) => ({
-            label: dm.Identificacao, // Formata a identificação do DM.
-            value: dm.id_dm // ID do DM.
-          }))
-        );
-        return this.dms;
-      } catch (error) {
-        console.error('Erro ao carregar lista de DMs:', error);
-        throw error;
-      }
-    },
+        /**
+         * Carrega a lista de Centros de Custo (CDCs).
+         * @returns {Array} Lista de Centros de Custo
+         * @throws {Error} Se houver erro na requisição
+         */
+        async fetchCdc() {
+            if (this.cdcs) return this.cdcs; // Se os dados de Centros de Custo já estiverem carregados, retorna os dados em cache
 
-    /**
-     * Faz a requisição para obter a lista de produtos e armazena no estado.
-     * @returns {Array} A lista de produtos com a opção 'Todos' no início.
-     */
-    async fetchProdutos() {
-      if (this.produtos) return this.produtos; // Se a lista de produtos já foi carregada, retorna ela diretamente.
+            try {
+                const authStore = useAuthStore(); // Obtém a store de autenticação para pegar o id_cliente
+                const data = {
+                    id_cliente: authStore.userIdCliente // Prepara os dados com id_cliente
+                };
 
-      try {
-        const authStore = useAuthStore();
-        const data = { id_cliente: authStore.userIdCliente };
-        const response = await axios.post('/produtos/listarResumo', data);
-        this.produtos = addTodosOption(
-          response.data.map((produto) => ({
-            label: produto.nome, // Nome do produto.
-            value: produto.id_produto, // ID do produto.
-            codigo: produto.codigo // Código do produto.
-          }))
-        );
-        return this.produtos;
-      } catch (error) {
-        console.error('Erro ao carregar lista de produtos:', error);
-        throw error;
-      }
-    },
+                const response = await axios.post('/cdc/listaSimples', data); // Faz a requisição para carregar a lista de Centros de Custo
+                this.cdcs = addTodosOption( // Adiciona a opção "Todos" na lista de Centros de Custo
+                    response.data.map(({ ID_CentroCusto, Nome }) => ({
+                        label: `Centro de Custo  ${Nome}`, // Rótulo do Centro de Custo
+                        value: ID_CentroCusto // ID do Centro de Custo como valor
+                    }))
+                );
+                return this.cdcs; // Retorna a lista de Centros de Custo
+            } catch (error) {
+                console.error('Erro ao carregar lista de Centro de Custos:', error); // Exibe erro no console se a requisição falhar
+                throw error; // Lança o erro
+            }
+        },
 
-    /**
-     * Limpa o cache da lista de funcionários.
-     */
-    invalidateFuncionariosCache() {
-      this.funcionarios = null;
-    },
+        /**
+         * Carrega a lista de DMs (Documentos).
+         * @returns {Array} Lista de DMs
+         * @throws {Error} Se houver erro na requisição
+         */
+        async fetchListaDms() {
+            if (this.dms) return this.dms; // Se os dados de DMs já estiverem carregados, retorna os dados em cache
 
-    /**
-     * Limpa o cache da lista de plantas.
-     */
-    invalidatePlantasCache() {
-      this.plantas = null;
-    },
+            try {
+                const authStore = useAuthStore(); // Obtém a store de autenticação para pegar o id_cliente
+                const data = {
+                    id_cliente: authStore.userIdCliente // Prepara os dados com id_cliente
+                };
 
-    /**
-     * Limpa o cache da lista de setores.
-     */
-    invalidateSetorCache() {
-      this.setores = null;
-    },
+                const response = await axios.post('/DM/listarDMResumido', data); // Faz a requisição para carregar a lista de DMs
+                this.dms = addTodosOption( // Adiciona a opção "Todos" na lista de DMs
+                    response.data.map((dm) => ({
+                        label: dm.Identificacao, // Identificação do DM como rótulo
+                        value: dm.id_dm // ID do DM como valor
+                    }))
+                );
+                return this.dms; // Retorna a lista de DMs
+            } catch (error) {
+                console.error('Erro ao carregar lista de DMs:', error); // Exibe erro no console se a requisição falhar
+                throw error; // Lança o erro
+            }
+        },
 
-    /**
-     * Limpa o cache da lista de centros de custo (CDCs).
-     */
-    invalidateCDCCache() {
-      this.cdcs = null;
-    },
+        /**
+         * Carrega a lista de produtos.
+         * @returns {Array} Lista de produtos
+         * @throws {Error} Se houver erro na requisição
+         */
+        async fetchProdutos() {
+            if (this.produtos) return this.produtos; // Se os dados de produtos já estiverem carregados, retorna os dados em cache
 
-    /**
-     * Limpa o cache da lista de DMs.
-     */
-    invalidateDMCache() {
-      this.dms = null;
-    },
+            try {
+                const authStore = useAuthStore(); // Obtém a store de autenticação para pegar o id_cliente
+                const data = {
+                    id_cliente: authStore.userIdCliente // Prepara os dados com id_cliente
+                };
 
-    /**
-     * Limpa o cache da lista de produtos.
-     */
-    invalidatProdutoCache() {
-      this.produtos = null;
+                const response = await axios.post('/produtos/listarResumo', data); // Faz a requisição para carregar a lista de produtos
+                this.produtos = addTodosOption( // Adiciona a opção "Todos" na lista de produtos
+                    response.data.map((produto) => ({
+                        label: produto.nome, // Nome do produto como rótulo
+                        value: produto.id_produto, // ID do produto como valor
+                        codigo: produto.codigo // Código do produto
+                    }))
+                );
+                return this.produtos; // Retorna a lista de produtos
+            } catch (error) {
+                console.error('Erro ao carregar lista de produtos:', error); // Exibe erro no console se a requisição falhar
+                throw error; // Lança o erro
+            }
+        },
+
+        // Funções para invalidar o cache das listas carregadas
+        invalidateFuncionariosCache() {
+            this.funcionarios = null; // Define a lista de funcionários como null para forçar um novo carregamento
+        },
+        invalidatePlantasCache() {
+            this.plantas = null; // Define a lista de plantas como null para forçar um novo carregamento
+        },
+        invalidateSetorCache() {
+            this.setores = null; // Define a lista de setores como null para forçar um novo carregamento
+        },
+        invalidateCDCCache() {
+            this.cdcs = null; // Define a lista de Centros de Custo como null para forçar um novo carregamento
+        },
+        invalidateDMCache() {
+            this.dms = null; // Define a lista de DMs como null para forçar um novo carregamento
+        },
+        invalidatProdutoCache() {
+            this.produtos = null; // Define a lista de produtos como null para forçar um novo carregamento
+        }
     }
-  }
 });

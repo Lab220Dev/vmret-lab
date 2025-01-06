@@ -1,179 +1,223 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue'; // Importa funções do Vue para reatividade e manipulação do ciclo de vida
 
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore.js';
-import { FilterMatchMode } from 'primevue/api';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import axios from '@/axios.js'; // Importa a instância do Axios configurada para fazer requisições HTTP
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados do usuário autenticado
+import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 
-const loading = ref(false);
-const relatorio = ref({
-    id_dm: ''
-});
-const todosOption = { label: 'Todos', value: null };
-const dropdown1 = ref(null);
-const EstoqueDM = ref([]);
-const dms = ref([todosOption]);
-const store = useAuthStore();
-const emptyMessage = ref('');
+// Declara as variáveis reativas
+const loading = ref(false); // Variável para controlar o estado de carregamento
+const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
+const todosOption = { label: 'Todos', value: null }; // Opção para o filtro de DM para mostrar todos
+const dropdown1 = ref(null); // Referência para o dropdown de DM
+const EstoqueDM = ref([]); // Lista de itens de estoque filtrados
+const dms = ref([todosOption]); // Lista de DM com a opção de "Todos"
+const store = useAuthStore(); // Instancia o store de autenticação
+const emptyMessage = ref(''); // Mensagem a ser exibida quando não houver dados
 
+// Filtros para a DataTable
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para busca na tabela
 });
 
+// Variável para controlar o número de registros filtrados
 const filteredCount = ref(0);
 
+/**
+ * Função para buscar as DM's (Documentos de Movimentação) e preencher a lista `dms`
+ * Espera que a resposta da API retorne um array de objetos contendo 'ID_DM' e 'Identificacao'
+ */
 const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
+    const data = { id_cliente: store.userIdCliente }; // Dados da requisição, incluindo o ID do cliente do usuário autenticado
+
     try {
+        // Envia a requisição para buscar as DM's
         const response = await axios.post('/Estoque/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
+            headers: { Authorization: `Bearer ${store.token}` } // Cabeçalho de autorização com o token do usuário
         });
+
+        // Preenche a lista de DM's, adicionando a opção "Todos"
         dms.value = [
             todosOption,
             ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`,
-                value: ID_DM
+                label: `${Identificacao}`, // Exibe a identificação da DM
+                value: ID_DM // Valor da DM
             }))
         ];
     } catch (error) {
+        // Se ocorrer erro ao buscar as DM's, exibe no console
         console.error('Erro ao carregar lista de dms:', error);
     }
 };
 
+/**
+ * Função para gerar o relatório de estoque das DM's selecionadas
+ * Espera que a resposta da API retorne uma lista de itens de estoque
+ */
 const relatorioDM = async () => {
-    loading.value = true;
+    loading.value = true; // Ativa o estado de carregamento
+
     const data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId,
-        id_dm: relatorio.value.id_dm
+        id_cliente: store.userIdCliente, // ID do cliente autenticado
+        id_usuario: store.userId, // ID do usuário autenticado
+        id_dm: relatorio.value.id_dm // ID da DM selecionada
     };
 
     try {
+        // Envia a requisição para gerar o relatório de estoque
         const response = await axios.post('/Estoque/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
+            headers: { Authorization: `Bearer ${store.token}` } // Cabeçalho de autorização com o token do usuário
         });
+
+        // Preenche a lista de EstoqueDM com a resposta da API
         EstoqueDM.value = response.data;
 
+        // Atualiza o contador de registros filtrados
         filteredCount.value = EstoqueDM.value.length;
     } catch (error) {
+        // Se ocorrer erro ao gerar o relatório, exibe no console
         console.error('Erro ao gerar o Relatorio de Estoque das DMS:', error);
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativa o estado de carregamento
     }
 };
 
+/**
+ * Observa o filtro global e atualiza o contador de registros filtrados.
+ * A cada mudança no valor de `filters.global.value`, o contador de registros filtrados é atualizado.
+ */
 watch(
-    () => filters.value.global.value,
+    () => filters.value.global.value, // Observa o valor do filtro global
     () => {
+        // Filtra os itens do EstoqueDM com base no valor do filtro global
         filteredCount.value = EstoqueDM.value.filter((item) => {
-            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            const filterValue = filters.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro e converte para minúsculas
+            // Verifica se algum campo do item contém o valor do filtro
             return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
-        }).length;
+        }).length; // Atualiza o contador de registros filtrados
     },
-    { immediate: true }
+    { immediate: true } // Chama imediatamente após a montagem para garantir que o filtro esteja pronto
 );
 
+/**
+ * Função chamada quando o componente é montado.
+ * Chama `fetchDM` para carregar os dados iniciais das DM's.
+ */
 onMounted(() => {
-    fetchDM();
+    fetchDM(); // Carrega as DM's quando o componente é montado
 });
 </script>
 
 <template>
-    <div class="card vh">
-        <h5 class="my-6 ml-2 text-2xl">Estoque da DM</h5>
+    <div class="card vh"> <!-- Contêiner principal da tela -->
+        <h5 class="my-6 ml-2 text-2xl">Estoque da DM</h5> <!-- Título da página -->
+
+        <!-- Dropdown para seleção de DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">DM:</label>
-            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
+            <Dropdown
+                id="dm"
+                style="width: 20%"
+                v-model="relatorio.id_dm"
+                :options="dms"
+                ref="dropdown1"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                class="mb-2 ml-2"
+                @change="relatorioDM()" 
+            />
         </div>
 
+        <!-- Tabela de Estoque -->
         <DataTable
             class="mt-3"
-            v-model:filters="filters"
-            :value="EstoqueDM"
-            stripedRows
-            showGridlines
-            removableSort
-            paginator
-            :rows="10"
-            dataKey="SKU"
+            v-model:filters="filters" 
+            :value="EstoqueDM" 
+            stripedRows 
+            showGridlines 
+            removableSort 
+            paginator 
+            :rows="10" 
+            dataKey="SKU" 
             :rowsPerPageOptions="[5, 10, 20, 50]"
-            :globalFilterFields="['sku', 'nome', 'Posicao', 'quantidade', 'quantidademinima', 'capacidade']"
-            selectionMode="single"
-            :metaKeySelection="false"
-            :sortOrder="1"
-            :sortField="'sku'"
-            :tableStyle="{ width: '100%' }"
+            :globalFilterFields="['sku', 'nome', 'Posicao', 'quantidade', 'quantidademinima', 'capacidade']" 
+            selectionMode="single" 
+            :metaKeySelection="false" 
+            :sortOrder="1" 
+            :sortField="'sku'" 
+            tableStyle="min-width: 50rem; table-layout: fixed;" 
         >
+            <!-- Cabeçalho da tabela -->
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ filteredCount }}</span>
+                        <span>Total de registros: {{ filteredCount }}</span> <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
+                        <!-- Filtro global -->
                         <IconField iconPosition="left">
                             <InputIcon>
-                                <i class="pi pi-search" />
+                                <i class="pi pi-search" /> <!-- Ícone de pesquisa -->
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <InputText v-model="filters['global'].value" placeholder="Busca" /> <!-- Campo de pesquisa -->
                         </IconField>
                     </div>
                 </div>
             </template>
 
+            <!-- Mensagem a ser exibida quando não houver dados -->
             <template #empty> {{ emptyMessage }} </template>
 
+            <!-- Definição das colunas da tabela -->
             <Column field="sku" class="table-cell" sortable header="SKU"></Column>
             <Column field="nome" sortable header="Produto">
                 <template #body="{ data }">
-                    <span v-tooltip="data.nome">{{ data.nome }}</span>
+                    <span v-tooltip="data.nome">{{ data.nome }}</span> <!-- Exibe o nome do produto com tooltip -->
                 </template>
             </Column>
             <Column field="Posicao" sortable style="text-align: center" header="Posição">
                 <template #body="{ data }">
                     <span v-tooltip="data.modelo === '2018' ? 'Placa / Mola ' : data.modelo === '2023' ? ' Andar / Posição' : 'Placa / Motor'">
                         {{ data.Posicao }}
-                    </span>
+                    </span> <!-- Exibe a posição do produto com tooltip condicional -->
                 </template>
             </Column>
             <Column field="quantidade" sortable style="text-align: center">
                 <template #header>
-                    <span v-tooltip="'Quantidade Atual'">Quant. Atual</span>
+                    <span v-tooltip="'Quantidade Atual'">Quant. Atual</span> <!-- Tooltip para a coluna de quantidade -->
                 </template>
             </Column>
             <Column field="quantidademinima" sortable style="text-align: center">
                 <template #header>
-                    <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span>
+                    <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span> <!-- Tooltip para a coluna de quantidade mínima -->
                 </template>
             </Column>
-            <Column field="capacidade" sortable style="text-align: center" header="Capacidade"></Column>
+            <Column field="capacidade" sortable style="text-align: center" header="Capacidade"></Column> <!-- Coluna para capacidade -->
         </DataTable>
+
+        <!-- Spinner de carregamento exibido enquanto a requisição está em andamento -->
         <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
 <style>
 .card {
-    overflow-x: auto;
+    overflow-x: auto; /* Permite rolagem horizontal quando o conteúdo exceder a largura */
 }
 
 .datatable-wrapper {
-    overflow-x: auto;
-    width: 100vw;
+    overflow-x: auto; /* Permite rolagem horizontal da tabela */
+    width: 100vw; /* Largura total da tela */
 }
 
 .filtrar {
-    margin-top: 25px;
+    margin-top: 25px; /* Espaçamento superior */
 }
 
 .drop {
-    width: 100%;
+    width: 100%; /* Largura total do dropdown */
 }
 
 @media (max-width: 580px) {
@@ -194,13 +238,13 @@ onMounted(() => {
 }
 
 .field {
-    white-space: nowrap;
-    text-align: left;
+    white-space: nowrap; /* Impede quebra de linha */
+    text-align: left; /* Alinha o texto à esquerda */
 }
 
 .table-cell {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow: hidden; /* Oculta o texto que excede o tamanho da célula */
+    white-space: nowrap; /* Impede quebra de linha */
+    text-overflow: ellipsis; /* Exibe reticências (...) quando o texto excede o tamanho */
 }
 </style>

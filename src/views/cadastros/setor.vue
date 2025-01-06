@@ -8,230 +8,342 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
 
-const active = ref(0);
-const store = useAuthStore();
-const dataStore = useDataStore();
-const toast = useToast();
-const ListaSetor = ref([]);
-const ListaItensSetor = ref([]);
-const ItensSetor = ref([]);
-const itemDialog = ref(false);
-const ListaItensSelecionados = ref([]);
-const deleteSetorDialog = ref(false);
-const deleteProductDialog = ref(false);
-const visible = ref(false);
-const editVisible = ref(false);
-const integracao = ref(false);
-const item = ref({});
-const selectedProduct = ref({});
-const itemsSelecionadosSetor = ref([]);
-const todosOption = { label: 'Todos', value: null };
-const centroCusto = ref([todosOption]);
-const loading = ref(false);
+const active = ref(0); // Aba ativa na interface
+const store = useAuthStore(); // Armazena informações do usuário logado
+const dataStore = useDataStore(); // Armazena dados compartilhados no app
+const toast = useToast(); // Controle de notificações
+const ListaSetor = ref([]); // Lista de setores
+const ListaItensSetor = ref([]); // Lista de itens de um setor específico
+const ItensSetor = ref([]); // Itens disponíveis no setor
+const itemDialog = ref(false); // Controle de visibilidade do diálogo de edição de itens
+const ListaItensSelecionados = ref([]); // Itens selecionados no setor
+const deleteSetorDialog = ref(false); // Controle de visibilidade do diálogo de exclusão de setor
+const deleteProductDialog = ref(false); // Controle de visibilidade do diálogo de exclusão de produto
+const visible = ref(false); // Controle de visibilidade do formulário de adição de produto
+const editVisible = ref(false); // Controle de visibilidade do formulário de edição de setor
+const integracao = ref(false); // Indicador de integração (não utilizado diretamente neste trecho)
+const item = ref({}); // Item selecionado para edição
+const selectedProduct = ref({}); // Produto selecionado na tabela
+const itemsSelecionadosSetor = ref([]); // Itens selecionados no setor
+const todosOption = { label: 'Todos', value: null }; // Opção padrão para "Todos"
+const centroCusto = ref([todosOption]); // Lista de centros de custo
+const loading = ref(false); // Indicador de carregamento
 
+// Configurações de filtro para busca global
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
-const filteredCount = ref(0);
+const filteredCount = ref(0); // Contagem de resultados filtrados
 
+// Objeto reativo para informações de um setor
 let setor = reactive({
     codigo: '',
     nome: '',
     id_centro_custo: ''
 });
+
+// Objeto para o produto selecionado e sua quantidade
 const produtoSelecionado = ref({
     id_produto: '',
     quantidade: ''
 });
+
+/**
+ * Seleciona uma linha da tabela de setores e carrega os itens do setor.
+ * @param {Object} event - Evento de seleção da linha.
+ */
 const onRowSelect = (event) => {
+    // Define o setor selecionado a partir do evento.
     setor = event.data;
+    // Altera a aba ativa para exibir os detalhes do setor.
     active.value = 1;
+    // Abre o formulário de edição de setor.
     editVisible.value = true;
+    // Carrega os produtos relacionados ao setor selecionado.
     fetchProdutoSetor();
+    // Carrega a lista de itens disponíveis no setor.
     fetchListaItemSetor();
 };
 
-const onRowSelectItem = (event) => {
-    // Atribuir o item selecionado ao `item`
-    item.value = { ...event.data }; // Cria uma cópia do item selecionado
-    itemDialog.value = true; // Abre o dialog de edição
+/**
+ * Seleciona uma linha da tabela de itens e abre o diálogo de edição do item.
+ * @param {Object} event - Evento de seleção da linha.
+ */
+ const onRowSelectItem = (event) => {
+    // Define o item selecionado para edição com base no evento.
+    item.value = { ...event.data };
+    // Abre o diálogo para edição do item.
+    itemDialog.value = true;
 };
 
+/**
+ * Submete o formulário de setor para adição ou atualização.
+ */
 const submitForm = () => {
+    // Verifica se o formulário está em modo de edição.
     if (editVisible.value) {
+        // Atualiza o setor existente.
         atualizarSetor();
     } else {
+        // Adiciona um novo setor.
         adicionarSetor();
     }
 };
 
+/**
+ * Carrega a lista de setores do cliente logado.
+ */
 const loadSetor = async () => {
+    // Monta os dados necessários para a requisição, com o ID do cliente logado.
     const data = {
         id_cliente: store.userIdCliente
     };
+    // Ativa o indicador de carregamento.
     loading.value = true;
     try {
+        // Faz a chamada à API para listar os setores.
         const response = await axios.post('/Setor/listar', data);
+        // Atualiza a lista de setores com os dados retornados.
         ListaSetor.value = response.data;
-
+        // Atualiza a contagem de setores filtrados.
         filteredCount.value = ListaSetor.value.length;
     } catch (error) {
+        // Exibe o erro no console para depuração.
         console.error('Erro ao listar Setores:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        // Desativa o indicador de carregamento.
+        loading.value = false;
     }
 };
 
-const adicionarSetor = async () => {
+/**
+ * Adiciona um novo setor para o cliente logado.
+ */
+ const adicionarSetor = async () => {
+    // Monta os dados necessários para adicionar um setor.
     const data = {
         id_cliente: store.userIdCliente,
         ...setor
     };
+    // Ativa o indicador de carregamento.
     loading.value = true;
     try {
+        // Faz a chamada à API para adicionar o setor.
         const response = await axios.post('/Setor/adicionar', data);
+        // Invalida o cache dos setores no armazenamento compartilhado.
         dataStore.invalidateSetorCache();
-
+        // Exibe uma notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor salvo com sucesso', life: 3000 });
+        // Recarrega a lista de setores.
         loadSetor();
+        // Volta para a aba principal.
         active.value = 0;
+        // Reseta os campos do formulário.
         resetForm();
     } catch (error) {
+        // Exibe uma notificação de erro.
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao salvar setor', life: 3000 });
+        // Loga o erro no console para análise.
         console.error('Erro ao adicionar Setores:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        // Desativa o indicador de carregamento.
+        loading.value = false;
     }
 };
 
+/**
+ * Monitora alterações no filtro global e atualiza a contagem de resultados.
+ */
 watch(
-    () => filters.value.global.value,
+    () => filters.value.global.value, // Observa o valor atual do filtro global.
     () => {
+        // Filtra a lista de setores com base no valor do filtro.
         filteredCount.value = ListaSetor.value.filter((item) => {
             const filterValue = filters.value.global.value?.toLowerCase() || '';
             return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
         }).length;
     },
-    { immediate: true }
+    { immediate: true } // Executa a lógica imediatamente ao configurar o observador.
 );
 
+/**
+ * Exclui um setor selecionado.
+ */
 const deleteSetor = async () => {
+    // Monta os dados para exclusão do setor selecionado.
     let data = { id_setor: setor.id_setor };
+    // Ativa o indicador de carregamento.
     loading.value = true;
     try {
+        // Faz a chamada à API para excluir o setor.
         await axios.post('/Setor/deletar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Envia o token para autenticação.
             }
         });
+        // Exibe uma notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
+        // Invalida o cache dos setores.
         dataStore.invalidateSetorCache();
+        // Fecha o diálogo de exclusão.
         deleteSetorDialog.value = false;
+        // Recarrega a lista de setores.
         loadSetor();
+        // Retorna para a aba principal.
         active.value = 0;
+        // Reseta os campos do formulário.
         resetForm();
     } catch {
+        // Exibe uma notificação de erro.
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o setor', life: 3000 });
     } finally {
-        loading.value = false; // Desativando loading
+        // Desativa o indicador de carregamento.
+        loading.value = false;
     }
+    // Garante o retorno à aba principal.
     active.value = 0;
 };
 
-const atualizarSetor = async () => {
-    loading.value = true;
-    const data = {
-        ...setor
-    };
+/**
+ * Atualiza as informações de um setor.
+ * @async
+ */
+ const atualizarSetor = async () => {
+    loading.value = true; // Inicia o carregamento.
+    const data = { ...setor }; // Dados do setor a serem enviados.
+
     try {
+        // Faz uma requisição POST para atualizar o setor.
         const response = await axios.post('/Setor/atualizar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Token de autenticação.
             }
         });
+
+        // Notificação de sucesso ao atualizar o setor.
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Atualizado', life: 3000 });
+        
+        // Invalida o cache do setor para forçar a atualização dos dados.
         dataStore.invalidateSetorCache();
+
+        // Recarrega a lista de setores atualizada.
         loadSetor();
-        active.value = 0;
-        resetForm();
+
+        active.value = 0; // Define a aba ativa como a primeira.
+        resetForm(); // Reseta o formulário do setor.
     } catch (error) {
+        // Notificação de erro ao atualizar o setor.
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar setor', life: 3000 });
-        console.error('Erro ao atualizar Setores:', error);
+        console.error('Erro ao atualizar Setores:', error); // Log detalhado do erro.
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Finaliza o carregamento.
     }
 };
+
+/**
+ * Busca a lista de itens disponíveis para o setor.
+ * @async
+ */
 const fetchListaItemSetor = async () => {
-    loading.value = true;
+    loading.value = true; // Inicia o carregamento.
     const data = {
-        id_cliente: store.userIdCliente,
-        id_setor: setor.id_setor
+        id_cliente: store.userIdCliente, // ID do cliente.
+        id_setor: setor.id_setor // ID do setor.
     };
+
     try {
+        // Faz uma requisição POST para buscar itens disponíveis no setor.
         const response = await axios.post('/setor/itensdisponiveissetor', data);
+
+        // Atualiza os itens disponíveis no setor com os dados recebidos.
         ItensSetor.value = response.data;
     } catch (error) {
-        console.error('Erro ao listar itens:', error);
+        console.error('Erro ao listar itens:', error); // Log do erro.
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Finaliza o carregamento.
     }
 };
 
-/*resetar informações e botões*/
+/**
+ * Observa mudanças na aba ativa e executa ações correspondentes.
+ */
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
-        loadSetor();
-        visible.value = false;
-        editVisible.value = false;
+        resetForm(); // Reseta o formulário do setor.
+        loadSetor(); // Recarrega a lista de setores.
+        visible.value = false; // Esconde o modal visível.
+        editVisible.value = false; // Esconde o modal de edição.
     }
 });
 
+/**
+ * Reseta os campos do formulário para os valores iniciais.
+ */
 const resetForm = () => {
-    setor.codigo = '';
-    setor.nome = '';
-    setor.id_centro_custo = '';
-    integracao.value = false;
+    setor.codigo = ''; // Limpa o código do setor.
+    setor.nome = ''; // Limpa o nome do setor.
+    setor.id_centro_custo = ''; // Limpa o centro de custo do setor.
+    integracao.value = false; // Desativa a integração.
 };
 
+/**
+ * Lida com a seleção de uma linha na tabela.
+ * @param {Object} event - Evento de seleção.
+ */
 const handleRowSelection = async (event) => {
-    await onRowSelect(event);
+    await onRowSelect(event); // Processa a linha selecionada.
 };
 
+/**
+ * Carrega dados iniciais como centros de custo.
+ * @async
+ */
 const loadData = async () => {
     try {
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Busca centros de custo.
     } catch (error) {
-        console.error('Erro ao carregar dados iniciais:', error);
+        console.error('Erro ao carregar dados iniciais:', error); // Log do erro.
     }
 };
+
+/**
+ * Executa ações no momento da montagem do componente.
+ */
 onMounted(() => {
-    loadSetor();
-    loadData();
+    loadSetor(); // Carrega a lista de setores.
+    loadData(); // Carrega dados adicionais.
 });
 
-const atualizarProdutoSetor = async () => {
+/**
+ * Atualiza os produtos associados a um setor.
+ * @async
+ */
+ const atualizarProdutoSetor = async () => {
     const data = {
-        id_cliente: store.userIdCliente,
-        id_produto: item.value.id_produto,
-        id_setor: item.value.id_setor,
-        qtd_limite: item.value.quantidade
+        id_cliente: store.userIdCliente, // ID do cliente.
+        id_produto: item.value.id_produto, // ID do produto selecionado.
+        id_setor: item.value.id_setor, // ID do setor associado.
+        qtd_limite: item.value.quantidade // Quantidade limite para o produto.
     };
 
-    loading.value = true;
+    loading.value = true; // Inicia o carregamento.
+
     try {
+        // Faz uma requisição POST para atualizar o produto no setor.
         const response = await axios.post('/setor/atualizarproduto', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Token de autenticação.
             }
         });
 
-        loadSetor();
-        fetchListaItemSetor();
-        active.value = 1;
-        
-        resetForm();
-        itemDialog.value = false;
+        loadSetor(); // Recarrega os setores.
+        fetchListaItemSetor(); // Atualiza a lista de itens disponíveis.
+        active.value = 1; // Define a aba ativa como a segunda.
+
+        resetForm(); // Reseta o formulário.
+        itemDialog.value = false; // Fecha o diálogo de edição.
+
+        // Notificação de sucesso ao atualizar o produto.
         toast.add({
             severity: 'success',
             summary: 'Sucesso',
@@ -239,95 +351,127 @@ const atualizarProdutoSetor = async () => {
             life: 3000
         });
     } catch (error) {
-        console.error('Erro ao atualizar o produto:', error);
+        // Notificação de erro ao atualizar o produto.
         toast.add({
             severity: 'error',
             summary: 'Erro',
             detail: 'Erro ao atualizar o produto. Verifique a quantidade e tente novamente.',
             life: 3000
         });
+        console.error('Erro ao atualizar o produto:', error); // Log do erro.
     } finally {
-        loading.value = false; // Desativar carregamento
+        loading.value = false; // Finaliza o carregamento.
     }
 };
 
+/**
+ * Busca os produtos associados a um setor.
+ * @async
+ */
 const fetchProdutoSetor = async () => {
     const data = {
-        id_cliente: store.userIdCliente,
-        id_setor: setor.id_setor
+        id_cliente: store.userIdCliente, // ID do cliente.
+        id_setor: setor.id_setor // ID do setor.
     };
+
     try {
+        // Faz uma requisição POST para buscar produtos associados ao setor.
         const response = await axios.post('/setor/fetchProdutoSetor', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Token de autenticação.
             }
         });
+
+        // Mapeia os produtos recebidos para serem utilizados em dropdowns ou listas.
         ListaItensSetor.value = response.data.map(({ id_produto, nome }) => ({
             label: nome,
             value: id_produto
         }));
     } catch (error) {
-        console.error('Erro ao recuperar os produtos do setor:', error);
+        console.error('Erro ao recuperar os produtos do setor:', error); // Log do erro.
     }
 };
 
+/**
+ * Salva um novo produto associado a um setor.
+ * @async
+ */
 const SalvarProduto = async () => {
     const data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId,
-        id_produto: produtoSelecionado.value.id_produto,
-        quantidade: produtoSelecionado.value.quantidade,
-        ...setor
+        id_cliente: store.userIdCliente, // ID do cliente.
+        id_usuario: store.userId, // ID do usuário que está realizando a ação.
+        id_produto: produtoSelecionado.value.id_produto, // ID do produto selecionado.
+        quantidade: produtoSelecionado.value.quantidade, // Quantidade definida.
+        ...setor // Dados adicionais do setor.
     };
-    loading.value = true;
+
+    loading.value = true; // Inicia o carregamento.
+
     try {
+        // Faz uma requisição POST para salvar o produto no setor.
         const response = await axios.post('/setor/additem', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Token de autenticação.
             }
         });
-        fetchListaItemSetor();
-        visible.value = false;
+
+        fetchListaItemSetor(); // Atualiza a lista de itens disponíveis.
+        visible.value = false; // Fecha o modal de adição.
+
+        // Notificação de sucesso ao adicionar o produto.
         toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
-        console.log('Resposta do servidor:', response.data);
+        console.log('Resposta do servidor:', response.data); // Log da resposta do servidor.
     } catch (error) {
-        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message);
+        // Notificação de erro ao adicionar o produto.
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
+        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message); // Log do erro.
     } finally {
-        loading.value = false;
+        loading.value = false; // Finaliza o carregamento.
     }
 };
 
+/**
+ * Deleta um produto associado a um setor.
+ * @async
+ */
 const deletarProduto = async () => {
     const data = {
-        id_cliente: store.userIdCliente,
-        id_produto: item.value.id_produto,
-        id_setor: item.value.id_setor
+        id_cliente: store.userIdCliente, // ID do cliente.
+        id_produto: item.value.id_produto, // ID do produto a ser deletado.
+        id_setor: item.value.id_setor // ID do setor associado.
     };
 
-    loading.value = true;
+    loading.value = true; // Inicia o carregamento.
+
     try {
+        // Faz uma requisição POST para deletar o produto do setor.
         await axios.post('/setor/deletarProduto', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Token de autenticação.
             }
         });
 
-        fetchListaItemSetor();
+        fetchListaItemSetor(); // Atualiza a lista de itens disponíveis.
 
+        // Notificação de sucesso ao deletar o produto.
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso', life: 3000 });
-        deleteProductDialog.value = false;
+        deleteProductDialog.value = false; // Fecha o diálogo de confirmação.
     } catch (error) {
-        console.error('Erro ao deletar produto:', error);
+        // Notificação de erro ao deletar o produto.
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o produto', life: 3000 });
+        console.error('Erro ao deletar produto:', error); // Log do erro.
     } finally {
-        loading.value = false;
+        loading.value = false; // Finaliza o carregamento.
     }
 };
 
+/**
+ * Exibe o diálogo de exclusão para o produto selecionado.
+ * @param {Object} itm - Produto a ser deletado.
+ */
 const deleteProduct = async (itm) => {
-    item.value = itm;
-    deleteProductDialog.value = true;
+    item.value = itm; // Define o produto selecionado.
+    deleteProductDialog.value = true; // Exibe o diálogo de exclusão.
 };
 </script>
 
@@ -514,37 +658,69 @@ const deleteProduct = async (itm) => {
 </template>
 
 <style>
-.overflow-scroll {
-    overflow: scroll;
-    resize: none;
+/**
+ * Classe que aplica o comportamento de rolagem e impede o redimensionamento.
+ * @remarks
+ * - Permite rolagem horizontal e vertical no elemento.
+ * - Remove a funcionalidade de redimensionamento.
+ */
+ .overflow-scroll {
+    overflow: scroll; /* Adiciona rolagem horizontal e vertical ao conteúdo. */
+    resize: none; /* Impede o redimensionamento do elemento. */
 }
 
+/**
+ * Estilo aplicado para telas menores (máximo de 1024px de largura).
+ * @remarks
+ * - Usado para ajustar margens de elementos centralizados em dispositivos menores.
+ */
 @media (max-width: 1024px) {
     .text-center {
-        margin: 2px;
+        margin: 2px; /* Define uma margem de 2px em torno do texto centralizado. */
     }
 }
 
+/**
+ * Classe para configurar o espaçamento interno dos campos de entrada.
+ * @remarks
+ * - Utilizada para ajustar o padding de elementos do tipo campo de formulário.
+ */
 .field {
-    padding: 4.5px;
+    padding: 4.5px; /* Adiciona um espaço interno uniforme de 4.5px. */
 }
 
+/**
+ * Classe que define largura fixa para botões.
+ * @remarks
+ * - Garante que todos os botões tenham a mesma largura.
+ */
 .buttons {
-    width: 200px;
+    width: 200px; /* Define uma largura fixa de 200px. */
 }
 
+/**
+ * Classe para títulos com controle de espaço e alinhamento.
+ * @remarks
+ * - Preserva quebras de linha e organiza títulos centralizados.
+ */
 .titulo {
-    white-space: pre-wrap;
-    text-align: center;
+    white-space: pre-wrap; /* Mantém as quebras de linha e os espaços do texto original. */
+    text-align: center; /* Centraliza o texto. */
 }
 
+/**
+ * Estilo aplicado a telas menores (máximo de 580px de largura).
+ * @remarks
+ * - Usado para criar um layout responsivo.
+ * - Elementos ocupam 100% da largura disponível em dispositivos menores.
+ */
 @media (max-width: 580px) {
     .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
+        flex: 0 0 100%; /* Configura o item para ocupar 100% da largura no modelo flexbox. */
+        max-width: 100%; /* Define a largura máxima como 100% para evitar overflow. */
+        margin-bottom: 1rem; /* Adiciona espaçamento inferior de 1rem entre os elementos. */
+        width: 100%; /* Garante que o elemento ocupe a largura total do contêiner pai. */
+        margin: 1px; /* Adiciona uma margem uniforme de 1px ao redor do elemento. */
     }
 }
 </style>

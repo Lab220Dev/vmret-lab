@@ -1,99 +1,117 @@
 <script setup>
-import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
-import { ProductService } from '@/service/ProductService';
-import { useToast } from 'primevue/usetoast';
+// Importações necessárias para o funcionamento do componente.
+import { FilterMatchMode } from 'primevue/api'; // Importa os modos de correspondência de filtro para a tabela de dados.
+import { ref, onMounted, onBeforeMount } from 'vue'; // Importa funções do Vue: 'ref' para reatividade, 'onMounted' e 'onBeforeMount' para hooks de ciclo de vida.
+import { ProductService } from '@/service/ProductService'; // Importa o serviço que lida com dados de produtos.
+import { useToast } from 'primevue/usetoast'; // Importa a função de notificação (toast).
 
+// Inicializa a função toast para exibir mensagens.
 const toast = useToast();
 
-const products = ref(null);
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref(null);
-const dt = ref(null);
-const filters = ref({});
-const submitted = ref(false);
-const statuses = ref([
+// Define as variáveis reativas para o gerenciamento do estado.
+const products = ref(null); // Armazena a lista de produtos.
+const productDialog = ref(false); // Controle de exibição do modal de edição de produto.
+const deleteProductDialog = ref(false); // Controle de exibição do modal de exclusão de produto.
+const deleteProductsDialog = ref(false); // Controle de exibição do modal de exclusão de múltiplos produtos.
+const product = ref({}); // Armazena os dados de um produto específico.
+const selectedProducts = ref(null); // Armazena os produtos selecionados.
+const dt = ref(null); // Referência para o DataTable para exportação.
+const filters = ref({}); // Filtros de pesquisa na tabela.
+const submitted = ref(false); // Controle de envio de formulário.
+const statuses = ref([ // Status possíveis de um produto.
     { label: 'INSTOCK', value: 'instock' },
     { label: 'LOWSTOCK', value: 'lowstock' },
     { label: 'OUTOFSTOCK', value: 'outofstock' }
 ]);
 
-const productService = new ProductService();
+const productService = new ProductService(); // Instancia o serviço de produtos.
 
+// Função que retorna a severidade do badge (ícone) de acordo com o status do estoque.
 const getBadgeSeverity = (inventoryStatus) => {
     switch (inventoryStatus.toLowerCase()) {
-        case 'instock':
-            return 'success';
-        case 'lowstock':
-            return 'warning';
-        case 'outofstock':
-            return 'danger';
-        default:
-            return 'info';
+        case 'instock': // Se o produto estiver em estoque.
+            return 'success'; // Severidade "sucesso".
+        case 'lowstock': // Se o produto estiver com estoque baixo.
+            return 'warning'; // Severidade "aviso".
+        case 'outofstock': // Se o produto estiver fora de estoque.
+            return 'danger'; // Severidade "perigo".
+        default: // Caso o status seja desconhecido.
+            return 'info'; // Severidade "informação".
     }
 };
 
+// Hook que é executado antes de o componente ser montado.
 onBeforeMount(() => {
-    initFilters();
+    initFilters(); // Inicializa os filtros de pesquisa.
 });
+
+// Hook que é executado após o componente ser montado.
 onMounted(() => {
-    productService.getProducts().then((data) => (products.value = data));
+    // Recupera os produtos do serviço quando o componente é montado.
+    productService.getProducts().then((data) => (products.value = data)); // O método getProducts retorna os produtos e os armazena em 'products'.
 });
+
+// Função para formatar os valores de preço como moeda.
 const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); // Formata o valor como uma string de moeda.
 };
 
+// Função para abrir o modal de criação de um novo produto.
 const openNew = () => {
-    product.value = {};
-    submitted.value = false;
-    productDialog.value = true;
+    product.value = {}; // Limpa o objeto do produto para um novo.
+    submitted.value = false; // Reseta o estado de envio do formulário.
+    productDialog.value = true; // Exibe o modal de produto.
 };
 
+// Função para esconder o modal de edição de produto.
 const hideDialog = () => {
-    productDialog.value = false;
-    submitted.value = false;
+    productDialog.value = false; // Fecha o modal de produto.
+    submitted.value = false; // Reseta o estado de envio do formulário.
 };
 
+// Função para salvar ou editar um produto.
 const saveProduct = () => {
-    submitted.value = true;
+    submitted.value = true; // Marca o formulário como enviado.
+    // Verifica se o nome e o preço do produto estão presentes.
     if (product.value.name && product.value.name.trim() && product.value.price) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-        } else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+        if (product.value.id) { // Se o produto já tem um ID, significa que é uma edição.
+            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus; // Atualiza o status de inventário.
+            products.value[findIndexById(product.value.id)] = product.value; // Atualiza o produto na lista.
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 }); // Exibe um toast de sucesso.
+        } else { // Se o produto não tem um ID, significa que é um novo produto.
+            product.value.id = createId(); // Gera um ID único para o novo produto.
+            product.value.code = createId(); // Gera um código único para o novo produto.
+            product.value.image = 'product-placeholder.svg'; // Define uma imagem padrão.
+            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK'; // Define o status de inventário.
+            products.value.push(product.value); // Adiciona o novo produto à lista de produtos.
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 }); // Exibe um toast de sucesso.
         }
-        productDialog.value = false;
-        product.value = {};
+        productDialog.value = false; // Fecha o modal de produto.
+        product.value = {}; // Limpa os dados do produto.
     }
 };
 
+// Função para editar um produto.
 const editProduct = (editProduct) => {
-    product.value = { ...editProduct };
-    productDialog.value = true;
+    product.value = { ...editProduct }; // Copia os dados do produto para 'product'.
+    productDialog.value = true; // Abre o modal de edição.
 };
 
+// Função para confirmar a exclusão de um produto.
 const confirmDeleteProduct = (editProduct) => {
-    product.value = editProduct;
-    deleteProductDialog.value = true;
+    product.value = editProduct; // Armazena o produto a ser excluído.
+    deleteProductDialog.value = true; // Abre o modal de confirmação de exclusão.
 };
 
+// Função para excluir um produto.
 const deleteProduct = () => {
-    products.value = products.value.filter((val) => val.id !== product.value.id);
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+    products.value = products.value.filter((val) => val.id !== product.value.id); // Remove o produto da lista.
+    deleteProductDialog.value = false; // Fecha o modal de confirmação.
+    product.value = {}; // Limpa os dados do produto.
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 }); // Exibe um toast de sucesso.
 };
 
+// Função para encontrar o índice de um produto por ID.
 const findIndexById = (id) => {
     let index = -1;
     for (let i = 0; i < products.value.length; i++) {
@@ -102,35 +120,41 @@ const findIndexById = (id) => {
             break;
         }
     }
-    return index;
+    return index; // Retorna o índice do produto ou -1 se não encontrado.
 };
 
+// Função para gerar um ID único aleatório para o produto.
 const createId = () => {
     let id = '';
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
+        id += chars.charAt(Math.floor(Math.random() * chars.length)); // Gera um ID aleatório.
     }
     return id;
 };
 
+// Função para exportar os produtos para CSV.
 const exportCSV = () => {
-    dt.value.exportCSV();
+    dt.value.exportCSV(); // Chama a função exportCSV do DataTable para exportar os dados.
 };
 
+// Função para confirmar a exclusão de produtos selecionados.
 const confirmDeleteSelected = () => {
-    deleteProductsDialog.value = true;
-};
-const deleteSelectedProducts = () => {
-    products.value = products.value.filter((val) => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+    deleteProductsDialog.value = true; // Abre o modal de confirmação para exclusão de múltiplos produtos.
 };
 
+// Função para excluir os produtos selecionados.
+const deleteSelectedProducts = () => {
+    products.value = products.value.filter((val) => !selectedProducts.value.includes(val)); // Filtra os produtos selecionados e os remove da lista.
+    deleteProductsDialog.value = false; // Fecha o modal de exclusão.
+    selectedProducts.value = null; // Limpa os produtos selecionados.
+    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 }); // Exibe um toast de sucesso.
+};
+
+// Função para inicializar os filtros de pesquisa.
 const initFilters = () => {
     filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Inicializa o filtro global de pesquisa para "CONTAINS" (contém).
     };
 };
 </script>
@@ -142,7 +166,9 @@ const initFilters = () => {
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2">
+                            <!-- Botão para adicionar novo produto -->
                             <Button label="New" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                            <!-- Botão para excluir produtos selecionados -->
                             <Button label="Delete" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
                         </div>
                     </template>
@@ -153,6 +179,7 @@ const initFilters = () => {
                     </template>
                 </Toolbar>
 
+                <!-- Tabela de produtos -->
                 <DataTable
                     ref="dt"
                     :value="products"
@@ -165,6 +192,7 @@ const initFilters = () => {
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
                 >
+                    <!-- Cabeçalho da tabela -->
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 class="m-0">Manage Products</h5>
@@ -175,6 +203,7 @@ const initFilters = () => {
                         </div>
                     </template>
 
+                    <!-- Definição das colunas da tabela -->
                     <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
                     <Column field="code" header="Code" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
@@ -218,6 +247,7 @@ const initFilters = () => {
                             <Tag :severity="getBadgeSeverity(slotProps.data.inventoryStatus)">{{ slotProps.data.inventoryStatus }}</Tag>
                         </template>
                     </Column>
+                    <!-- Ações -->
                     <Column headerStyle="min-width:10rem;">
                         <template #body="slotProps">
                             <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editProduct(slotProps.data)" />
@@ -226,6 +256,7 @@ const initFilters = () => {
                     </Column>
                 </DataTable>
 
+                <!-- Modal de edição de produto -->
                 <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true" class="p-fluid">
                     <img :src="'/demo/images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
                     <div class="field">
@@ -294,13 +325,11 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
+                <!-- Modal de confirmação de exclusão do produto -->
                 <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product"
-                            >Are you sure you want to delete <b>{{ product.name }}</b
-                            >?</span
-                        >
+                        <span v-if="product">Are you sure you want to delete <b>{{ product.name }}</b>?</span>
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
@@ -308,6 +337,7 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
+                <!-- Modal de confirmação de exclusão dos produtos selecionados -->
                 <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
