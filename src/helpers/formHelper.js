@@ -100,4 +100,42 @@ export const applyGlobalFilter = (dataList, filterValue) => {
       form[key] = initialState[key];
     });
   };
+
+  export const resetPlantaForm = (planta) => {
+    Object.assign(planta, {
+      nome: '',
+      id_planta: '',
+      userId: '',
+      senha: '',
+      urlapi: '',
+      clienteid: '',
+    });
+  };
+  
+  export const resetProdutoForm = (produto, imageRefs) => {
+    Object.assign(produto, {
+      codigo: '',
+      id_planta: '',
+      id_tipoProduto: '',
+      id_categoria: '',
+      nome: '',
+      descricao: ' ',
+      unidade_medida: '',
+      validadedias: 0,
+    });
+  
+    if (imageRefs) {
+      imageRefs.forEach((imageRef) => {
+        if (imageRef) imageRef.value = null;
+      });
+    }
+  };
+  
+  export const resetSetorForm = (setor) => {
+    Object.assign(setor, {
+      codigo: '',
+      nome: '',
+      id_centro_custo: '',
+    });
+  };
   

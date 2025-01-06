@@ -1,16 +1,18 @@
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'; // Importando funções do Vue.js para reatividade, manipulação do ciclo de vida e observação
-import { useToast } from 'primevue/usetoast'; // Importando a função para exibir notificações Toast
-import axios from '@/axios.js'; // Importando a configuração do Axios para fazer requisições HTTP
-import '@vuepic/vue-datepicker/dist/main.css'; // Importando o CSS do componente de data
-import imagePlaceholder from '@/assets/images/placeholder4.1.png'; // Imagem de placeholder para ser usada quando não houver imagem
-import { useAuthStore } from '@/store/authStore.js'; // Importando o store para autenticação
-import ImageUpload from '@/components/ImageUpload.vue'; // Importando componente de upload de imagens
-import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importando componente de carregamento
-import { FilterMatchMode } from 'primevue/api'; // Importando modos de filtro do PrimeVue
-import { useDataStore } from '@/store/dataStore.js'; // Importando o store de dados
+import { reactive, ref, onMounted, watch } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import '@vuepic/vue-datepicker/dist/main.css';
+import imagePlaceholder from '@/assets/images/placeholder4.1.png';
+import { useAuthStore } from '@/store/authStore.js';
+import ImageUpload from '@/components/ImageUpload.vue';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { FilterMatchMode } from 'primevue/api';
+import { useDataStore } from '@/store/dataStore.js';
+import produtoService from '@/services/produtoService';
+import { resetProdutoForm } from '@/helpers/formHelper';
+import { getFileExtension } from '@/helpers/HelperUtils';
+import { enrichProdutoData } from '@/helpers/HelperProduto.js';
 
-// Definindo os filtros de pesquisa
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que usa o modo 'CONTAINS'
 });
@@ -21,11 +23,10 @@ const store = useAuthStore();
 
 // Inicializando variáveis de controle de interface
 const toast = useToast();
-const active = ref(0); // Controle do índice ativo
-const loading = ref(false); // Controle de estado de carregamento
-let plantasoptions = ref([]); // Lista de opções de plantas
-let formatedPlantaOptions = ref([]); // Opções de plantas formatadas
-const tipoProduto = ref([ // Tipos de produtos disponíveis
+const active = ref(0);
+const loading = ref(false);
+let formatedPlantaOptions = ref([]);
+const tipoProduto = ref([
     { label: 'EPI', value: 1 },
     { label: 'Insumo', value: 2 },
     { label: 'Consumivel', value: 3 }
@@ -105,39 +106,27 @@ const onRowSelect = async (event) => {
 
 // Função para carregar os produtos com base na página atual e filtro
 const loadProdutos = async (page = 1) => {
-    const searchTerm = filters.value.global.value || ''; // Pega o valor do filtro global
-    if (searchTerm.length >= 3 || searchTerm === '') { // Se o filtro tiver 3 ou mais caracteres ou estiver vazio
-        const data = {
-            id_cliente: store.userIdCliente, // ID do cliente
-            page, // Página atual
-            pageSize, // Tamanho da página
-            searchTerm // Termo de busca
-        };
-        try {
-            loading.value = true; // Ativa o estado de carregamento
-            const response = await axios.post('/produtos/listar', data, { // Faz a requisição para listar produtos
-                headers: {
-                    Authorization: `Bearer ${store.token}` // Header de autenticação
-                }
-            });
+    const searchTerm = filters.value.global.value || '';
+    const data = { id_cliente: store.userIdCliente, page, pageSize, searchTerm };
 
-            ListaProdutos.value = response.data.produtos; // Armazena os produtos retornados
-            totalRecords.value = response.data.totalRecords; // Armazena o total de registros
-
-            await loadImagens(ListaProdutos.value); // Carrega as imagens dos produtos
-        } catch (error) {
-            console.error('Erro ao carregar produtos:', error); // Exibe erro no console
-        } finally {
-            loading.value = false; // Desativa o estado de carregamento
-        }
+    try {
+        loading.value = true;
+        const response = await produtoService.listarProdutos(data, store.token);
+        ListaProdutos.value = response.data.produtos;
+        totalRecords.value = response.data.totalRecords;
+        await loadImagens(ListaProdutos.value);
+    } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos.', life: 3000 });
+    } finally {
+        loading.value = false;
     }
 };
 
-// Variável para controle de debounce do filtro
-const debounceTimeout = ref(null); 
-// Filtro local (debounce)
+const debounceTimeout = ref(null);
+// Filtro local
 watch(
-    () => filters.value.global.value, // Observa o valor do filtro global
+    () => filters.value.global.value,
     (newValue, oldValue) => {
         if (debounceTimeout.value) {
             clearTimeout(debounceTimeout.value); // Limpa o timeout anterior
@@ -175,157 +164,89 @@ const loadData = async () => {
 
 // Função para salvar um novo produto
 const saveProduto = async () => {
-    const formData = new FormData(); // Cria um FormData para enviar os dados do produto
-
-    if (selectedFile.value) { // Se o arquivo principal foi selecionado
-        const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
-        const fileExtension = fileType === 'image/jpeg' ? '.jpg' : '.png'; // Define a extensão com base no tipo MIME
-        const nomeArquivoPrincipal = `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`; // Nome do arquivo
-        formData.append('imagem1', nomeArquivoPrincipal); // Adiciona o arquivo principal ao FormData
-        formData.append('file_principal', selectedFile.value); // Adiciona o arquivo principal real
-    }
-
-    // Repetir processo similar para as imagens secundárias e de informações...
-
-    Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, typeof value === 'string' ? value : String(value)); // Adiciona os dados do produto ao FormData
-    });
-
-    formData.append('id_cliente', store.userIdCliente); // Adiciona o ID do cliente
-
     try {
-        loading.value = true; // Ativa o carregamento
-        const response = await axios.post('/produtos/adicionar', formData, { // Faz a requisição para salvar o produto
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data' // Define o tipo de conteúdo como 'multipart/form-data'
+        loading.value = true;
+        await produtoService.adicionarProduto(
+            enrichProdutoData(produto, store.userId, store.userIdCliente),
+            {
+                selectedFile: selectedFile.value,
+                selectedSecFile: selectedSecFile.value,
+                selectedInfoFile: selectedInfoFile.value
             }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto cadastrado', life: 3000 }); // Exibe uma mensagem de sucesso
-        dataStore.invalidatProdutoCache(); // Invalida o cache de produtos
-        loadProdutos(); // Carrega os produtos novamente
-        resetForm(); // Reseta o formulário
-        active.value = 0; // Volta para a aba de lista de produtos
+        );
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto salvo com sucesso!', life: 3000 });
+        loadProdutos();
+        resetForm();
+        active.value = 0;
     } catch (error) {
-        console.error('Erro ao adicionar o produto:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o produto', life: 3000 }); // Exibe uma mensagem de erro
+        console.error('Erro ao salvar produto:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar produto.', life: 3000 });
     } finally {
-        loading.value = false; // Desativa o estado de carregamento
-        active.value = 0; // Muda a aba para listar produtos
+        loading.value = false;
     }
 };
 
 // Função para deletar um produto
 const deleteProduto = async () => {
-    let data = {
-        id_produto: produto.id_produto, // ID do produto a ser deletado
-        id_usuario: store.userId, // ID do usuário que está deletando
-        id_cliente: store.userIdCliente // ID do cliente
+    const data = {
+        id_produto: produto.id_produto,
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente
     };
+
     try {
-        loading.value = true; // Ativa o carregamento
-        const response = await axios.post('/produtos/deletar', data, { // Faz a requisição para deletar o produto
-            headers: {
-                Authorization: `Bearer ${store.token}` // Header de autenticação
-            }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto excluído', life: 3000 }); // Exibe sucesso
-        loadProdutos(); // Carrega os produtos novamente
-        deleteProdutoDialog.value = false; // Fecha o diálogo de exclusão
+        loading.value = true;
+        await produtoService.deletarProduto(data, store.token);
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso!', life: 3000 });
+        loadProdutos();
+        resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]);
+        deleteProdutoDialog.value = false;
+        active.value = 0;
     } catch (error) {
-        console.error('Erro ao excluir produto:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao excluir o produto', life: 3000 }); // Exibe erro
+        console.error('Erro ao deletar produto:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar produto.', life: 3000 });
     } finally {
-        loading.value = false; // Desativa o estado de carregamento
+        loading.value = false;
     }
 };
 
 const updateProduto = async () => {
-    const formData = new FormData(); // Cria um novo objeto FormData para enviar dados de forma multipart (incluindo arquivos).
-
-    // Adiciona os dados do produto ao FormData
-    Object.entries(produto).forEach(([key, value]) => {
-        formData.append(key, typeof value === 'string' ? value : String(value));
-    });
-
-    // Função para obter a extensão do arquivo com base no tipo MIME
-    const getFileExtension = (fileType) => {
-        if (fileType === 'image/jpeg') return '.jpg'; // Se for uma imagem JPEG, retorna ".jpg"
-        if (fileType === 'image/png') return '.png'; // Se for uma imagem PNG, retorna ".png"
-        return ''; // Retorna uma string vazia se o tipo MIME não for JPEG ou PNG
-    };
-
-    // Verifica se um arquivo foi selecionado para a imagem principal
-    if (selectedFile.value) {
-        formData.delete('imagem1'); // Remove a chave 'imagem1' do FormData, se existir
-        const fileType = selectedFile.value.type; // Obtém o tipo MIME do arquivo
-        const fileExtension = getFileExtension(fileType); // Obtém a extensão do arquivo com base no tipo MIME
-        formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`);
-        formData.append('file_principal', selectedFile.value); // Adiciona o arquivo selecionado ao FormData
-    }
-
-    // Verifica se um arquivo foi selecionado para a imagem de detalhes
-    if (selectedInfoFile.value) {
-        formData.delete('imagemdetalhe'); // Remove a chave 'imagemdetalhe' do FormData, se existir
-        const fileType = selectedInfoFile.value.type; // Obtém o tipo MIME do arquivo
-        const fileExtension = getFileExtension(fileType); // Obtém a extensão do arquivo com base no tipo MIME
-        formData.append('imagemdetalhe', `produto_${produto.nome}_${produto.codigo}_info${Date.now()}${fileExtension}`);
-        formData.append('file_info', selectedInfoFile.value); // Adiciona o arquivo selecionado ao FormData
-    }
-
-    // Verifica se um arquivo foi selecionado para a imagem secundária
-    if (selectedSecFile.value) {
-        formData.delete('imagem2'); // Remove a chave 'imagem2' do FormData, se existir
-        const fileType = selectedSecFile.value.type; // Obtém o tipo MIME do arquivo
-        const fileExtension = getFileExtension(fileType); // Obtém a extensão do arquivo com base no tipo MIME
-        formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`);
-        formData.append('file_secundario', selectedSecFile.value); // Adiciona o arquivo selecionado ao FormData
-    }
-
-    try {
-        loading.value = true; // Ativa o indicador de loading
-        // Faz uma requisição POST para atualizar o produto, enviando o FormData com os dados e arquivos
-        await axios.post('/produtos/atualizar', formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`, // Inclui o token de autenticação no cabeçalho
-                'Content-Type': 'multipart/form-data' // Define o tipo de conteúdo como multipart/form-data
-            }
-        });
-
-        // Se a requisição for bem-sucedida
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Produto atualizado', life: 3000 });
-        dataStore.invalidatProdutoCache(); // Invalida o cache de produtos
-        loadProdutos(); // Carrega novamente a lista de produtos
-        active.value = 0; // Reseta o índice ativo
-        resetForm(); // Reseta o formulário de produto
-    } catch (error) {
-        console.error('Erro ao atualizar o produto:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar o produto', life: 3000 });
-    } finally {
-        loading.value = false; // Desativa o indicador de loading
-    }
+  try {
+    loading.value = true;
+    await produtoService.atualizarProduto(
+      enrichProdutoData(produto, store.userId, store.userIdCliente),
+      {
+        selectedFile: selectedFile.value,
+        selectedSecFile: selectedSecFile.value,
+        selectedInfoFile: selectedInfoFile.value,
+      }
+    );
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto atualizado com sucesso!', life: 3000 });
+    loadProdutos();
+    resetForm();
+    active.value = 0;
+  } catch (error) {
+    console.error('Erro ao atualizar produto:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar produto.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
 const getImagem = async (filename) => {
-    if (!filename) {
-        return imagePlaceholder; // Se não houver nome de arquivo, retorna a imagem de placeholder
-    }
+    if (!filename) return imagePlaceholder;
+
     try {
-        const response = await axios.get(`/image/produto/${store.userIdCliente}/${filename}`, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Inclui o token de autenticação no cabeçalho
-            }
-        });
+        const response = await produtoService.obterImagem(store.userIdCliente, filename);
         if (response.status === 200) {
-            const { image, mimeType } = response.data; // Extrai a imagem e o tipo MIME da resposta
-            const imageUrl = `data:${mimeType};base64,${image}`; // Cria a URL da imagem em base64
-            return imageUrl; // Retorna a URL da imagem
+            const { image, mimeType } = response.data;
+            return `data:${mimeType};base64,${image}`;
         }
     } catch (error) {
-        return imagePlaceholder; // Se ocorrer erro, retorna a imagem de placeholder
+        console.error('Erro ao carregar imagem:', error);
     }
+    return imagePlaceholder;
 };
-
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm(); // Reseta o formulário quando a aba ativa mudar para 0
@@ -335,28 +256,7 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    // Reseta os dados do produto e as imagens
-    delete produto.imagem1;
-    delete produto.imagem2;
-    delete produto.imagemdetalhe;
-    Object.assign(produto, {
-        codigo: '',
-        id_planta: '',
-        id_tipoProduto: '',
-        id_categoria: '',
-        nome: '',
-        descricao: ' ',
-        unidade_medida: '',
-        validadedias: 0
-    });
-    // Reseta os arquivos selecionados e as imagens
-    selectedFile.value = null;
-    selectedSecFile.value = null;
-    selectedInfoFile.value = null;
-    imagePrinc.value = imagePlaceholder;
-    imageSec.value = imagePlaceholder;
-    imageInfo.value = imagePlaceholder;
-    // Limpa os dados das imagens
+    resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]);
     imageUploader.value?.clearImageData();
     imageUploader2.value?.clearImageData();
     imageUploader3.value?.clearImageData();
@@ -396,7 +296,7 @@ onMounted(async () => {
                         :metaKeySelection="false"
                         @rowSelect="handleRowSelection"
                         @page="onPageChange"
-                    ><!--lazy-->
+                        ><!--lazy-->
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">

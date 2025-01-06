@@ -176,48 +176,40 @@ const adicionarPlanta = async () => {
 };
 
 const deletePlanta = async () => {
-    let data = { id_planta: planta.id_planta };
-    loading.value = true;
-    try {
-        await axios.post('/planta/deletePlanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Planta Deletada', life: 3000 });
-        deletePlantaDialog.value = false;
-        loadPlanta();
-        active.value = 0;
-        resetForm();
-    } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  loading.value = true;
+  try {
+    await plantaService.deletarPlanta(planta.id_planta, store.token);
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta deletada com sucesso!', life: 3000 });
+    deletePlantaDialog.value = false;
+    loadPlanta();
     active.value = 0;
+    resetPlantaForm(planta);
+  } catch (error) {
+    console.error('Erro ao deletar planta:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar planta.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
+
 const atualizarPlanta = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...planta
-    };
-    loading.value = true;
-    try {
-        const response = await axios.post('/plantas/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadPlanta();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao atualizar Plantas:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  loading.value = true;
+  try {
+    await plantaService.atualizarPlanta(
+      { id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta },
+      store.token
+    );
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta atualizada com sucesso!', life: 3000 });
+    loadPlanta();
+    active.value = 0;
+    resetPlantaForm(planta);
+  } catch (error) {
+    console.error('Erro ao atualizar planta:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar planta.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
 watch(active, (newIndex, oldIndex) => {
@@ -228,24 +220,13 @@ watch(active, (newIndex, oldIndex) => {
     }
 });
 
-const resetForm = () => {
-    planta.nome = '';
-    planta.codigo = '';
-    planta.id_planta = '';
-    planta.clienteid = '';
-    planta.senha = '';
-    planta.url = '';
-    planta.userId = '';
-    integracao.value = false;
-};
+const resetForm = () => resetPlantaForm(planta);
 
 const handleRowSelection = async (event) => {
     await onRowSelect(event);
 };
 
-onMounted(() => {
-    loadPlanta();
-});
+onMounted(() => loadPlanta());
 </script>
 
 <template>
