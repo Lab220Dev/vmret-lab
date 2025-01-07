@@ -138,3 +138,73 @@ export const applyGlobalFilter = (dataList, filterValue) => {
     });
   };
   
+  /**
+ * Reseta o formulário de DM (Dispositivo de Monitoramento).
+ * @param {Object} DM - Objeto reativo do DM a ser resetado.
+ * @param {Object[]} Controladoras - Lista de controladoras reativas.
+ * @param {Object} selectedClient - Objeto reativo do cliente selecionado.
+ * @param {Object} nextValues - Valores iniciais para tipos de controladoras.
+ */
+export const resetDMForm = (DM, Controladoras, selectedClient, nextValues) => {
+  Object.assign(DM, {
+    Ativo: '',
+    Chave: '',
+    ChaveAPI: '',
+    ClienteID: '',
+    ClienteNome: '',
+    Created: '',
+    Enviada: '',
+    ID_CR_Usuario: '',
+    ID_DM: '',
+    IDcliente: '',
+    Identificacao: '',
+    Integracao: '',
+    Numero: '',
+    OP_Biometria: '',
+    OP_Facial: '',
+    OP_Senha: '',
+    URL: '',
+    Updated: '',
+    UserID: '',
+    Versao: '',
+    Devolucao: '',
+    ID_Cliente: null,
+  });
+
+  Controladoras.value = [];
+  selectedClient.value = { id_cliente: '', nome_cliente: '', usar_api: false };
+
+  Object.assign(nextValues['2018'], { placa: 12 });
+  Object.assign(nextValues['2023'], { dip: 2 });
+  Object.assign(nextValues['Locker'], { dip: 2 });
+  Object.assign(nextValues['2024'], { placa: 101 });
+};
+/**
+ * Reseta o objeto do produto selecionado para seus valores iniciais.
+ *
+ * @param {Object} produtoSelecionado - Objeto referenciado do produto selecionado.
+ * @param {Object} produtoSelecionado.value - Valor atual do produto selecionado que será resetado.
+ * @property {string} id_produto - Identificador do produto.
+ * @property {string} Porta - Porta associada ao produto.
+ * @property {string} Motor1 - Identificador do primeiro motor associado ao produto.
+ * @property {string} Motor2 - Identificador do segundo motor associado ao produto.
+ * @property {string} Controladora - Controladora associada ao produto.
+ * @property {string} Posicao - Posição associada ao produto.
+ * @property {string} Andar - Andar associado ao produto.
+ */
+ export const resetProdutoSelecionado = (produtoSelecionado) => {
+  produtoSelecionado.value = {
+    id_item: '',
+    id_produto: '',
+    Nome_Produto: '',
+    QTD: '',
+    SKU: '',
+    Controladora: '',
+    Motor1: null,
+    Motor2: null,
+    Dip: null,
+    Andar: null,
+    Posicao: null,
+    Capacidade: null
+  };
+};

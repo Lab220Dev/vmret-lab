@@ -6,21 +6,33 @@ import axios from '@/axios.js'; // Instância Axios para requisições HTTP
 import { FilterMatchMode } from 'primevue/api'; // Modo de filtro global para PrimeVue
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de loading
 import { useDataStore } from '@/store/dataStore.js'; // Store para dados gerais
-
-// Variáveis reativas para gerenciar o estado do componente
-const dialogMessage = ref(''); // Mensagem do diálogo
-const selectedItem = ref(null); // Item selecionado
-const toast = useToast(); // Função de notificação de toast
-const active = ref(0); // Controle de estado ativo
-const dataStore = useDataStore(); // Acesso ao store de dados
-const todosOption = { label: 'Todos', value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false }, usar_api: false }; // Opção de "todos"
-
-// Store de autenticação
+import {
+    selectAll,
+    desselectAll,
+    configurarClienteSelecionado,
+    handleControladoraChange as hcgHelper,
+    mapControladoras as mapControladorasHelper,
+    preencherOpcoesControladoras as pocHelper,
+    validarAndarSelecionado as ValidarAndarHelper,
+    preencherControladoraOptions as pcoHelper,
+    ajustarContagemInicial as ContagemHelper,
+    validarMudancaAndar,
+    validarCampos as validarCamposHelper,
+    updateTipoControladora as updateControladoraHelper,
+    findControladora,
+    updateProdutoSelecionado
+} from '@/helpers/DMHelper.js'; // Import the helper functions
+import { normalizeDateTime } from '@/helpers/HelperUtils.js';
+import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
+import dmService from '@/services/dmService';
+//Store e Variaveis Reativas
+const dataStore = useDataStore();
 const store = useAuthStore();
-const loading = ref(false); // Controle de loading
-const loadingControladoras = ref(true); // Controle de loading de controladoras
-
-// Objeto reativo para armazenar dados do DM (Dispositivo de Monitoramento)
+const toast = useToast();
+//controle de Loading
+const loading = ref(false);
+const loadingControladoras = ref(true);
+//Objeto de DM
 let DM = reactive({
     Ativo: false,
     Chave: '',
@@ -44,55 +56,13 @@ let DM = reactive({
     Versao: '',
     Devolucao: false
 });
-
-// Tipos de controladoras
-const tipoControladoras = ['2018', '2023', '2024', 'Locker'];
-
-// Mapeamento de valores para cada tipo de controladora
+// Mapeamento de valores
 const nextValues = reactive({
     2018: { placa: 12 },
     2023: { dip: 2 },
     Locker: { dip: 3 },
     2024: { placa: 101 }
 });
-
-// Máximo de controladoras para cada tipo
-const maxControladoras = {
-    2018: 16,
-    2023: 90,
-    Locker: Infinity,
-    2024: Infinity
-};
-
-// Função para contar as controladoras por tipo
-const countControladoras = (tipo) => {
-    return Controladoras.value.filter((controladora) => controladora.tipo === tipo).length;
-};
-
-// Controle de operador
-const operador = ref(false);
-
-// Controle de exibição de diálogos
-const show = ref(false);
-const showDialogDVM = ref(false);
-const showDialogDItem = ref(false);
-const showDialogProduto = ref(false);
-
-// Listas de produtos, clientes e itens
-const ListaProdutos = ref([]);
-const ListaClientes = ref([]);
-const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false });
-const visible = ref(false);
-const ListaItens = ref([]);
-
-// Filtros de busca
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-});
-
-// Controle de uso de API
-const usarApi = ref(false);
-
 // Objeto de produto selecionado
 const produtoSelecionado = ref({
     id_produto: '',
@@ -106,11 +76,13 @@ const produtoSelecionado = ref({
     Controladora: '',
     Capacidade: ''
 });
-
-// Variáveis para controlar o modo de edição
-const isEditMode = ref(false);
-
-// Listas de controladoras e opções
+//Listas Reativas
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+});
+const ListaItens = ref([]);
+const ListaClientes = ref([]);
+const ListaProdutos = ref([]);
 const Controladoras = ref([]);
 const controladoraOptions = ref([]);
 const molasOptions = ref([]);
@@ -121,202 +93,111 @@ const placaOptions = ref([]);
 const motorOptions = ref([]);
 const ListaDMS = ref([]);
 
-// Função para manipular mudanças na controladora selecionada
-const handleControladoraChange = () => {
-    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
-    if (!selectedControladora) return;
+// Controles de Estado
+const isEditMode = ref(false);
+const showDialogProduto = ref(false);
+const active = ref(0);
+const showDialogDVM = ref(false);
+const showDialogDItem = ref(false);
+const show = ref(false);
+const usarApi = ref(false);
+const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false });
+const dialogMessage = ref('');
+const selectedItem = ref(null);
+const todosOption = { label: 'Todos', value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false }, usar_api: false };
+const tipoControladoras = ['2018', '2023', '2024', 'Locker'];
+const operador = ref(false);
+const visible = ref(false);
 
-    if (selectedControladora.tipo === '2018') {
-        let molasOcupadas = ListaItens.value
-            .filter((item) => {
-                const [tipo, identificador] = item.Posicao.replace(/\s/g, '').split('/');
-                return tipo === '2018' && Number(identificador) === selectedControladora.dados.placa;
-            })
-            .map((item) => {
-                const [tipo, identificador, mola1, mola2] = item.Posicao.replace(/\s/g, '').split('/');
-                return Number(mola1);
-            });
-        if (isEditMode && produtoSelecionado.value.Motor1) {
-            molasOcupadas = molasOcupadas.filter((mola) => mola !== produtoSelecionado.value.Motor1);
-        }
-        const molasDisponiveis = selectedControladora.dados.molas.filter((mola) => !molasOcupadas.includes(mola));
-        molasOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
-        placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
-    } else if (selectedControladora.tipo === '2023') {
-        dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
-        andarOptions.value = selectedControladora.dados.andar.map((a) => ({ label: a, value: a }));
-        posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
-    } else if (selectedControladora.tipo === '2024') {
-        motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
-    } else if (selectedControladora.tipo === 'Locker') {
-        dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
-        posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
-    }
-};
-
-// Função para manipular mudanças no andar selecionado
-const handleAndarChange = () => {
-    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
-    const molasOcupadas = ListaItens.value
-        .filter((item) => {
-            const [tipo, identificador, Andar, Posicao] = item.Posicao.replace(/\s/g, '').split('/');
-            return tipo === '2023' && Number(identificador) === selectedControladora.dados.dip && produtoSelecionado.value.Andar === Number(Andar);
-        })
-        .map((item) => {
-            const [tipo, identificador, Andar, Posicao] = item.Posicao.replace(/\s/g, '').split('/');
-            return Number(Posicao);
-        });
-    const molasDisponiveis = selectedControladora.dados.posicao.filter((mola) => !molasOcupadas.includes(mola));
-    posicaoOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
-    posicaoOptions.value.sort((a, b) => a.value - b.value);
-};
-
-// Função para validar o andar selecionado
-const validarAndarSelecionado = () => {
-    const Andar = produtoSelecionado.value.Andar;
-    if (!Andar) {
-        produtoSelecionado.value.Posicao = '';
-        produtoSelecionado.value.Andar = '';
-
-        toast.add({ severity: 'warn', summary: 'Erro', detail: 'Selecione um andar antes de selecionar uma posição.', life: 3000 });
-        return;
-    }
-};
-
-// Computed para obter o tipo da controladora selecionada
+// Propriedades Computadas
 const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     return controladora ? controladora.tipo : null;
 });
 
-// Função para atualizar o produto selecionado
-const atualizarProduto = async () => {
-    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...produtoSelecionado.value,
-        id_dm: DM.ID_DM,
-        tipo_controladora: selectedControladora ? selectedControladora.tipo : null
-    };
+//Funções Ultilitárias
+const validarCampos = () => {
     try {
-        loading.value = true;
-        const response = await axios.post('/DM/atualizarItens', data);
-        showDialogProduto.value = false;
-        resetProdutoSelecionado();
-        fetchItemDM();
+        // Tenta validar os campos
+        validarCamposHelper(produtoSelecionado.value, tipoControladoraSelecionada.value);
+        return true;
     } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-    } finally {
-        loading.value = false;
-        isEditMode.value = false;
+        // Captura o erro e exibe a mensagem no toast
+        toast.add({ severity: 'error', summary: 'Erro', detail: error.message, life: 3000 });
+        return false;
     }
 };
+const selectAllCliente = (index) => {
+    selectAll(Controladoras.value[index]);
+};
+const desselectAllCliente = (index) => {
+    desselectAll(Controladoras.value[index]);
+};
+const addControladora = () => {
+    Controladoras.value.push({
+        ID: null,
+        tipo: '',
+        deleted: false,
+        dados: {}
+    });
+};
+const updateTipoControladora = (index, tipo) => {
+    try {
+        updateControladoraHelper(index, tipo, Controladoras.value, nextValues);
+    } catch (error) {
+        console.log('Erro ao atualizar o tipo da controladora:', error);
+        toast.add({ severity: 'warn', summary: 'Erro', detail: error.message, life: 3000 });
+        return;
+    }
+};
+const admin = () => {
+    return store.userRole === 'Administrador';
+};
+const voltar = () => {
+    show.value = false;
+    operador.value = false;
+};
 
-// Função para buscar DMs
-const fetchDMS = async () => {
-    loading.value = true;
-    let data = null;
-    if (admin()) {
-        data = '';
+//Funções de manipulaçao de estado
+// Função para manipular mudanças na controladora selecionada
+const handleControladoraChange = () => {
+    hcgHelper(Controladoras.value, produtoSelecionado.value, ListaItens.value, isEditMode.value, { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions });
+};
+
+// Função para manipular mudanças no andar selecionado
+const handleAndarChange = () => {
+    validarMudancaAndar(Controladoras.value, produtoSelecionado.value, ListaItens.value, posicaoOptions);
+};
+
+// Função para validar o andar selecionado
+const validarAndarSelecionado = () => {
+    try {
+        ValidarAndarHelper(produtoSelecionado);
+    } catch (error) {
+        toast.add({ severity: 'warn', summary: 'Erro', detail: `${error.message}`, life: 3000 });
+        console.error('Erro ao validar o andar selecionado:', error);
+    }
+};
+const removeControladora = (index) => {
+    if (!DM.ID_DM) {
+        Controladoras.value.splice(index, 1);
     } else {
-        data = {};
-        data.id_cliente = store.userIdCliente;
-    }
-    try {
-        const response = await axios.post('/DM/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaDMS.value = response.data;
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar DMs', life: 3000 });
-        console.error('Erro ao carregar usuários:', error);
-    } finally {
-        loading.value = false; // Desativando loading
+        Controladoras.value[index].deleted = true;
     }
 };
-
-/**
- * Função chamada quando o usuário deseja excluir um item.
- * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
- */
- const deleteItem = async (item) => {
-    dialogMessage.value = `Você tem certeza que deseja excluir o item ${item.Nome_Produto}?`;
-    showDialogDItem.value = true;
-    selectedItem.value = item;
-};
-
-/**
- * Função chamada para confirmar a exclusão do item.
- * Realiza a requisição para excluir o item e atualiza a lista de itens.
- */
- const confirmDelete = async () => {
-    if (!selectedItem.value) return;
-    console.log(selectedItem.value);
-    loading.value = true;
-
-    try {
-        const response = await axios.post('/DM/deleteItem', {
-            id_item: selectedItem.value.id_item,
-            id_usuario: store.userId
-        });
-
-        // Atualiza a lista de itens após exclusão
-        fetchItemDM();
-
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item excluído com sucesso', life: 3000 });
-    } catch (error) {
-        console.error('Erro ao excluir item:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir item', life: 3000 });
-    } finally {
-        loading.value = false;
-        showDialogDItem.value = false;
-        selectedItem.value = null;
-    }
-};
-
 /**
  * Função chamada para cancelar a exclusão de um item.
  * Apenas fecha o diálogo sem realizar nenhuma ação.
  */
- const cancelDelete = () => {
+const cancelDelete = () => {
     showDialogDItem.value = false;
     selectedItem.value = null;
 };
-
-/**
- * Função para carregar os itens associados ao DM (Dispositivo de Monitoramento).
- * Realiza uma requisição para listar os itens e os exibe na interface.
- */
- const fetchItemDM = async () => {
-    loading.value = true;
-    try {
-        const data = {
-            id_dm: DM.ID_DM,
-            id_cliente: store.userIdCliente,
-            id_usuario: store.userId
-        };
-        const response = await axios.post('/DM/listaritens', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaItens.value = response.data;
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar itens da DM', life: 3000 });
-        console.error('Erro ao carregar Itens:', error);
-    } finally {
-        loading.value = false;
-    }
-};
-
 /**
  * Função chamada ao selecionar uma linha de DM na tabela.
  * Preenche as informações relacionadas ao DM selecionado e suas controladoras.
  */
- const onRowSelect = async (event) => {
+const onRowSelect = async (event) => {
     if (!event || !event.data) {
         console.error('Seleção inválida na tabela.');
         return;
@@ -325,138 +206,51 @@ const fetchDMS = async () => {
         DM = event.data;
         visible.value = true;
         await mapControladoras(DM);
-        configurarClienteSelecionado(DM);
+        configurarCliente(DM);
         configurarVisibilidade();
     } catch (error) {
         console.error('Erro ao selecionar a DM:', error);
         loadingControladoras.value = false;
     }
 };
-/**
- * Função para configurar as informações do cliente selecionado a partir do DM.
- * Mapeia o cliente para as opções de uso de API.
- */
- const configurarClienteSelecionado = (dm) => {
-    const client = ListaClientes.value.find((client) => client.value?.id_cliente === dm.ID_Cliente);
-    if (client) {
-        selectedClient.value = { ...client.value };
-        usarApi.value = client.value.usar_api ?? false;
+
+const handleRowSelection = async (event) => {
+    const edit = event.data;
+    isEditMode.value = true;
+    showDialogProduto.value = true;
+    //seto o produto para edição
+    produtoSelecionado.value = {
+        id_item: edit.id_item,
+        id_produto: edit.id_produto,
+        Nome_Produto: edit.Nome_Produto,
+        QTD: edit.QTD,
+        SKU: edit.SKU,
+        Controladora: '',
+        Capacidade: edit.Capacidade
+    };
+    // Extrai valores da posição
+    const [controladora, ...valores] = edit.Posicao.split(' / ');
+
+    // Busca pela controladora original
+    const controladoraOriginal = findControladora(controladora, Number(valores[0]), Controladoras.value);
+    if (controladoraOriginal) {
+        produtoSelecionado.value.Controladora = controladoraOriginal.id;
     } else {
-        selectedClient.value = null;
-        usarApi.value = false;
-    }
-};
-/**
- * Função para mapear as controladoras do DM.
- * Preenche as informações relacionadas às controladoras e ajusta a contagem inicial de valores.
- */
- const mapControladoras = async (dm) => {
-    Controladoras.value = dm.Controladoras.map((controladora) => {
-        return {
-            id: controladora.ID,
-            tipo: controladora.Tipo_Controladora,
-            deleted: false,
-            dados: {
-                placa: controladora.Placa,
-                dip: controladora.DIP,
-                andar: Array.isArray(controladora.Andar) ? controladora.Andar.flatMap((a) => a.split(',').map(Number)) : controladora.Andar ? controladora.Andar.split(',').map(Number) : [],
-                posicao: Array.isArray(controladora.Posicao) ? controladora.Posicao.flatMap((p) => p.split(',').map(Number)) : controladora.Posicao ? controladora.Posicao.split(',').map(Number) : [],
-                molas: controladora.Tipo_Controladora === '2018' && Array.isArray(controladora.Mola1) ? controladora.Mola1.flatMap((mola) => mola.split(',').map(Number)) : [],
-                motor: '',
-                motor2: ''
-            }
-        };
-    });
-
-    ajustarContagemInicial();
-};
-/**
- * Função para preencher as opções de controladoras disponíveis para seleção.
- */
- const preencherControladoraOptions = () => {
-    controladoraOptions.value = Controladoras.value.map((controladora) => {
-        const id = controladora.id || 'N/A';
-        let identificador;
-
-        if (controladora.tipo === '2018' || controladora.tipo === '2024') {
-            identificador = controladora.dados.placa;
-        } else if (controladora.tipo === '2023' || controladora.tipo === 'Locker') {
-            identificador = controladora.dados.dip;
-        } else {
-            identificador = 'Desconhecido'; // Caso para tipos de controladora inesperados
-        }
-        return {
-            label: `ID: ${id}, Tipo: ${controladora.tipo}, Identificador: ${identificador}`,
-            value: controladora.id
-        };
-    });
-};
-/**
- * Função para ajustar a contagem inicial dos valores das controladoras com base nas existentes.
- */
- const ajustarContagemInicial = () => {
-    const placasExistentes2018 = Controladoras.value.filter((controladora) => controladora.tipo === '2018').map((controladora) => controladora.dados.placa);
-
-    if (placasExistentes2018.length > 0) {
-        nextValues['2018'].placa = Math.max(...placasExistentes2018) + 1;
-    } else {
-        nextValues['2018'].placa = 12; // Valor inicial caso não haja nenhuma
+        console.warn('Controladora não encontrada para o tipo e identificador fornecidos.');
     }
 
-    const dipsExistentes2023 = Controladoras.value.filter((controladora) => controladora.tipo === '2023').map((controladora) => controladora.dados.dip);
-
-    if (dipsExistentes2023.length > 0) {
-        nextValues['2023'].dip = Math.max(...dipsExistentes2023) + 1;
-    } else {
-        nextValues['2023'].dip = 2; // Valor inicial caso não haja nenhuma
-    }
-
-    const placas2024Existentes = Controladoras.value.filter((controladora) => controladora.tipo === '2024').map((controladora) => controladora.dados.placa);
-
-    if (placas2024Existentes.length > 0) {
-        nextValues['2024'].placa = Math.max(...placas2024Existentes) + 1;
-    } else {
-        nextValues['2024'].placa = 101; // Valor inicial caso não haja nenhuma
-    }
+    // Atualiza o produto selecionado com base no tipo de controladora
+    updateProdutoSelecionado(produtoSelecionado.value, controladora, valores);
+    await nextTick();
+    handleControladoraChange();
 };
-
-/**
- * Função para preencher as opções de controladoras, incluindo molas, dips, andares, posições e motores.
- */
- const preencherOpcoesControladoras = () => {
-    molasOptions.value = [];
-    dipOptions.value = [];
-    andarOptions.value = [];
-    posicaoOptions.value = [];
-    motorOptions.value = [];
-
-    Controladoras.value.forEach((controladora) => {
-        if (controladora.tipo === '2018') {
-            console.log(controladora);
-            molasOptions.value.push(...controladora.dados.molas);
-            placaOptions.value.push(controladora.dados.placa);
-        } else if (controladora.tipo === '2023') {
-            console.log(controladora);
-            dipOptions.value.push(controladora.dados.dip);
-            andarOptions.value.push(...controladora.dados.andar);
-            posicaoOptions.value.push(...controladora.dados.posicao);
-        } else if (controladora.tipo === '2024') {
-            motorOptions.value.push(controladora.dados.motor);
-        }
-    });
+const handleCancelar = () => {
+    resetProdutoSelecionado(produtoSelecionado);
+    isEditMode.value = false;
+    showDialogProduto.value = false;
 };
-const configurarVisibilidade = () => {
-    if (!admin()) {
-        show.value = true;
-        fetchItemDM();
-        loadData(); //o listarProduto estava dando erro, trocar aqui caso haja algum comportamento estranho na listagem de produtos
-        preencherOpcoesControladoras();
-        preencherControladoraOptions();
-        operador.value = true;
-    } else {
-        active.value = 1;
-    }
-};
+//Fnções Principais
+//DM
 const adicionarDM = async () => {
     DM.IDcliente = selectedClient.value.id_cliente;
     DM.ClienteNome = selectedClient.value.nome_cliente;
@@ -476,99 +270,13 @@ const adicionarDM = async () => {
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM adicionada com sucesso', life: 3000 });
         fetchDMS();
         active.value = 0;
-        resetDMForm();
+        resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar DM', life: 3000 });
         console.error('Erro ao adicionar DM:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
-};
-
-const deleteDM = async (item) => {
-    let data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ID_DM: item.ID_DM
-    };
-    loading.value = true;
-    try {
-        await axios.post('/DM/delete', data);
-        dataStore.invalidateDMCache();
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
-        await fetchDMS();
-    } catch (error) {
-        if (error.response && (error.response.status === 500 || error.response.status === 401)) {
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a DM.', life: 3000 });
-        }
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-    active.value = 0;
-};
-const handleRowSelection = async (event) => {
-    const edit = event.data;
-    console.log(edit);
-    isEditMode.value = true;
-    showDialogProduto.value = true;
-    produtoSelecionado.value = {
-        id_item: edit.id_item,
-        id_produto: edit.id_produto,
-        Nome_Produto: edit.Nome_Produto,
-        QTD: edit.QTD,
-        SKU: edit.SKU,
-        Controladora: '',
-        Capacidade: edit.Capacidade
-    };
-
-    const [controladora, valor1, valor2, valor3] = edit.Posicao.split(' / ');
-    const controladoraOriginal = Controladoras.value.find((c) => {
-        if (c.tipo === controladora) {
-            if (controladora === '2018' || controladora === '2024') {
-                return c.dados.placa === Number(valor1);
-            } else if (controladora === '2023' || controladora === 'Locker') {
-                return c.dados.dip === Number(valor1);
-            }
-        }
-        return false;
-    });
-    if (controladoraOriginal) {
-        produtoSelecionado.value.Controladora = controladoraOriginal.id;
-    } else {
-        console.warn('Controladora não encontrada para o tipo e identificador fornecidos.');
-    }
-    if (controladora === '2018') {
-        produtoSelecionado.value.Placa = Number(valor1);
-        produtoSelecionado.value.Motor1 = Number(valor2);
-    } else if (controladora === '2023') {
-        produtoSelecionado.value.Dip = Number(valor1);
-        produtoSelecionado.value.Andar = Number(valor2);
-        produtoSelecionado.value.Posicao = Number(valor3);
-    } else if (controladora === '2024') {
-        produtoSelecionado.value.Motor1 = Number(valor1);
-    } else if (controladora === 'Locker') {
-        produtoSelecionado.value.Dip = Number(valor1);
-        produtoSelecionado.value.Posicao = Number(valor2);
-    }
-    await nextTick();
-    handleControladoraChange();
-};
-const handleCancelar = () => {
-    produtoSelecionado.value = {
-        id_item: '',
-        id_produto: '',
-        Nome_Produto: '',
-        QTD: '',
-        SKU: '',
-        Controladora: '',
-        Motor1: null,
-        Motor2: null,
-        Dip: null,
-        Andar: null,
-        Posicao: null
-    };
-    isEditMode.value = false;
-    showDialogProduto.value = false;
 };
 const atualizarDM = async () => {
     if (DM.IDcliente !== selectedClient.value.id_cliente) {
@@ -598,7 +306,7 @@ const atualizarDM = async () => {
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM atualizada com sucesso', life: 3000 });
         fetchDMS();
         active.value = 0;
-        resetDMForm();
+        resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar DM', life: 3000 });
         console.error('Erro ao atualizar DM:', error);
@@ -606,55 +314,66 @@ const atualizarDM = async () => {
         loading.value = false;
     }
 };
-const admin = () => {
-    return store.userRole === 'Administrador';
-};
-
-const formatDate = (value) => {
-    if (!value) {
-        return '';
-    }
-    try {
-        const date = new Date(value);
-        if (isNaN(date)) {
-            throw new Error('Data inválida');
-        }
-        const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const year = localDate.getFullYear();
-        const hours = String(localDate.getHours()).padStart(2, '0');
-        const minutes = String(localDate.getMinutes()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } catch (error) {
-        console.error('Erro ao formatar data:', error);
-        return 'Data inválida';
-    }
-};
-
-const listarProduto = async () => {
-    loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente
+const deleteDM = async (item) => {
+    let data = {
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        ID_DM: item.ID_DM
     };
+    loading.value = true;
     try {
-        const response = await axios.post('/produtos/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaProdutos.value = response.data.map(({ id_produto, codigo, nome }) => ({
-            label: `${codigo} | ${nome}`,
-            value: id_produto
-        }));
+        await axios.post('/DM/delete', data);
+        dataStore.invalidateDMCache();
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
+        await fetchDMS();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos', life: 3000 });
-        console.error('Erro ao carregar produtos:', error);
+        if (error.response && (error.response.status === 500 || error.response.status === 401)) {
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a DM.', life: 3000 });
+        }
     } finally {
         loading.value = false; // Desativando loading
     }
+    active.value = 0;
 };
-
+/**
+ * Função para mapear as controladoras do DM.
+ * Preenche as informações relacionadas às controladoras e ajusta a contagem inicial de valores.
+ */
+const mapControladoras = async (dm) => {
+    Controladoras.value = await mapControladorasHelper(dm);
+    ajustarContagemInicial();
+};
+/**
+ * Função para preencher as opções de controladoras disponíveis para seleção.
+ */
+const preencherControladoraOptions = () => {
+    controladoraOptions.value = pcoHelper(Controladoras.value);
+};
+/**
+ * Função para ajustar a contagem inicial dos valores das controladoras com base nas existentes.
+ */
+const ajustarContagemInicial = () => {
+    ContagemHelper(Controladoras.value, nextValues);
+};
+/**
+ * Função para preencher as opções de controladoras, incluindo molas, dips, andares, posições e motores.
+ */
+const preencherOpcoesControladoras = () => {
+    pocHelper(Controladoras.value, { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions });
+};
+const configurarVisibilidade = () => {
+    if (!admin()) {
+        show.value = true;
+        fetchItemDM();
+        loadData(); //o listarProduto estava dando erro, trocar aqui caso haja algum comportamento estranho na listagem de produtos
+        preencherOpcoesControladoras();
+        preencherControladoraOptions();
+        operador.value = true;
+    } else {
+        active.value = 1;
+    }
+};
+//Produto
 const adicionarProduto = async () => {
     if (!validarCampos()) {
         return; //se falhar não continua
@@ -677,7 +396,7 @@ const adicionarProduto = async () => {
         });
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto adicionado com sucesso', life: 3000 });
         showDialogProduto.value = false;
-        resetProdutoSelecionado();
+        resetProdutoSelecionado(produtoSelecionado);
         fetchItemDM();
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar produto, verifique os campos e tente novamente.', life: 3000 });
@@ -686,107 +405,67 @@ const adicionarProduto = async () => {
         loading.value = false; // Desativando loading
     }
 };
-
-const validarCampos = () => {
+// Função para atualizar o produto selecionado
+const atualizarProduto = async () => {
+    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
+    const data = {
+        id_usuario: store.userId,
+        id_cliente: store.userIdCliente,
+        ...produtoSelecionado.value,
+        id_dm: DM.ID_DM,
+        tipo_controladora: selectedControladora ? selectedControladora.tipo : null
+    };
     try {
-        if (produtoSelecionado.value.Controladora === '') {
-            toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios para adicionar o item.', life: 3000 });
-            return false;
-        }
-        if (tipoControladoraSelecionada.value === '2018') {
-            if (produtoSelecionado.value.id_produto === '' || !produtoSelecionado.value.Controladora || !produtoSelecionado.value.Placa || !produtoSelecionado.value.Motor1) {
-                toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios para a controladora 2018.', life: 3000 });
-                return false; // Falha
-            }
-        } else if (tipoControladoraSelecionada.value === '2023') {
-            if (produtoSelecionado.value.id_produto === '' || !produtoSelecionado.value.Controladora || !produtoSelecionado.value.Dip || !produtoSelecionado.value.Andar || !produtoSelecionado.value.Posicao) {
-                toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios para a controladora 2023.', life: 3000 });
-                return false; // Falha
-            }
-        }
-        return true;
+        loading.value = true;
+        await dmService.atualizarProduto(data);
+        showDialogProduto.value = false;
+        resetProdutoSelecionado(produtoSelecionado);
+        fetchItemDM();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Por favor, preencha todos os campos obrigatórios.', life: 3000 });
-        return false;
-    }
-};
-
-watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
-        resetDMForm();
-        fetchDMS();
-        visible.value = false;
-    }
-});
-
-onMounted(async () => {
-    await loadData();
-    await fetchCliente();
-    await fetchDMS();
-});
-const loadData = async () => {
-    loading.value = true;
-    try {
-        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
-        ListaProdutos.value = produtos.map(({ value, codigo, label }) => ({
-            label: `${codigo} | ${label}`,
-            value: value
-        }));
-
-        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
-        console.error('Erro ao carregar dados iniciais:', error);
+        console.error('Erro ao carregar produtos:', error);
     } finally {
         loading.value = false;
+        isEditMode.value = false;
     }
 };
-const resetDMForm = () => {
-    DM.Ativo = '';
-    DM.Chave = '';
-    DM.ChaveAPI = '';
-    DM.ClienteID = '';
-    DM.ClienteNome = '';
-    DM.Created = '';
-    DM.Enviada = '';
-    DM.ID_CR_Usuario = '';
-    DM.ID_DM = '';
-    DM.IDcliente = '';
-    DM.Identificacao = '';
-    DM.Integracao = '';
-    DM.Numero = '';
-    DM.OP_Biometria = '';
-    DM.OP_Facial = '';
-    DM.OP_Senha = '';
-    DM.URL = '';
-    DM.Updated = '';
-    DM.UserID = '';
-    DM.Versao = '';
-    DM.Devolucao = '';
-    DM.ID_Cliente = null;
-    Controladoras.value = [];
-    selectedClient.value = { id_cliente: '', nome_cliente: '', usar_api: false };
-    nextValues['2018'].placa = 12;
-    nextValues['2023'].dip = 2;
-    nextValues['Locker'].dip = 2;
-    nextValues['2024'].placa = 101;
+/**
+ * Função chamada quando o usuário deseja excluir um item.
+ * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
+ */
+const deleteItem = async (item) => {
+    dialogMessage.value = `Você tem certeza que deseja excluir o item ${item.Nome_Produto}?`;
+    showDialogDItem.value = true;
+    selectedItem.value = item;
 };
-const voltar = () => {
-    show.value = false;
-    operador.value = false;
-};
-const resetProdutoSelecionado = () => {
-    produtoSelecionado.value = {
-        id_produto: '',
-        Porta: '',
-        Motor1: '',
-        Motor2: '',
-        Controladora: '',
-        Posicao: '',
-        Andar: ''
-    };
-};
+/**
+ * Função chamada para confirmar a exclusão do item.
+ * Realiza a requisição para excluir o item e atualiza a lista de itens.
+ */
+const confirmDelete = async () => {
+    if (!selectedItem.value) return;
+    console.log(selectedItem.value);
+    loading.value = true;
 
+    try {
+        const response = await axios.post('/DM/deleteItem', {
+            id_item: selectedItem.value.id_item,
+            id_usuario: store.userId
+        });
+
+        // Atualiza a lista de itens após exclusão
+        fetchItemDM();
+
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item excluído com sucesso', life: 3000 });
+    } catch (error) {
+        console.error('Erro ao excluir item:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir item', life: 3000 });
+    } finally {
+        loading.value = false;
+        showDialogDItem.value = false;
+        selectedItem.value = null;
+    }
+};
+//Cliuentes
 const fetchCliente = async () => {
     loading.value = true;
     try {
@@ -810,6 +489,58 @@ const fetchCliente = async () => {
         loading.value = false; // Desativando loading
     }
 };
+/**
+ * Função para configurar as informações do cliente selecionado a partir do DM.
+ * Mapeia o cliente para as opções de uso de API.
+ */
+const configurarCliente = (dm) => {
+    selectedClient.value = configurarClienteSelecionado(ListaClientes.value, DM);
+    usarApi.value = selectedClient.value.usar_api;
+};
+//Geral
+/**
+ * Função para carregar os itens associados ao DM.
+ * Realiza uma requisição para listar os itens e os exibe na interface.
+ */
+const fetchItemDM = async () => {
+    loading.value = true;
+    try {
+        const data = {
+            id_dm: DM.ID_DM,
+            id_cliente: store.userIdCliente,
+            id_usuario: store.userId
+        };
+        const response = await axios.post('/DM/listaritens', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaItens.value = response.data;
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar itens da DM', life: 3000 });
+        console.error('Erro ao carregar Itens:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+const loadData = async () => {
+    loading.value = true;
+    try {
+        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
+        ListaProdutos.value = produtos.map(({ value, codigo, label }) => ({
+            label: `${codigo} | ${label}`,
+            value: value
+        }));
+
+        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
+        console.error('Erro ao carregar dados iniciais:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
 watch(
     () => DM.ID_Cliente,
     (newClienteId) => {
@@ -822,79 +553,18 @@ watch(
         }
     }
 );
-const addControladora = () => {
-    Controladoras.value.push({
-        ID: null,
-        tipo: '',
-        deleted: false,
-        dados: {}
-    });
-};
-
-const updateTipoControladora = (index, tipo) => {
-    const count = countControladoras(tipo);
-    const controladora = Controladoras.value[index];
-
-    if (count >= maxControladoras[tipo]) {
-        toast.add({
-            severity: 'warn',
-            summary: 'Limite Atingido',
-            detail: `Você atingiu o limite máximo de controladoras ${tipo}`,
-            life: 3000
-        });
-        Controladoras.value.splice(index, 1);
-        return;
+watch(active, (newIndex, oldIndex) => {
+    if (newIndex !== oldIndex && newIndex === 0) {
+        resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
+        fetchDMS();
+        visible.value = false;
     }
-
-    if (tipo === '2018') {
-        controladora.dados.placa = nextValues['2018'].placa++;
-        controladora.dados.molas = controladora.dados.molas || [];
-    } else if (tipo === '2023') {
-        controladora.dados.dip = nextValues['2023'].dip++;
-        controladora.dados.andar = controladora.dados.andar || [];
-        controladora.dados.posicao = controladora.dados.posicao || [];
-    } else if (tipo === '2024') {
-        controladora.dados.placa = nextValues['2024'].placa++;
-        controladora.dados.motor = controladora.dados.motor || '';
-    } else if (tipo === 'Locker') {
-        controladora.dados.dip = nextValues['Locker'].dip++;
-        controladora.dados.posicao = controladora.dados.posicao || [];
-    }
-};
-
-const selectAll = (index) => {
-    if (Controladoras.value[index].tipo === '2018') {
-        Controladoras.value[index].dados.molas = Array.from({ length: 10 }, (_, i) => i + 1);
-    }
-    if (Controladoras.value[index].tipo === '2023') {
-        Controladoras.value[index].dados.andar = Array.from({ length: 6 }, (_, i) => i + 1);
-        Controladoras.value[index].dados.posicao = Array.from({ length: 15 }, (_, i) => i + 1);
-    }
-    if (Controladoras.value[index].tipo === 'Locker') {
-        Controladoras.value[index].dados.posicao = Array.from({ length: 14 }, (_, i) => i + 1);
-    }
-};
-
-const desselectAll = (index) => {
-    if (Controladoras.value[index].tipo === '2018') {
-        Controladoras.value[index].dados.molas = Array.from({ length: 10 }, (_, i) => (i = 0));
-    }
-    if (Controladoras.value[index].tipo === '2023') {
-        Controladoras.value[index].dados.andar = Array.from({ length: 6 }, (_, i) => (i = 0));
-        Controladoras.value[index].dados.posicao = Array.from({ length: 15 }, (_, i) => (i = 0));
-    }
-    if (Controladoras.value[index].tipo === 'Locker') {
-        Controladoras.value[index].dados.posicao = Array.from({ length: 14 }, (_, i) => (i = 0));
-    }
-};
-
-const removeControladora = (index) => {
-    if (!DM.ID_DM) {
-        Controladoras.value.splice(index, 1);
-    } else {
-        Controladoras.value[index].deleted = true;
-    }
-};
+});
+onMounted(async () => {
+    await loadData();
+    await fetchCliente();
+    await fetchDMS();
+});
 </script>
 
 <template>
@@ -950,7 +620,7 @@ const removeControladora = (index) => {
                                 </Column>
                                 <Column field="Updated" style="width: 15%" sortable header="Atualizado">
                                     <template #body="{ data }">
-                                        {{ formatDate(new Date(data.Updated)) }}
+                                        {{ normalizeDateTime(data.Updated, true) }}
                                     </template>
                                 </Column>
                                 <Column style="min-width: 8rem">
@@ -1079,8 +749,8 @@ const removeControladora = (index) => {
                                         </div>
 
                                         <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAll(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAll(index)" />
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
                                         </div>
                                     </fieldset>
                                 </div>
@@ -1111,8 +781,8 @@ const removeControladora = (index) => {
                                             </div>
                                         </div>
                                         <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAll(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAll(index)" />
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
                                         </div>
                                     </div>
                                 </div>
@@ -1145,8 +815,8 @@ const removeControladora = (index) => {
                                         </div>
 
                                         <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAll(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAll(index)" />
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
                                         </div>
                                     </div>
                                 </div>
@@ -1306,7 +976,7 @@ const removeControladora = (index) => {
                         <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
                     </div>
                 </template>
-                
+
                 <template v-if="tipoControladoraSelecionada === 'Locker'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Dip" class="font-semibold">DIP:</label>
@@ -1321,11 +991,11 @@ const removeControladora = (index) => {
                         <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
                     </div>
                 </template>
-                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center ">
+                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Capacidade" class="font-semibold">Capacidade:</label>
                 </div>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
-                    <InputNumber inputId="Capacidade" class="w-full"v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades"/>
+                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades" />
                 </div>
             </div>
         </div>
