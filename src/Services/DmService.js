@@ -34,8 +34,8 @@ const dmService = {
     async listarProduto(data) {
         return postRequest('/produtos/listar', data);
     },
-    async listarClientes(data = {}) {
-        return postRequest('/admin/cliente/listar', data);
+    async listarClientes() {
+        return postRequest('/admin/cliente/listar', {});
     },
     async atualizarProduto(data) {
         return postRequest('/DM/atualizarItens', data);

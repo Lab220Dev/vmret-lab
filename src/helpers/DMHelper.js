@@ -1,3 +1,5 @@
+import { useAuthStore } from '@/store/authStore.js';
+const store = useAuthStore();
 /**
  * Manipula mudanças na controladora selecionada.
  * @param {Object[]} Controladoras - Lista de controladoras disponíveis.
@@ -102,7 +104,7 @@ export const preencherControladoraOptions = (Controladoras) => {
  * @param {Object[]} Controladoras - Lista de controladoras disponíveis.
  * @param {Object} nextValues - Objeto contendo os valores padrão para cada tipo de controladora.
  */
-export const ajustarContagemInicial = (Controladoras, nextValues,) => {
+export const ajustarContagemInicial = (Controladoras, nextValues) => {
     const placasExistentes2018 = Controladoras.filter((controladora) => controladora.tipo === '2018').map((controladora) => controladora.dados.placa);
 
     if (placasExistentes2018.length > 0) {
@@ -140,15 +142,9 @@ export const mapControladoras = async (DM) => {
         dados: {
             placa: controladora.Placa || null,
             dip: controladora.DIP || null,
-            andar: Array.isArray(controladora.Andar)
-                ? controladora.Andar.map(Number) 
-                : controladora.Andar?.split(',').map(Number) || [], 
-            posicao: Array.isArray(controladora.Posicao)
-                ? controladora.Posicao.map(Number)
-                : controladora.Posicao?.split(',').map(Number) || [],
-            molas: Array.isArray(controladora.Mola1)
-                ? controladora.Mola1.map(Number)
-                : controladora.Mola1?.split(',').map(Number) || []
+            andar: Array.isArray(controladora.Andar) ? controladora.Andar.map(Number) : controladora.Andar?.split(',').map(Number) || [],
+            posicao: Array.isArray(controladora.Posicao) ? controladora.Posicao.map(Number) : controladora.Posicao?.split(',').map(Number) || [],
+            molas: Array.isArray(controladora.Mola1) ? controladora.Mola1.map(Number) : controladora.Mola1?.split(',').map(Number) || []
         }
     }));
 };
@@ -225,8 +221,7 @@ export const validarMudancaAndar = (Controladoras, produtoSelecionado, ListaIten
     const molasOcupadas = ListaItens.filter((item) => {
         const [tipo, identificador, Andar, Posicao] = item.Posicao.replace(/\s/g, '').split('/');
         return tipo === '2023' && Number(identificador) === selectedControladora.dados.dip && produtoSelecionado.Andar === Number(Andar);
-    })
-    .map((item) => {
+    }).map((item) => {
         const [tipo, identificador, Andar, Posicao] = item.Posicao.replace(/\s/g, '').split('/');
         return Number(Posicao);
     });
@@ -253,7 +248,7 @@ export const validarMudancaAndar = (Controladoras, produtoSelecionado, ListaIten
  *
  * @returns {void}
  */
-export const preencherOpcoesControladoras = (Controladoras,options) => {
+export const preencherOpcoesControladoras = (Controladoras, options) => {
     const { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions } = options;
     molasOptions.value = [];
     dipOptions.value = [];
@@ -303,22 +298,11 @@ export const validarCampos = (produtoSelecionado, tipoControladoraSelecionada) =
     }
 
     if (tipoControladoraSelecionada === '2018') {
-        if (
-            !produtoSelecionado.id_produto ||
-            !produtoSelecionado.Controladora ||
-            !produtoSelecionado.Placa ||
-            !produtoSelecionado.Motor1
-        ) {
+        if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Placa || !produtoSelecionado.Motor1) {
             throw new Error('Preencha todos os campos obrigatórios para a controladora 2018.');
         }
     } else if (tipoControladoraSelecionada === '2023') {
-        if (
-            !produtoSelecionado.id_produto ||
-            !produtoSelecionado.Controladora ||
-            !produtoSelecionado.Dip ||
-            !produtoSelecionado.Andar ||
-            !produtoSelecionado.Posicao
-        ) {
+        if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Dip || !produtoSelecionado.Andar || !produtoSelecionado.Posicao) {
             throw new Error('Preencha todos os campos obrigatórios para a controladora 2023.');
         }
     }
@@ -404,3 +388,134 @@ export const updateProdutoSelecionado = (produtoSelecionado, tipo, valores) => {
         produtoSelecionado.Posicao = Number(valores[1]);
     }
 };
+
+/**
+ * Prepares data for DM service based on the specified action.
+ *
+ * @param {string} action - The action to be performed. Can be 'listar', 'adicionar', 'atualizar', or 'deletar'.
+ * @param {Object} DM - The DM data object.
+ * @param {Object} Cliente - The Cliente data object.
+ * @param {Object} Controladora - The Controladora data object.
+ * @returns {Object} The prepared data for the specified action.
+ * @throws {Error} Throws an error if the action is invalid.
+ */
+export const prepareDMData = (action, DM, Cliente, Controladora) => {
+    const baseData = {
+        id_usuario: store.userId || null,
+        id_cliente: store.userIdCliente || null
+    };
+
+    switch (action) {
+        case 'listar':
+            return store.userRole === 'Administrador' ? {} : { ...baseData };
+
+        case 'adicionar':
+            DM.IDcliente = Cliente.id_cliente;
+            DM.ClienteNome = Cliente.nome_cliente;
+            return {
+                ...baseData,
+                ...DM,
+                Controladoras: Controladora
+            };
+
+        case 'atualizar':
+            if (DM.IDcliente !== Cliente.value.id_cliente) {
+                DM.IDcliente = Cliente.value.id_cliente;
+            }
+            if (DM.ClienteNome !== Cliente.value.nome_cliente) {
+                DM.ClienteNome = Cliente.value.nome_cliente;
+            }
+            return {
+                ...baseData,
+                ...DM,
+                Controladoras: Controladora
+            };
+
+        case 'deletar':
+            return {
+                ...baseData,
+                ID_DM: DM.ID_DM
+            };
+
+        default:
+            throw new Error('Ação inválida para preparar os dados do serviço de DM.');
+    }
+};
+
+/**
+ * Prepares the data for DM service based on the given action.
+ *
+ * @param {string} action - The action to be performed ('listar', 'adicionar', 'atualizar', 'deletar').
+ * @param {Object} DM - The DM object containing the ID_DM property.
+ * @param {Object} Produto - The Produto object containing the value property.
+ * @param {Object} Controladora - The Controladora object containing the tipo property.
+ * @returns {Object} The prepared data for the DM service.
+ * @throws {Error} If the action is invalid or if the tipo_controladora is not defined for 'adicionar' or 'atualizar' actions.
+ */
+export const prepareItemDMData = (action, DM, Produto, Controladoras) => {
+    const baseData = {
+        id_usuario: store.userId || null,
+        id_cliente: store.userIdCliente || null,
+        id_dm: DM.ID_DM || null
+    };
+    const selectedControladora = Controladoras?.value ? Controladoras.value.find((c) => c.id === Produto.value.Controladora) : null;
+
+    switch (action) {
+        case 'listar':
+            return { ...baseData };
+
+        case 'adicionar':
+            return {
+                ...baseData,
+                ...Produto.value,
+                tipo_controladora: selectedControladora
+                    ? selectedControladora.tipo
+                    : (() => {
+                          throw new Error('Tipo de controladora não definido.');
+                      })()
+            };
+
+        case 'atualizar':
+            return {
+                ...baseData,
+                ...Produto.value,
+                tipo_controladora: selectedControladora
+                    ? selectedControladora.tipo
+                    : (() => {
+                          throw new Error('Tipo de controladora não definido.');
+                      })()
+            };
+
+        case 'deletar':
+            return {
+                ...baseData,
+                id_item: Produto.value.id_item
+            };
+
+        default:
+            throw new Error('Ação inválida para preparar os dados do serviço de DM.');
+    }
+};
+
+/**
+ * Formats a list of clients into a specific structure.
+ *
+ * @param {Array} ListaClientes - The list of clients to format.
+ * @param {Object} ListaClientes[].id_cliente - The ID of the client.
+ * @param {Object} ListaClientes[].nome - The name of the client.
+ * @param {Object} ListaClientes[].usar_api - Indicates if the client uses the API.
+ * @returns {Array} The formatted list of clients.
+ */
+export const FormatarListaCliente = (ListaClientes) => {
+    return ListaClientes.map((cliente) => {
+        return {
+            label: cliente.nome,
+            value: {
+                id_cliente: cliente.id_cliente,
+                nome_cliente: cliente.nome,
+                usar_api: cliente.usar_api,
+            },
+            usar_api: cliente.usar_api,
+        };
+    });
+}

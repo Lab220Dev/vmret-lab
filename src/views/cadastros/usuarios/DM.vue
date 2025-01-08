@@ -2,7 +2,6 @@
 import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
 import { reactive, ref, onMounted, watch, computed, nextTick } from 'vue'; // Hooks do Vue.js
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação de usuário
-import axios from '@/axios.js'; // Instância Axios para requisições HTTP
 import { FilterMatchMode } from 'primevue/api'; // Modo de filtro global para PrimeVue
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de loading
 import { useDataStore } from '@/store/dataStore.js'; // Store para dados gerais
@@ -20,7 +19,7 @@ import {
     validarCampos as validarCamposHelper,
     updateTipoControladora as updateControladoraHelper,
     findControladora,
-    updateProdutoSelecionado
+    updateProdutoSelecionado,prepareDMData,prepareItemDMData,FormatarListaCliente
 } from '@/helpers/DMHelper.js'; // Import the helper functions
 import { normalizeDateTime } from '@/helpers/HelperUtils.js';
 import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
@@ -178,6 +177,7 @@ const validarAndarSelecionado = () => {
         console.error('Erro ao validar o andar selecionado:', error);
     }
 };
+//função para remoção de controladora
 const removeControladora = (index) => {
     if (!DM.ID_DM) {
         Controladoras.value.splice(index, 1);
@@ -213,7 +213,10 @@ const onRowSelect = async (event) => {
         loadingControladoras.value = false;
     }
 };
-
+/**
+ * Função chamada ao selecionar uma linha de Produto na tabela.
+ * Preenche as informações relacionadas ao Produto selecionado e suas controladoras.
+ */
 const handleRowSelection = async (event) => {
     const edit = event.data;
     isEditMode.value = true;
@@ -244,28 +247,37 @@ const handleRowSelection = async (event) => {
     await nextTick();
     handleControladoraChange();
 };
+//funções de  cancelar dialogo e limpeza de campos
 const handleCancelar = () => {
     resetProdutoSelecionado(produtoSelecionado);
     isEditMode.value = false;
     showDialogProduto.value = false;
 };
-//Fnções Principais
+//Funções Principais
 //DM
+/**
+ * Função para buscar as DMs através de uma requisição.
+ * A requisição é ajustada de acordo com o tipo de usuário (admin ou não).
+ */
+const fetchDMS = async () => {
+    loading.value = true; 
+    try {
+        const data = prepareDMData('listar')
+        const response = await dmService.listarDMs(data);
+        ListaDMS.value = response.data; // Atualiza a lista de DMs com a resposta
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar DMs', life: 3000 }); // Exibe uma mensagem de erro
+        console.error('Erro ao carregar usuários:', error); // Loga o erro no console
+    } finally {
+        loading.value = false; // Desativa o loading após a requisição
+    }
+};
+
 const adicionarDM = async () => {
-    DM.IDcliente = selectedClient.value.id_cliente;
-    DM.ClienteNome = selectedClient.value.nome_cliente;
-    const data = {
-        id_usuario: store.userId,
-        ...DM,
-        Controladoras: Controladoras.value
-    };
     loading.value = true;
     try {
-        const response = await axios.post('/DM/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const data = prepareDMData('adicionar',DM,selectedClient.value,Controladoras.value)
+        await dmService.adicionarDM(data);
         dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM adicionada com sucesso', life: 3000 });
         fetchDMS();
@@ -279,30 +291,15 @@ const adicionarDM = async () => {
     }
 };
 const atualizarDM = async () => {
-    if (DM.IDcliente !== selectedClient.value.id_cliente) {
-        DM.IDcliente = selectedClient.value.id_cliente;
-    }
-    if (DM.ClienteNome !== selectedClient.value.nome_cliente) {
-        DM.ClienteNome = selectedClient.value.nome_cliente;
-    }
-    const data = {
-        id_usuario: store.userId,
-        ...DM,
-        Controladoras: Controladoras.value.map((controladora) => {
-            if (!controladora.ID) {
-                controladora.ID = null;
-            }
-            return controladora;
-        })
-    };
     dataStore.invalidateDMCache();
     loading.value = true;
+    const preparedControladoras = Controladoras.value.map((controladora) => ({
+    ...controladora,
+    ID: controladora.ID || null,
+}));
+    const data = prepareDMData('atualizar',DM,selectedClient,preparedControladoras) 
     try {
-        const response = await axios.post('/DM/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await dmService.atualizarDM(data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM atualizada com sucesso', life: 3000 });
         fetchDMS();
         active.value = 0;
@@ -315,14 +312,10 @@ const atualizarDM = async () => {
     }
 };
 const deleteDM = async (item) => {
-    let data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ID_DM: item.ID_DM
-    };
+    const data = prepareDMData('deletar',item)
     loading.value = true;
     try {
-        await axios.post('/DM/delete', data);
+        await dmService.deletarDM(data);
         dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
         await fetchDMS();
@@ -379,21 +372,10 @@ const adicionarProduto = async () => {
         return; //se falhar não continua
     }
 
-    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...produtoSelecionado.value,
-        id_dm: DM.ID_DM,
-        tipo_controladora: selectedControladora ? selectedControladora.tipo : null
-    };
+    const data = prepareItemDMData('adicionar',DM,produtoSelecionado,Controladoras)
     try {
         loading.value = true;
-        const response = await axios.post('/DM/adicionarItensDM', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await dmService.adicionarItem(data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto adicionado com sucesso', life: 3000 });
         showDialogProduto.value = false;
         resetProdutoSelecionado(produtoSelecionado);
@@ -407,14 +389,7 @@ const adicionarProduto = async () => {
 };
 // Função para atualizar o produto selecionado
 const atualizarProduto = async () => {
-    const selectedControladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...produtoSelecionado.value,
-        id_dm: DM.ID_DM,
-        tipo_controladora: selectedControladora ? selectedControladora.tipo : null
-    };
+    const data = prepareItemDMData('atualizar',DM,produtoSelecionado,Controladoras)
     try {
         loading.value = true;
         await dmService.atualizarProduto(data);
@@ -447,11 +422,8 @@ const confirmDelete = async () => {
     loading.value = true;
 
     try {
-        const response = await axios.post('/DM/deleteItem', {
-            id_item: selectedItem.value.id_item,
-            id_usuario: store.userId
-        });
-
+        const data = prepareItemDMData('deletar',DM,selectedItem)
+        await dmService.deletarItem(data);
         // Atualiza a lista de itens após exclusão
         fetchItemDM();
 
@@ -469,19 +441,8 @@ const confirmDelete = async () => {
 const fetchCliente = async () => {
     loading.value = true;
     try {
-        const response = await axios.post('/admin/cliente/listar', {});
-        ListaClientes.value = [
-            todosOption,
-            ...response.data.map((cliente) => ({
-                label: cliente.nome,
-                value: {
-                    id_cliente: cliente.id_cliente,
-                    nome_cliente: cliente.nome,
-                    usar_api: cliente.usar_api
-                },
-                usar_api: cliente.usar_api
-            }))
-        ];
+        const response = await dmService.listarClientes();
+        ListaClientes.value = [todosOption, ...FormatarListaCliente(response.data)];
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar clientes', life: 3000 });
         console.error('Erro ao carregar clientes:', error);
@@ -493,7 +454,7 @@ const fetchCliente = async () => {
  * Função para configurar as informações do cliente selecionado a partir do DM.
  * Mapeia o cliente para as opções de uso de API.
  */
-const configurarCliente = (dm) => {
+const configurarCliente = () => {
     selectedClient.value = configurarClienteSelecionado(ListaClientes.value, DM);
     usarApi.value = selectedClient.value.usar_api;
 };
@@ -505,16 +466,8 @@ const configurarCliente = (dm) => {
 const fetchItemDM = async () => {
     loading.value = true;
     try {
-        const data = {
-            id_dm: DM.ID_DM,
-            id_cliente: store.userIdCliente,
-            id_usuario: store.userId
-        };
-        const response = await axios.post('/DM/listaritens', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const data = prepareItemDMData('listar',DM)
+        const response = await dmService.fetchItemDM(data);
         ListaItens.value = response.data;
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar itens da DM', life: 3000 });
