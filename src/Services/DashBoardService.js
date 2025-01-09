@@ -6,15 +6,17 @@ const store = useAuthStore();
 const dashboardService = {
   async fetchAdminData() {
     try {
-      const [dadosResponse, listaResponse, notificacoesResponse] = await Promise.all([
+      // const [dadosResponse, listaResponse, notificacoesResponse] = await Promise.all([
+      //   axios.post('/dashboard/DadosClientes'),
+      //   axios.post('/dashboard/ResumoDados'),
+      //   axios.post('/dashboard/UltimasNotificacoes'),
+      // ]);
+      const [dadosResponse, notificacoesResponse] = await Promise.all([
         axios.post('/dashboard/DadosClientes'),
-        axios.post('/dashboard/ResumoDados'),
         axios.post('/dashboard/UltimasNotificacoes'),
       ]);
-
       return {
         dados: dadosResponse.data,
-        lista: listaResponse.data,
         notificacoes: notificacoesResponse.data,
       };
     } catch (error) {

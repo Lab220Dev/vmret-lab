@@ -761,7 +761,7 @@ onMounted(async () => {
                                     <div class="field card">
                                         <h4>Posição</h4>
                                         <div class="checkbox-group">
-                                            <div v-for="i in 14" :key="i" class="checkbox-item mt-3">
+                                            <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
                                                 <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                 <label>{{ i }}</label>
                                             </div>

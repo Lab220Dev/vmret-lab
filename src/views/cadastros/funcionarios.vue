@@ -9,10 +9,12 @@ import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import clockurl from '@/assets/images/OIP.png';
 import { useAuthStore } from '@/store/authStore.js';
 import ImageUpload from '@/components/ImageUpload.vue';
-import { isValid as validateCPF } from 'cpf-validator';
 import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-
+import funcionarioService from '@/Services/funcionarioService.js';
+import * as formatservices from '@/helpers/HelperUtils.js';
+import {resetFuncionarioForm,resetItens as resetProduto} from '@/helpers/formHelper.js';
+import { validadorcpf, validadoremail,validateForm } from '@/helpers/HelperFuncionario.js';
 const store = useAuthStore();
 const dataStore = useDataStore();
 
@@ -99,11 +101,7 @@ const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 
 const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
+   return formatservices.formatDateToString(date);
 };
 const TempoInicio = ref(null);
 const TempoFim = ref(null);
@@ -116,10 +114,10 @@ const onRowSelect = async (event) => {
         ...item,
         action: 'new'
     }));
-    setTempo(TempoInicio, funcionario.hora_inicial);
-    setTempo(TempoFim, funcionario.hora_final);
+    formatservices.setTempo(TempoInicio, funcionario.hora_inicial);
+    formatservices.setTempo(TempoFim, funcionario.hora_final);
     await fetchItensSetor(funcionario.id_setor);
-    imageUploader.value?.clearImageData(); 
+    imageUploader.value?.clearImageData();
     await getImagem(funcionario.foto);
     active.value = 1;
     editVisible.value = true;
@@ -131,19 +129,19 @@ const setorChange = async (event) => {
         await fetchItensSetor(idSetorSelecionado);
     }
 };
-
+const cpfvalidate=()=>{
+    errors.value.CPF = validadorcpf(funcionario.CPF);
+}
+const validateEmail = () => {
+    errors.value.email= validadoremail(funcionario.email);
+};
 const loadFuncionarios = async () => {
     const data = {
         id_cliente: store.userIdCliente
     };
     try {
         loading.value = true;
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-
+        const response = await funcionarioService.listarFuncionarios(data);
         ListaFuncionarios.value = response.data;
         filteredCount.value = ListaFuncionarios.value.length;
 
@@ -167,32 +165,21 @@ watch(
 );
 
 const adicionarFuncionario = async () => {
-    const formData = new FormData();
-    if (selectedFile.value) {
-        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
-        formData.append('foto', nomeArquivo);
-        formData.append('file', selectedFile.value);
-    }
-    Object.entries(funcionario).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-    formData.append('id_cliente', store.userIdCliente);
-    formData.append('id_usuario', store.userId);
     try {
         loading.value = true;
-        const response = await axios.post('/funcionarios/adicionar', formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const { isValid, errors } = validateForm(funcionario);
+        if(!isValid){
+            throw new Error(`Erro ao validar o formulário. Corrija os campos destacados: ${JSON.stringify(errors)}`);
+        }
+        await funcionarioService.adicionarFuncionario(funcionario, selectedFile.value);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
         dataStore.invalidateFuncionariosCache();
-        loadFuncionarios();
+        await loadFuncionarios();
         active.value = 0;
         resetForm();
+        resetFuncionarioForm(funcionario);
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail:  error.message || 'Erro ao criar o usuário', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -217,8 +204,7 @@ const fetchItensSetor = async (id_setor) => {
     };
 
     try {
-        const response = await axios.post('Setor/itensdisponiveissetor', data);
-
+        const response = await funcionarioService.fetchItensSetor(data);
         // Armazena os itens do setor em ListaItemsSetor
         ListaItemsSetor.value = response.data;
 
@@ -234,15 +220,8 @@ const listarProdutosDisponiveis = () => {
 };
 
 const fetchHieraquiaOptions = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
     try {
-        const response = await axios.post('funcionarios/listarhierarquia', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await funcionarioService.fetchHieraquiaOptions();  
         hieraquiaoptions = response.data;
         formatedHierarquiaOptions = hieraquiaoptions.map((hieraquiaoptions) => ({
             label: ` ${hieraquiaoptions.id_funcao}`,
@@ -255,7 +234,7 @@ watch(
     TempoInicio,
     (newTime) => {
         if (newTime) {
-            funcionario.hora_inicial = formatarTempo(newTime);
+            funcionario.hora_inicial = formatservices.formatarTempo(newTime);
         } else {
             funcionario.hora_inicial = '';
         }
@@ -267,7 +246,7 @@ watch(
     TempoFim,
     (newTime) => {
         if (newTime) {
-            funcionario.hora_final = formatarTempo(newTime);
+            funcionario.hora_final = formatservices.formatarTempo(newTime);
         } else {
             funcionario.hora_final = '';
         }
@@ -290,63 +269,12 @@ const resetTable = () => {
     resetItens();
 };
 
-function formatarTempo(time, baseDate = new Date()) {
-    const hours = time.hours.toString().padStart(2, '0');
-    const minutes = time.minutes.toString().padStart(2, '0');
-    const seconds = time.seconds.toString().padStart(2, '0');
-
-    baseDate.setHours(parseInt(hours, 10));
-    baseDate.setMinutes(parseInt(minutes, 10));
-    baseDate.setSeconds(parseInt(seconds, 10));
-
-    return baseDate.toISOString();
-}
-
-const setTempo = (tempoRef, isoString) => {
-    const date = new Date(isoString);
-    const time = {
-        hours: date.getUTCHours(),
-        minutes: date.getUTCMinutes(),
-        seconds: date.getUTCSeconds()
-    };
-    tempoRef.value = time;
-};
-
-const validateForm = () => {
-    errors.value = {};
-    cpfvalidate();
-    validateEmail();
-    return Object.keys(errors.value).length === 0;
-};
-
-const validateEmail = () => {
-    const email = funcionario.email;
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailPattern.test(email)) {
-        errors.value.email = 'E-mail inválido';
-    } else {
-        errors.value.email = '';
-    }
-};
-const cpfvalidate = () => {
-    const cpf = funcionario.CPF;
-    if (!cpf || !validateCPF(cpf)) {
-        errors.value.CPF = 'CPF inválido';
-    } else {
-        errors.value.CPF = '';
-    }
-};
-
 const getImagem = async (filename) => {
     if (filename === '') {
         return imagePlaceholder;
     }
     try {
-        const response = await axios.get(`/image/funcionario/${store.userIdCliente}/${filename}`, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await funcionarioService.obterImagem(store.userIdCliente, filename);
         const { image, mimeType } = response.data;
         imageUrl.value = `data:${mimeType};base64,${image}`;
     } catch (error) {
@@ -365,11 +293,7 @@ const deleteFuncionario = async () => {
     let data = { id_funcionario: funcionario.id_funcionario, id_usuario: store.userId };
     try {
         loading.value = true;
-        await axios.post('/funcionarios/deleteFuncionario', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await funcionarioService.deleteFuncionario(data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
         dataStore.invalidateFuncionariosCache();
         deleteFuncionarioDialog.value = false;
@@ -384,72 +308,29 @@ const deleteFuncionario = async () => {
 };
 
 const resetForm = () => {
-    funcionario.foto = null; 
-    imageUrl.value = imagePlaceholder; 
-
-    funcionario.id_funcionario = '';
-    funcionario.matricula = '';
-    funcionario.nome = '';
-    funcionario.senha = '';
-    funcionario.biometria = '';
-    funcionario.biometria2 = '';
-    funcionario.data_admissao = null;
-    funcionario.CPF = '';
-    funcionario.RG = '';
-    funcionario.CTPS = '';
-    funcionario.email = '';
-    funcionario.status = '';
-    funcionario.hora_inicial = '';
-    funcionario.hora_final = '';
-    funcionario.id_centro_custo = '';
-    funcionario.id_funcao = '';
-    funcionario.id_planta = '';
-    funcionario.id_setor = '';
-
-    funcionario.segunda = false;
-    funcionario.terca = false;
-    funcionario.quarta = false;
-    funcionario.quinta = false;
-    funcionario.sexta = false;
-    funcionario.sabado = false;
-    funcionario.domingo = false;
-
+    funcionario.foto = null;
+    imageUrl.value = imagePlaceholder;
+    resetFuncionarioForm(funcionario);
     funcionario.itemsSelecionadosFuncionario = [];
 
     selectedFile.value = null;
     TempoInicio.value = null;
     TempoFim.value = null;
-    imageUploader.value?.clearImageData(); 
+    imageUploader.value?.clearImageData();
     ListaItemsSetor.value = [];
 };
 
 const resetItens = () => {
-    selectedProduct.value = {
-    id_produto: '',
-    nome: '',
-    sku: '',
-    quantidade: null
-}
-}
+    resetProduto(selectedProduct)
+};
 
 const SalvarProduto = async () => {
     if (!validarCampos()) {
         return; //se falhar não continua
     }
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId,
-        id_funcionario: funcionario.id_funcionario,
-        id_produto: selectedProduct.value.id_produto,
-        quantidade: selectedProduct.value.quantidade
-    };
     loading.value = true;
     try {
-        const response = await axios.post('/funcionarios/adicionarItem', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await funcionarioService.SalvarProduto(funcionario, selectedProduct);
         ListaProdutoFuncionario.value = [];
         ListaProdutoFuncionario.value = response.data.dados[0];
         visible.value = false;
@@ -473,7 +354,6 @@ const listarProdutosFiltrados = () => {
 
     ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...itensFiltrados); //atualizando a lista
 
-
     if (itensFiltrados.length === 0) {
         toast.add({
             severity: 'warn',
@@ -489,54 +369,26 @@ const abrirDialogAdicionarItem = () => {
     visible.value = true; // Mostre o diálogo
 };
 
-
 const editItem = (selectedItem) => {
     selectedProduct.value = { ...selectedItem };
     itemDialog.value = true;
 };
 
 const atualizarFuncionario = async () => {
-    const formData = new FormData();
-
-    if (selectedFile.value) {
-        const fileExtension = selectedFile.value.name.split('.').pop(); // Obtém a extensão do arquivo
-        const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
-
-        formData.append('foto', nomeArquivo);
-        formData.append('file', selectedFile.value);
-        formData.append('remove_old_photo', true);
-    } else {
-        formData.append('foto', funcionario.foto);
-    }
-
-    const { foto, itens, ...restOfFuncionario } = funcionario;
-
-    const itensUnicos = Array.from(new Set(itens.map((item) => item.id_produto))).map((id_produto) => itens.find((item) => item.id_produto === id_produto));
-
-    formData.append('itens', JSON.stringify(itensUnicos));
-
-    Object.entries(restOfFuncionario).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-
-    formData.append('id_usuario', store.userId);
-
     try {
         loading.value = true;
-        const response = await axios.put(`/funcionarios/atualizar`, formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-
+        const { isValid, errors } = validateForm(funcionario);
+        if(!isValid){
+            throw new Error(`Erro ao validar o formulário. Corrija os campos destacados: ${JSON.stringify(errors)}`);
+        }
+        await funcionarioService.atualizarFuncionario(funcionario, selectedFile);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
         dataStore.invalidateFuncionariosCache();
         loadFuncionarios();
         active.value = 0;
         resetForm();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
+        toast.add({ severity: 'error', summary: error.message||'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
     } finally {
         loading.value = false;
     }
@@ -558,29 +410,13 @@ const confirmDeleteProduct = (item) => {
     deleteProductDialog.value = true;
 };
 const deleteProduct = async () => {
-    let data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId,
-        id_funcionario: funcionario.id_funcionario,
-        id_produto: selectedProduct.value.id_produto,
-        quantidade: selectedProduct.value.quantidade
-    };
-
     try {
         loading.value = true;
-
-        const res = await axios.post('/funcionarios/deleteItem', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-
+        const res = await funcionarioService.deleteProduct(funcionario, selectedProduct);
         if (res.data && res.data.items) {
             ListaProdutoFuncionario.value = res.data.items;
         }
-
         resetItens();
-
         toast.add({
             severity: 'success',
             summary: 'Sucesso',
@@ -663,6 +499,7 @@ const hideDialog = () => {
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
+                        
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
@@ -673,7 +510,7 @@ const hideDialog = () => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText name="busca" v-model="filters['global'].value" placeholder="Busca" type="search" autocomplete="off" />
                                 </IconField>
                             </div>
                         </template>
@@ -718,20 +555,23 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
+                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" 
+                                    :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false"/>
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="rg">RG:</label>
-                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
+                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" :autoClear="false"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="ctps">CTPS:</label>
-                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" />
+                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" 
+                                    mask="9999999/9999" :unmask="true" :autoClear="false" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="email">E-mail:</label>
-                                    <InputText class="my-2" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
+                                    <InputText class="my-2" id="email" v-model="funcionario.email" 
+                                    :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
@@ -812,8 +652,7 @@ const hideDialog = () => {
                                 </div>
 
                                 <div class="full mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
-                                    <ImageUpload ref="imageUploader"  @fileSelected="handleFileSelected" 
-                                    @clearImage="handleClearImage"  :externalImages="imageUrl" />
+                                    <ImageUpload ref="imageUploader" @fileSelected="handleFileSelected" @clearImage="handleClearImage" :externalImages="imageUrl" />
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
@@ -929,7 +768,7 @@ const hideDialog = () => {
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
-                    <InputNumber variant="filled" id="Quantidade"  v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber variant="filled" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 

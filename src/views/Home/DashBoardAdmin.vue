@@ -7,10 +7,10 @@
         </div>
 
         <!-- Mapa de Calor -->
-        <div class="col-12">
+        <!-- <div class="col-12">
             <h5>Mapa de Calor</h5>
             <Heatmap :clientes="lista" />
-        </div>
+        </div> -->
 
         <!-- Tabela de Notificações -->
         <div class="col-12">
@@ -24,7 +24,7 @@
 <script setup>
 import { ref, onMounted,computed } from 'vue';
 import SumarioAdmin from '@/components/SumarioAdmin.vue';
-import Heatmap from '@/components/Heatmap.vue';
+// import Heatmap from '@/components/Heatmap.vue';
 import Notificacoes from '@/components/TabelaNotificacoes.vue';
 import { useToast } from 'primevue/usetoast';
 import Spinner from '@/components/LoadingSpinner.vue'
@@ -40,7 +40,7 @@ const fetchData = async () => {
      try {
         const result = await dashboardService.fetchAdminData();
     dados.value = result.dados;
-    lista.value = result.lista;
+    // lista.value = result.lista;
     notifcacoes.value = result.notificacoes;
 
     } catch (error) {

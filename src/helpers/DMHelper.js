@@ -163,7 +163,7 @@ export const selectAll = (controladora) => {
         controladora.dados.posicao = Array.from({ length: 15 }, (_, i) => i + 1);
     }
     if (controladora.tipo === 'Locker') {
-        controladora.dados.posicao = Array.from({ length: 14 }, (_, i) => i + 1);
+        controladora.dados.posicao = Array.from({ length: 20 }, (_, i) => i + 1);
     }
 };
 

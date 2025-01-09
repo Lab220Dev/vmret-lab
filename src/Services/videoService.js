@@ -18,6 +18,17 @@ const videoService = {
       throw error;
     }
   },
+  async deleteVideo( dmId) {
+      const data = { dmId:dmId };
+
+    try {
+      const response = await axios.post('/video/delete', data);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao fazer upload de vídeo:', error.message);
+      throw error;
+    }
+  },
 };
 
 export default videoService;

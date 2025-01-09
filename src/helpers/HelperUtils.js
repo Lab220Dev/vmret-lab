@@ -66,6 +66,20 @@ export const formatDate = (value) => {
 };
 
 /**
+ * Formats a Date object to a string in the format "DD/MM/YYYY".
+ *
+ * @param {Date} date - The date to format.
+ * @returns {string} The formatted date string.
+ */
+export const formatDateToString = (date) => {
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+/**
  * Converte um objeto de tempo em uma string ISO.
  * @param {Object} time - { hours, minutes, seconds }.
  * @param {Date} baseDate - Data base para aplicar o horário.
