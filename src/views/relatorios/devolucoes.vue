@@ -1,202 +1,232 @@
 <script setup>
-import VueDatePicker from '@vuepic/vue-datepicker';
-import { FilterMatchMode } from 'primevue/api';
-import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted, watch } from 'vue';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore.js';
-import { useDataStore } from '@/store/dataStore.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import * as HelperUtils from '@/helpers/HelperUtils.js'
-import relatorioService from '../../Services/relatorioService';
-const dataStore = useDataStore();
-const showDialog = ref(false);
-const dialogMessage = ref('');
+import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente de data picker para selecionar as datas
+import { FilterMatchMode } from 'primevue/api'; // Importa o modo de correspondência para filtros no PrimeVue
+import { useToast } from 'primevue/usetoast'; // Importa o hook do PrimeVue para mostrar notificações
+import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do componente de data picker
+import { ref, onMounted, watch } from 'vue'; // Importa funções do Vue para reatividade e manipulação de ciclo de vida
+import axios from '@/axios.js'; // Importa a configuração do Axios para fazer requisições HTTP
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados de usuário
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados para acessar listas e informações
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento
 
-const filteredCount = ref(0);
+const dataStore = useDataStore(); // Instancia o store de dados
+const showDialog = ref(false); // Estado reativo para controlar a visibilidade de uma caixa de diálogo
+const dialogMessage = ref(''); // Estado reativo para armazenar a mensagem a ser exibida no diálogo
 
-const store = useAuthStore();
-const toast = useToast();
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
-const dropdown1 = ref(null);
-const dropdown2 = ref(null);
-const dropdown3 = ref(null);
-const dropdown4 = ref(null);
-const dropdown5 = ref(null);
-const devolucoes = ref([]);
-const todosOption = { label: 'Todos', value: null };
+const filteredCount = ref(0); // Conta os itens filtrados para exibição
 
-const dms = ref([todosOption]);
-const plantas = ref([todosOption]);
-//const setor = ref([todosOption]);
-const centroCusto = ref([todosOption]);
+const store = useAuthStore(); // Instancia o store de autenticação
+const toast = useToast(); // Instancia o hook de toast para notificações
 
-const ListaFuncionariosFiltrado = ref([]);
-const ListaFuncionarios = ref([]);
+const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem padrão quando não há resultados
+const dropdown1 = ref(null); // Referência para o primeiro dropdown
+const dropdown2 = ref(null); // Referência para o segundo dropdown
+const dropdown3 = ref(null); // Referência para o terceiro dropdown
+const dropdown4 = ref(null); // Referência para o quarto dropdown
+const dropdown5 = ref(null); // Referência para o quinto dropdown
 
-const ListaSetorOriginal = ref([]);
-const ListaSetor = ref([]);
+const devolucoes = ref([]); // Lista de devoluções retornadas pela API
 
+const todosOption = { label: 'Todos', value: null }; // Opção de "Todos" para dropdowns
+
+const dms = ref([todosOption]); // Lista de DMs (dados de movimentação) para o filtro
+const plantas = ref([todosOption]); // Lista de plantas para o filtro
+const centroCusto = ref([todosOption]); // Lista de centros de custo para o filtro
+
+const ListaFuncionariosOriginal = ref([]); // Lista original de funcionários
+const ListaFuncionarios = ref([]); // Lista de funcionários filtrada
+
+const ListaSetorOriginal = ref([]); // Lista original de setores
+const ListaSetor = ref([]); // Lista de setores filtrada
+
+// Filtros gerais para a tabela
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para pesquisa na tabela
 });
-const show = ref(true);
-const selectedItem = ref([]);
-const loading = ref(false);
+
+const show = ref(true); // Estado reativo para controlar a exibição da tabela de dados
+
+const selectedItem = ref([]); // Estado reativo para armazenar item selecionado
+
+const loading = ref(false); // Estado reativo para controlar a exibição do spinner de carregamento
+
+// Objeto do relatório com filtros aplicados
 const relatorio = ref({
     id_dm: '',
     id_planta: '',
     ID_CentroCusto: '',
     id_setor: '',
     id_funcionario: '',
-    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    data_final: new Date()
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // Data inicial (primeiro dia do mês)
+    data_final: new Date() // Data final (data atual)
 });
 
+/**
+ * Função para formatar uma data no formato dd/MM/yyyy.
+ * @param {Date} date - Data a ser formatada
+ * @returns {string} - Data formatada no padrão "dd/MM/yyyy"
+ */
 const format = (date) => {
     const day = date.getDate();
-    const month = date.getMonth() + 1;
+    const month = date.getMonth() + 1; // Meses começam do 0, então somamos 1
     const year = date.getFullYear();
 
     return `${day}/${month}/${year}`;
 };
 
+// Função para converter a data para o formato ISO
 const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;
 };
 
+// Função para buscar as devoluções de acordo com os filtros selecionados
 const buscar = async () => {
     const data = {
-        id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm,
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final)
+        id_cliente: store.userIdCliente, // ID do cliente (proveniente do store de autenticação)
+        id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm, // Filtro de DM, se não estiver vazio
+        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario, // Filtro de funcionário, se não estiver vazio
+        data_inicio: toISODate(relatorio.value.data_inicio), // Data de início
+        data_final: toISODate(relatorio.value.data_final) // Data de término
     };
     try {
-        loading.value = true;
+        loading.value = true; // Ativa o carregamento enquanto a requisição é realizada
         const response = await axios.post('devolucoes/relatorio', data, {
             headers: {
-                Authorization: `Bearer ${store.token}`
+                Authorization: `Bearer ${store.token}` // Passa o token de autenticação no cabeçalho
             }
         });
-        devolucoes.value = response.data;
+        devolucoes.value = response.data; // Armazena os dados retornados pela API na variável devolucoes
 
-        filteredCount.value = devolucoes.value.length;
+        filteredCount.value = devolucoes.value.length; // Atualiza o contador de registros filtrados
 
+        // Se não houver resultados, exibe uma mensagem de erro
         if (Array.isArray(devolucoes.value) && devolucoes.value.length === 0) {
             dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
-            showDialog.value = true;
+            showDialog.value = true; // Abre a caixa de diálogo com a mensagem de erro
         }
+        // Se não houver resultados, altera a mensagem padrão
         if (devolucoes.value.length === 0) {
             emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
         } else {
-            emptyMessage.value = '';
+            emptyMessage.value = ''; // Limpa a mensagem se houver resultados
         }
     } catch (error) {
-        console.error('Erro ao buscar devoluções:', error);
+        console.error('Erro ao buscar devoluções:', error); // Exibe erro no console caso a requisição falhe
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Desativa o carregamento
     }
 };
 
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = devolucoes.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue));
-    }).length;
-}, { immediate: true });
+// Reage a mudanças no filtro global e atualiza o contador de registros filtrados
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = devolucoes.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum campo corresponde ao filtro
+        }).length;
+    },
+    { immediate: true }
+);
 
+// Função para voltar à visualização da tabela após a visualização de um item
 const voltar = () => {
-    show.value = true;
-    selectedItem.value = {};
+    show.value = true; // Exibe a tabela de dados
+    selectedItem.value = {}; // Limpa o item selecionado
 };
-const dt = ref(null);
+const dt = ref(null); // Referência para o DataTable
 
+// Função para gerar o conteúdo CSV a partir dos dados
 const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
+    const headers = Object.keys(data[0]).join(','); // Obtém os cabeçalhos a partir das chaves do primeiro objeto
+    const rows = data.map((row) => Object.values(row).join(',')).join('\n'); // Converte cada linha em uma string CSV
+    return `${headers}\n${rows}`; // Retorna o conteúdo no formato CSV
 };
 
+// Função para exportar os dados em formato CSV
 const exportCSV = () => {
-    const csvContent = generateCSV(devolucoes.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Devoluções.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csvContent = generateCSV(devolucoes.value); // Gera o conteúdo CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); // Cria um blob do CSV
+    const link = document.createElement('a'); // Cria um link de download
+    const url = URL.createObjectURL(blob); // Cria uma URL do blob
+    link.setAttribute('href', url); // Define o link para o arquivo gerado
+    link.setAttribute('download', 'Devoluções.csv'); // Define o nome do arquivo
+    document.body.appendChild(link); // Adiciona o link ao DOM
+    link.click(); // Dispara o clique para iniciar o download
+    document.body.removeChild(link); // Remove o link do DOM
 };
+
+// Função para exportar os dados em formato JSON
 const exportJSON = () => {
-    const jsonContent = JSON.stringify(devolucoes.value, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'Devoluções.json');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const jsonContent = JSON.stringify(devolucoes.value, null, 2); // Converte os dados em JSON
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' }); // Cria um blob do JSON
+    const link = document.createElement('a'); // Cria um link de download
+    const url = URL.createObjectURL(blob); // Cria uma URL do blob
+    link.setAttribute('href', url); // Define o link para o arquivo gerado
+    link.setAttribute('download', 'Devoluções.json'); // Define o nome do arquivo
+    document.body.appendChild(link); // Adiciona o link ao DOM
+    link.click(); // Dispara o clique para iniciar o download
+    document.body.removeChild(link); // Remove o link do DOM
 };
+
+// Função para fechar todos os dropdowns
 const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o primeiro dropdown
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o segundo dropdown
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o terceiro dropdown
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Fecha o quarto dropdown
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o quinto dropdown
 };
+
+// Função para carregar os dados iniciais dos filtros
 const loadData = async () => {
     try {
-        // o operador || funciona como uma função de curto circuito que via retornar o primeiro valor 'truthy' 
-        //isso valida se ele ja tem o valor armazenado ele vai pegar o valor aramzenado e não faz a chamada
-        dms.value = dataStore.dms || await dataStore.fetchListaDms();
-        plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
-        ListaSetor.value = dataStore.setores || await dataStore.fetchSetores();
-        centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
-        // ListaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
-        ListaFuncionarios.value = await relatorioService.listaFuncionario();
-        ListaFuncionariosFiltrado.value = ListaFuncionarios.value;
+        // O operador || verifica se o valor já está armazenado no store, caso contrário, faz a chamada para obter os dados
+        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
+        ListaSetor.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        ListaFuncionarios.value = dataStore.funcionarios || (await dataStore.fetchFuncionarios()); // Carrega a lista de funcionários
     } catch (error) {
-        console.error('Erro ao carregar dados iniciais:', error);
+        console.error('Erro ao carregar dados iniciais:', error); // Exibe erro caso haja falha no carregamento dos dados
     }
 };
 
+// Função para filtrar os setores de acordo com o centro de custo selecionado
 const filterSetor = () => {
     if (relatorio.value.ID_CentroCusto) {
-        // Filtra os setores de acordo com o centro de custo selecionado
-        ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
-            setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null
-        );
+        // Filtra os setores de acordo com o centro de custo
+        ListaSetor.value = ListaSetorOriginal.value.filter((setorItem) => setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null);
     } else {
-        ListaSetor.value = ListaSetorOriginal.value;
+        ListaSetor.value = ListaSetorOriginal.value; // Se não houver centro de custo selecionado, exibe todos os setores
     }
 };
 
+// Função para filtrar os funcionários de acordo com os filtros selecionados
 const filterFuncionarios = () => {
-//   // Verifica se há ao menos um filtro selecionado
-//   if (relatorio.value.id_setor || relatorio.value.id_planta) {
-//     ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
-//       const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
-//       const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
+    // Verifica se ao menos um filtro de setor ou planta foi selecionado
+    if (relatorio.value.id_setor || relatorio.value.id_planta) {
+        // Filtra os funcionários conforme os filtros de setor e planta
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+            const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true; // Verifica se o setor corresponde
+            const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true; // Verifica se a planta corresponde
 
-//       return matchesSetor && matchesPlanta;
-//     });
-//   } else {
-//     // Se não tiver filtro, exibe todos os funcionários
-//     ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-//   }
-HelperUtils.filterFuncionariosBySetorAndPlanta(relatorio.value,ListaFuncionarios,ListaFuncionariosFiltrado);
+      return matchesSetor && matchesPlanta;
+    });
+  } else {
+    // Se não tiver filtro, exibe todos os funcionários
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+  }
 };
 
+// Função chamada quando o datepicker é aberto, fecha todos os dropdowns
 const handleDatepickerOpen = () => {
-    closeAllDropdowns();
+    closeAllDropdowns(); // Fecha todos os dropdowns
 };
+
+// Função chamada quando o componente é montado
 onMounted(() => {
-    loadData();
+    loadData(); // Carrega os dados iniciais
 });
 </script>
 
@@ -204,22 +234,23 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-6  ml-2 text-2xl">Devoluções</h5>
+                <h5 class="my-6 ml-2 text-2xl">Devoluções</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="id_dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
-                    
+
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor"/>
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
-                    </div><div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+                    </div>
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
                     </div>
@@ -291,14 +322,19 @@ onMounted(() => {
                         ref="dt"
                         class=""
                         :sortOrder="1"
-                        :sortField="'ProdutoSKU'"    
+                        :sortField="'ProdutoSKU'"
                     >
-                        <!-- @rowSelect="onRowSelect"  -->
+                        <!-- A tabela exibe os dados provenientes de 'devolucoes', com funcionalidades de filtros, ordenação, paginação e exibição de linhas listradas. -->
+                        <!-- O usuário pode interagir com os dados através de filtros globais e pode classificar os dados clicando nas colunas da tabela. -->
+                        <!-- A tabela tem uma funcionalidade de paginação que divide os dados em páginas de 10 itens por vez, com opções de 5, 10, 20 ou 50 itens por página. -->
+                        <!-- A ordenação inicial é configurada para o campo 'ProdutoSKU', com a ordem crescente (1). -->
+                        <!-- O efeito de destaque de linhas e a exibição das linhas de grade facilitam a leitura e a interação com a tabela. -->
+
                         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                <span>Total de registros: {{ filteredCount}}</span>
-                            </div>
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
@@ -341,48 +377,110 @@ onMounted(() => {
     </Dialog>
 </template>
 <style>
-.card {
-    overflow-x: auto;
+/** 
+ * .card
+ * 
+ * Estiliza o container `.card` para permitir o rolar horizontal do conteúdo.
+ * Isso é útil quando o conteúdo excede a largura da caixa e você quer permitir a rolagem horizontal.
+ */
+ .card {
+    overflow-x: auto;  /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
 }
 
+/** 
+ * .datatable-wrapper
+ * 
+ * Estiliza o wrapper da tabela (provavelmente um contêiner ao redor de uma DataTable),
+ * garantindo que ele tenha rolagem horizontal e se ajuste à largura da tela.
+ */
 .datatable-wrapper {
-    overflow-x: auto;
-    width: 100vw;
+    overflow-x: auto;  /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
+    width: 100vw;  /* Define a largura do contêiner para 100% da largura da janela de visualização (viewport) */
 }
 
+/** 
+ * .filtrar
+ * 
+ * Aplica um espaçamento superior de 25px para o elemento com a classe `.filtrar`.
+ * Isso pode ser utilizado para dar um espaço adequado entre os elementos de filtro ou controles.
+ */
 .filtrar {
-    margin-top: 25px;
+    margin-top: 25px;  /* Adiciona margem superior de 25px ao elemento */
 }
 
+/** 
+ * .drop
+ * 
+ * Aplica largura de 100% ao elemento com a classe `.drop`, geralmente usado para controles de seleção.
+ * Isso garante que o controle ocupe toda a largura disponível no seu contêiner pai.
+ */
 .drop {
-    width: 100%;
+    width: 100%;  /* Define a largura do elemento para 100% da largura do contêiner pai */
 }
 
+/** 
+ * @media (max-width: 580px)
+ * 
+ * Define regras específicas para telas menores ou iguais a 580px de largura.
+ * Essas regras tornam a interface mais responsiva, ajustando a exibição de campos e controles.
+ */
 @media (max-width: 580px) {
+    
+    /** 
+     * .form .field
+     * 
+     * Faz com que os campos de formulário se ajustem em telas pequenas.
+     * A largura máxima será 100% e o campo ocupará toda a largura disponível do contêiner pai.
+     */
     .form .field {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
+        flex: 0 0 100%;  /* Faz o campo de formulário ocupar 100% da largura do contêiner */
+        max-width: 100%;  /* Garante que o campo de formulário tenha uma largura máxima de 100% */
+        margin-bottom: 1rem;  /* Adiciona um espaço de 1rem abaixo de cada campo */
     }
 
+    /** 
+     * .form .field .drop
+     * 
+     * Define que os controles de seleção dentro do campo de formulário também ocupem 100% da largura disponível,
+     * garantindo que eles se ajustem corretamente em dispositivos móveis.
+     */
     .form .field .drop {
-        width: 100%;
+        width: 100%;  /* Define a largura do controle de seleção para 100% */
     }
 
+    /** 
+     * .form .field .filtrar, .form .field .exportar
+     * 
+     * Garante que os controles de filtro e exportação dentro do formulário ocupem toda a largura disponível
+     * em dispositivos móveis, garantindo uma boa usabilidade.
+     */
     .form .field .filtrar,
     .form .field .exportar {
-        width: 100%;
+        width: 100%;  /* Define a largura do controle de filtro e exportação para 100% */
     }
 }
 
+/** 
+ * .field
+ * 
+ * Estilo para campos de formulário que garante que o texto dentro do campo seja alinhado à esquerda.
+ * Também evita que o texto ultrapasse a largura do campo e faz com que o conteúdo quebre se necessário.
+ */
 .field {
-    white-space: nowrap;
-    text-align: left;
+    white-space: nowrap;  /* Evita que o texto dentro do campo quebre para a linha seguinte */
+    text-align: left;  /* Alinha o texto à esquerda */
 }
 
+/** 
+ * .table-cell
+ * 
+ * Estilo para células de uma tabela, garantindo que o conteúdo não ultrapasse o tamanho da célula
+ * e exibindo "..." (ellipsis) quando o texto for maior que o espaço disponível.
+ */
 .table-cell {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow: hidden;  /* Oculta qualquer conteúdo que ultrapasse o limite da célula */
+    white-space: nowrap;  /* Impede que o texto dentro da célula quebre em múltiplas linhas */
+    text-overflow: ellipsis;  /* Adiciona "..." quando o texto é cortado */
 }
+
 </style>

@@ -1,52 +1,91 @@
 <script setup>
-import { onMounted, shallowRef , defineAsyncComponent } from 'vue';
-import { useAuthStore } from '@/store/authStore';
-import { useToast } from 'primevue/usetoast';
+/**
+ * Importação dos módulos necessários do Vue.js e PrimeVue
+ */
+import { onMounted, shallowRef, defineAsyncComponent } from 'vue'; // Importação dos hooks do Vue.js
+import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação
+import { useToast } from 'primevue/usetoast'; // Importa o hook de notificações do PrimeVue
 
-const toast = useToast();
+// Instancia o toast para exibir notificações ao usuário
+const toast = useToast(); 
+
+// Acessa a store de autenticação para pegar dados do usuário (como o papel)
 const store = useAuthStore(); 
+
+// Ref reativa para controlar o componente da dashboard que será carregado dinamicamente
 const atual = shallowRef(null); 
+
+/**
+ * Função para verificar a permissão do usuário com base no papel.
+ * Caso o papel seja 'Master' ou 'Operador', o usuário terá permissão para ver os recalls.
+ */
 const checkPermission = () => {
     if (store.userRole === 'Master' || store.userRole === 'Operador') {
+        // Se o papel for 'Master' ou 'Operador', permite ver os recalls.
         canViewLastRecalls.value = true; 
     }
 };
+
+/**
+ * Função para carregar a dashboard correspondente com base no papel do usuário.
+ * A dashboard é carregada dinamicamente com o Vue's defineAsyncComponent.
+ */
 const DashPorTipo = () => {
+    // Acessa o papel do usuário na store
     const userRole = store.userRole;
 
+    // Realiza a escolha da dashboard de acordo com o papel do usuário
     switch (userRole) {
         case 'Administrador':
-        atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardAdmin.vue'));
+            // Se o papel for 'Administrador', carrega a dashboard de administrador
+            atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardAdmin.vue'));
             break;
         case 'Master':
-        atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardMaster.vue'));
+            // Se o papel for 'Master', carrega a dashboard de master
+            atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardMaster.vue'));
             break;
         case 'Operador':
-        atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardOperador.vue'));
+            // Se o papel for 'Operador', carrega a dashboard de operador
+            atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardOperador.vue'));
             break;
         case 'Avulso':
-        atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardAvulso.vue'));
+            // Se o papel for 'Avulso', carrega a dashboard avulsa
+            atual.value = defineAsyncComponent(() => import('@/views/Home/DashBoardAvulso.vue'));
             break;
         default:
-            console.error('Papel de usuário não reconhecido:', userRole);
+            // Se o papel não for reconhecido, exibe um erro no console
+            console.error('Papel de usuário não reconhecido:', userRole); 
+            // A mensagem de erro deve ser exibida no console do navegador
     }
 };
 
+/**
+ * Hook 'onMounted' do Vue.js é executado assim que o componente é montado
+ * É utilizado para realizar a inicialização dos dados e verificar permissões.
+ */
 onMounted(() => {
+    // Verifica se existe alguma mensagem global na store
     if (store.getGlobalMessage) {
+        // Se houver uma mensagem, exibe um toast com a mensagem de acesso negado
         toast.add({
-            severity: 'warn',
-            summary: 'Acesso Negado',
-            detail: store.getGlobalMessage,
-            life: 3000
+            severity: 'warn', // Tipo de severidade da mensagem (aviso)
+            summary: 'Acesso Negado', // Título do toast
+            detail: store.getGlobalMessage, // Detalhe (mensagem de acesso negado)
+            life: 3000 // A mensagem será exibida por 3 segundos
         });
+        
+        // Limpa a mensagem global após exibi-la
         store.clearGlobalMessage();
     }
 
+    // Chama a função que decide qual dashboard carregar com base no papel do usuário
     DashPorTipo();
 });
 </script>
 
 <template>
-        <component v-if="atual" :is="atual" />
+    <!-- Renderiza dinamicamente o componente correspondente com base na variável 'atual' -->
+    <component v-if="atual" :is="atual" />
+    <!-- 'v-if="atual"' verifica se a variável 'atual' contém um componente válido -->
+    <!-- ':is="atual"' permite a renderização do componente dinâmico -->
 </template>

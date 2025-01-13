@@ -3,8 +3,11 @@
   <div class="card">
     <h5>Controladora {{ index + 1 }}</h5>
     <!-- Dropdown para selecionar o tipo de controladora -->
-    <Dropdown v-model="controladora.tipo" :options="tipoControladoras"
-              placeholder="Selecione o tipo de Controladora" @change="updateTipoControladora(index, controladora.tipo)" />
+    <Dropdown 
+    v-model="controladora.tipo" 
+    :options="tipoControladoras" 
+    placeholder="Selecione o tipo de Controladora" 
+    @change="updateTipoControladora(index, controladora.tipo)" />
     <!-- Botão para remover a controladora -->
     <Button icon="pi pi-trash" label="Remover" class="p-button-danger"
             @click="removeControladora(index)" />

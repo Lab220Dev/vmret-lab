@@ -14,10 +14,18 @@ const plantaService = {
     return axios.post('/plantas/atualizar', planta);
   },
 
-  async deletarPlanta(idPlanta) {
-    const data = { id_planta: idPlanta };
-    return axios.post('/planta/deletePlanta', data);
-  },
-};
+  async deletarPlanta(data) {
+  try {
+    return axios.post('/plantas/deletePlanta', data); // Envia uma requisição POST para deletar um setor com os dados fornecidos.
+  
+      } catch (error) {
+        // Caso ocorra um erro, loga a mensagem de erro no console.
+        console.error('Erro ao deletar plantas:', error.message);
+        
+        // Lança o erro novamente, permitindo que o chamador lide com ele.
+        throw error; 
+      }
+    },
+  }
 
 export default plantaService;

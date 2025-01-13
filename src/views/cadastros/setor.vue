@@ -1,3 +1,4 @@
+
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -7,9 +8,6 @@ import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
-import setorService from '@/Services/SetorService.js';
-import { resetSetorForm,applyGlobalFilter } from '@/helpers/formHelper.js';
-import { enrichData } from '@/helpers/HelperUtils.js';
 
 const active = ref(0);
 const store = useAuthStore();
@@ -69,84 +67,102 @@ const submitForm = () => {
 };
 
 const loadSetor = async () => {
-    const data = { id_cliente: store.userIdCliente };
-
+    const data = {
+        id_cliente: store.userIdCliente
+    };
+    loading.value = true;
     try {
-        loading.value = true;
-        const response = await setorService.listarSetores(data, store.token);
+        const response = await axios.post('/Setor/listar', data);
         ListaSetor.value = response.data;
-        filteredCount.value = ListaSetor.value.length
+
+        filteredCount.value = ListaSetor.value.length;
     } catch (error) {
-        console.error('Erro ao listar setores:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao listar setores.', life: 3000 });
+        console.error('Erro ao listar Setores:', error);
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativando loading
     }
 };
 
 const adicionarSetor = async () => {
-    const enrichedSetor = enrichData(setor);
-
+    const data = {
+        id_cliente: store.userIdCliente,
+        ...setor
+    };
+    loading.value = true;
     try {
-        loading.value = true;
-        await setorService.adicionarSetor(enrichedSetor);
+        const response = await axios.post('/Setor/adicionar', data);
         dataStore.invalidateSetorCache();
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Setor salvo com sucesso!', life: 3000 });
+
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor salvo com sucesso', life: 3000 });
         loadSetor();
-        resetForm();
         active.value = 0;
+        resetForm();
     } catch (error) {
-        console.error('Erro ao adicionar setor:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar setor.', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao salvar setor', life: 3000 });
+        console.error('Erro ao adicionar Setores:', error);
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativando loading
     }
 };
 
 watch(
-  () => filters.value.global.value,
-  () => {
-    filteredCount.value = applyGlobalFilter(ListaSetor.value, filters.value.global.value).length;
-  },
-  { immediate: true }
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = ListaSetor.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
 );
 
 const deleteSetor = async () => {
-    const enrichedSetor = enrichData(setor);
-
+    let data = { id_setor: setor.id_setor };
+    loading.value = true;
     try {
-        loading.value = true;
-        await setorService.deletarSetor(enrichedSetor);
+        await axios.post('/Setor/deletar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
         dataStore.invalidateSetorCache();
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Setor Deletado com sucesso!', life: 3000 });
+        deleteSetorDialog.value = false;
         loadSetor();
-        resetForm();
         active.value = 0;
-    } catch (error) {
-        console.error('Erro ao atualizar setor:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar setor.', life: 3000 });
+        resetForm();
+        
+    } catch {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o setor', life: 3000 });
     } finally {
-        loading.value = false;
-    }
+         // Desativando loading
+    loading.value = false;
+}
+    
     active.value = 0;
 };
 
 const atualizarSetor = async () => {
-    const enrichedSetor = enrichData(setor);
-
+    loading.value = true;
+    const data = {
+        ...setor
+    };
     try {
-        loading.value = true;
-        await setorService.atualizarSetor(enrichedSetor);
+        const response = await axios.post('/Setor/atualizar', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Atualizado', life: 3000 });
         dataStore.invalidateSetorCache();
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Setor atualizado com sucesso!', life: 3000 });
         loadSetor();
-        resetForm();
         active.value = 0;
+        resetForm();
     } catch (error) {
-        console.error('Erro ao atualizar setor:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar setor.', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao atualizar setor', life: 3000 });
+        console.error('Erro ao atualizar Setores:', error);
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativando loading
     }
 };
 const fetchListaItemSetor = async () => {
@@ -156,7 +172,7 @@ const fetchListaItemSetor = async () => {
         id_setor: setor.id_setor
     };
     try {
-        const response = await setorService.listarItensDisponiveis(data);
+        const response = await axios.post('/setor/itensdisponiveissetor', data);
         ItensSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao listar itens:', error);
@@ -176,7 +192,10 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    resetSetorForm(setor);
+    setor.codigo = '';
+    setor.nome = '';
+    setor.id_centro_custo = '';
+    integracao.value = false;
 };
 
 const handleRowSelection = async (event) => {
@@ -196,125 +215,119 @@ onMounted(() => {
 });
 
 const atualizarProdutoSetor = async () => {
-  const data = {
-    id_cliente: store.userIdCliente,
-    id_produto: item.value.id_produto,
-    id_setor: item.value.id_setor,
-    qtd_limite: item.value.quantidade,
-  };
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_produto: item.value.id_produto,
+        id_setor: item.value.id_setor,
+        qtd_limite: item.value.quantidade
+    };
 
-  loading.value = true;
-  try {
-    await setorService.atualizarProdutoSetor(data);
-    fetchListaItemSetor();
-    itemDialog.value = false;
+    loading.value = true;
+    try {
+        const response = await axios.post('/setor/atualizarproduto', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
 
-    toast.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Produto atualizado com sucesso!',
-      life: 3000,
-    });
-  } catch (error) {
-    console.error('Erro ao atualizar o produto:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Erro ao atualizar o produto. Verifique a quantidade e tente novamente.',
-      life: 3000,
-    });
-  } finally {
-    loading.value = false;
-  }
+        loadSetor();
+        fetchListaItemSetor();
+        active.value = 1;
+        
+        resetForm();
+        itemDialog.value = false;
+        toast.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Produto atualizado com sucesso!',
+            life: 3000
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar o produto:', error);
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Erro ao atualizar o produto. Verifique a quantidade e tente novamente.',
+            life: 3000
+        });
+    } finally {
+        loading.value = false; // Desativar carregamento
+    }
 };
 
 const fetchProdutoSetor = async () => {
-  const data = { id_cliente: store.userIdCliente, id_setor: setor.id_setor };
-
-  try {
-    const response = await setorService.fetchProdutoSetor(data);
-    ListaItensSetor.value = response.data.map(({ id_produto, nome }) => ({
-      label: nome,
-      value: id_produto,
-    }));
-  } catch (error) {
-    console.error('Erro ao recuperar os produtos do setor:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Erro ao recuperar os produtos do setor.',
-      life: 3000,
-    });
-  }
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_setor: setor.id_setor
+    };
+    try {
+        const response = await axios.post('/setor/fetchProdutoSetor', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        ListaItensSetor.value = response.data.map(({ id_produto, nome }) => ({
+            label: nome,
+            value: id_produto
+        }));
+    } catch (error) {
+        console.error('Erro ao recuperar os produtos do setor:', error);
+    }
 };
 
 const SalvarProduto = async () => {
-  const data = {
-    id_cliente: store.userIdCliente,
-    id_usuario: store.userId,
-    id_produto: produtoSelecionado.value.id_produto,
-    quantidade: produtoSelecionado.value.quantidade,
-    id_setor: setor.id_setor,
-  };
-
-  loading.value = true;
-  try {
-    await setorService.adicionarProduto(data);
-    fetchListaItemSetor();
-    visible.value = false;
-
-    toast.add({
-      severity: 'success',
-      summary: 'Produto Adicionado',
-      detail: 'O produto foi adicionado com sucesso!',
-      life: 3000,
-    });
-  } catch (error) {
-    console.error('Erro ao adicionar item:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Erro ao adicionar o produto.',
-      life: 3000,
-    });
-  } finally {
-    loading.value = false;
-  }
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId,
+        id_produto: produtoSelecionado.value.id_produto,
+        quantidade: produtoSelecionado.value.quantidade,
+        ...setor
+    };
+    loading.value = true;
+    try {
+        const response = await axios.post('/setor/additem', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
+        fetchListaItemSetor();
+        visible.value = false;
+        toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
+        console.log('Resposta do servidor:', response.data);
+    } catch (error) {
+        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
+    } finally {
+        loading.value = false;
+    }
 };
-
 
 const deletarProduto = async () => {
-  const data = {
-    id_cliente: store.userIdCliente,
-    id_produto: item.value.id_produto,
-    id_setor: item.value.id_setor,
-  };
+    const data = {
+        id_cliente: store.userIdCliente,
+        id_produto: item.value.id_produto,
+        id_setor: item.value.id_setor
+    };
 
-  loading.value = true;
-  try {
-    await setorService.deletarProduto(data);
-    fetchListaItemSetor();
+    loading.value = true;
+    try {
+        await axios.post('/setor/deletarProduto', data, {
+            headers: {
+                Authorization: `Bearer ${store.token}`
+            }
+        });
 
-    toast.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Produto deletado com sucesso.',
-      life: 3000,
-    });
-    deleteProductDialog.value = false;
-  } catch (error) {
-    console.error('Erro ao deletar produto:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Erro ao deletar o produto.',
-      life: 3000,
-    });
-  } finally {
-    loading.value = false;
-  }
+        fetchListaItemSetor();
+
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso', life: 3000 });
+        deleteProductDialog.value = false;
+    } catch (error) {
+        console.error('Erro ao deletar produto:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o produto', life: 3000 });
+    } finally {
+        loading.value = false;
+    }
 };
-
 
 const deleteProduct = async (itm) => {
     item.value = itm;
@@ -449,9 +462,9 @@ const deleteProduct = async (itm) => {
 
                                     <!-- dialogo adicionar item-->
                                     <Dialog v-model:visible="visible" modal header="Adicionar Itens do Setor">
-                                        <div class="grid">
+                                        <div class="grid ">
                                             <div class="col-12">
-                                                <label for="Produto" class="font-semibold col-2">Produto: </label>
+                                                <label for="Produto" class=" font-semibold col-2">Produto: </label>
                                                 <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaItensSetor" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                                             </div>
                                             <div class="col-12">
@@ -468,7 +481,7 @@ const deleteProduct = async (itm) => {
                                     <!-- dialogo deletar produto-->
                                     <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
                                         <div class="confirmation-content">
-                                            <i style="font-size: 2rem" />
+                                            <i  style="font-size: 2rem" />
                                             <span v-if="item"
                                                 >Você tem certeza que quer deletar o Item <b>{{ item.nome }}</b> ?</span
                                             >

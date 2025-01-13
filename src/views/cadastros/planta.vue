@@ -1,3 +1,4 @@
+
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -5,14 +6,16 @@ import { useAuthStore } from '@/store/authStore.js';
 import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
-import plantaService from '@/services/plantaService';
+import plantaService from '@/services/plantaService.js';
 import { resetPlantaForm,applyGlobalFilter} from '@/helpers/formHelper';
+import { useDataStore } from '@/store/dataStore.js';
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const active = ref(0);
 const store = useAuthStore();
+const dataStore = useDataStore();
 const toast = useToast();
 const ListaPlanta = ref([]);
 const visible = ref(false);
@@ -88,14 +91,21 @@ const adicionarPlanta = async () => {
 };
 
 const deletePlanta = async () => {
+    let data = { id_planta: planta.id_planta }
   loading.value = true;
   try {
-    await plantaService.deletarPlanta(planta.id_planta, store.token);
+        // await axios.post('/plantas/deletePlanta', data, {
+        //     headers: {
+        //         Authorization: `Bearer ${store.token}`
+        //     }
+        // });
+        await plantaService.deletarPlanta(data);
     toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta deletada com sucesso!', life: 3000 });
+    dataStore.invalidatePlantasCache();
     deletePlantaDialog.value = false;
     loadPlanta();
     active.value = 0;
-    resetPlantaForm(planta);
+    //resetPlantaForm(planta);
   } catch (error) {
     console.error('Erro ao deletar planta:', error);
     toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar planta.', life: 3000 });

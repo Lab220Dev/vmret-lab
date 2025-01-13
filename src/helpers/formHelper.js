@@ -5,98 +5,105 @@
  * @returns {Object[]} - A lista de dados filtrada.
  */
 export const applyGlobalFilter = (dataList, filterValue) => {
-    const filter = filterValue?.toLowerCase() || '';
-    return dataList.filter((item) => Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filter)));
+  // Converte o valor de filtro para minúsculas. Se não for fornecido, assume uma string vazia
+  const filter = filterValue?.toLowerCase() || ''; 
+
+  // Filtra a lista de dados, verificando se algum valor do objeto contém o valor de filtro
+  return dataList.filter((item) =>
+    Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filter)) // Se algum valor do item contém o filtro, retorna true para incluir o item na lista
+  );
 };
 
 /**
- * Reseta o formulário de **Centro de Custo**.
- * @param {Object} form - Objeto do formulário que será resetado.
- */
+* Reseta o formulário de **Centro de Custo**.
+* @param {Object} form - Objeto do formulário que será resetado.
+*/
 export const resetCDCForm = (form) => {
-    form.Nome = '';
-    form.Codigo = '';
-    form.ID_CentroCusto = '';
+  // Limpa todos os campos do formulário de Centro de Custo
+  form.Nome = ''; // Nome do centro de custo
+  form.Codigo = ''; // Código do centro de custo
+  form.ID_CentroCusto = ''; // ID do centro de custo
 };
 
 /**
- * Retorna um objeto inicial para o formulário de **Cliente**.
- * @returns {Object} - Objeto com os campos resetados.
- */
+* Retorna um objeto inicial para o formulário de **Cliente**.
+* @returns {Object} - Objeto com os campos resetados.
+*/
 export const resetClienteForm = () => ({
-    nome: '',
-    cnpj: '',
-    ativo: true,
-    usar_api: false,
-    textoretirada: ''
+  nome: '', // Nome do cliente
+  cnpj: '', // CNPJ do cliente
+  ativo: true, // Flag indicando se o cliente está ativo
+  usar_api: false, // Flag indicando se o cliente usa a API
+  textoretirada: '', // Texto de retirada
 });
 
 /**
- * Retorna um objeto inicial para o formulário de **Função**.
- * @returns {Object} - Objeto com os campos resetados.
- */
+* Retorna um objeto inicial para o formulário de **Função**.
+* @returns {Object} - Objeto com os campos resetados.
+*/
 export const resetFuncaoForm = () => ({
-    codigo: '',
-    nome: '',
-    id_centro_custo: ''
+  codigo: '', // Código da função
+  nome: '', // Nome da função
+  id_centro_custo: '', // ID do centro de custo associado à função
 });
 
 /**
- * Retorna um objeto inicial para o formulário de **Funcionário**.
- * @returns {Object} - Objeto com os campos resetados.
- */
-export const resetFuncionarioForm = (funcionario) => {
-    Object.assign(funcionario, {
-        id_funcionario: '',
-        matricula: '',
-        senha: '',
-        nome: '',
-        biometria: '',
-        biometria2: '',
-        data_admissao: null,
-        CPF: '',
-        RG: '',
-        CTPS: '',
-        email: '',
-        status: '',
-        hora_inicial: '',
-        hora_final: '',
-        id_centro_custo: '',
-        id_funcao: '',
-        id_planta: '',
-        id_setor: '',
-        segunda: false,
-        terca: false,
-        quarta: false,
-        quinta: false,
-        sexta: false,
-        sabado: false,
-        domingo: false,
-        itens: []
-    });
-};
+* Retorna um objeto inicial para o formulário de **Funcionário**.
+* @returns {Object} - Objeto com os campos resetados.
+*/
+export const resetFuncionarioForm = () => ({
+  id_funcionario: '', // ID do funcionário
+  matricula: '', // Matrícula do funcionário
+  senha: '', // Senha do funcionário
+  nome: '', // Nome do funcionário
+  biometria: '', // Biometria do funcionário
+  biometria2: '', // Segunda biometria do funcionário
+  data_admissao: null, // Data de admissão do funcionário
+  CPF: '', // CPF do funcionário
+  RG: '', // RG do funcionário
+  CTPS: '', // CTPS do funcionário
+  email: '', // E-mail do funcionário
+  status: '', // Status do funcionário (ex: ativo, inativo)
+  hora_inicial: '', // Hora inicial de trabalho
+  hora_final: '', // Hora final de trabalho
+  id_centro_custo: '', // ID do centro de custo do funcionário
+  id_funcao: '', // ID da função do funcionário
+  id_planta: '', // ID da planta onde o funcionário trabalha
+  id_setor: '', // ID do setor onde o funcionário trabalha
+  segunda: false, // Flag indicando se o funcionário trabalha na segunda-feira
+  terca: false, // Flag indicando se o funcionário trabalha na terça-feira
+  quarta: false, // Flag indicando se o funcionário trabalha na quarta-feira
+  quinta: false, // Flag indicando se o funcionário trabalha na quinta-feira
+  sexta: false, // Flag indicando se o funcionário trabalha na sexta-feira
+  sabado: false, // Flag indicando se o funcionário trabalha no sábado
+  domingo: false, // Flag indicando se o funcionário trabalha no domingo
+  itens: [], // Lista de itens associados ao funcionário
+});
+
 /**
- * Reseta o formulário de **Itens** dentro de Funcionario.
- * @param {Object} selectedProduct - Objeto do produto selecionado que será resetado.
- */
+* Reseta o formulário de **Itens** dentro de Funcionario.
+* @param {Object} selectedProduct - Objeto do produto selecionado que será resetado.
+*/
 export const resetItens = (selectedProduct) => {
-    selectedProduct.value = {
-        id_produto: '',
-        nome: '',
-        sku: '',
-        quantidade: null
-    };
+  // Reseta os campos do produto selecionado para valores iniciais
+  selectedProduct.value = {
+    id_produto: '', // ID do produto
+    nome: '', // Nome do produto
+    sku: '', // SKU (código único) do produto
+    quantidade: null, // Quantidade do produto
+  };
 };
 
 /**
- * Reseta o estado de um formulário genérico.
- * @param {Object} form - Referência do formulário a ser resetado.
- * @param {Object} initialState - Estado inicial do formulário.
- */
+* Reseta o estado de um formulário genérico.
+* @param {Object} form - Referência do formulário a ser resetado.
+* @param {Object} initialState - Estado inicial do formulário.
+*/
 export const resetGenericForm = (form, initialState) => {
-    Object.keys(initialState).forEach((key) => {
-        form[key] = initialState[key];
-    });
+  // Itera pelas chaves do estado inicial e redefine o formulário para esses valores
+  Object.keys(initialState).forEach((key) => {
+    form[key] = initialState[key]; // Para cada chave, o valor no formulário é redefinido para o valor correspondente no estado inicial
+  });
 };
 
 export const resetPlantaForm = (planta) => {

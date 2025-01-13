@@ -20,7 +20,9 @@
                 </div>
             </div>
 
-            <DataTable class="mt-5" :value="clientServices">
+            <DataTable 
+            class="mt-5" 
+            :value="clientServices">
                 <template #empty>Não há serviços cadastrados.</template>
                 <Column field="name" header="Serviço"></Column>
                 <Column header="Ação">
@@ -82,115 +84,152 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios';
+/**
+ * Importa as funções e componentes necessários para a lógica do componente.
+ * @module
+ */
 
+// Importa funções reativas do Vue, como `ref` e `onMounted`.
+import { ref, onMounted } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
+
+// Importa a função de toast do PrimeVue, usada para exibir mensagens ao usuário.
+import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
+
+// Importa o componente de data picker para seleção de datas.
+import VueDatePicker from '@vuepic/vue-datepicker'; // Utilizado para seleção de datas (não está sendo usado diretamente no código fornecido).
+import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do componente de date picker.
+
+// Importa a store de autenticação, que contém informações sobre o usuário e cliente.
+import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o store para obter o ID do usuário e do cliente.
+
+// Importa a instância do Axios configurada para realizar requisições HTTP.
+import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
+
+/**
+ * Função chamada quando o usuário tenta abrir o diálogo de remoção de serviço.
+ * @param {Object} service - O serviço a ser removido.
+ */
 const openDeleteDialog = (service) => {
-    // Verifique se o 'service' foi passado corretamente
+    // Verifica se o serviço foi passado corretamente e se contém um 'id'.
     if (!service || !service.id) {
         toast.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Serviço não encontrado.',
-            life: 3000
+            severity: 'error', // Tipo de notificação: erro.
+            summary: 'Erro', // Título da notificação.
+            detail: 'Serviço não encontrado.', // Mensagem de erro detalhada.
+            life: 3000 // Tempo de duração da notificação (3000ms).
         });
-        return;
+        return; // Retorna caso o serviço não seja encontrado.
     }
 
-    selectedService.value = { ...service }; // Armazenar o serviço a ser removido
-    deleteServiceDialog.value = true; // Exibir o diálogo
+    selectedService.value = { ...service }; // Copia o serviço selecionado para a variável reativa `selectedService`.
+    deleteServiceDialog.value = true; // Abre o diálogo de confirmação para deletar o serviço.
 };
 
-const store = useAuthStore();
-const isAdmin = ref(false);
+// Criação de variáveis reativas com `ref()` para armazenar o estado do componente.
+const store = useAuthStore(); // Obtém o store de autenticação para acessar o usuário e cliente autenticados.
+const isAdmin = ref(false); // Variável booleana para verificar se o usuário é administrador.
 
-const deleteServiceDialog = ref(false);
+const deleteServiceDialog = ref(false); // Variável booleana para controlar a exibição do diálogo de remoção do serviço.
 
-const toast = useToast();
-const availableClients = ref([]);
-const availableServices = ref([
+const toast = useToast(); // Instância do sistema de notificações do PrimeVue.
+const availableClients = ref([]); // Lista de clientes disponíveis.
+const availableServices = ref([ // Lista de serviços disponíveis, pré-definida.
     { id: 1, name: 'Monitoramento de Status DM' },
     { id: 2, name: 'Monitoramento de Estoque' }
 ]);
-const selectedClient = ref(null);
-const availableRecipients = ref([]);
-const clientServices = ref([]);
-const newService = ref(null);
-const selectedService = ref(null);
-const serviceConfigs = ref({});
-const novo = ref(true);
-const frequencies = ref([
+const selectedClient = ref(null); // Cliente selecionado.
+const availableRecipients = ref([]); // Destinatários disponíveis.
+const clientServices = ref([]); // Serviços associados ao cliente.
+const newService = ref(null); // Novo serviço a ser adicionado.
+const selectedService = ref(null); // Serviço atualmente selecionado.
+const serviceConfigs = ref({}); // Configurações dos serviços selecionados.
+const novo = ref(true); // Flag para indicar se o serviço é novo.
+const frequencies = ref([ // Frequências de notificação disponíveis.
     { label: 'A cada 5 minutos', value: '5m' },
     { label: 'A cada 30 minutos', value: '30m' },
     { label: 'A cada 1 hora', value: '1h' },
     { label: '1x ao dia', value: '1x-dia' }
 ]);
 
-const notificationMethods = ref([
+const notificationMethods = ref([ // Métodos de notificação disponíveis.
     { label: 'E-mail', value: 'email' },
     { label: 'Notificação', value: 'notif' }
 ]);
 
-const showConfig = ref(false);
+const showConfig = ref(false); // Flag para mostrar as configurações do serviço.
 
 const fetchIfAdmin = async () => {
+    /**
+     * Função que verifica se o usuário é administrador e carrega os dados de acordo.
+     * Caso o usuário seja administrador, carrega a lista de clientes.
+     * Caso contrário, carrega os serviços do cliente.
+     */
     if (store.userRole === 'Administrador') {
-        isAdmin.value = true;
-        await fetchClientes();
+        isAdmin.value = true; // Marca como administrador se o papel for "Administrador".
+        await fetchClientes(); // Carrega os clientes disponíveis.
     } else {
-        await fetchServicos();
+        await fetchServicos(); // Carrega os serviços do cliente caso não seja administrador.
     }
 };
 
+/**
+ * Função que busca a lista de clientes no servidor.
+ */
 const fetchClientes = async () => {
     try {
+        // Realiza uma requisição GET para listar os clientes e seus serviços.
         const response = await axios.get('/admin/cliente/listarClienteServicos');
+        
+        // Mapeia a resposta para extrair os clientes e seus serviços.
         availableClients.value = response.data.map((cliente) => ({
-            id: cliente.id_cliente,
-            name: cliente.nome,
-            servicos: cliente.servicos
+            id: cliente.id_cliente, // ID do cliente.
+            name: cliente.nome, // Nome do cliente.
+            servicos: cliente.servicos // Lista de serviços do cliente.
         }));
     } catch (error) {
-        console.error('Erro ao carregar clientes:', error);
+        console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
     }
 };
 
+/**
+ * Função que busca os serviços de um cliente no servidor.
+ */
 const fetchServicos = async () => {
     try {
+        // Prepara os dados para buscar os serviços do cliente específico.
         const data = {
-            id_cliente: store.userIdCliente
+            id_cliente: store.userIdCliente // Obtém o ID do cliente do store de autenticação.
         };
+        
+        // Realiza uma requisição POST para buscar os serviços do cliente.
         const response = await axios.post('/admin/cliente/listarServicos', data);
 
-        // Verifique se a resposta contém dados e se não é um array vazio
+        // Verifica se a resposta foi bem-sucedida (status 200-299).
         if (response.status >= 200 && response.status < 300) {
-            const cliente = response.data[0]|| {}; // Acesse o primeiro cliente, se existir
+            const cliente = response.data[0] || {}; // Obtém o primeiro cliente, se existir.
 
-            // Atribua valores de forma segura
+            // Atribui valores ao cliente e seus serviços de forma segura.
             selectedClient.value = {
-                id: cliente.id_cliente || store.userIdCliente, 
-                name: cliente.nome || '',
-                servicos: cliente.servicos || [] // Caso 'servicos' seja indefinido, use um array vazio
+                id: cliente.id_cliente || store.userIdCliente, // ID do cliente.
+                name: cliente.nome || '', // Nome do cliente.
+                servicos: cliente.servicos || [] // Lista de serviços ou um array vazio.
             };
 
-            // Mapeie os serviços, se houver
+            // Mapeia os serviços do cliente.
             clientServices.value = Array.isArray(cliente.servicos)
                 ? cliente.servicos.map((servico) => ({
-                      id: servico.id_servico,
-                      name: servico.nome
+                      id: servico.id_servico, // ID do serviço.
+                      name: servico.nome // Nome do serviço.
                   }))
                 : [];
 
-            // Chama a função para buscar os destinatários, apenas se 'cliente.id_cliente' existir
+            // Chama a função para buscar os destinatários, se o cliente tiver um ID.
             const recipientId = cliente.id_cliente || store.userIdCliente;
             if (recipientId) {
-                await fetchRecipients(recipientId);
+                await fetchRecipients(recipientId); // Busca os destinatários para o cliente.
             }
-            // Se houver serviços, processa as configurações de cada serviço
+
+            // Se o cliente tiver serviços, processa as configurações de cada um.
             if (selectedClient.value.servicos && selectedClient.value.servicos.length > 0) {
                 selectedClient.value.servicos.forEach((servico) => {
                     serviceConfigs.value[servico.id_servico] = {
@@ -206,41 +245,54 @@ const fetchServicos = async () => {
                         monitoringTime: servico.monitoringTime || null
                     };
                 });
-                novo.value = false;
+                novo.value = false; // Marca como não novo após carregar os dados.
             } else {
-                clientServices.value = []; // Caso não haja serviços, limpa a lista
+                clientServices.value = []; // Limpa os serviços se não houver nenhum.
             }
         } else {
-            // Se não houver dados, trate de forma adequada
-            console.log('Nenhum dado encontrado para o cliente');
-            selectedClient.value = { id: store.userIdCliente }; // Limpa o cliente selecionado
-            clientServices.value = []; // Limpa os serviços
+            console.log('Nenhum dado encontrado para o cliente'); // Loga se não encontrar dados para o cliente.
+            selectedClient.value = { id: store.userIdCliente }; // Limpa o cliente selecionado.
+            clientServices.value = []; // Limpa os serviços.
         }
     } catch (error) {
-        console.error('Erro ao carregar clientes:', error);
+        console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
     }
 };
 
+/**
+ * Função que busca a lista de destinatários (funcionários) para o cliente selecionado.
+ * @param {number} idCliente - ID do cliente.
+ */
 const fetchRecipients = async (idCliente) => {
     try {
+        // Realiza uma requisição POST para listar os funcionários responsáveis.
         const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
+        
+        // Mapeia a resposta para extrair os funcionários.
         availableRecipients.value = response.data.map((funcionario) => ({
-            id: funcionario.id_funcionario,
-            name: funcionario.nome
+            id: funcionario.id_funcionario, // ID do funcionário.
+            name: funcionario.nome // Nome do funcionário.
         }));
     } catch (error) {
-        console.error('Erro ao carregar destinatários:', error);
+        console.error('Erro ao carregar destinatários:', error); // Loga qualquer erro ocorrido.
     }
 };
 
+/**
+ * Função chamada quando um cliente é selecionado.
+ * Realiza a atualização da lista de serviços e busca os destinatários.
+ */
 const onClientSelected = async () => {
+    // Atualiza a lista de serviços do cliente selecionado.
     clientServices.value = selectedClient.value.servicos.map((servico) => ({
-        id: servico.id_servico,
-        name: servico.nome
+        id: servico.id_servico, // ID do serviço.
+        name: servico.nome // Nome do serviço.
     }));
 
+    // Busca os destinatários para o cliente selecionado.
     await fetchRecipients(selectedClient.value.id);
 
+    // Processa as configurações dos serviços, se existirem.
     if (selectedClient.value.servicos.length > 0) {
         selectedClient.value.servicos.forEach((servico) => {
             serviceConfigs.value[servico.id_servico] = {
@@ -256,50 +308,61 @@ const onClientSelected = async () => {
                 monitoringTime: servico.monitoringTime || null
             };
         });
-        novo.value = false;
+        novo.value = false; // Marca como não novo após selecionar o cliente.
     } else {
-        clientServices.value = [];
+        clientServices.value = []; // Limpa os serviços se não houver nenhum.
     }
 };
 
+// Função que permite editar um serviço existente.
 const editService = (service) => {
-    selectedService.value = service;
-    showConfig.value = true;
+    selectedService.value = service; // Define o serviço selecionado.
+    showConfig.value = true; // Exibe as configurações do serviço.
 
-    // Rolagem suave 
-    const configSection = document.querySelector('.configuracao-monitoramento');  //área onde as configurações aparecem
+    // Rola suavemente para a área de configurações.
+    const configSection = document.querySelector('.configuracao-monitoramento');
     if (configSection) {
         configSection.scrollIntoView({ behavior: 'smooth' });
     }
 };
 
+/**
+ * Formata o tempo no formato "HH:mm".
+ * @param {Object} timeObj - Objeto contendo horas e minutos.
+ * @returns {string|null} O tempo formatado ou null caso o formato não seja válido.
+ */
 const formatarTempo = (timeObj) => {
     if (timeObj && timeObj.hours !== undefined && timeObj.minutes !== undefined) {
-        const hours = String(timeObj.hours).padStart(2, '0');
-        const minutes = String(timeObj.minutes).padStart(2, '0');
-        return `${hours}:${minutes}`;
+        const hours = String(timeObj.hours).padStart(2, '0'); // Preenche as horas com zero à esquerda.
+        const minutes = String(timeObj.minutes).padStart(2, '0'); // Preenche os minutos com zero à esquerda.
+        return `${hours}:${minutes}`; // Retorna a string formatada "HH:mm".
     }
-    return null;
+    return null; // Retorna null se o objeto de tempo não for válido.
 };
+
+/**
+ * Função que adiciona um serviço à lista de serviços com as configurações fornecidas.
+ */
 const addServiceWithConfig = async () => {
     try {
+        // Verifica se há campos obrigatórios não preenchidos nas configurações do serviço.
         const missingFields = clientServices.value.some((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
-
             return !serviceConfig.notificationFrequency || !serviceConfig.notificationMethods.length || !serviceConfig.recipients.length;
         });
 
         if (missingFields) {
+            // Exibe um erro se houver campos obrigatórios não preenchidos.
             toast.add({
                 severity: 'error',
                 summary: 'Campos obrigatórios não preenchidos',
                 detail: 'Por favor, preencha todos os campos de Configurações antes de adicionar o serviço.',
                 life: 3000
             });
-            return;
+            return; // Retorna sem adicionar o serviço se os campos não estiverem preenchidos.
         }
 
-        // Processar a configuração do serviço
+        // Formata o tempo de notificação, caso seja um objeto de tempo.
         clientServices.value.forEach((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
             if (typeof serviceConfig.notificationTime === 'object') {
@@ -307,9 +370,9 @@ const addServiceWithConfig = async () => {
             }
         });
 
+        // Cria os dados a serem enviados para o backend.
         const servicesConfigData = clientServices.value.map((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
-
             return {
                 id_servico: service.id,
                 nome_servico: service.name,
@@ -321,34 +384,42 @@ const addServiceWithConfig = async () => {
             };
         });
 
+        // Dados finais para envio.
         const data = {
             id_cliente: selectedClient.value.id,
             servicos: servicesConfigData
         };
 
+        // Envia os dados ao backend para adicionar o serviço.
         await axios.post('/admin/cliente/adicionarServico', data);
 
+        // Exibe uma notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Serviços adicionados com sucesso!', life: 3000 });
     } catch (error) {
-        console.error('Erro ao adicionar os serviços:', error);
-        toast.add({ severity: 'error', summary: 'Erro ao adicionar os serviços', life: 3000 });
+        console.error('Erro ao adicionar os serviços:', error); // Loga o erro ocorrido.
+        toast.add({ severity: 'error', summary: 'Erro ao adicionar os serviços', life: 3000 }); // Exibe um erro ao usuário.
     }
 };
 
+/**
+ * Função para adicionar um novo serviço à lista de serviços do cliente.
+ */
 const addService = () => {
     if (!newService.value) {
+        // Verifica se um serviço foi selecionado antes de adicionar.
         toast.add({
-            severity: 'error',
-            summary: 'Nenhum serviço selecionado',
-            detail: 'Por favor, selecione um serviço.',
-            life: 3000
+            severity: 'error', // Tipo de notificação: erro.
+            summary: 'Nenhum serviço selecionado', // Título da notificação.
+            detail: 'Por favor, selecione um serviço.', // Mensagem de erro detalhada.
+            life: 3000 // Duração da notificação.
         });
-        return;
+        return; // Retorna sem adicionar se nenhum serviço for selecionado.
     }
 
+    // Verifica se o serviço já está na lista de serviços.
     if (!clientServices.value.some((s) => s.id === newService.value.id)) {
-        clientServices.value.push(newService.value);
-        serviceConfigs.value[newService.value.id] = {
+        clientServices.value.push(newService.value); // Adiciona o novo serviço à lista.
+        serviceConfigs.value[newService.value.id] = { // Inicializa as configurações para o novo serviço.
             notificationFrequency: null,
             monitoringFrequency: null,
             notificationMethods: [],
@@ -356,9 +427,10 @@ const addService = () => {
             notificationTime: null,
             monitoringTime: null
         };
-        selectedService.value = newService.value;
-        newService.value = null;
+        selectedService.value = newService.value; // Define o serviço selecionado.
+        newService.value = null; // Limpa a seleção do novo serviço.
     } else {
+        // Exibe um aviso se o serviço já estiver na lista.
         toast.add({
             severity: 'warn',
             summary: 'Serviço duplicado',
@@ -368,48 +440,46 @@ const addService = () => {
     }
 };
 
+/**
+ * Função que remove um serviço da lista de serviços.
+ */
 const removeService = async (service) => {
     try {
-        // Remover o serviço da lista local
+        // Remove o serviço da lista local.
         clientServices.value = clientServices.value.filter((s) => s.id !== service.id);
+        
+        deleteServiceDialog.value = false; // Fecha o diálogo de confirmação.
 
-        deleteServiceDialog.value = false;
-
-        // Remover as configurações do serviço
+        // Remove as configurações associadas ao serviço.
         delete serviceConfigs.value[service.id];
 
-        // Se o serviço removido for o selecionado, limpar a seleção e ocultar as configurações
+        // Se o serviço removido for o selecionado, limpa a seleção.
         if (selectedService.value?.id === service.id) {
             selectedService.value = null;
-            showConfig.value = false;
+            showConfig.value = false; // Oculta a configuração do serviço removido.
         }
 
-        // Dados a serem enviados para o servidor
+        // Dados a serem enviados para remoção no backend.
         const data = {
             id_cliente: selectedClient.value.id,
             id_servico: service.id,
-            id_usuario: store.userId
+            id_usuario: store.userId // ID do usuário que está realizando a remoção.
         };
 
-        // Debug: Verificar os dados antes de enviar
-        console.log('Dados enviados para remoção do serviço:', data);
-
-        // Enviar a solicitação para remover o serviço no backend
+        // Envia a solicitação de remoção ao backend.
         const response = await axios.post('/admin/cliente/deletarServico', data);
 
-        // Debug: Verificar a resposta da API
-        console.log('Resposta da API:', response);
-
-        // Verificar a estrutura da resposta do backend
-        response.status === 200;
-        toast.add({
-            severity: 'success',
-            summary: 'Serviço removido',
-            detail: `O serviço ${service.name} foi removido com sucesso.`,
-            life: 3000
-        });
+        // Verifica a resposta da API.
+        if (response.status === 200) {
+            toast.add({
+                severity: 'success',
+                summary: 'Serviço removido',
+                detail: `O serviço ${service.name} foi removido com sucesso.`,
+                life: 3000
+            });
+        }
     } catch (error) {
-        // Exibir uma mensagem de erro no toast
+        // Exibe erro caso a remoção falhe.
         console.error('Erro ao remover serviço:', error);
         toast.add({
             severity: 'error',
@@ -420,8 +490,12 @@ const removeService = async (service) => {
     }
 };
 
+/**
+ * Função que atualiza a configuração de um serviço.
+ */
 const updateServiceConfig = async () => {
     try {
+        // Formata os tempos de notificação, caso necessário.
         clientServices.value.forEach((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
             if (typeof serviceConfig.notificationTime === 'object') {
@@ -429,9 +503,9 @@ const updateServiceConfig = async () => {
             }
         });
 
+        // Cria os dados das configurações de serviço.
         const servicesConfigData = clientServices.value.map((service) => {
             const serviceConfig = serviceConfigs.value[service.id];
-
             return {
                 id_servico: service.id,
                 nome_servico: service.name,
@@ -443,21 +517,27 @@ const updateServiceConfig = async () => {
             };
         });
 
+        // Dados a serem enviados para o backend.
         const data = {
             id_cliente: selectedClient.value.id,
             servicos: servicesConfigData
         };
 
+        // Envia a atualização dos serviços ao backend.
         await axios.post('/admin/cliente/atualizarServico', data);
 
+        // Exibe notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Serviço atualizado com sucesso!', life: 3000 });
     } catch (error) {
-        console.error('Erro ao adicionar os serviços:', error);
+        // Exibe erro caso a atualização falhe.
+        console.error('Erro ao atualizar os serviços:', error);
         toast.add({ severity: 'error', summary: 'Erro ao atualizar os serviços', life: 3000 });
     }
 };
 
+// Chama a função para verificar o perfil do usuário ao montar o componente.
 onMounted(fetchIfAdmin);
+
 </script>
 
 <style scoped>

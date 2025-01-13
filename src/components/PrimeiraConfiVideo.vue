@@ -1,3 +1,4 @@
+@ -1,249 +1,231 @@
 <template>
     <!-- Div que contém a configuração inicial de vídeos -->
     <div class="config-inicial">
@@ -65,9 +66,6 @@
 import axios from '@/axios.js'; // Importa o axios para realizar requisições HTTP
 import { ref, computed, defineProps, defineEmits } from 'vue'; // Funções do Vue para reatividade e manipulação de props
 import { useToast } from 'primevue/usetoast'; // Importa a função de toast para exibir notificações
-import videoService from '@/services/videoService';
-import { isValidVideoFile } from '@/helpers/HelperValidacao';
-import { generateCustomVideoName } from '@/helpers/HelperUtils';
 
 const toast = useToast(); // Instancia o objeto de notificações de toast
 
@@ -148,26 +146,36 @@ const handleFiles = (event) => {
 
     // Verifica e valida cada arquivo
     for (const file of files) {
-        // Verifica se o arquivo não é do tipo mp4/Maior que 5mb  
-        const validation = isValidVideoFile(file);
-        if (!validation.valid) {
+        // Verifica se o arquivo não é do tipo mp4
+        if (!file.type.includes('mp4')) {
             toast.add({
                 severity: 'error',
                 summary: 'Erro de Arquivo',
-                detail: validation.error,
-                life: 3000,
+                detail: 'Apenas arquivos .mp4 são permitidos.',
+                life: 3000
             });
-            continue;
+            continue; // Pula o arquivo inválido
+        }
+
+        // Verifica se o arquivo é maior que 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            toast.add({
+                severity: 'error',
+                summary: 'Erro de Arquivo',
+                detail: 'O tamanho do arquivo não pode exceder 5MB.',
+                life: 3000
+            });
+            continue; // Pula o arquivo inválido
         }
 
         // Gera um nome customizado para o arquivo
-        const customName = generateCustomVideoName(selectedDM.value.label, selectedDM.value.Video);
+        const generatedName = `DM-${selectedDM.value.label}-v1`;
 
         // Adiciona o arquivo à lista de arquivos a serem enviados
         filesToUpload.value.push({
             file,
             dmId: selectedDM.value.value,
-            customName: customName,
+            customName: generatedName,
             fileName: file.name,
             progress: 0 // Inicializa o progresso do upload
         });
@@ -181,44 +189,55 @@ const uploadVideos = async () => {
             severity: 'warn',
             summary: 'Nenhum Arquivo',
             detail: 'Adicione arquivos antes de enviar.',
-            life: 3000,
+            life: 3000
         });
-        return;
+        return; // Retorna se não houver arquivos para enviar
     }
 
-    isUploading.value = true;
+    isUploading.value = true; // Ativa o flag de upload
 
+    // Envia cada arquivo individualmente
     for (const item of filesToUpload.value) {
-        try {
-            await videoService.uploadVideo(
-                item.file,
-                item.dmId,
-                item.customName,
-                (progressEvent) => {
-                    item.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                }
-            );
+        const formData = new FormData();
+        formData.append('video', item.file); // Adiciona o arquivo
+        formData.append('dmId', item.dmId); // Adiciona a ID da DM
+        formData.append('fileName', item.fileName);
+        formData.append('customName', item.customName); // Adiciona o nome customizado do arquivo
 
-            uploadedVideos.value++;
+        try {
+            // Envia o vídeo via POST para o servidor
+            await axios.post('/video/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                onUploadProgress: (progressEvent) => {
+                    item.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100); // Atualiza o progresso
+                }
+            });
+
+            uploadedVideos.value++; // Incrementa o contador de vídeos enviados com sucesso
+
+            // Exibe notificação de sucesso
             toast.add({
                 severity: 'success',
                 summary: 'Upload Concluído',
-                detail: `Arquivo "${item.file.name}" foi enviado como "${item.customName}"`,
-                life: 3000,
+                detail: `Arquivo "${item.fileName}" foi enviado como "${item.customName}"`,
+                life: 3000
             });
         } catch (error) {
             console.error('Erro ao fazer upload:', error);
+            // Exibe notificação de erro caso o upload falhe
             toast.add({
                 severity: 'error',
                 summary: 'Erro de Upload',
-                detail: `Falha ao enviar o vídeo "${item.file.name}".`,
-                life: 3000,
+                detail: `Falha ao enviar o vídeo "${item.fileName}".`,
+                life: 3000
             });
         }
     }
 
-    filesToUpload.value = [];
-    isUploading.value = false;
+    filesToUpload.value = []; // Limpa a lista de arquivos após o upload
+    isUploading.value = false; // Desativa o flag de upload
 };
 </script>
 <style scoped>
