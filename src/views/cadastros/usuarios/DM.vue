@@ -509,7 +509,7 @@ watch(
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
-        fetchDMS();
+        //fetchDMS();
         visible.value = false;
     }
 });

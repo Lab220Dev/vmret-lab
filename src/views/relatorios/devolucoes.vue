@@ -8,7 +8,8 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-
+import * as HelperUtils from '@/helpers/HelperUtils.js'
+import relatorioService from '../../Services/relatorioService';
 const dataStore = useDataStore();
 const showDialog = ref(false);
 const dialogMessage = ref('');
@@ -31,7 +32,7 @@ const plantas = ref([todosOption]);
 //const setor = ref([todosOption]);
 const centroCusto = ref([todosOption]);
 
-const ListaFuncionariosOriginal = ref([]);
+const ListaFuncionariosFiltrado = ref([]);
 const ListaFuncionarios = ref([]);
 
 const ListaSetorOriginal = ref([]);
@@ -156,7 +157,9 @@ const loadData = async () => {
         plantas.value = dataStore.plantas || await dataStore.fetchPlantas();
         ListaSetor.value = dataStore.setores || await dataStore.fetchSetores();
         centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
-        ListaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
+        // ListaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
+        ListaFuncionarios.value = await relatorioService.listaFuncionario();
+        ListaFuncionariosFiltrado.value = ListaFuncionarios.value;
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
@@ -174,18 +177,19 @@ const filterSetor = () => {
 };
 
 const filterFuncionarios = () => {
-  // Verifica se há ao menos um filtro selecionado
-  if (relatorio.value.id_setor || relatorio.value.id_planta) {
-    ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
-      const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
-      const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
+//   // Verifica se há ao menos um filtro selecionado
+//   if (relatorio.value.id_setor || relatorio.value.id_planta) {
+//     ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+//       const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
+//       const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
 
-      return matchesSetor && matchesPlanta;
-    });
-  } else {
-    // Se não tiver filtro, exibe todos os funcionários
-    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-  }
+//       return matchesSetor && matchesPlanta;
+//     });
+//   } else {
+//     // Se não tiver filtro, exibe todos os funcionários
+//     ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+//   }
+HelperUtils.filterFuncionariosBySetorAndPlanta(relatorio.value,ListaFuncionarios,ListaFuncionariosFiltrado);
 };
 
 const handleDatepickerOpen = () => {
@@ -221,7 +225,7 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionariosFiltrado" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>

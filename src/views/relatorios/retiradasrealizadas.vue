@@ -90,11 +90,7 @@ const buscar = async () => {
     };
     try {
         loading.value = true;
-        const response = await axios.post('relatorioRetiRe/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await axios.post('relatorioRetiRe/relatorio', data);
         retiradas.value = response.data;
 
         // Atualizando a contagem de registros após a resposta da API
