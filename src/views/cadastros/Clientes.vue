@@ -1,150 +1,221 @@
 <script setup>
-//Importando as funções do Vue.js, além de outras dependências
-import { reactive, ref, onMounted, watch } from 'vue'; //reactive e ref são usados para reatividade, onMounted é um hook(função especial) para executar código ao montar o componente, watch observa mudanças em valores reativos
-import { useToast } from 'primevue/usetoast'; //Função para mostrar notificações
-import { FilterMatchMode } from 'primevue/api'; //modos de filtro (como CONTAINS, EQUALS, etc)
-import LoadingSpinner from '@/components/LoadingSpinner.vue'; //carregamento (spinner)
-import MenuSelector from '@/components/MenuSelector.vue'; //seleciona menus
-import clientesService from '@/services/clientesService';
-import { validarCNPJ } from '@/helpers/HelperValidacao.js';
-import { resetClienteForm } from '@/helpers/formHelper';
-import { formatDate } from '@/helpers/HelperUtils.js';
+import { reactive, ref, onMounted, watch } from 'vue'; // Funções reativas e hooks do Vue.js
+import { useToast } from 'primevue/usetoast'; // Função para mostrar notificações
+import { FilterMatchMode } from 'primevue/api'; // Modo de filtro para tabelas, como CONTAINS ou EQUALS
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Spinner de carregamento
+import MenuSelector from '@/components/MenuSelector.vue'; // Seleção de menus hierárquicos
+import clientesService from '@/services/clientesService'; // Serviço para manipulação de dados de clientes
+import { validarCNPJ } from '@/helpers/HelperValidacao.js'; // Função para validar CNPJ
+import { resetClienteForm } from '@/helpers/formHelper'; // Função para resetar o formulário de cliente
+import { formatDate } from '@/helpers/HelperUtils.js'; // Função para formatação de datas (não utilizada diretamente)
 
-const active = ref(0); //Controle do índice ativo
-const show = ref(false); //Controla a exibição de algum componente
-const toast = useToast(); //Função que exibe as notificações
-const loading = ref(false); //Flag de carregamento enquanto os dados estão sendo processados
-const ListaClientes = ref([]); //lista de clientes, inicialmente vazia
-const visible = ref(false); //controla a visibilidade de um formulário ou componente
-const deleteClienteDialog = ref(false); //controla a exibição do diálogo de exclusão de cliente
-const item = ref({}); //Objeto que armazena o cliente selecionado para exclusão
-const selectedPerfil = ref(null); //Salva o perfil selecionado para o cliente
-const structuredMenus = ref([]); //Estrutura dos menus hierárquicos selecionados para o cliente
+/**
+ * Declaração de variáveis reativas com `ref` e `reactive` do Vue
+ */
+const active = ref(0); // Controle do índice ativo (0 indica nenhuma etapa selecionada)
+const show = ref(false); // Controle da visibilidade de algum componente (não utilizado diretamente)
+const toast = useToast(); // Instância da função de notificação
+const loading = ref(false); // Flag de carregamento (indica se o sistema está processando dados)
+const ListaClientes = ref([]); // Lista de clientes, inicialmente vazia
+const visible = ref(false); // Controle da visibilidade do formulário de cliente
+const deleteClienteDialog = ref(false); // Controle da exibição do diálogo de exclusão de cliente
+const item = ref({}); // Armazena o cliente selecionado para exclusão
+const selectedPerfil = ref(null); // Armazena o perfil selecionado para o cliente
+const structuredMenus = ref([]); // Estrutura de menus hierárquicos selecionados para o cliente
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS } //Filtro global para pesquisa, que usa o modo "contains", ou seja, que contenha o valor
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que procura valores que contenham o texto fornecido
 });
 
+/**
+ * Objeto `cliente` reativo para armazenar os dados do cliente atual.
+ * Cada propriedade é reativa, ou seja, qualquer alteração nas propriedades atualizará a interface automaticamente.
+ */
 let cliente = reactive({
-    //variáveis que podem ser reatribuídas
-    nome: '', // nome do cliente.
-    cnpj: '', //CNPJ do cliente.
-    ativo: true, //se o cliente está ativo.
-    usar_api: false, //se o cliente pode usar API (booleano).
-    textoretirada: '' //Algum campo de texto associado ao cliente (não especificado no código).
+    nome: '', // Nome do cliente
+    cnpj: '', // CNPJ do cliente
+    ativo: true, // Se o cliente está ativo (booleano)
+    usar_api: false, // Se o cliente pode usar API (booleano)
+    textoretirada: '' // Campo de texto associado ao cliente (não especificado)
 });
 
+/**
+ * Lista de opções de perfil que pode ser selecionada para o cliente.
+ * As opções são 'Master', 'Operador', e 'Avulso' com valores associados.
+ */
 const perfilOptions = [
-    { label: 'Master', value: 1 }, //perfil 'Master'
-    { label: 'Operador', value: 3 }, //perfil 'Operador'
-    { label: 'Avulso', value: 4 } //perfil 'Avulso'
+    { label: 'Master', value: 1 }, // Perfil Master
+    { label: 'Operador', value: 3 }, // Perfil Operador
+    { label: 'Avulso', value: 4 } // Perfil Avulso
 ];
 
+/**
+ * Função chamada quando uma linha de cliente é selecionada na tabela.
+ * Preenche o objeto `cliente` com os dados da linha selecionada e faz outras configurações de visibilidade e menus.
+ * 
+ * @param {Object} event - O evento de seleção da linha, contendo os dados do cliente selecionado.
+ */
 const onRowSelect = (event) => {
-    cliente = reactive({ ...event.data }); //preenche o objeto 'cliente' com os dados da linha selecionada no grid
-    active.value = 1; //altera o índice ativo para a próxima etapa/página.
-    visible.value = true; //Torna o formulário visível.
-    structuredMenus.value = cliente.menus || []; //Carrega os menus estruturados, se existirem.
-    console.log('Menus Estruturados:', structuredMenus.value);
+    cliente = reactive({ ...event.data }); // Preenche o objeto `cliente` com os dados da linha selecionada
+    active.value = 1; // Altera o índice ativo para 1 (indicando que o cliente está sendo editado)
+    visible.value = true; // Torna o formulário visível para edição
+    structuredMenus.value = cliente.menus || []; // Carrega a estrutura de menus (caso exista)
+    console.log('Menus Estruturados:', structuredMenus.value); // Exibe os menus estruturados no console
 };
 
+/**
+ * Função responsável por resetar o formulário de cliente.
+ * Limpa todos os dados do formulário, incluindo o campo `structuredMenus`.
+ */
 const resetForm = () => {
-    //função responsável por limpar o formulário e reiniciar seus valores
-    //Reseta o objeto `cliente` para seus valores iniciais, utilizando `reactive` para tornar as mudanças reativas
     cliente = reactive({
-        nome: '', //Nome do cliente, inicializado como uma string vazia
-        cnpj: '', // CNPJ do cliente, inicializado como uma string vazia
-        ativo: true, // Estado de ativação do cliente, inicializado como `true` (ativo)
-        usar_api: false, // Se o cliente pode ou não usar API, inicializado como `false`
-        textoretirada: '' // Campo de texto adicional relacionado ao cliente, inicializado como uma string vazia
+        nome: '', // Reseta nome do cliente
+        cnpj: '', // Reseta CNPJ do cliente
+        ativo: true, // Reseta o status de ativo
+        usar_api: false, // Reseta a permissão de uso de API
+        textoretirada: '' // Reseta o campo adicional de texto
     });
-    // Limpa a estrutura de menus associada ao cliente
-    structuredMenus.value = [];
+    structuredMenus.value = []; // Limpa a estrutura de menus associada ao cliente
 };
 
+/**
+ * Função chamada ao submeter o formulário.
+ * Dependendo da visibilidade do formulário, ele pode ser para adicionar ou atualizar um cliente.
+ */
 const submitForm = () => {
     if (visible.value) {
-        //Se o formulário estiver visível, é uma atualização.
+        // Se o formulário estiver visível, indica que é uma atualização de cliente
         atualizarCliente();
     } else {
-        //se não, é um novo cliente.
+        // Caso contrário, trata-se da adição de um novo cliente
         adicionarCliente();
     }
 };
 
+/**
+ * Função assíncrona para adicionar um novo cliente.
+ * Chama o serviço `clientesService.adicionarCliente` para salvar os dados no servidor.
+ * 
+ * @async
+ */
 const adicionarCliente = async () => {
     try {
-        await clientesService.adicionarCliente(cliente);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado' });
-        loadClientes();
-        resetClienteForm(cliente);
-        active.value = 0;
+        await clientesService.adicionarCliente(cliente); // Chama o serviço para adicionar o cliente
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado' }); // Exibe uma mensagem de sucesso
+        loadClientes(); // Recarrega a lista de clientes
+        resetClienteForm(cliente); // Limpa o formulário após adicionar o cliente
+        active.value = 0; // Reseta o índice ativo para 0 (volta para a visão geral)
     } catch {
+        // Caso ocorra um erro, exibe uma mensagem de erro
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao adicionar cliente' });
     }
 };
 
+/**
+ * Função assíncrona para atualizar os dados de um cliente existente.
+ * Chama o serviço `clientesService.atualizarCliente` para salvar as alterações no servidor.
+ * 
+ * @async
+ */
 const atualizarCliente = async () => {
     try {
-        await clientesService.atualizarCliente(cliente);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado' });
-        loadClientes();
-        resetClienteForm(cliente);
-        active.value = 0;
+        await clientesService.atualizarCliente(cliente); // Chama o serviço para atualizar o cliente
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado' }); // Exibe uma mensagem de sucesso
+        loadClientes(); // Recarrega a lista de clientes
+        resetClienteForm(cliente); // Limpa o formulário após atualizar os dados
+        active.value = 0; // Reseta o índice ativo para 0
     } catch {
+        // Caso ocorra um erro, exibe uma mensagem de erro
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao atualizar cliente' });
     }
 };
 
+/**
+ * Função chamada para iniciar o processo de exclusão de um cliente.
+ * Exibe um diálogo de confirmação antes de excluir o cliente.
+ * 
+ * @param {Object} itm - O cliente selecionado para exclusão.
+ */
 const deleteClientedes = (itm) => {
-    item.value = itm; //armazena o cliente selecionado
-    deleteClienteDialog.value = true; //exibe o diálogo de exclusão
+    item.value = itm; // Armazena o cliente selecionado para exclusão
+    deleteClienteDialog.value = true; // Exibe o diálogo de confirmação de exclusão
 };
 
+/**
+ * Função assíncrona para deletar um cliente do sistema.
+ * Chama o serviço `clientesService.deletarCliente` para remover o cliente do banco de dados.
+ * 
+ * @param {string} clienteId - O ID do cliente a ser deletado.
+ * @async
+ */
 const deleteCliente = async (clienteId) => {
     try {
-        await clientesService.deletarCliente(clienteId);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado' });
-        loadClientes();
+        await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado' }); // Exibe uma mensagem de sucesso
+        loadClientes(); // Recarrega a lista de clientes
     } catch {
+        // Caso ocorra um erro, exibe uma mensagem de erro
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar cliente' });
     }
 };
 
+/**
+ * Função assíncrona para carregar a lista de clientes.
+ * Chama o serviço `clientesService.listarClientes` para obter os dados dos clientes.
+ * 
+ * @async
+ */
 const loadClientes = async () => {
-    loading.value = true;
+    loading.value = true; // Ativa o indicador de carregamento
     try {
-        ListaClientes.value = await clientesService.listarClientes();
+        ListaClientes.value = await clientesService.listarClientes(); // Carrega os dados dos clientes
     } catch (error) {
+        // Em caso de erro, exibe a mensagem no console
         console.error(error.message);
     } finally {
+        // Desativa o indicador de carregamento após a tentativa de carregamento
         loading.value = false;
     }
 };
 
+/**
+ * Objeto reativo para armazenar os erros de validação do formulário.
+ * Neste caso, está sendo validado o campo CNPJ.
+ */
 const errors = reactive({
-    //Responsável por armazenar os erros de cnpj
-    cnpj: ''
+    cnpj: '' // Erro relacionado ao CNPJ, se houver
 });
 
+/**
+ * Função para validar o campo CNPJ.
+ * Se o CNPJ for inválido, a mensagem de erro é atualizada.
+ */
 const validateCNPJField = () => {
-    errors.cnpj = validarCNPJ(cliente.cnpj) ? '' : 'CNPJ inválido';
+    errors.cnpj = validarCNPJ(cliente.cnpj) ? '' : 'CNPJ inválido'; // Se o CNPJ for inválido, exibe a mensagem de erro
 };
 
-//Função de watcher para monitorar mudanças no valor de active
-//Quando active muda para 0, reseta o formulário e recarrega a lista de clientes
+/**
+ * `watch` do Vue: observa mudanças na variável `active`.
+ * Quando `active` muda para 0, reseta o formulário e recarrega a lista de clientes.
+ * 
+ * @param {number} newIndex - Novo valor de `active` após a mudança.
+ * @param {number} oldIndex - Valor antigo de `active`.
+ */
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetClienteForm(cliente); //Chama a função para resetar o formulário
-        loadClientes(); // Chama a função para recarregar a lista de clientes
-        visible.value = false; // Esconde o formulário ou outro conteúdo dependendo do valor de visible
+        resetClienteForm(cliente); // Reseta o formulário
+        loadClientes(); // Recarrega a lista de clientes
+        visible.value = false; // Esconde o formulário
     }
 });
 
-//onMounted do Vue, executado quando o componente é montado
-//carrega a lista de clientes ao carregar a página
+/**
+ * `onMounted` do Vue: Executa quando o componente é montado.
+ * Carrega a lista de clientes ao montar a página.
+ */
 onMounted(() => {
-    loadClientes(); //Chama a função para carregar os clientes quando o componente for montado
+    loadClientes(); // Chama a função para carregar os clientes assim que o componente for montado
 });
+
 </script>
 
 <template>
@@ -171,7 +242,8 @@ onMounted(() => {
                         :globalFilterFields="['id_cliente', 'nome', 'last_login']"
                         :sortOrder="1"
                         :sortField="'id_cliente'"
-                        ><!-- Filtragem global na tabela -->
+                        >
+                        <!-- Filtragem global na tabela -->
                         <!-- Dados da tabela (lista de clientes) -->
                         <!-- Permite selecionar apenas um item -->
                         <!-- Estilo da tabela -->

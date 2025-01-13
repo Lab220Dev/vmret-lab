@@ -18,79 +18,120 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'; // Importa os hooks ref e onMounted do Vue
-import axios from '@/axios.js'; // Importa a instância axios configurada para realizar requisições HTTP
-import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados do usuário
+/**
+ * Importação de módulos e componentes necessários para o funcionamento do componente.
+ */
+ import { ref, onMounted } from 'vue'; // Importa os hooks 'ref' (para reatividade) e 'onMounted' (para execução após o componente ser montado) do Vue
+import axios from '@/axios.js'; // Importa a instância do axios, que é uma biblioteca para realizar requisições HTTP, já configurada
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para gerenciar o estado de login e dados do usuário
 import Editor from '@/components/Editor.vue'; // Importa o componente de Editor (provavelmente um editor de texto rico)
-import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento para indicar ao usuário que o conteúdo está sendo carregado
 
-// Declaração de variáveis reativas
-const content = ref(''); // Variável que contém o conteúdo do editor, inicializado como string vazia
-const store = useAuthStore(); // Acessa o store de autenticação para pegar dados do usuário e token
-const loading = ref(false); // Variável que indica se o processo de carregamento está em andamento (inicialmente falso)
+// Declaração de variáveis reativas com Vue.js usando 'ref' para controle de estado no componente
+/**
+ * @type {import('vue').Ref<string>} 
+ * Variável que contém o conteúdo do editor. Inicialmente, é uma string vazia.
+ */
+const content = ref('');
 
-// Função responsável por salvar o conteúdo no servidor
+/**
+ * @type {import('vue').Ref<boolean>} 
+ * Variável que indica se o processo de carregamento está em andamento. Inicialmente é falso (não carregando).
+ */
+const loading = ref(false);
+
+// Acessa o store de autenticação, onde o usuário e o token são armazenados
+/**
+ * @type {ReturnType<typeof useAuthStore>} 
+ * Armazena os dados do store de autenticação (dados do usuário e token).
+ */
+const store = useAuthStore();
+
+/**
+ * Função para salvar o conteúdo do editor no servidor.
+ * Realiza uma requisição HTTP POST para enviar o conteúdo.
+ * 
+ * @returns {Promise<void>} 
+ * A função é assíncrona e não retorna valor, apenas realiza a operação de salvar.
+ */
 const SalvarTexto = async () => {
     // Prepara os dados que serão enviados na requisição
     const data = {
         id_cliente: store.userIdCliente,  // ID do cliente (obtido do store de autenticação)
-        Texto: content.value             // Conteúdo do editor
+        Texto: content.value             // Conteúdo do editor, que é armazenado em 'content'
     };
 
-    console.log('Dados a serem enviados:', data); // Log para debugar e verificar os dados que serão enviados
+    // Log para depuração, exibindo os dados que serão enviados na requisição
+    console.log('Dados a serem enviados:', data);
 
-    loading.value = true; // Indica que o processo de carregamento começou
+    // Ativa o indicador de carregamento
+    loading.value = true;
+
     try {
-        // Envia os dados para o servidor usando o método POST
+        // Envia os dados ao servidor usando uma requisição POST
         await axios.post('/termo/Salvar', data, {
             headers: {
                 Authorization: `Bearer ${store.token}`  // Inclui o token de autenticação no cabeçalho da requisição
             }
         });
-        // Se a requisição for bem-sucedida, o servidor irá salvar o conteúdo do editor
+        // Se a requisição for bem-sucedida, o servidor salvará o conteúdo do editor
+        // Não há necessidade de ação adicional após salvar com sucesso
     } catch (error) {
-        // Em caso de erro, exibe uma mensagem de erro no console
-        console.error('Erro ao salvar texto:', error);
+        // Caso ocorra algum erro durante a requisição, este bloco será executado
+        console.error('Erro ao salvar texto:', error); // Loga o erro ocorrido ao tentar salvar o conteúdo
     } finally {
-        // Em qualquer caso (sucesso ou erro), desativa o indicador de carregamento
+        // Independente de sucesso ou falha, o indicador de carregamento é desativado
         loading.value = false;
     }
 };
 
-// Função responsável por recuperar o conteúdo salvo anteriormente
+/**
+ * Função para recuperar o conteúdo salvo anteriormente no servidor.
+ * Realiza uma requisição HTTP POST para buscar o conteúdo.
+ * 
+ * @returns {Promise<void>} 
+ * A função é assíncrona e não retorna valor, apenas realiza a operação de recuperação.
+ */
 const RecuperarTexto = async () => {
-    // Prepara os dados que serão enviados na requisição
+    // Prepara os dados que serão enviados na requisição para buscar o conteúdo salvo
     const data = {
-        id_cliente: store.userIdCliente // ID do cliente (novamente obtido do store de autenticação)
+        id_cliente: store.userIdCliente // ID do cliente (obtido do store de autenticação)
     };
 
-    loading.value = true; // Inicia o indicador de carregamento
+    // Ativa o indicador de carregamento, pois estamos fazendo uma requisição
+    loading.value = true;
+
     try {
-        // Realiza uma requisição POST para recuperar o conteúdo salvo do servidor
+        // Realiza a requisição POST para recuperar o conteúdo do servidor
         const response = await axios.post('/termo/recuperar', data, {
             headers: {
-                Authorization: `Bearer ${store.token}` // Inclui o token de autenticação
+                Authorization: `Bearer ${store.token}` // Inclui o token de autenticação no cabeçalho da requisição
             }
         });
-        
+
         // Verifica se o servidor retornou um conteúdo válido
         if (response.data[0].Texto) {
             content.value = response.data[0].Texto; // Atualiza o conteúdo do editor com o texto recuperado
         }
     } catch (error) {
-        // Caso ocorra algum erro ao recuperar o conteúdo, o log do erro é comentado por enquanto.
+        // Caso ocorra algum erro durante a requisição de recuperação, este bloco será executado
+        // O log foi comentado, mas é importante registrar os erros para depuração
         // console.error('Erro ao recuperar texto:', error);
     } finally {
-        // Após a operação de recuperação, desativa o indicador de carregamento
+        // Após a operação de recuperação (seja com sucesso ou falha), desativa o indicador de carregamento
         loading.value = false;
     }
 };
 
-// Hook do Vue.js que é chamado quando o componente é montado (aparece na tela)
+/**
+ * Hook 'onMounted' do Vue.js, que é executado assim que o componente é montado na tela.
+ * Esse hook é usado para chamar a função que recupera o conteúdo salvo assim que o componente estiver disponível.
+ */
 onMounted(() => {
-    // Quando o componente for montado, recupera o conteúdo salvo (se houver)
+    // Chama a função para recuperar o conteúdo salvo do servidor assim que o componente for montado
     RecuperarTexto();
 });
+
 </script>
 
 <style scoped>

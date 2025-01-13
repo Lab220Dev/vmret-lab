@@ -1,38 +1,61 @@
 <script setup>
-// Importa os hooks 'ref' do Vue para criar variáveis reativas
-import { ref } from 'vue';
+/**
+ * Importação do hook `ref` do Vue para criar variáveis reativas.
+ * 
+ * @module vue
+ */
+ import { ref } from 'vue'; // Importa a função 'ref' do Vue para criar variáveis reativas
 
-// Define os eventos personalizados que serão usados no componente Timeline
-const customEvents = ref([
+/**
+ * Define os eventos personalizados que serão usados no componente Timeline.
+ * A estrutura de cada evento inclui: status, data, ícone, cor, e uma imagem opcional.
+ * Esses eventos serão renderizados na interface do usuário para mostrar uma linha do tempo de ações.
+ * 
+ * @type {import('vue').Ref<Array<{ status: string, date: string, icon: string, color: string, image?: string }>>}
+ */
+const customEvents = ref([ // Define a variável reativa 'customEvents' que contém os eventos personalizados a serem exibidos
     {
-        status: 'Ordered', // Status do evento
-        date: '15/10/2020 10:30', // Data e hora do evento
-        icon: 'pi pi-shopping-cart', // Ícone associado ao evento
-        color: '#9C27B0', // Cor do ícone
-        image: 'game-controller.jpg' // Imagem associada ao evento (opcional)
+        status: 'Ordered', // Status do evento, indicando que o pedido foi feito
+        date: '15/10/2020 10:30', // Data e hora do evento (formato: dd/MM/yyyy HH:mm)
+        icon: 'pi pi-shopping-cart', // Ícone associado ao evento, usando o prefixo 'pi' para ícones do PrimeIcons
+        color: '#9C27B0', // Cor do ícone em formato hexadecimal (roxo)
+        image: 'game-controller.jpg' // Imagem associada ao evento (opcional), representando o produto (se houver)
     },
     {
-        status: 'Processing',
-        date: '15/10/2020 14:00',
-        icon: 'pi pi-cog',
-        color: '#673AB7'
+        status: 'Processing', // Status do evento, indicando que o pedido está sendo processado
+        date: '15/10/2020 14:00', // Data e hora do evento
+        icon: 'pi pi-cog', // Ícone associado ao evento (ícone de engrenagem)
+        color: '#673AB7' // Cor do ícone (roxo escuro)
     },
     {
-        status: 'Shipped',
-        date: '15/10/2020 16:15',
-        icon: 'pi pi-envelope',
-        color: '#FF9800'
+        status: 'Shipped', // Status do evento, indicando que o pedido foi enviado
+        date: '15/10/2020 16:15', // Data e hora do evento
+        icon: 'pi pi-envelope', // Ícone associado ao evento (ícone de envelope, geralmente usado para representar envio)
+        color: '#FF9800' // Cor do ícone (laranja)
     },
     {
-        status: 'Delivered',
-        date: '16/10/2020 10:00',
-        icon: 'pi pi-check',
-        color: '#607D8B'
+        status: 'Delivered', // Status do evento, indicando que o pedido foi entregue
+        date: '16/10/2020 10:00', // Data e hora do evento
+        icon: 'pi pi-check', // Ícone associado ao evento (ícone de check, indicando que o evento foi completado com sucesso)
+        color: '#607D8B' // Cor do ícone (cinza azulado)
     }
 ]);
 
-// Define os eventos horizontais para o uso do Timeline com layout horizontal
-const horizontalEvents = ref(['2020', '2021', '2022', '2023']);
+/**
+ * Define os eventos horizontais para o uso do componente Timeline com layout horizontal.
+ * Esses eventos podem ser usados para representar anos ou outras unidades de tempo de forma visual
+ * na linha do tempo, no formato de um eixo temporal.
+ * 
+ * @type {import('vue').Ref<Array<string>>}
+ */
+const horizontalEvents = ref([ // Define a variável reativa 'horizontalEvents' que contém os eventos horizontais
+    '2020', // Representa o evento para o ano de 2020
+    '2021', // Representa o evento para o ano de 2021
+    '2022', // Representa o evento para o ano de 2022
+    '2023'  // Representa o evento para o ano de 2023
+]);
+
+
 </script>
 
 <template>

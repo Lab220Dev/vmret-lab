@@ -1,12 +1,24 @@
 <script setup>
-// Importações necessárias para o funcionamento do componente.
-import { FilterMatchMode } from 'primevue/api'; // Importa os modos de correspondência de filtro para a tabela de dados.
-import { ref, onMounted, onBeforeMount } from 'vue'; // Importa funções do Vue: 'ref' para reatividade, 'onMounted' e 'onBeforeMount' para hooks de ciclo de vida.
-import { ProductService } from '@/service/ProductService'; // Importa o serviço que lida com dados de produtos.
-import { useToast } from 'primevue/usetoast'; // Importa a função de notificação (toast).
+/**
+ * Importações necessárias para o funcionamento do componente.
+ *
+ * @module
+ */
+
+// Importa os modos de correspondência de filtro para a tabela de dados.
+import { FilterMatchMode } from 'primevue/api';
+
+// Importa funções do Vue: 'ref' para reatividade, 'onMounted' e 'onBeforeMount' para hooks de ciclo de vida.
+import { ref, onMounted, onBeforeMount } from 'vue';
+
+// Importa o serviço que lida com dados de produtos.
+import { ProductService } from '@/service/ProductService';
+
+// Importa a função de notificação (toast).
+import { useToast } from 'primevue/usetoast';
 
 // Inicializa a função toast para exibir mensagens.
-const toast = useToast();
+const toast = useToast(); // Cria uma instância do toast, usado para mostrar notificações ao usuário.
 
 // Define as variáveis reativas para o gerenciamento do estado.
 const products = ref(null); // Armazena a lista de produtos.
@@ -18,132 +30,208 @@ const selectedProducts = ref(null); // Armazena os produtos selecionados.
 const dt = ref(null); // Referência para o DataTable para exportação.
 const filters = ref({}); // Filtros de pesquisa na tabela.
 const submitted = ref(false); // Controle de envio de formulário.
-const statuses = ref([ // Status possíveis de um produto.
+const statuses = ref([
+    // Status possíveis de um produto.
     { label: 'INSTOCK', value: 'instock' },
     { label: 'LOWSTOCK', value: 'lowstock' },
     { label: 'OUTOFSTOCK', value: 'outofstock' }
 ]);
 
-const productService = new ProductService(); // Instancia o serviço de produtos.
+// Instancia o serviço de produtos.
+const productService = new ProductService(); // Cria uma instância do serviço ProductService para manipulação dos dados de produtos.
 
-// Função que retorna a severidade do badge (ícone) de acordo com o status do estoque.
+/**
+ * Função que retorna a severidade do badge (ícone) de acordo com o status do estoque.
+ * Dependendo do status do produto no estoque, a severidade do badge muda.
+ *
+ * @param {string} inventoryStatus - Status do estoque do produto.
+ * @returns {string} - Severidade que define o ícone exibido.
+ */
 const getBadgeSeverity = (inventoryStatus) => {
-    switch (inventoryStatus.toLowerCase()) {
+    switch (
+        inventoryStatus.toLowerCase() // Converte o status para minúsculo para evitar discrepâncias de maiúsculas/minúsculas.
+    ) {
         case 'instock': // Se o produto estiver em estoque.
-            return 'success'; // Severidade "sucesso".
+            return 'success'; // Severidade "sucesso" para produtos em estoque.
         case 'lowstock': // Se o produto estiver com estoque baixo.
-            return 'warning'; // Severidade "aviso".
+            return 'warning'; // Severidade "aviso" para estoque baixo.
         case 'outofstock': // Se o produto estiver fora de estoque.
-            return 'danger'; // Severidade "perigo".
-        default: // Caso o status seja desconhecido.
-            return 'info'; // Severidade "informação".
+            return 'danger'; // Severidade "perigo" para produtos fora de estoque.
+        default: // Caso o status seja desconhecido ou não esteja especificado.
+            return 'info'; // Severidade "informação" por padrão.
     }
 };
 
-// Hook que é executado antes de o componente ser montado.
+/**
+ * Hook do Vue que é executado antes de o componente ser montado.
+ * Utiliza-se deste hook para inicializar filtros de pesquisa.
+ */
 onBeforeMount(() => {
-    initFilters(); // Inicializa os filtros de pesquisa.
+    initFilters(); // Inicializa os filtros de pesquisa com valores padrões.
 });
 
-// Hook que é executado após o componente ser montado.
+/**
+ * Hook do Vue que é executado após o componente ser montado.
+ * Aqui, recupera-se os produtos utilizando o serviço ProductService.
+ */
 onMounted(() => {
     // Recupera os produtos do serviço quando o componente é montado.
-    productService.getProducts().then((data) => (products.value = data)); // O método getProducts retorna os produtos e os armazena em 'products'.
+    productService
+        .getProducts()
+        .then((data) => (products.value = data)) // O método getProducts retorna os produtos e os armazena em 'products'.
+        .catch((error) => {
+            // Caso ocorra um erro ao buscar os produtos.
+            console.error('Erro ao carregar produtos:', error); // Exibe erro no console.
+            toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos.', life: 3000 }); // Exibe um toast de erro.
+        });
 });
 
-// Função para formatar os valores de preço como moeda.
+/**
+ * Função para formatar os valores de preço como moeda.
+ * Converte um valor numérico para o formato de moeda.
+ *
+ * @param {number} value - O valor numérico que representa o preço do produto.
+ * @returns {string} - O valor formatado como uma string de moeda.
+ */
 const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); // Formata o valor como uma string de moeda.
+    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }); // Formata o valor como uma string de moeda no formato USD.
 };
 
-// Função para abrir o modal de criação de um novo produto.
+/**
+ * Função para abrir o modal de criação de um novo produto.
+ * Reseta o formulário e exibe o modal de produto.
+ */
 const openNew = () => {
-    product.value = {}; // Limpa o objeto do produto para um novo.
+    product.value = {}; // Limpa o objeto do produto para um novo produto.
     submitted.value = false; // Reseta o estado de envio do formulário.
     productDialog.value = true; // Exibe o modal de produto.
 };
 
-// Função para esconder o modal de edição de produto.
+/**
+ * Função para esconder o modal de edição de produto.
+ * Fecha o modal e reseta o estado de envio do formulário.
+ */
 const hideDialog = () => {
     productDialog.value = false; // Fecha o modal de produto.
     submitted.value = false; // Reseta o estado de envio do formulário.
 };
 
-// Função para salvar ou editar um produto.
+/**
+ * Função para salvar ou editar um produto.
+ * Se o produto já existe (tem ID), ele será editado; caso contrário, um novo produto será criado.
+ */
 const saveProduct = () => {
     submitted.value = true; // Marca o formulário como enviado.
     // Verifica se o nome e o preço do produto estão presentes.
     if (product.value.name && product.value.name.trim() && product.value.price) {
-        if (product.value.id) { // Se o produto já tem um ID, significa que é uma edição.
+        if (product.value.id) {
+            // Se o produto já tem um ID, significa que é uma edição.
             product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus; // Atualiza o status de inventário.
-            products.value[findIndexById(product.value.id)] = product.value; // Atualiza o produto na lista.
+            products.value[findIndexById(product.value.id)] = product.value; // Atualiza o produto na lista de produtos.
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 }); // Exibe um toast de sucesso.
-        } else { // Se o produto não tem um ID, significa que é um novo produto.
+        } else {
+            // Se o produto não tem um ID, significa que é um novo produto.
             product.value.id = createId(); // Gera um ID único para o novo produto.
             product.value.code = createId(); // Gera um código único para o novo produto.
-            product.value.image = 'product-placeholder.svg'; // Define uma imagem padrão.
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK'; // Define o status de inventário.
+            product.value.image = 'product-placeholder.svg'; // Define uma imagem padrão para o novo produto.
+            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK'; // Define o status de inventário (padrão 'INSTOCK').
             products.value.push(product.value); // Adiciona o novo produto à lista de produtos.
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 }); // Exibe um toast de sucesso.
         }
-        productDialog.value = false; // Fecha o modal de produto.
-        product.value = {}; // Limpa os dados do produto.
+        productDialog.value = false; // Fecha o modal de produto após salvar.
+        product.value = {}; // Limpa os dados do produto após salvar.
+    } else {
+        // Se o nome ou o preço não estiverem presentes, exibe uma mensagem de erro.
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Nome e preço são obrigatórios.', life: 3000 });
     }
 };
 
-// Função para editar um produto.
+/**
+ * Função para editar um produto existente.
+ * Abre o modal de edição e carrega os dados do produto a ser editado.
+ *
+ * @param {Object} editProduct - O produto a ser editado.
+ */
 const editProduct = (editProduct) => {
     product.value = { ...editProduct }; // Copia os dados do produto para 'product'.
-    productDialog.value = true; // Abre o modal de edição.
+    productDialog.value = true; // Exibe o modal de edição.
 };
 
-// Função para confirmar a exclusão de um produto.
+/**
+ * Função para confirmar a exclusão de um produto.
+ * Abre o modal de confirmação de exclusão do produto.
+ *
+ * @param {Object} editProduct - O produto a ser excluído.
+ */
 const confirmDeleteProduct = (editProduct) => {
     product.value = editProduct; // Armazena o produto a ser excluído.
-    deleteProductDialog.value = true; // Abre o modal de confirmação de exclusão.
+    deleteProductDialog.value = true; // Exibe o modal de confirmação de exclusão.
 };
 
-// Função para excluir um produto.
+/**
+ * Função para excluir um produto.
+ * Remove o produto da lista e exibe um toast de sucesso.
+ */
 const deleteProduct = () => {
     products.value = products.value.filter((val) => val.id !== product.value.id); // Remove o produto da lista.
-    deleteProductDialog.value = false; // Fecha o modal de confirmação.
+    deleteProductDialog.value = false; // Fecha o modal de confirmação de exclusão.
     product.value = {}; // Limpa os dados do produto.
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 }); // Exibe um toast de sucesso.
 };
 
-// Função para encontrar o índice de um produto por ID.
+/**
+ * Função para encontrar o índice de um produto por ID.
+ * Retorna o índice do produto na lista ou -1 se o produto não for encontrado.
+ *
+ * @param {string} id - O ID do produto a ser encontrado.
+ * @returns {number} - O índice do produto na lista ou -1 se não encontrado.
+ */
 const findIndexById = (id) => {
     let index = -1;
     for (let i = 0; i < products.value.length; i++) {
         if (products.value[i].id === id) {
-            index = i;
-            break;
+            index = i; // Encontrou o produto, salva o índice.
+            break; // Sai do loop, pois o produto já foi encontrado.
         }
     }
-    return index; // Retorna o índice do produto ou -1 se não encontrado.
+    return index; // Retorna o índice ou -1 se não encontrado.
 };
 
-// Função para gerar um ID único aleatório para o produto.
+/**
+ * Função para gerar um ID único aleatório para o produto.
+ * Utiliza caracteres alfanuméricos para criar um ID.
+ *
+ * @returns {string} - O ID único gerado.
+ */
 const createId = () => {
     let id = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; // Caracteres possíveis para o ID.
     for (let i = 0; i < 5; i++) {
         id += chars.charAt(Math.floor(Math.random() * chars.length)); // Gera um ID aleatório.
     }
-    return id;
+    return id; // Retorna o ID gerado.
 };
 
-// Função para exportar os produtos para CSV.
+/**
+ * Função para exportar os produtos para CSV.
+ * Utiliza o método exportCSV do DataTable para exportar os dados da lista de produtos.
+ */
 const exportCSV = () => {
     dt.value.exportCSV(); // Chama a função exportCSV do DataTable para exportar os dados.
 };
 
-// Função para confirmar a exclusão de produtos selecionados.
+/**
+ * Função para confirmar a exclusão de produtos selecionados.
+ * Abre o modal de confirmação de exclusão de múltiplos produtos.
+ */
 const confirmDeleteSelected = () => {
     deleteProductsDialog.value = true; // Abre o modal de confirmação para exclusão de múltiplos produtos.
 };
 
-// Função para excluir os produtos selecionados.
+/**
+ * Função para excluir os produtos selecionados.
+ * Remove os produtos selecionados da lista e exibe um toast de sucesso.
+ */
 const deleteSelectedProducts = () => {
     products.value = products.value.filter((val) => !selectedProducts.value.includes(val)); // Filtra os produtos selecionados e os remove da lista.
     deleteProductsDialog.value = false; // Fecha o modal de exclusão.
@@ -151,7 +239,10 @@ const deleteSelectedProducts = () => {
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 }); // Exibe um toast de sucesso.
 };
 
-// Função para inicializar os filtros de pesquisa.
+/**
+ * Função para inicializar os filtros de pesquisa.
+ * Configura o filtro global para "CONTAINS" (contém).
+ */
 const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Inicializa o filtro global de pesquisa para "CONTAINS" (contém).
@@ -192,6 +283,12 @@ const initFilters = () => {
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
                 >
+                    <!-- A tabela exibe os dados provenientes de 'products' -->
+                    <!-- A seleção de produtos será vinculada à variável 'selectedProducts' -->
+                    <!-- A tabela está configurada para exibir 10 linhas por página e suporta paginação -->
+                    <!-- O template de paginação exibe links para navegar entre as páginas e escolher o número de linhas por página -->
+                    <!-- O relatório de página atual exibe informações sobre o intervalo de itens e o total de produtos -->
+
                     <!-- Cabeçalho da tabela -->
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
@@ -329,7 +426,10 @@ const initFilters = () => {
                 <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="product">Are you sure you want to delete <b>{{ product.name }}</b>?</span>
+                        <span v-if="product"
+                            >Are you sure you want to delete <b>{{ product.name }}</b
+                            >?</span
+                        >
                     </div>
                     <template #footer>
                         <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />

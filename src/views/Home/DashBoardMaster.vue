@@ -19,7 +19,7 @@ const fetchData = async () => {
         const result = await dashboardService.fetchMasterData();
         produtos.value = result.produtos;
         maisretirados.value = result.maisRetirados;
-        dadosDM.value =result.keepAlive;
+        dadosDM.value = result.keepAlive;
         estoqueBaixo.value = result.estoqueBaixo;
     } catch (error) {
         console.error('Erro ao carregar dados do Master:', error);
@@ -36,21 +36,21 @@ const chartOptions = {
     scales: {
         y: {
             type: 'category',
-            labels: ['Offline', 'Online'],
+            labels: ['Offline', 'Online']
         },
         x: {
             title: {
                 display: true,
-                text: 'Horário',
-            },
-        },
+                text: 'Horário'
+            }
+        }
     },
     plugins: {
         legend: {
             display: true,
-            position: 'top',
-        },
-    },
+            position: 'top'
+        }
+    }
 };
 </script>
 
@@ -62,7 +62,7 @@ const chartOptions = {
                 <Chart type="line" :data="dadosDM" :options="chartOptions" />
             </div>
 
-            <div  class="card card-item">
+            <div class="card card-item">
                 <LastRecalls :products="produtos" />
             </div>
         </div>
@@ -72,15 +72,19 @@ const chartOptions = {
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
                 <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoqueBaixo" removableSort responsiveLayout="scroll">
+                    <!-- A tabela exibe os dados provenientes de 'estoqueBaixo' -->
+                    <!-- Exibe 5 linhas por página, com a opção de ordenação removível nas colunas -->
+                    <!-- Aplica um estilo com largura mínima de 20rem e layout fixo para garantir que as colunas tenham larguras constantes -->
+                    <!-- Quando a tela for pequena, a tabela ficará rolável horizontalmente (layout responsivo) -->
                     <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%"></Column>
                     <Column field="quantidade" header="Quant." class="table-cell" sortable style="width: 8%"></Column>
-                    
+
                     <Column field="nome" header="Item" sortable style="width: 30%">
                         <template #body="{ data }">
                             <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
                         </template></Column
                     >
-                    
+
                     <template #empty>
                         <div class="empty-message" style="text-align: center; padding: 20px; color: gray">Não há itens com o estoque baixo.</div>
                     </template>
@@ -94,7 +98,6 @@ const chartOptions = {
     </div>
 </template>
 
-
 <style>
 .card {
     padding: 20px;
@@ -102,7 +105,6 @@ const chartOptions = {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: white;
 }
-
 
 .card-item {
     height: 350px; /* Defina uma altura fixa */

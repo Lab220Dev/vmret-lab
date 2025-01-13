@@ -4,8 +4,12 @@
         <div class="full lg:col-12 md:col-12 sm:col-12">
             <label for="name">Cliente:</label>
             <!-- Dropdown para selecionar o cliente -->
-            <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes"
-                      optionLabel="label" optionValue="value" placeholder="Selecione um" />
+            <Dropdown class="my-2" 
+            v-model="selectedClient" 
+            :options="ListaClientes"
+            optionLabel="label" 
+            optionValue="value" 
+            placeholder="Selecione um" />
         </div>
 
         <!-- Seção para inserção do número da DM -->

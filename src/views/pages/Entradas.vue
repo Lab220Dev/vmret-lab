@@ -1,128 +1,154 @@
 <script setup>
-// Importações necessárias
-import { ref, reactive, onMounted } from 'vue'; // Importa as funções reativas do Vue
-import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento
-import { useAuthStore } from '@/store/authStore.js'; // Importa a loja de autenticação
-import axios from '@/axios.js'; // Importa a instância do axios configurada
-import { useToast } from 'primevue/usetoast'; // Importa o sistema de toast (notificações)
+/**
+ * Importações necessárias para o funcionamento do componente.
+ * 
+ * @module
+ */
 
-const toast = useToast(); // Instancia o toast para mostrar mensagens
+// Importa as funções reativas do Vue, como 'ref', 'reactive' e 'onMounted'.
+import { ref, reactive, onMounted } from 'vue'; // Usado para gerenciar o estado reativo e os hooks de ciclo de vida.
 
-const store = useAuthStore(); // Acessa o store de autenticação para pegar informações do usuário
-const DMSelecionada = ref(null); // Ref para armazenar a DM selecionada no dropdown
-const loading = ref(false); // Ref para controle de estado de carregamento
-const Dados = ref([]); // Ref para armazenar os dados da integração
-const validador = ref(false); // Validador para desabilitar campos e controle de erro
-const primeiraInteracao = ref(null); // Flag para saber se é a primeira interação com os dados
+// Importa o componente de carregamento personalizado.
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Exibe um spinner durante o carregamento de dados.
 
-// Objeto reativo para armazenar as informações da integração
+// Importa a loja de autenticação, que contém as informações do usuário e do cliente.
+import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o estado de autenticação do usuário e cliente.
+
+// Importa a instância do Axios configurada para realizar as requisições HTTP.
+import axios from '@/axios.js'; // Responsável por enviar as requisições HTTP para o backend.
+
+// Importa o sistema de toast para notificações do PrimeVue.
+import { useToast } from 'primevue/usetoast'; // Sistema de notificações (toast) para exibir mensagens ao usuário.
+
+const toast = useToast(); // Instancia o sistema de toast para mostrar mensagens de sucesso, erro ou aviso ao usuário.
+
+const store = useAuthStore(); // Acessa o store de autenticação para obter as informações do usuário e cliente logados.
+const DMSelecionada = ref(null); // Declara uma variável reativa para armazenar a DM (unidade de dados) selecionada.
+const loading = ref(false); // Declara uma variável reativa para controlar o estado de carregamento da página.
+const Dados = ref([]); // Declara uma variável reativa para armazenar os dados recuperados da integração.
+const validador = ref(false); // Declara uma variável booleana para validar se houve erro ou falha na integração.
+const primeiraInteracao = ref(null); // Flag para identificar se é a primeira vez que o componente interage com os dados.
+
+
+// Objeto reativo para armazenar as informações de integração.
 const Integracao = reactive({
-    ClienteID: '', // ID do Cliente
-    UserID: '', // ID do Usuário
-    URL: '', // URL da API
-    Chave: '', // Chave de autenticação
-    ChaveAPI: '' // Chave da API
+    ClienteID: '', // Armazena o ID do Cliente.
+    UserID: '', // Armazena o ID do Usuário.
+    URL: '', // Armazena a URL da API para integração.
+    Chave: '', // Armazena a chave de autenticação para a integração.
+    ChaveAPI: '' // Armazena a chave API necessária para a integração.
 });
 
-// Função para buscar os dados iniciais ao carregar o componente
+/**
+ * Função para buscar os dados iniciais ao carregar o componente.
+ * Faz uma requisição ao backend para recuperar as informações da DM.
+ */
 const fetchDadosIniciais = async () => {
-    loading.value = true; // Inicia o carregamento
+    loading.value = true; // Marca o estado de carregamento como verdadeiro.
 
     try {
-        // Prepara os dados para enviar ao backend
+        // Prepara os dados para enviar ao backend para buscar informações da DM.
         const data = {
-            id_cliente: store.userIdCliente, // Cliente ID obtido do store
-            id_usuario: store.userId // User ID obtido do store
+            id_cliente: store.userIdCliente, // Obtém o ID do Cliente do store de autenticação.
+            id_usuario: store.userId // Obtém o ID do Usuário logado do store de autenticação.
         };
 
-        // Envia a requisição para o backend para buscar as informações da DM
+        // Envia uma requisição POST para buscar os dados da DM.
         const response = await axios.post('/DM/recuperarInfo', data);
 
-        primeiraInteracao.value = true; // Define que já houve interação inicial
-        Dados.value = response.data; // Armazena os dados recebidos na variável Dados
+        primeiraInteracao.value = true; // Marca que a primeira interação foi realizada.
+        Dados.value = response.data; // Armazena os dados recebidos da resposta na variável 'Dados'.
     } catch (error) {
-        // Se a resposta do erro for 401 (não autorizado)
-        if (error.response && error.response.status === 401) {
-            validador.value = true; // Marca que a integração falhou
+        // Trata erros que ocorrem durante a requisição.
+        if (error.response && error.response.status === 401) { // Verifica se o erro é 401 (não autorizado).
+            validador.value = true; // Marca a falha na integração.
             toast.add({
-                severity: 'warn', // Tipo de notificação (aviso)
-                summary: 'Info', // Título da notificação
-                detail: `${error.response?.data?.message || 'Máquina sem integração'}`, // Mensagem de erro
-                life: 3000 // Duração da notificação em milissegundos
+                severity: 'warn', // Exibe a notificação como aviso.
+                summary: 'Info', // Título da notificação.
+                detail: `${error.response?.data?.message || 'Máquina sem integração'}`, // Detalhes do erro, se disponíveis.
+                life: 3000 // Duração da notificação.
             });
         } else {
-            // Para outros tipos de erro, apenas loga no console
-            console.error('Erro ao carregar Itens:', error);
+            // Caso ocorra outro tipo de erro, exibe um erro no console.
+            console.error('Erro ao carregar Itens:', error); // Loga o erro completo no console.
         }
     } finally {
-        loading.value = false; // Finaliza o carregamento, independente do resultado
+        loading.value = false; // Finaliza o carregamento, independentemente do resultado da requisição.
     }
 };
 
-// Função para lidar com a troca da DM selecionada
+/**
+ * Função para lidar com a troca da DM selecionada.
+ * Atualiza as informações de integração com base na DM escolhida pelo usuário.
+ */
 const handleDMChange = () => {
-    primeiraInteracao.value = false; // Marca que a interação com a DM foi realizada
-    const selectedDM = Dados.value.find((c) => c.ID_DM === DMSelecionada.value); // Encontra a DM selecionada nos dados
+    primeiraInteracao.value = false; // Marca que a interação com a DM foi realizada.
+    const selectedDM = Dados.value.find((c) => c.ID_DM === DMSelecionada.value); // Encontra a DM selecionada nos dados.
 
     if (selectedDM) {
-        // Se uma DM for encontrada, atualiza os dados de integração
-        Integracao.UserID = selectedDM.UserID;
-        Integracao.URL = selectedDM.URL;
-        Integracao.ClienteID = selectedDM.ClienteID;
-        Integracao.Chave = selectedDM.Chave;
-        Integracao.ChaveAPI = selectedDM.ChaveAPI;
+        // Se a DM for encontrada, atualiza as informações de integração.
+        Integracao.UserID = selectedDM.UserID; // Atualiza o ID do Usuário.
+        Integracao.URL = selectedDM.URL; // Atualiza a URL da API.
+        Integracao.ClienteID = selectedDM.ClienteID; // Atualiza o ID do Cliente.
+        Integracao.Chave = selectedDM.Chave; // Atualiza a chave de autenticação.
+        Integracao.ChaveAPI = selectedDM.ChaveAPI; // Atualiza a chave API.
     }
 };
 
-// Função para salvar os dados de integração
+/**
+ * Função para salvar as informações de integração no backend.
+ * Envia os dados preenchidos pelo usuário para o backend.
+ */
 const salvarIntegracao = async () => {
     try {
-        // Prepara os dados a serem enviados para o backend
+        // Prepara os dados para serem enviados para o backend.
         let data = {
-            id_cliente: store.userIdCliente, // Cliente ID
-            ID_DM: DMSelecionada.value, // DM Selecionada
-            ClienteID: Integracao.ClienteID, // ID do Cliente
-            UserID: Integracao.UserID, // ID do Usuário
-            URL: Integracao.URL, // URL da API
-            Chave: Integracao.Chave, // Chave de autenticação
-            ChaveAPI: Integracao.ChaveAPI // Chave da API
+            id_cliente: store.userIdCliente, // ID do Cliente, obtido do store de autenticação.
+            ID_DM: DMSelecionada.value, // ID da DM selecionada.
+            ClienteID: Integracao.ClienteID, // ID do Cliente preenchido.
+            UserID: Integracao.UserID, // ID do Usuário preenchido.
+            URL: Integracao.URL, // URL da API preenchida.
+            Chave: Integracao.Chave, // Chave de autenticação preenchida.
+            ChaveAPI: Integracao.ChaveAPI // Chave API preenchida.
         };
 
-        loading.value = true; // Inicia o carregamento
+        loading.value = true; // Marca o estado de carregamento como verdadeiro enquanto a requisição é feita.
 
-        // Envia os dados para o backend
+        // Envia uma requisição POST para salvar as informações da integração.
         const response = await axios.post('/DM/updateInfo', data);
 
-        // Se a resposta for de sucesso (status 200 ou 201)
+        // Se a resposta for de sucesso (status 200 ou 201), exibe uma notificação de sucesso.
         if (response.status === 200 || response.status === 201) {
             toast.add({
-                severity: 'success', // Tipo de notificação (sucesso)
-                summary: 'Sucesso', // Título da notificação
-                detail: 'Dados de integração salvos com sucesso!', // Mensagem de sucesso
-                life: 3000 // Duração da notificação
+                severity: 'success', // Notificação de sucesso.
+                summary: 'Sucesso', // Título da notificação.
+                detail: 'Dados de integração salvos com sucesso!', // Detalhe da notificação.
+                life: 3000 // Duração da notificação.
             });
         } else {
-            // Se não for sucesso, lança um erro
+            // Se a resposta não for sucesso (status diferente de 200 ou 201), lança um erro.
             throw new Error('Falha ao salvar dados de integração');
         }
     } catch (error) {
-        // Se ocorrer algum erro ao salvar os dados
+        // Se ocorrer um erro durante a requisição, exibe uma notificação de erro.
         toast.add({
-            severity: 'error', // Tipo de notificação (erro)
-            summary: 'Erro', // Título da notificação
-            detail: `${error.response?.data?.message || 'Erro ao salvar dados de integração'}`, // Mensagem de erro
-            life: 3000 // Duração da notificação
+            severity: 'error', // Notificação de erro.
+            summary: 'Erro', // Título da notificação.
+            detail: `${error.response?.data?.message || 'Erro ao salvar dados de integração'}`, // Detalhes do erro.
+            life: 3000 // Duração da notificação.
         });
 
-        console.error('Erro ao salvar dados de integração:', error); // Loga o erro no console
+        console.error('Erro ao salvar dados de integração:', error); // Loga o erro no console para depuração.
     } finally {
-        loading.value = false; // Finaliza o carregamento
+        loading.value = false; // Finaliza o carregamento, independentemente do resultado da requisição.
     }
 };
-// Chama a função para buscar os dados assim que o componente é montado
+
+// Chama a função para buscar os dados assim que o componente é montado.
 onMounted(() => {
-    fetchDadosIniciais();
+    fetchDadosIniciais(); // Chama a função para buscar os dados da integração ao montar o componente.
 });
+
 </script>
 
 <template>

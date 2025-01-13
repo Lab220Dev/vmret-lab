@@ -31,7 +31,7 @@ onMounted(() => {
  */
 const fetchDMS = async () => {
     loading.value = true; // Ativa o estado de carregamento
-    const data = { 
+    const data = {
         id_cliente: store.userIdCliente // Passa o ID do cliente autenticado
     };
     try {
@@ -80,10 +80,12 @@ const generateCSV = (data) => {
  * Se o array não estiver presente ou não for válido, um erro será logado no console.
  */
 const exportCSV = () => {
-    if (Array.isArray(retiradas.value)) { // Verifica se 'retiradas' é um array
+    if (Array.isArray(retiradas.value)) {
+        // Verifica se 'retiradas' é um array
         // Agrega detalhes de cada produto
         const detalhesAgregados = retiradas.value.flatMap((produto) => {
-            if (Array.isArray(produto.Detalhes)) { // Verifica se 'Detalhes' é um array
+            if (Array.isArray(produto.Detalhes)) {
+                // Verifica se 'Detalhes' é um array
                 return produto.Detalhes; // Retorna os detalhes se forem válidos
             } else {
                 console.warn(`Detalhes não é um array para o produto ${produto.ProdutoID}`); // Se 'Detalhes' não for um array, loga um aviso
@@ -204,6 +206,22 @@ const handleDatepickerOpen = () => {
                 <!-- DataTable do relatório -->
                 <div class="datatable-wrapper">
                     <DataTable :value="dms" stripedRows showGridlines rowHover :tableStyle="{ width: '100%' }" ref="dt">
+                        <!--
+    A tabela exibe os dados provenientes de 'dms', que contém as informações sobre os DM (Documentos de Movimentação ou algo semelhante).
+
+    - **:value="dms"**: A variável `dms` contém os dados que serão exibidos na tabela. Cada item de `dms` será exibido como uma linha na tabela.
+    
+    - **stripedRows**: Aplica um estilo alternado nas linhas da tabela, ou seja, as linhas ímpares terão um fundo diferente das linhas pares. Isso melhora a legibilidade dos dados ao visualizá-los.
+
+    - **showGridlines**: Exibe as linhas de grade na tabela. As linhas de grade ajudam a organizar visualmente os dados, tornando a tabela mais clara e fácil de ler.
+
+    - **rowHover**: Aplica um estilo de destaque nas linhas quando o mouse passa sobre elas. Isso facilita a interação, permitindo que o usuário identifique facilmente a linha sobre a qual o mouse está posicionado.
+
+    - **:tableStyle="{ width: '100%' }"**: Define o estilo da tabela. Aqui, a tabela ocupará toda a largura disponível dentro do seu contêiner pai. Isso garante que a tabela se expanda para preencher a área disponível da tela ou do componente.
+
+    - **ref="dt"**: A referência `dt` é atribuída à tabela. Isso permite acessar e manipular a tabela diretamente no código JavaScript do Vue.js. Por exemplo, você poderia usar `this.$refs.dt` para acessar a instância da tabela, o que pode ser útil para métodos de manipulação de dados ou outras interações programáticas com a tabela.
+-->
+
                         <Column field="total" sortable header="Item"></Column>
                         <Column field="total" sortable header="Quantidade" class="text-center"></Column>
                     </DataTable>

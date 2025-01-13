@@ -793,7 +793,8 @@ const hideDialog = () => {
             <TabPanel header="Listar Funcionários">
                 <div class="col-12">
                     <!-- Componente DataTable para exibição de dados em tabela -->
-                    <DataTable v-model:filters="filters" 
+                    <DataTable
+                        v-model:filters="filters"
                         :value="ListaFuncionarios"
                         selectionMode="single"
                         stripedRows
@@ -807,7 +808,19 @@ const hideDialog = () => {
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
-                        >
+                    >
+                        <!-- A tabela exibe os dados provenientes de "ListaFuncionarios" -->
+                        <!-- Permite selecionar apenas uma linha por vez -->
+                        <!-- Aplica um estilo alternado nas linhas para melhorar a legibilidade -->
+                        <!-- Habilita a funcionalidade de paginação -->
+                        <!-- Permite a ordenação removível, ou seja, a ordenação pode ser removida clicando novamente na coluna de ordenação -->
+                        <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
+                        <!-- Exibe 10 itens por página por padrão -->
+                        <!-- Define a chave única para cada linha como o campo "id" -->
+                        <!-- Ordena inicialmente pela coluna "matricula" em ordem crescente -->
+                        <!-- Aplica o filtro global aos campos "nome" e "matricula" -->
+                        <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
+                        <!-- Emite o evento 'rowSelect' e chama a função 'onRowSelect' ao selecionar uma linha -->
                         <!-- Cabeçalho da tabela -->
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
@@ -878,6 +891,22 @@ const hideDialog = () => {
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">Data de Admissão:</label>
                                     <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
+
+                                    <!--
+  Componente VueDatePicker para exibição do seletor de data:
+
+  - `class="my-2"`: Aplica uma margem superior e inferior de 2 unidades (por padrão, 0.5rem no Tailwind CSS).
+  - `v-model="funcionario.data_admissao"`: Realiza a vinculação bidirecional com a propriedade `data_admissao` do objeto `funcionario`, garantindo que a data escolhida seja refletida na variável.
+  - `showIcon`: Exibe um ícone de calendário à direita do campo de entrada, indicando que é um campo de data.
+  - `:showOnFocus="false"`: Impede que o calendário apareça automaticamente ao focar no campo de entrada, oferecendo maior controle ao usuário sobre quando o calendário será mostrado.
+  - `:format="format"`: A variável `format` define o formato de exibição da data. Exemplo: `DD/MM/YYYY`.
+  - `locale="pt-BR"`: Configura o idioma para Português Brasileiro, o que afetará a exibição de meses, dias e formato da data.
+  - `auto-apply`: Quando ativado, a data é aplicada automaticamente assim que o usuário a escolhe, sem precisar confirmar.
+  - `:enable-time-picker="false"`: Desabilita a seleção de hora, permitindo que apenas a data seja escolhida.
+  - `@open="handleDatepickerOpen"`: Aciona o método `handleDatepickerOpen` sempre que o calendário é aberto, permitindo realizar ações personalizadas, como monitoramento ou ajustes de interface.
+
+  Este componente é ideal para selecionar datas de maneira interativa e fácil de usar, com suporte a formatação personalizada e comportamento flexível.
+-->
                                 </div>
 
                                 <!-- Campo para o CPF do funcionário com máscara de entrada -->
@@ -942,6 +971,16 @@ const hideDialog = () => {
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="inicio">Hora Início:</label>
                                     <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
+                                        <!-- Componente VueDatePicker configurado para selecionar um horário:
+
+  - `class="my-2"`: Aplica uma margem superior e inferior de 2 unidades (por padrão, 0.5rem no Tailwind CSS), garantindo um espaçamento adequado ao redor do campo.
+  - `v-model="TempoInicio"`: Cria uma vinculação bidirecional com a variável `TempoInicio`, o que significa que a hora selecionada será refletida nesta variável, e qualquer alteração na variável será refletida na interface.
+  - `time-picker`: Habilita o seletor de horário, permitindo que o usuário escolha um horário específico. Quando esta propriedade é definida, o componente exibe um campo de seleção de hora e minuto.
+  - `disable-time-range-validation`: Desativa a validação do intervalo de tempo. Normalmente, um validador de intervalo pode ser configurado para restringir os horários, mas essa opção permite que o usuário selecione qualquer hora, independentemente de qualquer limitação ou intervalo.
+
+  Este componente é usado para escolher um horário, sem restrições de intervalo, com a funcionalidade de vinculação dinâmica à variável `TempoInicio`.
+-->
+
                                         <template #input-icon>
                                             <!-- Ícone de relógio ao lado do campo de hora -->
                                             <img class="input-slot-image" :src="clockurl" />
@@ -953,6 +992,15 @@ const hideDialog = () => {
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="inicio">Hora Fim:</label>
                                     <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                        <!-- Componente VueDatePicker configurado para selecionar um horário, com os seguintes parâmetros:
+- `class="my-2"`: Aplica uma margem superior e inferior de 2 unidades (por padrão, 0.5rem no Tailwind CSS). Isso ajuda a garantir que o campo de data tenha espaçamento adequado ao redor de outros elementos.
+  - `id="inicio"`: Define o identificador único do campo de data como "inicio". Esse ID pode ser útil para estilização ou manipulação do DOM via JavaScript (por exemplo, referenciar esse campo em testes ou aplicar regras CSS específicas).
+  - `v-model="TempoFim"`: Vinculação bidirecional de dados. A variável `TempoFim` será automaticamente atualizada com o valor selecionado pelo usuário, e qualquer alteração dessa variável será refletida no componente.
+  - `time-picker`: Habilita a seleção de tempo, permitindo ao usuário escolher apenas uma hora e minuto, sem a necessidade de selecionar uma data.
+  - `disable-time-range-validation`: Desativa qualquer validação de intervalo de tempo. Normalmente, a validação de intervalo pode restringir as horas que podem ser escolhidas, mas esta propriedade permite que o usuário selecione qualquer horário, sem limitações.
+
+  Este componente é utilizado para selecionar um horário (sem data) com a possibilidade de vinculação à variável `TempoFim`. O campo de tempo é completamente livre para o usuário escolher, pois a validação de intervalo está desativada.
+-->
                                         <template #input-icon>
                                             <!-- Ícone de relógio ao lado do campo de hora -->
                                             <img class="input-slot-image" :src="clockurl" />
@@ -1033,6 +1081,15 @@ const hideDialog = () => {
                                             :globalFilterFields="['nome', 'sku', 'qtd_limite']"
                                             dataKey="sku"
                                         >
+                                            <!-- A tabela exibe os dados provenientes de "ListaItemsSetor" -->
+                                            <!-- Aplica um estilo alternado nas linhas para melhorar a legibilidade -->
+                                            <!-- Habilita a funcionalidade de paginação, dividindo os dados em várias páginas -->
+                                            <!-- Permite ao usuário remover a ordenação clicando novamente na coluna de ordenação -->
+                                            <!-- Exibe 10 itens por página por padrão -->
+                                            <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
+                                            <!-- Aplica o filtro global aos campos "nome", "sku" e "qtd_limite" -->
+                                            <!-- Define a chave única para cada linha como o campo "sku" -->
+
                                             <!-- Cabeçalho da tabela com campo de busca -->
                                             <template #header>
                                                 <div class="flex justify-content-end align-items-center mb-2">
@@ -1059,7 +1116,9 @@ const hideDialog = () => {
                                         <Button class="mt-3 justify-content-end" label="Adicionar Itens" @click="abrirDialogAdicionarItem" />
                                         <!-- Abre o diálogo de adicionar item -->
 
-                                        <DataTable class="mt-3" v-model:filters="filters" 
+                                        <DataTable
+                                            class="mt-3"
+                                            v-model:filters="filters"
                                             :value="ListaProdutoFuncionario"
                                             paginator
                                             :rows="10"
@@ -1069,7 +1128,16 @@ const hideDialog = () => {
                                             tableStyle="min-width: 50rem"
                                             stripedRows
                                             dataKey="id_item_funcionario"
-                                            >
+                                        >
+                                            <!-- A tabela exibe os dados provenientes de "ListaProdutoFuncionario" -->
+                                            <!-- Habilita a funcionalidade de paginação para organizar os dados em páginas -->
+                                            <!-- Exibe 10 itens por página por padrão -->
+                                            <!-- Permite ao usuário escolher entre 5, 10, 20 ou 50 itens por página -->
+                                            <!-- Aplica o filtro global aos campos "nome_produto", "sku" e "quantidade" -->
+                                            <!-- A tabela possui um estilo de largura mínima de 50rem para garantir uma exibição adequada -->
+                                            <!-- Aplica um estilo alternado nas linhas para melhorar a leitura -->
+                                            <!-- Utiliza o campo "id_item_funcionario" como chave única para identificar cada linha -->
+
                                             <!-- Cabeçalho da tabela com campo de busca -->
                                             <template #header>
                                                 <div class="flex justify-content-end align-items-center mb-4">

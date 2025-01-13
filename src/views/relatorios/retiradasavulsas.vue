@@ -87,7 +87,8 @@ const buscar = async () => {
 
     try {
         loading.value = true; // Ativa o carregamento
-        const response = await axios.post('', data, { // Envia a requisição para a API
+        const response = await axios.post('', data, {
+            // Envia a requisição para a API
             headers: {
                 Authorization: `Bearer ${store.token}` // Token de autorização para a requisição
             }
@@ -108,7 +109,6 @@ const buscar = async () => {
         } else {
             emptyMessage.value = ''; // Limpa a mensagem de erro se houver dados
         }
-
     } catch (error) {
         // Se ocorrer erro na requisição, exibe no console
         console.error('Erro ao buscar dados:', error);
@@ -278,7 +278,7 @@ const filterSetores = () => {
 
     // Se houver um centro de custo selecionado, filtra os setores conforme o centro de custo
     if (relatorio.value.id_centro_custo) {
-        filteredSetores = filteredSetores.filter(s => s.id_centro_custo === relatorio.value.id_centro_custo);
+        filteredSetores = filteredSetores.filter((s) => s.id_centro_custo === relatorio.value.id_centro_custo);
     }
 
     // Atualiza a lista de setores filtrados
@@ -297,13 +297,13 @@ const filterFuncionarios = () => {
 
     // Filtra os funcionários conforme planta, setor e centro de custo
     if (relatorio.value.id_planta) {
-        filteredFuncionarios = filteredFuncionarios.filter(f => f.id_planta === relatorio.value.id_planta);
+        filteredFuncionarios = filteredFuncionarios.filter((f) => f.id_planta === relatorio.value.id_planta);
     }
     if (relatorio.value.id_setor) {
-        filteredFuncionarios = filteredFuncionarios.filter(f => f.id_setor === relatorio.value.id_setor);
+        filteredFuncionarios = filteredFuncionarios.filter((f) => f.id_setor === relatorio.value.id_setor);
     }
     if (relatorio.value.id_centro_custo) {
-        filteredFuncionarios = filteredFuncionarios.filter(f => f.id_centro_custo === relatorio.value.id_centro_custo);
+        filteredFuncionarios = filteredFuncionarios.filter((f) => f.id_centro_custo === relatorio.value.id_centro_custo);
     }
 
     // Atualiza a lista de funcionários filtrados
@@ -326,18 +326,22 @@ watch(
 watch(
     () => relatorio.value.id_centro_custo,
     (newValue, oldValue) => {
-        console.log("Centro de Custo mudou:", oldValue, "->", newValue); // Loga a mudança do centro de custo
+        console.log('Centro de Custo mudou:', oldValue, '->', newValue); // Loga a mudança do centro de custo
         filterSetores(); // Filtra setores conforme o novo centro de custo
     }
 );
 
 // Observador para atualizar a contagem dos itens filtrados quando o filtro global for alterado
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = retiradas.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue)); 
-    }).length;
-}, { immediate: true }); // Executa imediatamente após a montagem
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = retiradas.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
+        }).length;
+    },
+    { immediate: true }
+); // Executa imediatamente após a montagem
 
 // Função que é chamada quando o DatePicker é aberto, fechando todos os dropdowns
 const handleDatepickerOpen = () => {
@@ -362,80 +366,95 @@ onMounted(() => {
             <div class="grid mt-3 mx-1 px-1">
                 <!-- Título principal -->
                 <h5 class="my-4 text-2xl">Retiradas Avulsas</h5>
-                
+
                 <!-- Formulário de busca para o relatório, exibido quando "show" for true -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-                    
                     <!-- Campo de filtro para DM -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
                         <!-- Dropdown para selecionar DM -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label"
-                            optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    
+
                     <!-- Campo de filtro para Planta -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <!-- Dropdown para selecionar Planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label"
-                            optionValue="value" placeholder="Todos" ref="dropdown2" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
-                    
+
                     <!-- Campo de filtro para Setor -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
                         <!-- Dropdown para selecionar Setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label"
-                            optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
-                    
+
                     <!-- Campo de filtro para Centro de Custo -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <!-- Dropdown para selecionar Centro de Custo -->
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto"
-                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
-                    
+
                     <!-- Campo de filtro para Funcionário -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Funcionário:</label>
                         <!-- Dropdown para selecionar Funcionário -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                            optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
-                    
+
                     <!-- Campo de filtro para Voucher -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Voucher:</label>
                         <!-- Dropdown para selecionar Voucher -->
                         <Dropdown class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown6" />
                     </div>
-                    
+
                     <!-- Campo de filtro para Data Inicial -->
                     <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
                         <!-- DatePicker para selecionar Data Inicial -->
-                        <VueDatePicker class="drop" v-model="relatorio.data_inicio" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" auto-apply ref="datepicker1" :enable-time-picker="false"
-                            teleport="body" @open="handleDatepickerOpen" placeholder="Selecione uma data inicial" />
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            auto-apply
+                            ref="datepicker1"
+                            :enable-time-picker="false"
+                            teleport="body"
+                            @open="handleDatepickerOpen"
+                            placeholder="Selecione uma data inicial"
+                        />
                     </div>
-                    
+
                     <!-- Campo de filtro para Data Final -->
                     <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Data Final:</label>
                         <!-- DatePicker para selecionar Data Final -->
-                        <VueDatePicker class="drop" v-model="relatorio.data_final" showIcon :showOnFocus="false"
-                            :format="format" locale="pt-BR" auto-apply ref="datepicker1" :enable-time-picker="false"
-                            teleport="body" placeholder="Selecione uma data final" @open="handleDatepickerOpen" />
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="format"
+                            locale="pt-BR"
+                            auto-apply
+                            ref="datepicker1"
+                            :enable-time-picker="false"
+                            teleport="body"
+                            placeholder="Selecione uma data final"
+                            @open="handleDatepickerOpen"
+                        />
                     </div>
-                    
+
                     <!-- Botão de Filtrar -->
                     <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12 justify-self-end">
                         <!-- Botão para filtrar dados do relatório -->
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
-                            @click="buscar" />
+                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
                     <!-- <div class="field lg:col-3 md:col-6 sm:col-6">
@@ -449,14 +468,54 @@ onMounted(() => {
                 <!-- Tabela de Dados do Relatório -->
                 <div class="datatable-wrapper">
                     <!-- DataTable que exibe os dados das retiradas -->
-                    <DataTable v-model:filters="filters" :value="retiradas" stripedRows showGridlines paginator
-                        :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="retiradas"
+                        stripedRows
+                        showGridlines
+                        paginator
+                        :rows="10"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        rowHover
                         :globalFilterFields="['DM', 'Data', 'Matricula', 'Nome', 'Email', 'CodigoCa', 'Item']"
-                        :tableStyle="{ width: '100%' }" ref="dt"
+                        :tableStyle="{ width: '100%' }"
+                        ref="dt"
                         :sortField="'CodigoCa'"
                         removableSort
-                        :sortOrder="1"  >
-                        
+                        :sortOrder="1"
+                    >
+                        <!-- 
+    A tabela exibe os dados provenientes de 'retiradas', que podem representar registros de retiradas de algum tipo de item, como produtos, documentos, etc.
+
+    - **v-model:filters="filters"**: O modelo bidirecional de dados para o filtro global é vinculado à variável `filters`. Isso permite que os filtros sejam aplicados dinamicamente à tabela conforme o usuário insere os critérios de pesquisa. O valor de `filters` é atualizado automaticamente sempre que o usuário altera os filtros na tabela.
+
+    - **:value="retiradas"**: A variável `retiradas` contém os dados que serão exibidos na tabela. Cada item de `retiradas` será exibido como uma linha na tabela. A tabela é preenchida dinamicamente com esses itens.
+
+    - **stripedRows**: Aplica um estilo alternado nas linhas da tabela, ou seja, as linhas ímpares terão uma cor de fundo diferente das linhas pares. Isso melhora a legibilidade da tabela, tornando mais fácil distinguir uma linha da outra.
+
+    - **showGridlines**: Exibe as linhas de grade na tabela, ou seja, as linhas de separação entre as células da tabela. Isso ajuda a organizar visualmente os dados e torna a tabela mais legível.
+
+    - **paginator**: Habilita a paginação da tabela. Quando ativado, os dados serão divididos em várias páginas, permitindo ao usuário navegar entre os registros em blocos menores, o que melhora a usabilidade e desempenho.
+
+    - **:rows="10"**: Define o número de linhas exibidas por página. Neste caso, cada página da tabela exibirá 10 registros. O valor pode ser alterado dependendo do número de registros a ser mostrado.
+
+    - **:rowsPerPageOptions="[5, 10, 20, 50]"**: Oferece ao usuário opções para escolher o número de linhas a ser exibido por página. As opções disponíveis são 5, 10, 20 e 50 registros por página.
+
+    - **rowHover**: Aplica um estilo de destaque nas linhas quando o mouse passa sobre elas. Esse efeito melhora a interação do usuário, destacando a linha em que ele está posicionado.
+
+    - **:globalFilterFields="['DM', 'Data', 'Matricula', 'Nome', 'Email', 'CodigoCa', 'Item']"**: Especifica os campos que podem ser usados para filtragem global. Quando o usuário pesquisa, a tabela busca nesses campos: 'DM', 'Data', 'Matricula', 'Nome', 'Email', 'CodigoCa', e 'Item'. Isso permite a pesquisa por qualquer valor dentro desses campos.
+
+    - **:tableStyle="{ width: '100%' }"**: Define o estilo da tabela, garantindo que ela ocupe 100% da largura disponível no contêiner pai. Isso a torna responsiva, ajustando o tamanho da tabela conforme o espaço disponível na tela.
+
+    - **ref="dt"**: Atribui uma referência chamada `dt` à tabela. Essa referência permite acessar a instância do componente DataTable diretamente através de `this.$refs.dt` no código JavaScript, possibilitando manipulações programáticas da tabela, como alteração dos filtros, paginação ou ordenação.
+
+    - **:sortField="'CodigoCa'"**: Define o campo pelo qual os dados serão inicialmente ordenados. Nesse caso, os dados serão ordenados pelo campo 'CodigoCa' (que provavelmente representa algum código ou identificação).
+
+    - **removableSort**: Permite que o usuário remova a ordenação da tabela. Se o usuário clicar novamente no cabeçalho da coluna que está sendo usada para ordenação, a ordenação será removida. Isso oferece maior flexibilidade na visualização dos dados.
+
+    - **:sortOrder="1"**: Define a ordem da ordenação. O valor `1` indica que a ordenação será feita em ordem crescente. Se fosse `-1`, a ordenação seria decrescente.
+
+-->
                         <!-- Cabeçalho da tabela com filtro global -->
                         <template #header>
                             <div class="flex justify-content-end">
@@ -484,7 +543,7 @@ onMounted(() => {
                         <Column field="Item" sortable header="Item"></Column>
                     </DataTable>
                 </div>
-                
+
                 <!-- Exibição do cartão com os detalhes do item selecionado -->
                 <Card v-if="!show">
                     <template #title>{{ selectedItem.dm }}</template>
@@ -548,7 +607,6 @@ onMounted(() => {
  * Usado para tornar o layout responsivo em telas pequenas, como em dispositivos móveis.
  */
 @media (max-width: 580px) {
-
     /**
      * A regra dentro desse bloco altera o layout dos campos do formulário
      * quando a tela é pequena (largura menor que 580px).

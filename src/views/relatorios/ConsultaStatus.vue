@@ -138,7 +138,27 @@ const handleRowSelection = async (event) => {
             </div>
 
             <!-- Tabela de resultados -->
-            <DataTable class="mt-2" selectionMode="single" :value="libMock" stripedRows showGridlines paginator :rows="10" dataKey="SKU" @row-select="handleRowSelection" :rowsPerPageOptions="[5, 10, 20, 50]" :tableStyle="{ width: '100%' }">
+            <DataTable 
+            class="mt-2" 
+            selectionMode="single" 
+            :value="libMock" 
+            stripedRows 
+            showGridlines 
+            paginator 
+            :rows="10" 
+            dataKey="SKU" 
+            @row-select="handleRowSelection" 
+            :rowsPerPageOptions="[5, 10, 20, 50]" 
+            :tableStyle="{ width: '100%' }">
+
+            <!-- A tabela exibe os dados provenientes de 'libMock', com informações configuradas conforme o modelo de dados. -->
+<!-- As linhas da tabela são listradas para alternar as cores de fundo entre linhas ímpares e pares, melhorando a legibilidade. -->
+<!-- As linhas de grade (linhas de divisão) são exibidas para separar as células da tabela e melhorar a visualização. -->
+<!-- A tabela usa paginação para mostrar os dados em múltiplas páginas, com 10 itens por página, mas com opções para o usuário selecionar 5, 10, 20 ou 50 itens por página. -->
+<!-- Quando uma linha é selecionada, o evento 'row-select' é disparado e a função 'handleRowSelection' é chamada para processar a seleção. -->
+<!-- O campo 'SKU' é utilizado como a chave única para identificar cada linha na tabela. -->
+<!-- A tabela ocupa 100% da largura disponível dentro do seu contêiner. -->
+ 
                 <!-- Definição das colunas da tabela -->
                 <Column field="status" header="Status"></Column>
                 <Column field="voucher" header="Voucher"></Column>

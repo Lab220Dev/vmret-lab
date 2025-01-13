@@ -32,6 +32,20 @@
             :sortField="'Posicao'"
             :tableStyle="{ width: '100%' }"
         >
+        <!-- Adiciona a classe "mt-3" à tabela, aplicando uma margem superior de 3rem -->
+    <!-- Define o valor da tabela como "filteredEstoque", que contém os dados filtrados a serem exibidos -->
+    <!-- Aplica o estilo de linhas listradas, alternando as cores de fundo entre as linhas -->
+    <!-- Exibe as linhas de grade (linhas de divisão) da tabela -->
+    <!-- Permite ao usuário remover a ordenação clicando na coluna que está sendo usada para ordenar -->
+    <!-- Habilita a paginação para exibir os dados em várias páginas -->
+    <!-- Define o número de linhas por página como 10 -->
+    <!-- Define as opções de quantidade de itens por página que o usuário pode escolher (5, 10, 20, 50) -->
+    <!-- Permite selecionar apenas uma linha por vez -->
+    <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (como Ctrl ou Command) -->
+    <!-- Define a ordem de ordenação inicial (1 significa ordem crescente) -->
+    <!-- Define o campo de ordenação inicial como "Posicao" -->
+    <!-- Define o estilo da tabela para ocupar 100% da largura disponível -->
+     
             <!-- Template para exibir uma mensagem caso não haja dados -->
             <template #empty>
                 {{ emptyMessage }}  <!-- Exibe a mensagem de vazio definida em 'emptyMessage' -->

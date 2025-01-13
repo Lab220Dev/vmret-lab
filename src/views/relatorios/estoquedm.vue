@@ -110,58 +110,59 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card vh"> <!-- Contêiner principal da tela -->
-        <h5 class="my-6 ml-2 text-2xl">Estoque da DM</h5> <!-- Título da página -->
+    <div class="card vh">
+        <!-- Contêiner principal da tela -->
+        <h5 class="my-6 ml-2 text-2xl">Estoque da DM</h5>
+        <!-- Título da página -->
 
         <!-- Dropdown para seleção de DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">DM:</label>
-            <Dropdown
-                id="dm"
-                style="width: 20%"
-                v-model="relatorio.id_dm"
-                :options="dms"
-                ref="dropdown1"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Todos"
-                class="mb-2 ml-2"
-                @change="relatorioDM()" 
-            />
+            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <!-- Tabela de Estoque -->
         <DataTable
             class="mt-3"
-            v-model:filters="filters" 
-            :value="EstoqueDM" 
-            stripedRows 
-            showGridlines 
-            removableSort 
-            paginator 
-            :rows="10" 
-            dataKey="SKU" 
+            v-model:filters="filters"
+            :value="EstoqueDM"
+            stripedRows
+            showGridlines
+            removableSort
+            paginator
+            :rows="10"
+            dataKey="SKU"
             :rowsPerPageOptions="[5, 10, 20, 50]"
-            :globalFilterFields="['sku', 'nome', 'Posicao', 'quantidade', 'quantidademinima', 'capacidade']" 
-            selectionMode="single" 
-            :metaKeySelection="false" 
-            :sortOrder="1" 
-            :sortField="'sku'" 
-            tableStyle="min-width: 50rem; table-layout: fixed;" 
+            :globalFilterFields="['sku', 'nome', 'Posicao', 'quantidade', 'quantidademinima', 'capacidade']"
+            selectionMode="single"
+            :metaKeySelection="false"
+            :sortOrder="1"
+            :sortField="'sku'"
+            tableStyle="min-width: 50rem; table-layout: fixed;"
         >
+            <!-- A tabela exibe os dados provenientes da variável 'EstoqueDM' com várias funcionalidades de interatividade, como filtros, paginação e ordenação. -->
+            <!-- O usuário pode filtrar os dados globalmente usando os campos definidos em ':globalFilterFields', como 'sku', 'nome', 'Posicao', 'quantidade', etc. -->
+            <!-- A tabela suporta a ordenação inicial pelo campo 'sku' em ordem crescente e permite que o usuário remova a ordenação clicando novamente na coluna. -->
+            <!-- A paginação é ativada, permitindo que o usuário navegue pelos dados divididos em páginas, com a opção de escolher quantas linhas exibir por página (5, 10, 20 ou 50). -->
+            <!-- As linhas da tabela são listradas e as linhas de grade são exibidas para melhorar a legibilidade dos dados. -->
+            <!-- O estilo de "min-width: 50rem" garante que a tabela tenha uma largura mínima, enquanto o layout fixo organiza as colunas de forma clara e consistente. -->
+
             <!-- Cabeçalho da tabela -->
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ filteredCount }}</span> <!-- Exibe o total de registros filtrados -->
+                        <span>Total de registros: {{ filteredCount }}</span>
+                        <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
                         <!-- Filtro global -->
                         <IconField iconPosition="left">
                             <InputIcon>
-                                <i class="pi pi-search" /> <!-- Ícone de pesquisa -->
+                                <i class="pi pi-search" />
+                                <!-- Ícone de pesquisa -->
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" /> <!-- Campo de pesquisa -->
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <!-- Campo de pesquisa -->
                         </IconField>
                     </div>
                 </div>
@@ -174,27 +175,32 @@ onMounted(() => {
             <Column field="sku" class="table-cell" sortable header="SKU"></Column>
             <Column field="nome" sortable header="Produto">
                 <template #body="{ data }">
-                    <span v-tooltip="data.nome">{{ data.nome }}</span> <!-- Exibe o nome do produto com tooltip -->
+                    <span v-tooltip="data.nome">{{ data.nome }}</span>
+                    <!-- Exibe o nome do produto com tooltip -->
                 </template>
             </Column>
             <Column field="Posicao" sortable style="text-align: center" header="Posição">
                 <template #body="{ data }">
                     <span v-tooltip="data.modelo === '2018' ? 'Placa / Mola ' : data.modelo === '2023' ? ' Andar / Posição' : 'Placa / Motor'">
                         {{ data.Posicao }}
-                    </span> <!-- Exibe a posição do produto com tooltip condicional -->
+                    </span>
+                    <!-- Exibe a posição do produto com tooltip condicional -->
                 </template>
             </Column>
             <Column field="quantidade" sortable style="text-align: center">
                 <template #header>
-                    <span v-tooltip="'Quantidade Atual'">Quant. Atual</span> <!-- Tooltip para a coluna de quantidade -->
+                    <span v-tooltip="'Quantidade Atual'">Quant. Atual</span>
+                    <!-- Tooltip para a coluna de quantidade -->
                 </template>
             </Column>
             <Column field="quantidademinima" sortable style="text-align: center">
                 <template #header>
-                    <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span> <!-- Tooltip para a coluna de quantidade mínima -->
+                    <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span>
+                    <!-- Tooltip para a coluna de quantidade mínima -->
                 </template>
             </Column>
-            <Column field="capacidade" sortable style="text-align: center" header="Capacidade"></Column> <!-- Coluna para capacidade -->
+            <Column field="capacidade" sortable style="text-align: center" header="Capacidade"></Column>
+            <!-- Coluna para capacidade -->
         </DataTable>
 
         <!-- Spinner de carregamento exibido enquanto a requisição está em andamento -->

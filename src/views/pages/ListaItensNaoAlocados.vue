@@ -101,7 +101,9 @@ onMounted(() => {
         </div>
 
         <!-- DataTable que exibe os itens não alocados -->
-        <DataTable v-model:filters="filters" :value="itens"  
+        <DataTable 
+        v-model:filters="filters" 
+        :value="itens"  
             stripedRows 
             showGridlines  
             paginator  
@@ -109,7 +111,8 @@ onMounted(() => {
             :rows="10"  
             :sortOrder="1"  
             :sortField="'codigo'"  
-            :rowsPerPageOptions="[5, 10, 20, 50]" rowHover  
+            :rowsPerPageOptions="[5, 10, 20, 50]" 
+            rowHover  
             :globalFilterFields="['nome', 'quantidadeReferencia', 'codigo']"  
             selectionMode="single"  
             tableStyle="min-width: 50rem; table-layout: fixed;">  

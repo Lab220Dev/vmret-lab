@@ -142,6 +142,7 @@ const saveLiberacao = () => {
                             :disabled="!libAvulsa.dm"
                             placeholder="Selecione uma Mola ou Porta"
                         />
+                        
                         <!-- Mensagens esperadas:
                              - Se DM não for selecionado: Dropdown desabilitado.
                              - Caso contrário: Dropdown habilitado. -->

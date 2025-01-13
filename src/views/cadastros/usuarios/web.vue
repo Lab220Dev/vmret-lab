@@ -1,4 +1,5 @@
 <script setup>
+// Importação dos hooks e bibliotecas do Vue e PrimeVue
 import { reactive, ref, onMounted, watch } from 'vue'; // Importação das funções do Vue.
 import { useToast } from 'primevue/usetoast'; // Importação do hook para exibição de toast messages.
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store de autenticação.
@@ -7,6 +8,7 @@ import axios from '@/axios.js'; // Instância do axios configurado para chamadas
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
 
+// Variáveis reativas para controle da aplicação
 const active = ref(0); // Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore(); // Instância do store de dados.
 const store = useAuthStore(); // Instância do store de autenticação.
@@ -30,8 +32,11 @@ let usuario = reactive({
     senha: '',
     ativo: true
 }); // Objeto reativo para armazenar informações do usuário.
+
 const ListaUsuario = ref([]); // Lista de usuários.
-const dropdownItems = ref([ // Opções de roles para o usuário.
+
+const dropdownItems = ref([
+    // Opções de roles para o usuário.
     { label: 'Gestor', value: 'Gestor' },
     { label: 'Master', value: 'Master' },
     { label: 'Operador', value: 'Operador' },
@@ -145,7 +150,8 @@ const voltar = () => {
  * Verifica se o formulário é válido e realiza a ação de adicionar ou atualizar o usuário.
  */
 const submitForm = () => {
-    if (validateForm()) { // Verifica se o formulário é válido.
+    if (validateForm()) {
+        // Verifica se o formulário é válido.
         if (visible.value) {
             atualizarUsuario(); // Se visível, realiza a atualização do usuário.
         } else {
@@ -197,7 +203,8 @@ const atualizarUsuario = async () => {
         ...usuario,
         id_usuario_pedinte: store.userId // Inclui o id do usuário solicitante.
     };
-    if (isSameSenha()) { // Verifica se a senha não foi alterada.
+    if (isSameSenha()) {
+        // Verifica se a senha não foi alterada.
         delete data.senha; // Se a senha não foi alterada, remove do objeto de dados.
     }
     try {
@@ -278,12 +285,16 @@ const fetchUsuarios = async () => {
  * Observador de mudanças nos filtros globais.
  * Atualiza o contador de usuários filtrados com base no filtro.
  */
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = ListaUsuario.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro.
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum campo contém o valor do filtro.
-    }).length; // Atualiza o contador.
-}, { immediate: true }); // Chama imediatamente após a inicialização.
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = ListaUsuario.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro.
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum campo contém o valor do filtro.
+        }).length; // Atualiza o contador.
+    },
+    { immediate: true }
+); // Chama imediatamente após a inicialização.
 
 const fetchCliente = async () => {
     loading.value = true; // Ativa o carregamento ao buscar clientes.
@@ -342,7 +353,8 @@ const formatDate = (value) => {
  * Observador da variável `active`, que detecta mudanças nas abas e executa ações.
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) { // Se mudar para a aba 0 (listagem de usuários).
+    if (newIndex !== oldIndex && newIndex === 0) {
+        // Se mudar para a aba 0 (listagem de usuários).
         resetForm(); // Reseta o formulário.
         fetchUsuarios(); // Recarrega a lista de usuários.
         visible.value = false; // Fecha o formulário de edição.
@@ -354,7 +366,7 @@ watch(active, (newIndex, oldIndex) => {
  */
 const loadData = async () => {
     try {
-        plantas.value = dataStore.plantas || await dataStore.fetchPlantas(); // Tenta obter as plantas do store ou via API.
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Tenta obter as plantas do store ou via API.
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error); // Log de erro ao carregar dados.
     }
@@ -405,12 +417,23 @@ const resetForm = () => {
                                 :sortOrder="1"
                                 :sortField="'nome'"
                             >
+                                <!-- A tabela exibe os dados provenientes de 'ListaUsuario' -->
+                                <!-- Aplica um estilo de linhas alternadas (listradas) para melhorar a legibilidade -->
+                                <!-- A tabela está paginada, com 10 linhas exibidas por página e opções de 5, 10, 20 ou 50 linhas por página -->
+                                <!-- Permite ao usuário selecionar apenas uma linha por vez -->
+                                <!-- Aplica um estilo de largura mínima de 50rem e layout fixo, garantindo que as colunas tenham larguras constantes -->
+                                <!-- Cria uma referência chamada 'dt' para o componente DataTable, que pode ser acessada diretamente no Vue -->
+                                <!-- Usa o campo 'id' como a chave única para cada linha da tabela -->
+                                <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (como Ctrl ou Command) -->
+                                <!-- Quando uma linha é selecionada, a função 'onRowSelect' é chamada -->
+                                <!-- A ordenação inicial é feita pelo campo 'nome', de forma crescente -->
+
                                 <!-- Componente DataTable para exibir a lista de usuários -->
                                 <template #header>
                                     <!-- Cabeçalho da tabela com total de registros e campo de busca -->
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>Total de registros: {{ filteredCount}}</span>
+                                            <span>Total de registros: {{ filteredCount }}</span>
                                             <!-- Exibe a quantidade de registros filtrados -->
                                         </div>
                                         <IconField iconPosition="left">
@@ -607,4 +630,3 @@ const resetForm = () => {
     text-overflow: ellipsis;
 }
 </style>
-

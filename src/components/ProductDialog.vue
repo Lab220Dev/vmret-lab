@@ -17,16 +17,30 @@
 <script setup>
 import { ref } from 'vue'; // Importa a função 'ref' do Vue para criar variáveis reativas
 
-// Variável reativa que controla a visibilidade do dialog
-const showDialogProduto = ref(false);
+/**
+ * Variável reativa que controla a visibilidade do diálogo de produto.
+ * Inicialmente, o valor é `false`, indicando que o diálogo está oculto.
+ *
+ * @type {Ref<boolean>} Referência reativa que armazena um valor booleano indicando se o diálogo está visível ou não.
+ */
+ const showDialogProduto = ref(false);
 
-// Função para salvar o produto e emitir evento
+/**
+ * Função para salvar o produto e emitir um evento para o componente pai.
+ * Ela chama o evento 'save-produto' para notificar o componente pai sobre a ação de salvar o produto.
+ *
+ * @async
+ * @returns {Promise<void>} Retorna uma Promise que não resolve nenhum valor, pois é uma operação assíncrona.
+ */
 const saveProduto = async () => {
   // Emite um evento 'save-produto' para o componente pai
   emit('save-produto');
 };
 
-// Função para fechar o diálogo
+/**
+ * Função para fechar o diálogo de produto.
+ * Ela altera a variável reativa `showDialogProduto` para `false`, fazendo o diálogo se tornar invisível.
+ */
 const closeDialog = () => {
   showDialogProduto.value = false; // Torna o diálogo invisível
 };

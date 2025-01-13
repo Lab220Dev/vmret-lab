@@ -37,7 +37,8 @@ const fetchDM = async () => {
         id_cliente: store.userIdCliente // Passa o id do cliente do usuário autenticado
     };
     try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, { // Requisição POST para obter as DMs
+        const response = await axios.post('/relatorioRetiRe/listardm', data, {
+            // Requisição POST para obter as DMs
             headers: {
                 Authorization: `Bearer ${store.token}` // Inclui o token de autenticação no cabeçalho
             }
@@ -159,18 +160,57 @@ const handleDatepickerOpen = () => {
             :sortOrder="1"
             :sortField="'Identificacao'"
         >
+            <!-- 
+    A tabela exibe os dados da variável 'StatusDM', que provavelmente representa o status de determinados processos ou eventos (como "DM" - Data Management ou algo similar).
+    
+    - **class="mt-3"**: Aplica uma margem superior de tamanho 3 (geralmente definida pelo framework CSS, como Tailwind CSS), ajudando a separar a tabela de outros elementos ao seu redor.
+
+    - **v-model:filters="filters"**: A tabela é vinculada a um modelo `filters`, que mantém os critérios de filtro aplicados. Esse modelo se atualiza automaticamente conforme o usuário modifica os filtros. Ao usar `v-model`, a variável `filters` é uma referência bidirecional, permitindo filtrar os dados com base no que o usuário digita ou escolhe.
+
+    - **:value="StatusDM"**: A tabela recebe os dados de `StatusDM`, que é a variável que contém os registros que serão exibidos na tabela. Cada item dentro de `StatusDM` será uma linha na tabela.
+
+    - **stripedRows**: Ativa o estilo de "linhas alternadas" (listradas), onde as linhas ímpares e pares possuem cores de fundo diferentes. Isso facilita a leitura, especialmente quando os dados são densos.
+
+    - **showGridlines**: Exibe as linhas de grade (divisórias entre as células da tabela). Isso torna a visualização dos dados mais clara e organizada.
+
+    - **removableSort**: Permite que o usuário remova a ordenação de uma coluna. Ao clicar novamente no cabeçalho de uma coluna que está ordenada, a ordenação é revertida.
+
+    - **paginator**: Habilita a paginação, ou seja, os dados são divididos em páginas. Isso melhora a experiência do usuário ao navegar por grandes volumes de dados.
+
+    - **:rows="10"**: Define que serão exibidos 10 itens por página. Isso limita o número de registros visíveis por vez, evitando que todos os registros sejam carregados de uma vez.
+
+    - **dataKey="DM"**: Especifica que a chave única para cada linha de dados é o valor da coluna `DM`. Isso ajuda o componente a gerenciar e identificar de forma única cada linha, o que é útil para ações como ordenação, seleção e paginação.
+
+    - **:rowsPerPageOptions="[5, 10, 20, 50]"**: O usuário pode escolher o número de registros por página. As opções disponíveis são 5, 10, 20 ou 50 itens por página, proporcionando flexibilidade.
+
+    - **:globalFilterFields="['Identificacao', 'status', 'dataHora']"**: Define os campos que serão usados no filtro global. Isso significa que, ao digitar um valor no filtro, a tabela irá procurar esse valor nos campos `Identificacao`, `status`, e `dataHora`.
+
+    - **selectionMode="single"**: Define que a tabela permite selecionar apenas uma linha por vez. Ao clicar em uma linha, ela será selecionada, e o usuário não poderá selecionar outras até desmarcar a seleção.
+
+    - **:metaKeySelection="false"**: Desativa a funcionalidade de selecionar múltiplas linhas utilizando a tecla Meta (geralmente "Command" no macOS ou "Ctrl" no Windows). Isso garante que a seleção seja exclusiva e única para cada vez.
+
+    - **tableStyle="min-width: 50rem; table-layout: fixed;"**: Define o estilo da tabela. A tabela terá uma largura mínima de 50rem e o layout das colunas será fixo. Isso significa que as colunas não vão ajustar seu tamanho automaticamente conforme o conteúdo, garantindo um layout consistente.
+
+    - **:sortOrder="1"**: Define a ordenação dos dados pela coluna especificada em `:sortField`. O valor `1` indica que a ordenação será feita em ordem crescente (do menor para o maior valor da coluna).
+
+    - **:sortField="'Identificacao'"**: Define que a tabela será ordenada inicialmente pela coluna `Identificacao`. Isso determina qual campo será utilizado para a ordenação ao carregar a tabela.
+
+-->
+
             <!-- Cabeçalho da Tabela -->
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
-                        <span>Total de registros: {{ filteredCount }}</span> <!-- Exibe o número total de registros -->
+                        <span>Total de registros: {{ filteredCount }}</span>
+                        <!-- Exibe o número total de registros -->
                     </div>
                     <div>
                         <IconField iconPosition="left">
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" /> <!-- Campo de busca global -->
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <!-- Campo de busca global -->
                         </IconField>
                     </div>
                 </div>
@@ -184,12 +224,14 @@ const handleDatepickerOpen = () => {
             <Column field="status" sortable header="Status"></Column>
             <Column field="dataHora" sortable header="Data">
                 <template #body="{ data }">
-                    <span v-tooltip="data.dataHora">{{ formatDate(new Date(data.dataHora)) }}</span> <!-- Exibe a data formatada -->
+                    <span v-tooltip="data.dataHora">{{ formatDate(new Date(data.dataHora)) }}</span>
+                    <!-- Exibe a data formatada -->
                 </template>
             </Column>
             <Column field="Hora" sortable header="Hora">
                 <template #body="{ data }">
-                    <span v-tooltip="data.dataHora">{{ formatTime(new Date(data.dataHora)) }}</span> <!-- Exibe a hora formatada -->
+                    <span v-tooltip="data.dataHora">{{ formatTime(new Date(data.dataHora)) }}</span>
+                    <!-- Exibe a hora formatada -->
                 </template>
             </Column>
         </DataTable>

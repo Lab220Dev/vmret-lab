@@ -18,10 +18,10 @@ const toast = useToast(); // Instancia o toast para exibir mensagens ao usuário
 const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem exibida quando não há resultados
 
 // Refs para os dropdowns no formulário de filtro
-const dropdown1 = ref(null); 
+const dropdown1 = ref(null);
 const dropdown2 = ref(null);
-const dropdown3 = ref(null); 
-const dropdown4 = ref(null); 
+const dropdown3 = ref(null);
+const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 
 // Refs para armazenar os dados retornados da API
@@ -254,7 +254,7 @@ const fetchSetorDiretoria = async () => {
             todosOption,
             ...response.data.map(({ id_setor, nome, id_centro_custo }) => ({
                 label: `Setor  ${nome}`,
-                value: id_setor, 
+                value: id_setor,
                 id_centro_custo
             }))
         ];
@@ -292,14 +292,12 @@ const fetchCentroCusto = async () => {
 const filterSetor = () => {
     if (relatorio.value.ID_CentroCusto) {
         // Filtra os setores de acordo com o centro de custo selecionado
-        ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
-            setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null
-        );
+        ListaSetor.value = ListaSetorOriginal.value.filter((setorItem) => setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null);
 
         // Se a lista de setor estiver vazia após o filtro
         if (ListaSetor.value.length === 0) {
             // Adiciona a informação "não há setor"
-            ListaSetor.value = [{ label: "Não há setor ", value: null }];
+            ListaSetor.value = [{ label: 'Não há setor ', value: null }];
         }
     } else {
         ListaSetor.value = ListaSetorOriginal.value; // Exibe todos os setores caso não haja filtro
@@ -321,7 +319,7 @@ const filterFuncionarios = () => {
         // Se a lista de funcionários estiver vazia após o filtro
         if (ListaFuncionarios.value.length === 0) {
             // Adiciona a informação "não há funcionários"
-            ListaFuncionarios.value = [{ label: "Não há funcionários ", value: null }];
+            ListaFuncionarios.value = [{ label: 'Não há funcionários ', value: null }];
         }
     } else {
         // Se não tiver filtros, exibe todos os funcionários
@@ -346,12 +344,11 @@ const fetchFuncionarios = async () => {
                 label: funcionario.nome,
                 value: funcionario.id_funcionario,
                 id_setor: funcionario.id_setor,
-                id_planta : funcionario.id_planta
+                id_planta: funcionario.id_planta
             }))
         ];
         // Inicialize a lista de funcionários com todos os dados
         ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-
     } catch (error) {
         console.error('Erro ao carregar funcionários:', error); // Exibe erro caso a requisição falhe
     }
@@ -381,13 +378,12 @@ onMounted(() => {
 });
 </script>
 
-
 <template>
     <!-- Card principal para exibição do relatório -->
     <div class="card vh">
         <!-- Título do card -->
         <h5 class="my-6 ml-2 text-2xl">Retiradas Realizadas</h5>
-        
+
         <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
         <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
             <!-- Filtro DM (Departamento ou Manager) -->
@@ -396,35 +392,35 @@ onMounted(() => {
                 <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
                 <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
             </div>
-            
+
             <!-- Filtro Centro de Custo -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Centro de Custo:</label>
                 <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor" />
             </div>
-            
+
             <!-- Filtro Setor -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Setor:</label>
                 <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
             </div>
-            
+
             <!-- Filtro Planta -->
             <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                 <label for="planta">Planta:</label>
                 <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
             </div>
-            
+
             <!-- Filtro Funcionário -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Funcionário:</label>
                 <!-- Dropdown para selecionar Funcionário -->
                 <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
             </div>
-            
+
             <!-- Filtro Data Inicial -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Data Inicial:</label>
@@ -444,7 +440,7 @@ onMounted(() => {
                     @open="handleDatepickerOpen"
                 />
             </div>
-            
+
             <!-- Filtro Data Final -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Data Final:</label>
@@ -500,18 +496,56 @@ onMounted(() => {
             :sortOrder="1"
             :tableStyle="{ width: '100%' }"
         >
+            <!-- 
+    A tabela exibe os dados contidos na variável 'retiradas', que provavelmente são registros de algum tipo de transação ou retirada de itens. Cada linha da tabela corresponde a um item dessa lista.
+
+    - **v-model:filters="filters"**: A tabela possui um campo de filtro global vinculado ao modelo `filters`. Isso permite que o usuário insira critérios de pesquisa, e a variável `filters` será atualizada automaticamente com base nas entradas do filtro. A tabela irá aplicar esses filtros para exibir apenas os dados relevantes.
+
+    - **:value="retiradas"**: A propriedade `value` recebe os dados a serem exibidos. A variável `retiradas` contém os dados que serão apresentados na tabela. Cada elemento de `retiradas` será uma linha na tabela.
+
+    - **stripedRows**: Ativa o estilo de linhas alternadas (listradas), onde as linhas ímpares e pares têm cores de fundo diferentes. Esse estilo facilita a leitura dos dados, permitindo que o usuário acompanhe as linhas mais facilmente.
+
+    - **removableSort**: Permite que o usuário remova a ordenação clicando novamente no cabeçalho de uma coluna. Isso oferece flexibilidade adicional ao usuário que quer alternar entre diferentes ordens de visualização dos dados.
+
+    - **showGridlines**: Exibe as linhas de grade, ou seja, as divisórias entre as células da tabela. Isso melhora a legibilidade, especialmente quando há muitas colunas de dados.
+
+    - **paginator**: Habilita a paginação da tabela. Os dados serão divididos em várias páginas, e o usuário pode navegar entre elas. Isso melhora a performance e facilita a navegação em grandes conjuntos de dados.
+
+    - **:rows="10"**: Define o número padrão de linhas que serão exibidas por página. Neste caso, a tabela exibirá 10 itens por página, mas o usuário pode alterar isso.
+
+    - **:rowsPerPageOptions="[5, 10, 20, 50]"**: Proporciona ao usuário a opção de selecionar quantos itens por página ele deseja ver. As opções disponíveis são 5, 10, 20 ou 50 itens por página.
+
+    - **rowHover**: Aplica um estilo de destaque nas linhas da tabela quando o mouse passa sobre elas. Esse efeito melhora a experiência do usuário ao navegar pela tabela, tornando mais fácil identificar qual linha está sendo selecionada.
+
+    - **:globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"**: Define os campos pelos quais a filtragem global será feita. Quando o usuário insere um critério de pesquisa, ele será aplicado a todos esses campos. O filtro buscará dentro dos campos de 'Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', e 'ProdutoSKU'.
+
+    - **tableStyle="min-width: 50rem; table-layout: fixed;"**: Define o estilo da tabela. O valor `min-width: 50rem;` garante que a tabela tenha um tamanho mínimo de 50rem de largura. O `table-layout: fixed;` assegura que a largura das colunas seja fixa, independentemente do conteúdo da célula. Esse estilo ajuda a controlar a aparência da tabela, especialmente se ela contiver colunas com conteúdos longos ou variáveis.
+
+    - **ref="dt"**: A tabela é associada a uma referência chamada `dt`, que permite acessá-la diretamente no código JavaScript. Isso é útil para interações programáticas com a tabela, como manipulação dos filtros, ordenação ou paginação através do código.
+
+    - **class="mt-6"**: A classe CSS `mt-6` é adicionada à tabela, provavelmente para definir uma margem superior. A margem de `mt-6` pode ser uma convenção do seu framework CSS (provavelmente Tailwind CSS), que aplica um espaçamento específico.
+
+    - **:sortField="'ProdutoSKU'"**: Define a coluna 'ProdutoSKU' como o campo pelo qual a tabela será inicialmente ordenada. Isso significa que, ao carregar a tabela, ela será ordenada pela coluna 'ProdutoSKU'.
+
+    - **:sortOrder="1"**: Define que a ordenação será feita em ordem crescente (valor `1`), ou seja, os dados serão ordenados do menor para o maior valor na coluna 'ProdutoSKU'. Se fosse `-1`, a ordenação seria em ordem decrescente.
+
+    - **:tableStyle="{ width: '100%' }"**: Aplica um estilo adicional que faz a tabela ocupar 100% da largura disponível do contêiner pai. Isso torna a tabela responsiva e adaptável a diferentes tamanhos de tela, preenchendo toda a largura disponível.
+
+-->
             <!-- Cabeçalho da tabela, com contador de registros filtrados -->
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ filteredCount }}</span> <!-- Exibe o total de registros filtrados -->
+                        <span>Total de registros: {{ filteredCount }}</span>
+                        <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
                         <IconField iconPosition="left">
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" /> <!-- Campo de busca global -->
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <!-- Campo de busca global -->
                         </IconField>
                     </div>
                 </div>
@@ -519,55 +553,63 @@ onMounted(() => {
 
             <!-- Mensagem a ser exibida quando não houver dados -->
             <template #empty> {{ emptyMessage }} </template>
-            
+
             <!-- Colunas da tabela -->
             <Column field="Identificacao" class="table-cell" sortable style="width: 8%" header="DM">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span> <!-- Exibe o DM com tooltip -->
+                    <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
+                    <!-- Exibe o DM com tooltip -->
                 </template>
             </Column>
 
             <Column field="Dia" sortable class="table-cell" style="width: 10%" header="Data">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span> <!-- Exibe a data formatada -->
+                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
+                    <!-- Exibe a data formatada -->
                 </template>
             </Column>
 
             <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Hora">{{ formatTime(new Date(data.Dia)) }}</span> <!-- Exibe a hora formatada -->
+                    <span v-tooltip="data.Hora">{{ formatTime(new Date(data.Dia)) }}</span>
+                    <!-- Exibe a hora formatada -->
                 </template>
             </Column>
 
             <Column field="Matricula" sortable class="table-cell" style="width: 10%" header="Matricula">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Matricula">{{ data.Matricula }}</span> <!-- Exibe a matrícula -->
+                    <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
+                    <!-- Exibe a matrícula -->
                 </template>
             </Column>
 
             <Column field="Nome" class="table-cell" style="width: 10%" sortable header="Nome">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Nome">{{ data.Nome }}</span> <!-- Exibe o nome com tooltip -->
+                    <span v-tooltip="data.Nome">{{ data.Nome }}</span>
+                    <!-- Exibe o nome com tooltip -->
                 </template>
             </Column>
 
             <Column field="Email" sortable class="table-cell" header="E-mail">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Email">{{ data.Email }}</span> <!-- Exibe o email com tooltip -->
+                    <span v-tooltip="data.Email">{{ data.Email }}</span>
+                    <!-- Exibe o email com tooltip -->
                 </template>
             </Column>
 
             <Column field="ProdutoNome" style="width: 20%" sortable class="table-cell" header="Item">
                 <template #body="{ data }">
-                    <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span> <!-- Exibe o nome do produto -->
+                    <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
+                    <!-- Exibe o nome do produto -->
                 </template>
             </Column>
 
             <Column field="Quantidade" style="width: 10%" sortable header="Quant" class="text-center table-cell"></Column>
-            
+
             <Column field="ProdutoSKU" class="table-cell" style="width: 10%" sortable header="CA">
                 <template #body="{ data }">
-                    <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span> <!-- Exibe o SKU do produto -->
+                    <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
+                    <!-- Exibe o SKU do produto -->
                 </template>
             </Column>
         </DataTable>
@@ -576,7 +618,8 @@ onMounted(() => {
         <Card v-if="!show">
             <template #title>{{ selectedItem.dm }}</template>
             <template #content>
-                <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" /> <!-- Botão para voltar -->
+                <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
+                <!-- Botão para voltar -->
             </template>
         </Card>
     </div>
@@ -586,94 +629,94 @@ onMounted(() => {
 
     <!-- Caixa de diálogo de erro -->
     <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
-        <p>{{ dialogMessage }}</p> <!-- Mensagem de erro -->
+        <p>{{ dialogMessage }}</p>
+        <!-- Mensagem de erro -->
         <template #footer>
-            <Button label="OK" icon="pi pi-check" @click="showDialog = false" /> <!-- Botão para fechar o diálogo -->
+            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+            <!-- Botão para fechar o diálogo -->
         </template>
     </Dialog>
 </template>
 
 <style>
-    /* .card: Definindo o comportamento da classe 'card' */
-    .card {
-        /* Permite que o conteúdo da 'card' se mova horizontalmente se ultrapassar a largura do contêiner */
-        overflow-x: auto;
+/* .card: Definindo o comportamento da classe 'card' */
+.card {
+    /* Permite que o conteúdo da 'card' se mova horizontalmente se ultrapassar a largura do contêiner */
+    overflow-x: auto;
+}
+
+/* .datatable-wrapper: Definindo o comportamento para o contêiner da tabela */
+.datatable-wrapper {
+    /* Permite que a tabela se mova horizontalmente se o conteúdo ultrapassar a largura do contêiner */
+    overflow-x: auto;
+
+    /* Define a largura do contêiner da tabela como 100% da largura da tela */
+    width: 100vw;
+}
+
+/* .filtrar: Definindo a margem superior do botão de filtro */
+.filtrar {
+    /* Define uma margem superior para o botão de filtro */
+    margin-top: 25px;
+}
+
+/* .drop: Estilo para os dropdowns (listas suspensas) */
+.drop {
+    /* Define a largura do dropdown para 100% do contêiner pai */
+    width: 100%;
+}
+
+.dropdown-item.text-muted {
+    color: #6c757d; /* Cor cinza para a mensagem de "não há funcionários" */
+    font-style: italic;
+}
+
+/* Media Query para telas menores que 580px (dispositivos móveis) */
+@media (max-width: 580px) {
+    /* .form .field: Estilo para os campos do formulário em telas pequenas */
+    .form .field {
+        /* Define o comportamento de flexbox para os campos de formulário */
+        flex: 0 0 100%;
+
+        /* Define a largura máxima do campo para 100% */
+        max-width: 100%;
+
+        /* Define a margem inferior entre os campos do formulário */
+        margin-bottom: 1rem;
     }
 
-    /* .datatable-wrapper: Definindo o comportamento para o contêiner da tabela */
-    .datatable-wrapper {
-        /* Permite que a tabela se mova horizontalmente se o conteúdo ultrapassar a largura do contêiner */
-        overflow-x: auto;
-
-        /* Define a largura do contêiner da tabela como 100% da largura da tela */
-        width: 100vw;
-    }
-
-    /* .filtrar: Definindo a margem superior do botão de filtro */
-    .filtrar {
-        /* Define uma margem superior para o botão de filtro */
-        margin-top: 25px;
-    }
-
-    /* .drop: Estilo para os dropdowns (listas suspensas) */
-    .drop {
-        /* Define a largura do dropdown para 100% do contêiner pai */
+    /* Estilo para dropdowns em telas pequenas */
+    .form .field .drop {
+        /* Garante que o dropdown ocupe toda a largura disponível */
         width: 100%;
     }
 
-    .dropdown-item.text-muted {
-  color: #6c757d; /* Cor cinza para a mensagem de "não há funcionários" */
-  font-style: italic;
+    /* Estilo para os botões 'filtrar' e 'exportar' em telas pequenas */
+    .form .field .filtrar,
+    .form .field .exportar {
+        /* Define a largura dos botões como 100% para ocuparem toda a largura disponível */
+        width: 100%;
+    }
 }
 
-    /* Media Query para telas menores que 580px (dispositivos móveis) */
-    @media (max-width: 580px) {
-        /* .form .field: Estilo para os campos do formulário em telas pequenas */
-        .form .field {
-            /* Define o comportamento de flexbox para os campos de formulário */
-            flex: 0 0 100%;
-            
-            /* Define a largura máxima do campo para 100% */
-            max-width: 100%;
+/* .table-cell: Estilo para as células da tabela */
+.table-cell {
+    /* Garante que o conteúdo da célula não ultrapasse os limites da célula */
+    overflow: hidden;
 
-            /* Define a margem inferior entre os campos do formulário */
-            margin-bottom: 1rem;
-        }
+    /* Impede que o conteúdo quebre a linha */
+    white-space: nowrap;
 
-        /* Estilo para dropdowns em telas pequenas */
-        .form .field .drop {
-            /* Garante que o dropdown ocupe toda a largura disponível */
-            width: 100%;
-        }
+    /* Exibe uma reticência "..." se o conteúdo for muito longo para caber na célula */
+    text-overflow: ellipsis;
+}
 
-        /* Estilo para os botões 'filtrar' e 'exportar' em telas pequenas */
-        .form .field .filtrar,
-        .form .field .exportar {
-            /* Define a largura dos botões como 100% para ocuparem toda a largura disponível */
-            width: 100%;
-        }
-    }
+/* .field: Estilo para os campos do formulário */
+.field {
+    /* Impede que o texto dentro dos campos quebre a linha */
+    white-space: nowrap;
 
-    /* .table-cell: Estilo para as células da tabela */
-    .table-cell {
-        /* Garante que o conteúdo da célula não ultrapasse os limites da célula */
-        overflow: hidden;
-
-        /* Impede que o conteúdo quebre a linha */
-        white-space: nowrap;
-
-        /* Exibe uma reticência "..." se o conteúdo for muito longo para caber na célula */
-        text-overflow: ellipsis;
-    }
-
-    /* .field: Estilo para os campos do formulário */
-    .field {
-        /* Impede que o texto dentro dos campos quebre a linha */
-        white-space: nowrap;
-
-        /* Alinha o texto à esquerda nos campos do formulário */
-        text-align: left;
-    }
-
-    
+    /* Alinha o texto à esquerda nos campos do formulário */
+    text-align: left;
+}
 </style>

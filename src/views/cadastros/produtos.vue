@@ -1,99 +1,137 @@
 <script setup>
+// Importando funções e objetos do Vue.js para usar no componente
 import { reactive, ref, onMounted, watch } from 'vue';
+// Importando a função 'useToast' para exibir notificações de sucesso ou erro
 import { useToast } from 'primevue/usetoast';
+// Importando o estilo do componente de data picker
 import '@vuepic/vue-datepicker/dist/main.css';
+// Importando a imagem de placeholder que será usada caso não haja imagem para um produto
 import imagePlaceholder from '@/assets/images/placeholder4.1.png';
+// Importando o store de autenticação para acessar o estado de autenticação do usuário
 import { useAuthStore } from '@/store/authStore.js';
+// Importando o componente de upload de imagem para ser usado na interface
 import ImageUpload from '@/components/ImageUpload.vue';
+// Importando o componente de spinner de carregamento
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+// Importando o objeto 'FilterMatchMode' do PrimeVue para configurar os filtros de pesquisa
 import { FilterMatchMode } from 'primevue/api';
+// Importando o store de dados para acessar os dados compartilhados, como plantas
 import { useDataStore } from '@/store/dataStore.js';
+// Importando o serviço de produto para interagir com a API relacionada aos produtos
 import produtoService from '@/services/produtoService';
+// Importando funções de ajuda relacionadas ao formulário do produto
 import { resetProdutoForm } from '@/helpers/formHelper';
-import { getFileExtension } from '@/helpers/HelperUtils';
+// Importando funções auxiliares relacionadas ao produto
 import { enrichProdutoData } from '@/helpers/HelperProduto.js';
 
+/**
+ * Filtros de pesquisa global aplicados na listagem de produtos.
+ * @type {Object}
+ */
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que usa o modo 'CONTAINS'
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que usa o modo 'CONTAINS' para buscar substrings
 });
 
 // Inicializando stores para autenticação e dados
-const dataStore = useDataStore();
-const store = useAuthStore();
+const dataStore = useDataStore(); // Acessa o store de dados para obter informações sobre plantas e outros dados
+const store = useAuthStore(); // Acessa o store de autenticação para obter dados sobre o usuário logado
 
-// Inicializando variáveis de controle de interface
-const toast = useToast();
-const active = ref(0);
-const loading = ref(false);
-let formatedPlantaOptions = ref([]);
+// Variáveis de controle da interface do usuário
+const toast = useToast(); // Função para exibir notificações via toast
+const active = ref(0); // Controle de qual aba está ativa
+const loading = ref(false); // Controle de carregamento de dados
+let formatedPlantaOptions = ref([]); // Opções formatadas para as plantas
 const tipoProduto = ref([
-    { label: 'EPI', value: 1 },
-    { label: 'Insumo', value: 2 },
-    { label: 'Consumivel', value: 3 }
+    // Opções de tipos de produtos disponíveis
+    { label: 'EPI', value: 1 }, // Tipo de produto EPI
+    { label: 'Insumo', value: 2 }, // Tipo de produto Insumo
+    { label: 'Consumivel', value: 3 } // Tipo de produto Consumível
 ]);
 
-// Controle de paginação
-const currentPage = ref(1); 
-const pageSize = 10; // Tamanho da página
-const totalRecords = ref(0); // Total de registros
+// Controle de paginação para exibição de produtos
+const currentPage = ref(1); // Página atual de exibição de produtos
+const pageSize = 10; // Número de itens por página
+const totalRecords = ref(0); // Total de registros de produtos disponíveis
 
-// Referências para os campos de upload de imagem
+// Referências para os campos de upload de imagens
 const imageUploader = ref(null);
 const imageUploader2 = ref(null);
 const imageUploader3 = ref(null);
 
-// Referências para os arquivos selecionados
-const selectedFile = ref(null);
-const selectedSecFile = ref(null);
-const selectedInfoFile = ref(null);
+// Referências para os arquivos de imagem selecionados
+const selectedFile = ref(null); // Imagem principal selecionada
+const selectedSecFile = ref(null); // Imagem secundária selecionada
+const selectedInfoFile = ref(null); // Imagem de informações selecionada
 
 // Imagens de placeholder para os produtos
-const imagePrinc = ref(imagePlaceholder);
-const imageSec = ref(imagePlaceholder);
-const imageInfo = ref(imagePlaceholder);
+const imagePrinc = ref(imagePlaceholder); // Placeholder da imagem principal
+const imageSec = ref(imagePlaceholder); // Placeholder da imagem secundária
+const imageInfo = ref(imagePlaceholder); // Placeholder da imagem de informações
 
-// Lista de produtos
+// Lista de produtos a ser exibida
 const ListaProdutos = ref([]);
 
-// Controle de diálogo de exclusão de produto
-const deleteProdutoDialog = ref(false);
+// Controle do diálogo de exclusão de produto
+const deleteProdutoDialog = ref(false); // Controle de visibilidade do diálogo de exclusão
 
-// Visibilidade de componentes
-const visible = ref(false);
+// Controle de visibilidade do formulário de edição de produto
+const visible = ref(false); // Visibilidade do formulário de edição de produto
 
-// Função chamada quando um arquivo é selecionado para upload
+/**
+ * Função chamada quando um arquivo é selecionado para upload.
+ * @param {File} file - O arquivo selecionado para upload
+ * @param {string} type - O tipo de imagem (principal, secundária ou de informações)
+ */
 const handleFileSelected = (file, type) => {
-    if (type === 'principal') { // Se o tipo for 'principal', armazena o arquivo principal
+    if (type === 'principal') {
+        // Se o tipo for 'principal', armazena o arquivo principal
         selectedFile.value = file;
-    } else if (type === 'secundaria') { // Se o tipo for 'secundaria', armazena o arquivo secundário
+    } else if (type === 'secundaria') {
+        // Se o tipo for 'secundaria', armazena o arquivo secundário
         selectedSecFile.value = file;
-    } else if (type === 'info') { // Se o tipo for 'info', armazena o arquivo de informações
+    } else if (type === 'info') {
+        // Se o tipo for 'info', armazena o arquivo de informações
         selectedInfoFile.value = file;
     }
 };
 
-// Objeto reativo para armazenar os dados do produto
+/**
+ * Objeto reativo que representa os dados de um produto.
+ * @type {Object}
+ */
 const produto = reactive({
     codigo: '', // Código do produto
-    id_planta: '', // ID da planta
-    id_tipoProduto: '', // ID do tipo de produto
-    id_categoria: 71, // ID da categoria (fixo)
+    id_planta: '', // ID da planta associada ao produto
+    id_tipoProduto: '', // Tipo de produto (EPI, Insumo, Consumível)
+    id_categoria: 71, // ID da categoria do produto (fixo)
     nome: '', // Nome do produto
     descricao: ' ', // Descrição do produto
     unidade_medida: '', // Unidade de medida
-    validadedias: '' // Validade em dias
+    validadedias: '', // Validade em dias do produto
+    quantidademinima: '' //quantidade minima do produto
 });
 
-// Função para definir a imagem se for válida
+/**
+ * Define a imagem se for válida. A função tenta buscar a imagem com base no nome.
+ * @param {string} image - Nome do arquivo da imagem
+ * @param {Ref} targetRef - Referência para onde a imagem será atribuída
+ * @returns {Promise<void>}
+ */
 const setImageIfValid = async (image, targetRef) => {
-    if (image) { // Se houver imagem
+    if (image) {
+        // Se houver uma imagem associada ao produto
         targetRef.value = await getImagem(image); // Obtém a imagem e atribui ao ref alvo
     } else {
-        targetRef.value = null; // Caso contrário, define como null
+        targetRef.value = null; // Se não houver imagem, define como null
     }
 };
 
-// Função chamada quando uma linha do DataTable é selecionada
+/**
+ * Função chamada quando uma linha do DataTable é selecionada.
+ * Atribui os dados do produto selecionado ao objeto 'produto' e define as imagens.
+ * @param {Object} event - Evento de seleção da linha
+ * @returns {Promise<void>}
+ */
 const onRowSelect = async (event) => {
     Object.assign(produto, event.data); // Atribui os dados do produto selecionado ao objeto 'produto'
     await setImageIfValid(produto.imagem1, imagePrinc); // Define a imagem principal
@@ -101,59 +139,79 @@ const onRowSelect = async (event) => {
     await setImageIfValid(produto.imagemdetalhe, imageInfo); // Define a imagem de detalhes
     visible.value = true; // Torna o formulário visível
     active.value = 1; // Ativa a aba de edição
-    loadProdutos(); // Carrega a lista de produtos
+    loadProdutos(); // Recarrega a lista de produtos
 };
 
-// Função para carregar os produtos com base na página atual e filtro
+/**
+ * Função para carregar os produtos com base na página atual e filtro.
+ * @param {number} [page=1] - Número da página a ser carregada
+ * @returns {Promise<void>}
+ */
 const loadProdutos = async (page = 1) => {
-    const searchTerm = filters.value.global.value || '';
-    const data = { id_cliente: store.userIdCliente, page, pageSize, searchTerm };
+    const searchTerm = filters.value.global.value || ''; // Obtém o termo de pesquisa para os filtros
+    const data = { id_cliente: store.userIdCliente, page, pageSize, searchTerm }; // Prepara os dados para a requisição
 
     try {
-        loading.value = true;
-        const response = await produtoService.listarProdutos(data, store.token);
-        ListaProdutos.value = response.data.produtos;
-        totalRecords.value = response.data.totalRecords;
-        await loadImagens(ListaProdutos.value);
+        loading.value = true; // Ativa o estado de carregamento
+        const response = await produtoService.listarProdutos(data, store.token); // Faz a requisição para listar produtos
+        ListaProdutos.value = response.data.produtos; // Atualiza a lista de produtos com a resposta
+        totalRecords.value = response.data.totalRecords; // Atualiza o total de registros de produtos
+        await loadImagens(ListaProdutos.value); // Carrega as imagens dos produtos
     } catch (error) {
-        console.error('Erro ao carregar produtos:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos.', life: 3000 });
+        console.error('Erro ao carregar produtos:', error); // Exibe erro no console
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos.', life: 3000 }); // Exibe erro via toast
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativa o estado de carregamento
     }
 };
 
-const debounceTimeout = ref(null);
-// Filtro local
+// Controle de debounce para o filtro de pesquisa
+const debounceTimeout = ref(null); // Variável para armazenar o timeout do debounce
+
+/**
+ * Filtro local para os produtos, que aguarda 1 segundo após a última digitação para fazer a requisição.
+ * @param {string} newValue - O novo valor do filtro global
+ * @param {string} oldValue - O valor anterior do filtro global
+ */
 watch(
-    () => filters.value.global.value,
+    () => filters.value.global.value, // Observa mudanças no valor do filtro global
     (newValue, oldValue) => {
         if (debounceTimeout.value) {
             clearTimeout(debounceTimeout.value); // Limpa o timeout anterior
         }
 
-        // Espera 2 segundos após parar de digitar
+        // Espera 1 segundo após a digitação
         debounceTimeout.value = setTimeout(() => {
-            loadProdutos(currentPage.value); // Chama a função de busca
-        }, 1000); // Ex: 2000ms (2 segundos)
+            loadProdutos(currentPage.value); // Carrega os produtos com o filtro atualizado
+        }, 1000); // Tempo de espera de 1000ms (1 segundo)
     },
-    { immediate: true } // Chama a busca imediatamente se já houver valor no filtro
+    { immediate: true } // Executa a função de busca imediatamente ao observar a mudança
 );
 
-// Função para carregar as imagens dos produtos visíveis
+/**
+ * Função para carregar as imagens associadas aos produtos.
+ * @param {Array} produtos - Lista de produtos para carregar suas imagens
+ * @returns {Promise<void>}
+ */
 const loadImagens = async (produtos) => {
     for (const produto of produtos) {
         produto.imagemUrl = await getImagem(produto.imagem1); // Atribui a URL da imagem ao produto
     }
 };
 
-// Função chamada ao mudar a página no DataTable
+/**
+ * Função chamada quando a página de produtos é alterada.
+ * @param {Object} event - Evento de mudança de página
+ */
 const onPageChange = (event) => {
     currentPage.value = event.page + 1; // Atualiza a página atual
     loadProdutos(currentPage.value); // Carrega os produtos da nova página
 };
 
-// Função para carregar os dados iniciais (plantas)
+/**
+ * Função para carregar dados iniciais como as plantas.
+ * @returns {Promise<void>}
+ */
 const loadData = async () => {
     try {
         formatedPlantaOptions.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega as opções de plantas
@@ -162,115 +220,163 @@ const loadData = async () => {
     }
 };
 
-// Função para salvar um novo produto
+/**
+ * Função para salvar um novo produto no sistema.
+ * @returns {Promise<void>}
+ */
 const saveProduto = async () => {
     try {
-        loading.value = true;
+        loading.value = true; // Ativa o carregamento
         await produtoService.adicionarProduto(
-            enrichProdutoData(produto, store.userId, store.userIdCliente),
+            enrichProdutoData(produto, store.userId, store.userIdCliente), // Preenche os dados do produto
             {
                 selectedFile: selectedFile.value,
                 selectedSecFile: selectedSecFile.value,
                 selectedInfoFile: selectedInfoFile.value
             }
         );
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto salvo com sucesso!', life: 3000 });
-        loadProdutos();
-        resetForm();
-        active.value = 0;
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto salvo com sucesso!', life: 3000 }); // Exibe sucesso
+        loadProdutos(); // Recarrega a lista de produtos
+        resetForm(); // Reseta o formulário
+        active.value = 0; // Volta para a aba inicial
     } catch (error) {
-        console.error('Erro ao salvar produto:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar produto.', life: 3000 });
+        console.error('Erro ao salvar produto:', error); // Exibe erro no console
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar produto.', life: 3000 }); // Exibe erro
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativa o carregamento
     }
 };
 
-// Função para deletar um produto
+/**
+ * Função para deletar um produto.
+ * @returns {Promise<void>}
+ */
 const deleteProduto = async () => {
     const data = {
-        id_produto: produto.id_produto,
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente
+        id_produto: produto.id_produto, // ID do produto
+        id_usuario: store.userId, // ID do usuário
+        id_cliente: store.userIdCliente // ID do cliente
     };
 
     try {
-        loading.value = true;
-        await produtoService.deletarProduto(data, store.token);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso!', life: 3000 });
-        loadProdutos();
-        resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]);
-        deleteProdutoDialog.value = false;
-        active.value = 0;
+        loading.value = true; // Ativa o carregamento
+        await produtoService.deletarProduto(data, store.token); // Faz a requisição para deletar o produto
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso!', life: 3000 }); // Exibe sucesso
+        loadProdutos(); // Recarrega a lista de produtos
+        resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]); // Reseta o formulário
+        deleteProdutoDialog.value = false; // Fecha o diálogo de exclusão
+        active.value = 0; // Volta para a aba inicial
     } catch (error) {
-        console.error('Erro ao deletar produto:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar produto.', life: 3000 });
+        console.error('Erro ao deletar produto:', error); // Exibe erro no console
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar produto.', life: 3000 }); // Exibe erro
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativa o carregamento
     }
 };
 
+/**
+ * Função para atualizar os dados de um produto existente.
+ * @returns {Promise<void>}
+ */
 const updateProduto = async () => {
-  try {
-    loading.value = true;
-    await produtoService.atualizarProduto(
-      enrichProdutoData(produto, store.userId, store.userIdCliente),
-      {
-        selectedFile: selectedFile.value,
-        selectedSecFile: selectedSecFile.value,
-        selectedInfoFile: selectedInfoFile.value,
-      }
-    );
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto atualizado com sucesso!', life: 3000 });
-    loadProdutos();
-    resetForm();
-    active.value = 0;
-  } catch (error) {
-    console.error('Erro ao atualizar produto:', error);
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar produto.', life: 3000 });
-  } finally {
-    loading.value = false;
-  }
+    try {
+        loading.value = true; // Ativa o carregamento
+        await produtoService.atualizarProduto(
+            enrichProdutoData(produto, store.userId, store.userIdCliente), // Atualiza os dados do produto
+            {
+                selectedFile: selectedFile.value,
+                selectedSecFile: selectedSecFile.value,
+                selectedInfoFile: selectedInfoFile.value
+            }
+        );
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto atualizado com sucesso!', life: 3000 }); // Exibe sucesso
+        loadProdutos(); // Recarrega a lista de produtos
+        resetForm(); // Reseta o formulário
+        active.value = 0; // Volta para a aba inicial
+    } catch (error) {
+        console.error('Erro ao atualizar produto:', error); // Exibe erro no console
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar produto.', life: 3000 }); // Exibe erro
+    } finally {
+        loading.value = false; // Desativa o carregamento
+    }
 };
 
+/**
+ * Função para buscar uma imagem associada ao nome do arquivo.
+ * @param {string} filename - Nome do arquivo da imagem
+ * @returns {Promise<string>} - A URL da imagem
+ */
 const getImagem = async (filename) => {
-    if (!filename) return imagePlaceholder;
+    if (!filename) return imagePlaceholder; // Se não houver imagem, retorna o placeholder
 
     try {
-        const response = await produtoService.obterImagem(store.userIdCliente, filename);
+        const response = await produtoService.obterImagem(store.userIdCliente, filename); // Faz a requisição para obter a imagem
         if (response.status === 200) {
             const { image, mimeType } = response.data;
-            return `data:${mimeType};base64,${image}`;
+            return `data:${mimeType};base64,${image}`; // Retorna a imagem codificada em base64
         }
     } catch (error) {
-        console.error('Erro ao carregar imagem:', error);
+        console.error('Erro ao carregar imagem:', error); // Exibe erro no console
     }
-    return imagePlaceholder;
+    return imagePlaceholder; // Retorna o placeholder se houver erro ao carregar a imagem
 };
+
+/**
+ * Observa mudanças no índice da aba ativa. Quando a aba ativa muda para a aba inicial (índice 0),
+ * o formulário será resetado e a lista de produtos será recarregada. O produto será ocultado.
+ * @param {number} newIndex - O novo índice da aba ativa
+ * @param {number} oldIndex - O índice da aba ativa antes da mudança
+ */
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm(); // Reseta o formulário quando a aba ativa mudar para 0
-        loadProdutos(); // Carrega novamente a lista de produtos
-        visible.value = false; // Torna o produto invisível
+        // Verifica se a aba foi alterada para a aba inicial (índice 0)
+        resetForm(); // Chama a função para resetar o formulário, limpando os dados
+        loadProdutos(); // Recarrega a lista de produtos a partir da primeira página
+        visible.value = false; // Torna o formulário de edição de produto invisível
     }
 });
 
+/**
+ * Reseta o formulário de produto, limpando os dados do objeto 'produto' e as imagens selecionadas.
+ * Limpa também os dados de imagem dos campos de upload.
+ */
 const resetForm = () => {
+    // Reseta os dados do produto e limpa as imagens (principal, secundária e de informações)
     resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]);
+
+    // Limpa os dados de imagem nos campos de upload
     imageUploader.value?.clearImageData();
     imageUploader2.value?.clearImageData();
     imageUploader3.value?.clearImageData();
 };
 
+/**
+ * Função chamada quando uma linha de produto é selecionada na tabela de produtos.
+ * A seleção de uma linha é processada e os dados do produto são carregados no formulário de edição.
+ * @param {Object} event - O evento gerado pela seleção da linha, contendo os dados do produto selecionado
+ * @returns {Promise<void>}
+ */
 const handleRowSelection = async (event) => {
-    await onRowSelect(event); // Lida com a seleção de uma linha na tabela
+    // Chama a função de seleção de linha para carregar os dados do produto no formulário
+    await onRowSelect(event); // Lida com a seleção de uma linha e carrega as informações no formulário de edição
 };
 
+/**
+ * Função chamada quando o componente é montado (inicializado).
+ * Realiza o carregamento inicial dos produtos e de dados adicionais necessários para o componente.
+ * @returns {Promise<void>}
+ */
 onMounted(async () => {
-    await loadProdutos(); // Carrega a lista de produtos ao montar o componente
-    loadData(); // Carrega dados adicionais ao montar o componente
+    try {
+        // Carrega os produtos logo que o componente é montado
+        await loadProdutos(); // Carrega a lista de produtos ao montar o componente
+        loadData(); // Carrega dados adicionais (por exemplo, plantas) ao montar o componente
+    } catch (error) {
+        // Exibe uma mensagem de erro caso algo dê errado durante o carregamento dos produtos ou dados
+        console.error('Erro ao carregar dados no onMounted:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais.', life: 3000 });
+    }
 });
-
 </script>
 
 <template>
@@ -296,7 +402,21 @@ onMounted(async () => {
                         :metaKeySelection="false"
                         @rowSelect="handleRowSelection"
                         @page="onPageChange"
-                        ><!--lazy-->
+                    >
+                        <!-- A tabela exibe os dados provenientes de "ListaProdutos" -->
+                        <!-- Permite selecionar apenas uma linha por vez -->
+                        <!-- Aplica um estilo de linhas alternadas para melhorar a legibilidade -->
+                        <!-- Habilita a funcionalidade de paginação para dividir os dados em várias páginas -->
+                        <!-- Permite ao usuário remover a ordenação clicando na coluna de ordenação -->
+                        <!-- Define o número de linhas por página como 10 e as opções de quantidade de itens por página como 5, 10, 20 ou 50 -->
+                        <!-- Define o número total de registros para auxiliar na navegação da paginação -->
+                        <!-- A chave única para cada linha é o campo "id" -->
+                        <!-- Habilita o carregamento preguiçoso, ou seja, os dados são carregados conforme necessário -->
+                        <!-- Os filtros globais serão aplicados aos campos "codigo" e "nome" -->
+                        <!-- A ordenação inicial será feita pelo campo "codigo" em ordem crescente -->
+                        <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (Ctrl ou Command) -->
+                        <!-- Emite o evento de seleção de linha chamando a função handleRowSelection quando uma linha for selecionada -->
+                        <!-- Emite o evento de mudança de página chamando a função onPageChange quando a página for alterada -->
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
@@ -354,13 +474,17 @@ onMounted(async () => {
                                     <label for="tipo">Planta:</label>
                                     <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
                                 </div>
-                                <div class="full med lg:col-6 md:col-6 sm:col-6">
+                                <div class="full med lg:col-4 md:col-4 sm:col-4">
                                     <label for="UndMedida">Unidade de Medida:</label>
                                     <InputText class="my-2" v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
                                 </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
+                                <div class="full lg:col-4 md:col-4 sm:col-4">
                                     <label for="vldDias">Validade:</label>
                                     <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
+                                </div>
+                                <div class="full lg:col-4 md:col-4 sm:col-4">
+                                    <label for="qntMin">Quantidade Mínima:</label>
+                                    <InputNumber class="my-2" v-model="produto.quantidademinima" inputId="qntMin" />
                                 </div>
                             </div>
                         </div>

@@ -46,7 +46,11 @@ const relatorio = ref({
     data_final: new Date() // Data final (data atual)
 });
 
-// Função para formatar a data
+/**
+ * Função para formatar uma data no formato dd/MM/yyyy.
+ * @param {Date} date - Data a ser formatada
+ * @returns {string} - Data formatada no padrão "dd/MM/yyyy"
+ */
 const format = (date) => {
     const day = date.getDate(); // Pega o dia
     const month = date.getMonth() + 1; // Pega o mês (ajustando porque o índice começa em 0)
@@ -444,7 +448,8 @@ onMounted(() => {
                     <card v-if="show" class="details-card">
                         <template #title>Detalhes do Produto</template>
                         <template #content>
-                            <DataTable :value="selectedItem" 
+                            <DataTable 
+                            :value="selectedItem" 
                                 stripedRows 
                                 showGridlines 
                                 paginator 

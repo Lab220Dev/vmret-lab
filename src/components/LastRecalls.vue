@@ -6,7 +6,7 @@ const toast = useToast(); // Função para exibir notificações
 
 // Defina os props
 /**
- * @typedef {Object} Product
+ * @typedef {Object} most
  * @property {string} Identificacao - Identificação da máquina.
  * @property {string} ProdutoSKU - Código do produto (SKU).
  * @property {string} ProdutoDescricao - Descrição do produto.
@@ -26,7 +26,6 @@ const props = defineProps({
     }
 });
 
-// Função para formatar a data e hora de retirada
 /**
  * Função para formatar a data e hora no formato 'dd/MM/yyyy HH:mm'.
  * 
@@ -51,7 +50,16 @@ const formatDateTime = (date) => {
   </div>
 
   <!-- Tabela de dados com os produtos retirados -->
-  <DataTable :value="props.products" :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" removableSort responsiveLayout="scroll">
+  <DataTable 
+  :value="props.products" 
+  :rows="5" 
+  tableStyle="min-width: 20rem; table-layout: fixed;" 
+  removableSort responsiveLayout="scroll">
+
+  <!-- A tabela exibe os dados provenientes de "props.products" -->
+   <!-- Define o número de linhas visíveis por página como 5 -->
+    <!-- Aplica um estilo específico de largura mínima e layout fixo para a tabela -->
+     <!-- Faz com que a tabela tenha um layout responsivo, com rolagem horizontal em telas menores -->
     
     <!-- Coluna de identificação da máquina -->
     <Column field="Identificacao" header="Máquina" sortable style="width: 20%">

@@ -19,6 +19,19 @@
         filterDisplay="menu"
         :loading="loading"
     >
+
+    <!-- A tabela exibe os dados provenientes de "formattedData" -->
+<!-- Aplica um estilo alternado nas linhas da tabela para facilitar a leitura -->
+<!-- Exibe as linhas de grade para separar as células -->
+<!-- Permite a navegação por páginas, exibindo 50 linhas por página -->
+<!-- Oferece opções para escolher o número de itens por página: 50, 100, 500 ou 1000 -->
+<!-- Aplica um efeito visual de destaque nas linhas ao passar o mouse sobre elas -->
+<!-- Permite filtrar os dados globalmente com base nos campos "Nome", "Telefone", "RG", "Retirada", "dia_retirada" e "hora_retirada" -->
+<!-- Define a tabela com largura mínima de 50rem e layout fixo para as colunas -->
+<!-- Ordena os dados inicialmente pelo campo "nome" de forma crescente -->
+<!-- Exibe os filtros em um menu suspenso ao lado das colunas de pesquisa -->
+<!-- Exibe um indicador de carregamento enquanto os dados são carregados -->
+
         <!-- Template para o cabeçalho da tabela -->
         <template #header>
             <div class="flex justify-content-between align-items-center">

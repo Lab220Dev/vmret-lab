@@ -1115,6 +1115,18 @@ const removeControladora = (index) => {
                                 :sortOrder="1"
                                 :sortField="'Identificacao'"
                             >
+                                <!-- A tabela exibe os dados provenientes de "ListaDMS" -->
+                                <!-- Aplica um estilo de linhas alternadas para melhorar a legibilidade -->
+                                <!-- Permite ao usuário remover a ordenação clicando novamente na coluna que está sendo usada para ordenar -->
+                                <!-- Habilita a funcionalidade de paginação para dividir os dados em várias páginas -->
+                                <!-- O número de linhas por página é fixado em 10 -->
+                                <!-- As opções de quantidade de itens por página são 5, 10, 20 ou 50 -->
+                                <!-- O campo "id" é utilizado como chave única para cada linha da tabela -->
+                                <!-- Permite selecionar apenas uma linha por vez -->
+                                <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
+                                <!-- Quando uma linha é selecionada, a função "onRowSelect" é chamada -->
+                                <!-- A ordenação inicial é definida por "Identificacao" com ordem crescente -->
+                                 
                                 <!-- Cabeçalho da tabela -->
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">
@@ -1419,6 +1431,20 @@ const removeControladora = (index) => {
                                 :sortOrder="1"
                                 :sortField="'Posicao'"
                             >
+
+                            <!-- A tabela exibe os dados provenientes de 'ListaItens' -->
+                                <!-- As linhas são agrupadas por 'modelo' e exibidas com subcabeçalhos para cada grupo -->
+                                <!-- Permite ao usuário selecionar apenas uma linha por vez -->
+                                <!-- A tabela tem uma largura mínima de 50rem e um layout fixo para garantir que as colunas tenham larguras constantes -->
+                                <!-- Permite ao usuário escolher entre várias opções de quantidade de linhas por página: 5, 10, 20 ou 50 -->
+                                <!-- A tabela pode ser filtrada globalmente pelos campos 'SKU', 'Nome_Produto', 'Posicao' e 'QTD' -->
+                                <!-- As linhas da tabela têm um estilo de alternância (listradas) para facilitar a leitura -->
+                                <!-- Permite a remoção da ordenação clicando novamente na coluna usada para ordenar -->
+                                <!-- A seleção de linhas é feita com base no campo 'id', que é único para cada linha -->
+                                <!-- Quando uma linha é selecionada, a função 'handleRowSelection' é chamada -->
+                                <!-- A tabela é paginada com 10 linhas por página, e o usuário pode navegar entre as páginas -->
+                                <!-- A ordenação inicial é feita pelo campo 'Posicao', de forma crescente -->
+
                                 <!-- Cabeçalho da Tabela -->
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
@@ -1574,11 +1600,11 @@ const removeControladora = (index) => {
                 </template>
 
                 <!-- Campo para a Capacidade do Produto -->
-                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center ">
+                <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Capacidade" class="font-semibold">Capacidade:</label>
                 </div>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
-                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades"/>
+                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades" />
                 </div>
             </div>
         </div>

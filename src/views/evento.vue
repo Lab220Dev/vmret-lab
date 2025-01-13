@@ -18,6 +18,16 @@
         :sortField="'nome'" 
         :sortOrder="1" 
     >
+
+    <!-- A tabela exibe os dados provenientes de "formattedData" -->
+<!-- Aplica um estilo de listrado nas linhas da tabela, melhorando a legibilidade -->
+<!-- Exibe as linhas de grade para uma melhor visualização das células -->
+<!-- Habilita a paginação, dividindo os dados em várias páginas -->
+<!-- Define o número de linhas por página como 50, oferecendo ao usuário maior controle sobre a exibição -->
+<!-- Permite ao usuário selecionar as linhas usando o campo global de pesquisa nos campos "Nome", "Telefone", etc. -->
+<!-- Exibe a tabela com 100% da largura disponível, ajustando-se à área de exibição -->
+<!-- Define o campo de ordenação inicial como "nome", com ordem crescente -->
+ 
         <!-- Template para o cabeçalho da tabela -->
         <template #header>
             <div class="flex justify-content-between align-items-center">

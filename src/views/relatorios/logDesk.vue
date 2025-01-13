@@ -47,7 +47,11 @@ const relatorioDesk = ref({ // Objeto que armazena os filtros para a busca de lo
     data_final: ''
 });
 
-// Função para formatar data no formato dd/MM/yyyy
+/**
+ * Função para formatar uma data no formato dd/MM/yyyy.
+ * @param {Date} date - Data a ser formatada
+ * @returns {string} - Data formatada no padrão "dd/MM/yyyy"
+ */
 const format = (date) => {
     const day = date.getDate();
     const month = date.getMonth() + 1;

@@ -17,7 +17,8 @@ const dropdown3 = ref(null); // Referência para o terceiro dropdown (usado para
 const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dropdowns de seleção
 const historico = ref([]); // Lista reativa que armazenará os dados do histórico de logs
 const dms = ref([todosOption]); // Lista reativa que armazenará os DMs (Data Migrations) disponíveis
-const operacao = ref([  // Lista de opções para filtro de operações
+const operacao = ref([
+    // Lista de opções para filtro de operações
     { label: 'Todos', value: null },
     { label: 'Insert', value: 'INSERT' },
     { label: 'Update', value: 'UPDATE' },
@@ -32,7 +33,8 @@ const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem a se
 
 const ListaFuncionarios = ref([todosOption]); // Lista reativa que armazenará os funcionários disponíveis
 const usuario = ref([]); // Lista reativa que armazenará os usuários disponíveis
-const relatorio = ref({ // Objeto reativo que mantém os filtros do relatório
+const relatorio = ref({
+    // Objeto reativo que mantém os filtros do relatório
     dm: '',
     id_usuario: '',
     id_funcionario: '',
@@ -41,7 +43,11 @@ const relatorio = ref({ // Objeto reativo que mantém os filtros do relatório
     data_final: ''
 });
 
-// Função que formata a data no formato dd/MM/yyyy
+/**
+ * Função para formatar uma data no formato dd/MM/yyyy.
+ * @param {Date} date - Data a ser formatada
+ * @returns {string} - Data formatada no padrão "dd/MM/yyyy"
+ */
 const format = (date) => {
     const day = date.getDate(); // Dia da data
     const month = date.getMonth() + 1; // Mês da data (adicione 1 porque o índice começa do 0)
@@ -73,7 +79,8 @@ const toISODate = (date) => {
 
 // Função que busca os logs filtrados
 const buscar = async () => {
-    const data = { // Prepara os dados para a requisição
+    const data = {
+        // Prepara os dados para a requisição
         id_cliente: store.userIdCliente, // ID do cliente autenticado
         id_dm: relatorio.value.dm, // Filtro de DM
         id_usuario: relatorio.value.id_usuario, // Filtro de usuário
@@ -84,14 +91,16 @@ const buscar = async () => {
     };
 
     try {
-        const response = await axios.post('/Log/relatorio', data, { // Realiza a requisição POST para buscar os logs
+        const response = await axios.post('/Log/relatorio', data, {
+            // Realiza a requisição POST para buscar os logs
             headers: {
                 Authorization: `Bearer ${store.token}` // Envia o token de autenticação no cabeçalho
             }
         });
         historico.value = response.data; // Armazena a resposta na variável historico
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
-    } catch (error) { // Caso ocorra um erro na requisição
+    } catch (error) {
+        // Caso ocorra um erro na requisição
         console.error('Erro ao buscar logs:', error); // Exibe o erro no console
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os logs.' }); // Exibe uma notificação de erro
     }
@@ -100,8 +109,10 @@ const buscar = async () => {
 // Watch para monitorar o filtro global e recalcular a quantidade de registros filtrados
 watch(
     () => filters.value.global.value, // Observa a mudança no valor do filtro global
-    () => { // Quando o filtro global mudar
-        filteredCount.value = historico.value.filter((item) => { // Filtra os dados do histórico
+    () => {
+        // Quando o filtro global mudar
+        filteredCount.value = historico.value.filter((item) => {
+            // Filtra os dados do histórico
             const filterValue = filters.value.global.value?.toLowerCase() || ''; // Valor do filtro global em minúsculas
             return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum campo contém o valor do filtro
         }).length; // Atualiza a quantidade de registros filtrados
@@ -114,17 +125,21 @@ const fetchDM = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await axios.post('/DM/listar', data, { // Realiza a requisição para listar os DMs
+        const response = await axios.post('/DM/listar', data, {
+            // Realiza a requisição para listar os DMs
             headers: { Authorization: `Bearer ${store.token}` } // Envia o token de autenticação
         });
-        dms.value = [ // Atualiza a lista de DMs com a resposta
+        dms.value = [
+            // Atualiza a lista de DMs com a resposta
             todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({ // Mapeia a resposta para o formato esperado
+            ...response.data.map(({ ID_DM, Identificacao }) => ({
+                // Mapeia a resposta para o formato esperado
                 label: Identificacao,
                 value: ID_DM
             }))
         ];
-    } catch (error) { // Caso ocorra um erro na requisição
+    } catch (error) {
+        // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de dms:', error); // Exibe o erro no console
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de DMs.' }); // Exibe uma notificação de erro
     }
@@ -135,14 +150,17 @@ const fetchUsuario = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await axios.post('/usuarios/listar', data, { // Realiza a requisição para listar os usuários
+        const response = await axios.post('/usuarios/listar', data, {
+            // Realiza a requisição para listar os usuários
             headers: { Authorization: `Bearer ${store.token}` } // Envia o token de autenticação
         });
-        usuario.value = response.data.map(({ id_usuario, nome }) => ({ // Mapeia a resposta para o formato esperado
+        usuario.value = response.data.map(({ id_usuario, nome }) => ({
+            // Mapeia a resposta para o formato esperado
             label: nome,
             value: id_usuario
         }));
-    } catch (error) { // Caso ocorra um erro na requisição
+    } catch (error) {
+        // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de usuários:', error); // Exibe o erro no console
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de usuários.' }); // Exibe uma notificação de erro
     }
@@ -153,14 +171,17 @@ const fetchFuncionarios = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await axios.post('/funcionarios/listar', data, { // Realiza a requisição para listar os funcionários
+        const response = await axios.post('/funcionarios/listar', data, {
+            // Realiza a requisição para listar os funcionários
             headers: { Authorization: `Bearer ${store.token}` } // Envia o token de autenticação
         });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({ // Mapeia a resposta para o formato esperado
+        ListaFuncionarios.value = response.data.map((funcionario) => ({
+            // Mapeia a resposta para o formato esperado
             label: funcionario.nome,
             value: funcionario.id_funcionario
         }));
-    } catch (error) { // Caso ocorra um erro na requisição
+    } catch (error) {
+        // Caso ocorra um erro na requisição
         console.error('Erro ao carregar funcionários:', error); // Exibe o erro no console
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de funcionários.' }); // Exibe uma notificação de erro
     }
@@ -255,6 +276,37 @@ onMounted(() => {
             :sortOrder="1"
             :sortField="'Dia'"
         >
+            <!--
+    A tabela exibe os dados provenientes de 'historico', que contêm informações relacionadas aos registros históricos de abastecimento.
+
+    - **v-model:filters="filters"**: Vincula a variável `filters` ao estado de filtros globais da tabela. Essa variável pode ser utilizada para filtrar os dados da tabela em tempo real. O Vue.js vai atualizar os dados da tabela automaticamente quando os filtros forem aplicados.
+    - **:value="historico"**: A variável `historico` contém os dados que serão exibidos na tabela. Cada item de `historico` será mostrado como uma linha na tabela.
+    
+    - **stripedRows**: Aplica um estilo alternado nas linhas da tabela, ou seja, as linhas ímpares terão um fundo diferente das linhas pares, melhorando a legibilidade e facilitando a visualização dos dados.
+    
+    - **showGridlines**: Exibe as linhas de grade (ou seja, as divisões entre as células da tabela). Isso ajuda a melhorar a estrutura visual da tabela, tornando a leitura mais fácil e organizada.
+    
+    - **paginator**: Habilita a funcionalidade de paginação na tabela, permitindo que os dados sejam divididos em várias páginas. O usuário poderá navegar entre essas páginas para visualizar todos os dados.
+    
+    - **:rows="10"**: Define o número de linhas a serem exibidas por página na tabela. Aqui, são exibidas 10 linhas por página.
+    
+    - **:rowsPerPageOptions="[5, 10, 20, 50]"**: Define as opções de quantidade de linhas por página que o usuário pode escolher. As opções disponíveis são 5, 10, 20 ou 50 linhas por página.
+    
+    - **rowHover**: Aplica um estilo especial nas linhas quando o usuário passa o mouse sobre elas. Isso facilita a interação, destacando a linha sobre a qual o mouse está.
+    
+    - **:globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"**: Define quais campos podem ser usados para a busca global na tabela. Isso significa que, ao digitar no campo de busca, a tabela será filtrada com base em qualquer um desses campos (Dia, Operacao, ID_Usuario, Log_Web e Resultado).
+    
+    - **dataKey="Operacao"**: Especifica a chave de identificação única para cada linha da tabela, que neste caso é o campo `Operacao`. Isso permite ao componente identificar e manipular individualmente as linhas, especialmente útil quando se lida com seleção de linhas ou manipulação de dados.
+    
+    - **tableStyle=""**: Aqui, o estilo da tabela não está sendo especificado. Caso desejado, poderia ser adicionado um objeto de estilo CSS para personalizar a aparência da tabela, por exemplo, ajustando o tamanho ou a largura das colunas.
+    
+    - **removableSort**: Permite ao usuário remover a ordenação das colunas. Isso significa que, após ordenar por uma coluna, o usuário pode clicar novamente na seta de ordenação para remover a ordenação.
+    
+    - **:sortOrder="1"**: Define a direção da ordenação da tabela. O valor `1` indica ordenação crescente, ou seja, os dados serão exibidos do menor para o maior.
+    
+    - **:sortField="'Dia'"**: Define o campo pelo qual os dados serão inicialmente ordenados. Aqui, a tabela será ordenada pela coluna `Dia` em ordem crescente ao ser carregada pela primeira vez.
+-->
+
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>

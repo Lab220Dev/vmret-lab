@@ -49,12 +49,16 @@ const ListaUsuario = ref([]); // Lista de usuários
  * Função chamada ao selecionar uma linha da tabela
  * @param {Object} event - Dados do evento gerado ao selecionar uma linha
  */
-const onRowSelect = (event) => {
+ const onRowSelect = (event) => {
     visible.value = true; // Exibe o formulário de edição
     usuario.value = { ...event.data }; // Copia os dados do usuário selecionado
-    const dmIds = usuario.value.DMOptions || []; // IDs das opções de DM
+
+    // Verifica se a propriedade DMOptions existe em usuario
+    const dmIds = usuario.value?.DMOptions || []; // Se DMOptions não existir, usa um array vazio
+
     selectedDM.value = ListaDMS.value.filter(dm => dmIds.includes(dm.id_dm))
         .map(dm => ({ id_dm: dm.id_dm, Identificacao: dm.Identificacao })); // Filtra e mapeia as opções de DM selecionadas
+
     senha.value = usuario.value.senha; // Armazena a senha para edição
     SenhaBE.value = usuario.value.senha; // Armazena a senha original para comparação
     senhaAlterada.value = false; // Reseta a flag de senha alterada
@@ -117,8 +121,10 @@ const saveUsuario = async () => {
         const response = await axios.post('/UDM/adicionar', data); // Chamada API para adicionar o usuário
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 }); // Exibe a mensagem de sucesso
         fetchUsuarios(); // Atualiza a lista de usuários
-        visible.value = true; // Exibe o formulário
+        active.value = 0; // Retorna à aba inicial.
+        resetForm(); // Reseta o formulário.
     } catch (error) {
+        loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao adicionar Usuario:', error); // Mensagem de erro
     } finally {
         loading.value = false; // Desativa o carregamento
@@ -190,8 +196,9 @@ watch(() => filters.value.global.value, () => {
 /**
  * Watch para controlar a mudança de abas
  */
-watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
+ watch(active, (newIndex, oldIndex) => {
+    // Quando a aba ativa mudar para "listagem de usuários" (aba 0)
+    if (newIndex === 0 && oldIndex !== newIndex) {
         resetForm(); // Reseta o formulário
         fetchUsuarios(); // Atualiza a lista de usuários
         visible.value = false; // Oculta o formulário
@@ -256,13 +263,11 @@ const deleteUsuario = async (item) => {
  * Função para resetar o formulário
  */
  const resetForm = () => {
-    usuario.nome = ''; // Reseta o nome
-    usuario.email = ''; // Reseta o email
-    usuario.perfil = ''; // Reseta o perfil
-    usuario.planta = ''; // Reseta a planta
-    usuario.senha = ''; // Reseta a senha
-    usuario.login = ''; // Reseta o login
-    usuario.ativo = true; // Reseta o estado de ativo
+    usuario.value.nome = ''; // Reseta o nome
+    usuario.value.login = ''; // Reseta o login
+    usuario.value.senha = ''; // Reseta a senha
+    usuario.value.ativo = true; // Reseta o estado de ativo
+    selectedDM.value = []; // Reseta as opções de DM
     senha.value = ''; // Reseta o campo "Confirme a Senha"
     SenhaBE.value = ''; // Reseta a senha original
     senhaAlterada.value = false; // Reseta a flag de senha alterada
@@ -300,6 +305,19 @@ const deleteUsuario = async (item) => {
                                 :sortOrder="1" 
                                 :sortField="'nome'" 
                             >
+
+                            <!-- A tabela exibe os dados provenientes de "ListaUsuario" -->
+                                <!-- Aplica um estilo de linhas alternadas para melhorar a legibilidade -->
+                                <!-- Permite ao usuário remover a ordenação clicando novamente na coluna que está sendo usada para ordenar -->
+                                <!-- Habilita a funcionalidade de paginação para dividir os dados em várias páginas -->
+                                <!-- O número de linhas por página é fixado em 10 -->
+                                <!-- As opções de quantidade de itens por página são 5, 10, 20 ou 50 -->
+                                <!-- O campo "id" é utilizado como chave única para cada linha da tabela -->
+                                <!-- Permite selecionar apenas uma linha por vez -->
+                                <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
+                                <!-- Quando uma linha é selecionada, a função "onRowSelect" é chamada -->
+                                <!-- A ordenação inicial é definida por "nome" com ordem crescente -->
+                            
                                 <!-- Cabeçalho da tabela com filtro e contagem -->
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
@@ -418,6 +436,15 @@ const deleteUsuario = async (item) => {
                                 :size="small"
                                 removableSort
                                 :sortOrder="1">
+
+                                <!-- A tabela exibe os dados provenientes de 'ListaDMS' -->
+                                 <!-- As linhas da tabela têm um estilo de alternância (listradas) para facilitar a leitura -->
+                                <!-- A tabela tem uma largura mínima de 50rem e um layout fixo para garantir que as colunas tenham larguras constantes -->
+                                <!-- Permite ao usuário escolher entre várias opções de quantidade de linhas por página: 5, 10, 20 ou 50 -->
+                                <!-- A tabela pode ser filtrada globalmente pelos campos 'label' -->
+                                <!-- Permite a remoção da ordenação clicando novamente na coluna usada para ordenar -->
+                                <!-- A tabela é paginada com 10 linhas por página, e o usuário pode navegar entre as páginas -->
+
                                 <!-- Cabeçalho da tabela de DMs -->
                                 <template #header>
                                     <div class="flex justify-content-end">

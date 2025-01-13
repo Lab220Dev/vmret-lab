@@ -435,7 +435,14 @@ onMounted(() => {
                         <template #title>Detalhes do Produto</template>
                         <template #content>
                             <!-- DataTable dos detalhes do item -->
-                            <DataTable :value="selectedItem" stripedRows showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                            <DataTable 
+                            :value="selectedItem" 
+                            stripedRows 
+                            showGridlines 
+                            paginator 
+                            :rows="10" 
+                            :rowsPerPageOptions="[5, 10, 20, 50]" 
+                            rowHover>
                                 <Column field="ProdutoNome" sortable header="Item"></Column>  <!-- Coluna para o nome do item -->
                                 <Column field="Data" sortable header="Data"></Column>  <!-- Coluna para a data -->
                                 <Column field="Quantidade" sortable header="Quantidade"> </Column>  <!-- Coluna para a quantidade -->

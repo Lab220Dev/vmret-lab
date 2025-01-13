@@ -126,3 +126,13 @@ export const validarCNPJ = (cnpj) => {
     resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);  // Calcula o segundo dígito verificador.
     return resultado == digitos.charAt(1);  // Retorna `true` se o segundo dígito verificador for válido, caso contrário `false`.
 };
+
+export const isValidVideoFile = (file) => {
+    if (!file.type.includes('mp4')) {
+        return { valid: false, error: 'Apenas arquivos .mp4 são permitidos.' };
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };
+    }
+    return { valid: true };
+};
