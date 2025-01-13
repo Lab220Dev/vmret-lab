@@ -10,6 +10,7 @@
                 <template #body="slotProps">
                     <!-- Botão de Editar: Exibe o diálogo de associar vídeo -->
                     <Button label="Editar" icon="pi pi-pencil" class="p-button-sm p-button-warning" @click="editDM(slotProps.data)" />
+                    <Button label="Deletar" icon="pi pi-trash" class="p-button-sm p-button-danger" @click="deleteDM(slotProps.data)" />
                 </template>
             </Column>
         </DataTable>
@@ -42,7 +43,21 @@
                 <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
             </div>
         </Dialog>
+        <Dialog v-model:visible="showDeleteDialog" header="Apagar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false">
+            <hr class="my-0" />
+            <div class="m-5">
+                <p class="text-sm "><strong>Você tem certeza que quer apagar o video:</strong></p>
+                <p class="text-sm ">{{ selectedDM.Video }}</p>
+            </div>
 
+            <hr />
+            <!-- Botões de ação para salvar ou cancelar -->
+
+            <div class="button-group flex justify-content-between mt-3">
+                <Button label="Deletar" icon="pi pi-trash" class="p-button-sm p-button-danger"  @click="handleDelete" />
+                <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
+            </div>
+        </Dialog>
         <!-- Spinner de carregamento enquanto o vídeo está sendo enviado -->
         <LoadingSpinner v-if="loading" />
     </div>
@@ -67,6 +82,7 @@ const dmOptions = computed(() => props.dmList);
 const loading = ref(false); // Flag de carregamento
 const emit = defineEmits(['update-video']); // Emissão de evento para o componente pai
 const showDialog = ref(false); // Controle de exibição do diálogo
+const showDeleteDialog = ref(false); // Controle do diálogo de exclusão de video
 const selectedDM = ref(null); // DM selecionada para associar o vídeo
 const fileInput = ref(null); // Ref para o input de arquivo
 const selectedFile = ref(null); // Arquivo de vídeo selecionado
@@ -79,7 +95,10 @@ const editDM = (dm) => {
     selectedDM.value = dm;
     showDialog.value = true;
 };
-
+const deleteDM = (dm) => {
+    selectedDM.value = dm;
+    showDeleteDialog.value = true;
+};
 // Função que simula o clique no campo de seleção de arquivos
 const triggerFileInput = () => {
     fileInput.value.click();
@@ -129,7 +148,16 @@ const handleFileUpdate = (updatedFile) => {
     props.dmList[fileIndex] = updatedFile;
   }
 }
-
+const handleDelete = async () => {
+    try {
+        await videoService.deleteVideo(selectedDM.value.ID_DM);
+        emit('update-video', { dmId: selectedDM.value.ID_DM, video: null });
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Vídeo apagado com sucesso.', life: 3000 });
+        closeDialog();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao apagar o vídeo.', life: 3000 });
+    }
+};
 // Função para realizar o upload do vídeo
 const uploadVideo = async () => {
   if (!selectedFile.value) {
@@ -168,6 +196,7 @@ const uploadVideo = async () => {
 // Função para fechar o diálogo
 const closeDialog = () => {
     showDialog.value = false;
+    showDeleteDialog.value = false;
     selectedDM.value = null;
     selectedFile.value = null;
     uploadProgress.value = 0;

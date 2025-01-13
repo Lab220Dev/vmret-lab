@@ -108,16 +108,8 @@ const buscar = async () => {
         data_final: toISODate(relatorio.value.data_final)
     };
     try {
-        loading.value = true; // Ativa o spinner de carregamento
-
-        // Realiza a requisição via axios para buscar os dados
-        const response = await axios.post('relatorioRetiRe/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Envia o token de autenticação no cabeçalho
-            }
-        });
-
-        // Atribui os dados da resposta à variável "retiradas"
+        loading.value = true;
+        const response = await axios.post('relatorioRetiRe/relatorio', data);
         retiradas.value = response.data;
 
         // Atualiza a contagem de registros

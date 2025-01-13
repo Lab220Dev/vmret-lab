@@ -211,12 +211,12 @@ const filterFuncionarios = () => {
             const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true; // Verifica se o setor corresponde
             const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true; // Verifica se a planta corresponde
 
-            return matchesSetor && matchesPlanta; // Retorna os funcionários que correspondem aos filtros
-        });
-    } else {
-        // Se não houver filtros, exibe todos os funcionários
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-    }
+      return matchesSetor && matchesPlanta;
+    });
+  } else {
+    // Se não tiver filtro, exibe todos os funcionários
+    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+  }
 };
 
 // Função chamada quando o datepicker é aberto, fecha todos os dropdowns
@@ -256,7 +256,7 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionariosFiltrado" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>

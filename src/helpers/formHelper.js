@@ -106,57 +106,111 @@ export const resetGenericForm = (form, initialState) => {
   });
 };
 
-/**
-* Reseta o formulário de **Planta**.
-* @param {Object} planta - Objeto da planta que será resetado.
-*/
 export const resetPlantaForm = (planta) => {
-  // Redefine os campos do objeto planta para os valores iniciais
-  Object.assign(planta, {
-    nome: '', // Nome da planta
-    id_planta: '', // ID da planta
-    userId: '', // ID do usuário associado à planta
-    senha: '', // Senha do usuário
-    urlapi: '', // URL da API associada à planta
-    clienteid: '', // ID do cliente associado à planta
-  });
-};
-
-/**
-* Reseta o formulário de **Produto**.
-* @param {Object} produto - Objeto do produto que será resetado.
-* @param {Object[]} imageRefs - Referências para as imagens associadas ao produto.
-*/
-export const resetProdutoForm = (produto, imageRefs) => {
-  // Redefine os campos do produto para os valores iniciais
-  Object.assign(produto, {
-    codigo: '', // Código do produto
-    id_planta: '', // ID da planta onde o produto é utilizado
-    id_tipoProduto: '', // ID do tipo de produto
-    id_categoria: '', // ID da categoria do produto
-    nome: '', // Nome do produto
-    descricao: ' ', // Descrição do produto
-    unidade_medida: '', // Unidade de medida do produto
-    validadedias: 0, // Validade do produto em dias
-  });
-
-  // Se existem referências de imagens, redefine cada uma delas para null
-  if (imageRefs) {
-    imageRefs.forEach((imageRef) => {
-      if (imageRef) imageRef.value = null; // Limpa a referência de cada imagem
+    Object.assign(planta, {
+        nome: '',
+        id_planta: '',
+        userId: '',
+        senha: '',
+        urlapi: '',
+        clienteid: ''
     });
-  }
+};
+
+export const resetProdutoForm = (produto, imageRefs) => {
+    Object.assign(produto, {
+        codigo: '',
+        id_planta: '',
+        id_tipoProduto: '',
+        id_categoria: '',
+        nome: '',
+        descricao: ' ',
+        unidade_medida: '',
+        validadedias: 0
+    });
+
+    if (imageRefs) {
+        imageRefs.forEach((imageRef) => {
+            if (imageRef) imageRef.value = null;
+        });
+    }
+};
+
+export const resetSetorForm = (setor) => {
+    Object.assign(setor, {
+        codigo: '',
+        nome: '',
+        id_centro_custo: ''
+    });
 };
 
 /**
-* Reseta o formulário de **Setor**.
-* @param {Object} setor - Objeto do setor que será resetado.
-*/
-export const resetSetorForm = (setor) => {
-  // Redefine os campos do setor para os valores iniciais
-  Object.assign(setor, {
-    codigo: '', // Código do setor
-    nome: '', // Nome do setor
-    id_centro_custo: '', // ID do centro de custo associado ao setor
-  });
+ * Reseta o formulário de DM (Dispositivo de Monitoramento).
+ * @param {Object} DM - Objeto reativo do DM a ser resetado.
+ * @param {Object[]} Controladoras - Lista de controladoras reativas.
+ * @param {Object} selectedClient - Objeto reativo do cliente selecionado.
+ * @param {Object} nextValues - Valores iniciais para tipos de controladoras.
+ */
+export const resetDMForm = (DM, Controladoras, selectedClient, nextValues) => {
+    Object.assign(DM, {
+        Ativo: '',
+        Chave: '',
+        ChaveAPI: '',
+        ClienteID: '',
+        ClienteNome: '',
+        Created: '',
+        Enviada: '',
+        ID_CR_Usuario: '',
+        ID_DM: '',
+        IDcliente: '',
+        Identificacao: '',
+        Integracao: '',
+        Numero: '',
+        OP_Biometria: '',
+        OP_Facial: '',
+        OP_Senha: '',
+        URL: '',
+        Updated: '',
+        UserID: '',
+        Versao: '',
+        Devolucao: '',
+        ID_Cliente: null
+    });
+
+    Controladoras.value = [];
+    selectedClient.value = { id_cliente: '', nome_cliente: '', usar_api: false };
+
+    Object.assign(nextValues['2018'], { placa: 12 });
+    Object.assign(nextValues['2023'], { dip: 2 });
+    Object.assign(nextValues['Locker'], { dip: 2 });
+    Object.assign(nextValues['2024'], { placa: 101 });
+};
+/**
+ * Reseta o objeto do produto selecionado para seus valores iniciais.
+ *
+ * @param {Object} produtoSelecionado - Objeto referenciado do produto selecionado.
+ * @param {Object} produtoSelecionado.value - Valor atual do produto selecionado que será resetado.
+ * @property {string} id_produto - Identificador do produto.
+ * @property {string} Porta - Porta associada ao produto.
+ * @property {string} Motor1 - Identificador do primeiro motor associado ao produto.
+ * @property {string} Motor2 - Identificador do segundo motor associado ao produto.
+ * @property {string} Controladora - Controladora associada ao produto.
+ * @property {string} Posicao - Posição associada ao produto.
+ * @property {string} Andar - Andar associado ao produto.
+ */
+export const resetProdutoSelecionado = (produtoSelecionado) => {
+    produtoSelecionado.value = {
+        id_item: '',
+        id_produto: '',
+        Nome_Produto: '',
+        QTD: '',
+        SKU: '',
+        Controladora: '',
+        Motor1: null,
+        Motor2: null,
+        Dip: null,
+        Andar: null,
+        Posicao: null,
+        Capacidade: null
+    };
 };

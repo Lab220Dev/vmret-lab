@@ -23,18 +23,18 @@ const dashboardService = {
    */
   async fetchAdminData() {
     try {
-      // Realiza múltiplas requisições de forma paralela com Promise.all, buscando dados para o painel administrativo.
-      const [dadosResponse, listaResponse, notificacoesResponse] = await Promise.all([
-        axios.post('/dashboard/DadosClientes'),  // Requisição para buscar dados dos clientes.
-        axios.post('/dashboard/ResumoDados'),    // Requisição para buscar um resumo de dados.
-        axios.post('/dashboard/UltimasNotificacoes'), // Requisição para buscar últimas notificações.
+      // const [dadosResponse, listaResponse, notificacoesResponse] = await Promise.all([
+      //   axios.post('/dashboard/DadosClientes'),
+      //   axios.post('/dashboard/ResumoDados'),
+      //   axios.post('/dashboard/UltimasNotificacoes'),
+      // ]);
+      const [dadosResponse, notificacoesResponse] = await Promise.all([
+        axios.post('/dashboard/DadosClientes'),
+        axios.post('/dashboard/UltimasNotificacoes'),
       ]);
-
-      // Retorna os dados recebidos das requisições.
       return {
-        dados: dadosResponse.data,  // Dados dos clientes.
-        lista: listaResponse.data,  // Resumo dos dados.
-        notificacoes: notificacoesResponse.data,  // Notificações.
+        dados: dadosResponse.data,
+        notificacoes: notificacoesResponse.data,
       };
     } catch (error) {
       // Em caso de erro, loga a mensagem de erro no console.

@@ -1,13 +1,11 @@
 <script setup>
-// Importa funções e componentes necessários do Vue
-import { ref, onMounted } from 'vue'; // Funções para reatividade e ciclo de vida
-import VueDatePicker from '@vuepic/vue-datepicker'; // Componente de seleção de data
-import axios from '@/axios.js'; // Instância do axios para realizar requisições HTTP
-import { useAuthStore } from '@/store/authStore.js'; // Store de autenticação para acessar dados do usuário
-import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de loading para indicar requisições em andamento
-
-// Variáveis reativas
-const liberAv = ref([ // Opções de filtro para as liberações avulsas (matrícula ou voucher)
+import { ref, onMounted } from 'vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import axios from '@/axios.js';
+import { useAuthStore } from '@/store/authStore.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import {relatorioService}  from '@/services/relatorioService.js';
+const liberAv = ref([
     { label: 'Matrícula', value: '1' },
     { label: 'Voucher', value: '2' }
 ]);
