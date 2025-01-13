@@ -104,6 +104,7 @@ const deleteCentro = async () => {
         deleteCentroDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
+        active.value = 0; // Volta para a aba de listagem
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o centro de custo' }); // Exibe mensagem de erro caso falhe
     }
@@ -232,7 +233,7 @@ onMounted(() => {
 
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_centro_custo">Código:</label>
-                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
+                                        <InputNumber class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Centro de Custo (Nome):</label>

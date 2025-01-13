@@ -216,7 +216,7 @@ onMounted(() => loadPlanta());
                                         <div v-if="integracao" class="my-3 grid">
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="userid">UserID:</label>
-                                                <InputText class="my-2" id="userid" v-model="planta.userId" required />
+                                                <InputText class="my-2" id="userid" v-model="planta.userid" required />
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="senha">Senha:</label>
@@ -228,7 +228,7 @@ onMounted(() => loadPlanta());
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="idcliente">ID Cliente:</label>
-                                                <InputText class="my-2" id="idcliente" v-model="planta.clienteid" required />
+                                                <InputText class="my-2" id="idcliente" v-model="planta.clientid" required />
                                             </div>
                                         </div>
                                     </div>
