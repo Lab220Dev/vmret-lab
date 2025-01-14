@@ -5,19 +5,20 @@ import { FilterMatchMode } from 'primevue/api'; // Função da biblioteca PrimeV
 import { useToast } from 'primevue/usetoast'; // Hook de notificação Toast da PrimeVue
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilos do VueDatePicker
 import { ref, onMounted, watch } from 'vue'; // Funções do Vue (reactividade, lifecycle, watch)
-import axios from '@/axios.js'; // Instância axios personalizada
 import { useAuthStore } from '@/store/authStore.js'; // Composição de store para autenticação
+import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de Spinner de carregamento
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 
 // Definindo as variáveis reativas do componente
 const filteredCount = ref(0); // Contagem filtrada de itens na tabela
 const showDialog = ref(false); // Controle de visibilidade do diálogo de erro
 const dialogMessage = ref(''); // Mensagem a ser exibida no diálogo de erro
-const originalSetores = ref([]); // Armazena dados originais de setores
 const loading = ref(false); // Controle de carregamento da requisição
-const originalFuncionarios = ref([]); // Armazena dados originais de funcionários
-const store = useAuthStore(); // Acesso à store de autenticação
+const dataStore = useDataStore(); // Acesso à store de dados
 const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem quando não há dados
+const toast = useToast();
 const retiradas = ref([]); // Dados das retiradas a serem exibidos na tabela
 const dropdown1 = ref(null); // Referências para os dropdowns usados nos filtros
 const dropdown2 = ref(null);
@@ -31,6 +32,8 @@ const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dro
 
 // Dados para as opções dos filtros
 const ListaFuncionarios = ref(null); // Lista de funcionários
+const ListaFuncionariosOriginal = ref(null); // Lista de funcionários
+const ListaSetorOriginal = ref(null); // Lista de funcionários
 const dms = ref([todosOption]); // Lista de DMs
 const plantas = ref([todosOption]); // Lista de plantas
 const setor = ref([todosOption]); // Lista de setores
@@ -57,44 +60,12 @@ const relatorio = ref({
     data_final: new Date() // Data final padrão (data atual)
 });
 
-// Função para formatar a data no formato dd/mm/yyyy
-const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // Meses começam do zero, então somamos 1
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-};
-
-// Função para converter a data para o formato ISO
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null; // Retorna a data formatada em ISO, ou null se não houver data
-};
-
 // Função para buscar os dados do relatório
 const buscar = async () => {
-    // Estrutura dos dados que serão enviados na requisição
-    const data = {
-        id_usuario: store.userId, // ID do usuário autenticado
-        id_cliente: store.userIdCliente, // ID do cliente
-        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm, // Filtro DM (se não for selecionado, não é enviado)
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta, // Filtro Planta
-        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo, // Filtro Centro de Custo
-        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor, // Filtro Setor
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario, // Filtro Funcionário
-        data_inicio: toISODate(relatorio.value.data_inicio), // Data de início formatada em ISO
-        data_final: toISODate(relatorio.value.data_final) // Data final formatada em ISO
-    };
 
     try {
         loading.value = true; // Ativa o carregamento
-        const response = await axios.post('', data, {
-            // Envia a requisição para a API
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autorização para a requisição
-            }
-        });
-
-        retiradas.value = response.data; // Dados recebidos da requisição
+        retiradas.value = await relatorioService.retiradaAvulsas(relatorio);
         filteredCount.value = retiradas.value.length; // Atualiza a contagem dos itens filtrados
 
         // Verifica se não há dados no retorno da requisição
@@ -110,6 +81,7 @@ const buscar = async () => {
             emptyMessage.value = ''; // Limpa a mensagem de erro se houver dados
         }
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
         // Se ocorrer erro na requisição, exibe no console
         console.error('Erro ao buscar dados:', error);
     } finally {
@@ -126,142 +98,6 @@ const voltar = () => {
 // Referência da tabela
 const dt = ref(null);
 
-// Função para buscar os DMs
-const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-
-    try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-
-        dms.value = [
-            todosOption, // Adiciona a opção "Todos"
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`, // Identificação do DM
-                value: ID_DM // Valor do DM
-            }))
-        ];
-    } catch (error) {
-        // Mensagem de erro ao carregar a lista de DMs
-        console.error('Erro ao carregar lista de dms:', error);
-    }
-};
-
-// Função para buscar as plantas
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-
-    try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-
-        // Atualiza a lista de plantas
-        plantas.value = [
-            todosOption, // Adiciona a opção "Todos"
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`, // Nome da planta
-                value: id_planta // ID da planta
-            }))
-        ];
-    } catch (error) {
-        // Mensagem de erro ao carregar plantas
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-
-// Função para buscar os setores
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-
-    try {
-        const response = await axios.post('Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-
-        // Atualiza a lista de setores
-        originalSetores.value = response.data;
-        setor.value = [
-            todosOption, // Adiciona a opção "Todos"
-            ...response.data.map(({ id_setor, nome }) => ({
-                label: `Setor  ${nome}`, // Nome do setor
-                value: id_setor // ID do setor
-            }))
-        ];
-    } catch (error) {
-        // Mensagem de erro ao carregar setores/diretorias
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-
-// Função para buscar os centros de custo
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-
-    try {
-        const response = await axios.post('cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-
-        // Atualiza a lista de centros de custo
-        centroCusto.value = [
-            todosOption, // Adiciona a opção "Todos"
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`, // Nome do centro de custo
-                value: ID_CentroCusto // ID do centro de custo
-            }))
-        ];
-    } catch (error) {
-        // Mensagem de erro ao carregar centros de custo
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
-
-// Função para buscar os funcionários
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-
-        // Atualiza os dados de funcionários
-        originalFuncionarios.value = response.data;
-        ListaFuncionarios.value = [
-            todosOption, // Adiciona a opção "Todos"
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome, // Nome do funcionário
-                value: funcionario.id_funcionario // ID do funcionário
-            }))
-        ];
-    } catch (error) {
-        // Mensagem de erro ao carregar funcionários
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
-
 // Função para fechar todos os dropdowns
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown1 se estiver aberto
@@ -271,65 +107,9 @@ const closeAllDropdowns = () => {
     if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o dropdown5 se estiver aberto
     if (dropdown6.value?.overlayVisible) dropdown6.value.hide(); // Fecha o dropdown6 se estiver aberto
 };
-
-// Função para filtrar setores conforme o centro de custo
-const filterSetores = () => {
-    let filteredSetores = originalSetores.value; // Começa com todos os setores
-
-    // Se houver um centro de custo selecionado, filtra os setores conforme o centro de custo
-    if (relatorio.value.id_centro_custo) {
-        filteredSetores = filteredSetores.filter((s) => s.id_centro_custo === relatorio.value.id_centro_custo);
-    }
-
-    // Atualiza a lista de setores filtrados
-    setor.value = [
-        todosOption, // Adiciona a opção "Todos"
-        ...filteredSetores.map(({ id_setor, nome }) => ({
-            label: `Setor ${nome}`, // Nome do setor
-            value: id_setor // ID do setor
-        }))
-    ];
+const filtroGenerico = () => {
+    filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, setor);
 };
-
-// Função para filtrar funcionários conforme os filtros aplicados
-const filterFuncionarios = () => {
-    let filteredFuncionarios = originalFuncionarios.value; // Começa com todos os funcionários
-
-    // Filtra os funcionários conforme planta, setor e centro de custo
-    if (relatorio.value.id_planta) {
-        filteredFuncionarios = filteredFuncionarios.filter((f) => f.id_planta === relatorio.value.id_planta);
-    }
-    if (relatorio.value.id_setor) {
-        filteredFuncionarios = filteredFuncionarios.filter((f) => f.id_setor === relatorio.value.id_setor);
-    }
-    if (relatorio.value.id_centro_custo) {
-        filteredFuncionarios = filteredFuncionarios.filter((f) => f.id_centro_custo === relatorio.value.id_centro_custo);
-    }
-
-    // Atualiza a lista de funcionários filtrados
-    ListaFuncionarios.value = [
-        todosOption, // Adiciona a opção "Todos"
-        ...filteredFuncionarios.map((funcionario) => ({
-            label: funcionario.nome, // Nome do funcionário
-            value: funcionario.id_funcionario // ID do funcionário
-        }))
-    ];
-};
-
-// Observador para filtrar os funcionários quando os filtros de planta, setor ou centro de custo mudam
-watch(
-    () => [relatorio.value.id_planta, relatorio.value.id_setor, relatorio.value.id_centro_custo],
-    filterFuncionarios // Chama a função filterFuncionarios sempre que os filtros mudam
-);
-
-// Observador para filtrar setores quando o centro de custo muda
-watch(
-    () => relatorio.value.id_centro_custo,
-    (newValue, oldValue) => {
-        console.log('Centro de Custo mudou:', oldValue, '->', newValue); // Loga a mudança do centro de custo
-        filterSetores(); // Filtra setores conforme o novo centro de custo
-    }
-);
 
 // Observador para atualizar a contagem dos itens filtrados quando o filtro global for alterado
 watch(
@@ -347,14 +127,26 @@ watch(
 const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns quando o DatePicker for aberto
 };
-
+const loadData = async () => {
+    loading.value = true;
+    try {
+        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
+        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        setor.value = ListaSetorOriginal.value; // Carrega a lista de setores
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
+    }finally{
+        loading.value = false;
+    }
+   
+};
 // Função chamada ao montar o componente
 onMounted(() => {
-    fetchDM(); // Busca os DMs
-    fetchIdPlanta(); // Busca as plantas
-    fetchSetorDiretoria(); // Busca os setores/diretorias
-    fetchFuncionarios(); // Busca os funcionários
-    fetchCentroCusto(); // Busca os centros de custo
+    loadData();
 });
 </script>
 
@@ -380,21 +172,21 @@ onMounted(() => {
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <!-- Dropdown para selecionar Planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2"  @change="filtroGenerico"/>
                     </div>
 
                     <!-- Campo de filtro para Setor -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
                         <!-- Dropdown para selecionar Setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Centro de Custo -->
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <!-- Dropdown para selecionar Centro de Custo -->
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4"  @change="filtroGenerico"/>
                     </div>
 
                     <!-- Campo de filtro para Funcionário -->
@@ -420,7 +212,7 @@ onMounted(() => {
                             v-model="relatorio.data_inicio"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             ref="datepicker1"
@@ -440,7 +232,7 @@ onMounted(() => {
                             v-model="relatorio.data_final"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             ref="datepicker1"

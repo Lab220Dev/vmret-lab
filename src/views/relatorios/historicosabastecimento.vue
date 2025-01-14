@@ -27,7 +27,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
  * Importa as funções reativas e do ciclo de vida do Vue, como `ref`, `onMounted`, e `watch`.
  * @module vue
  */
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 
 /**
  * Importa o Axios configurado para realizar requisições HTTP.
@@ -46,6 +46,9 @@ import { useAuthStore } from '@/store/authStore.js';
  * @module components/LoadingSpinner.vue
  */
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import {  formatDateToString, formatarDataHora } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 
 // Definindo referências reativas para a UI e lógica do aplicativo.
 
@@ -77,7 +80,7 @@ const loading = ref(false);
  * Armazena a store de autenticação para o usuário atual.
  * @type {object}
  */
-const store = useAuthStore();
+const dataStore = useDataStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
 
 /**
  * Serviço de Toast para exibir mensagens.
@@ -118,6 +121,7 @@ const todosOption = { label: 'Todos', value: null };
  * @type {ref<Array<object>>}
  */
 const ListaOperador = ref(null);
+const ListaOperadorOriginal = ref(null);
 
 /**
  * Lista de DM's disponíveis.
@@ -136,6 +140,7 @@ const plantas = ref([todosOption]);
  * @type {ref<Array<object>>}
  */
 const setor = ref([todosOption]);
+const ListaSetorOriginal = ref([todosOption]);
 
 /**
  * Lista de centros de custo disponíveis.
@@ -152,18 +157,6 @@ const filters = ref({
 });
 
 /**
- * Flag para exibir a busca ou o resultado dos dados.
- * @type {ref<boolean>}
- */
-const show = ref(true);
-
-/**
- * Item selecionado para exibir mais detalhes.
- * @type {ref<Array<object>>}
- */
-const selectedItem = ref([]);
-
-/**
  * Objeto contendo os dados do relatório, com filtros específicos.
  * @type {ref<object>}
  */
@@ -178,60 +171,14 @@ const relatorio = ref({
 });
 
 /**
- * Formata a data no formato `dia/mês/ano`.
- * @param {Date} date A data a ser formatada.
- * @returns {string} A data formatada.
- */
-const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-};
-
-/**
- * Formata a data com horas e minutos no formato `dia/mês/ano - hora:minuto`.
- * @param {Date} date A data a ser formatada.
- * @returns {string} A data formatada com horas e minutos.
- */
-const formatTabela = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    const horas = date.getHours().toString().padStart(2, '0');
-    const minutos = date.getMinutes().toString().padStart(2, '0');
-    return `${day}/${month}/${year} - ${horas}:${minutos}`;
-};
-
-/**
- * Converte uma data para o formato ISO.
- * @param {Date} date A data a ser convertida.
- * @returns {string|null} A data convertida para o formato ISO ou `null` se a data for inválida.
- */
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null;
-};
-
-/**
  * Função para buscar o histórico de abastecimento com base nos filtros.
  * @async
  * @returns {Promise<void>}
  */
  const buscar = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final),
-        id_operador: relatorio.value.id_operador
-    };
     try {
         loading.value = true;
-        const response = await axios.post('/HistoricoAbastecimento/relatorio', data);
-        historico.value = response.data;
-
+        historico.value = await relatorioService.historicoAbastecimento(relatorio);
         filteredCount.value = historico.value.length;
 
         if (historico.value.length === 0) {
@@ -246,179 +193,6 @@ const toISODate = (date) => {
     }
 };
 
-/**
- * Função para voltar à tela inicial, limpando as seleções e exibindo a busca.
- */
-const voltar = () => {
-    show.value = true; // Exibe a tela de busca
-    selectedItem.value = {}; // Limpa o item selecionado
-};
-
-/**
- * Função para gerar conteúdo em CSV a partir dos dados fornecidos.
- * @param {Array<object>} data Dados a serem exportados em CSV.
- * @returns {string} O conteúdo CSV gerado.
- */
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(','); // Gera cabeçalhos a partir das chaves dos objetos
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n'); // Converte as linhas em CSV
-    return `${headers}\n${rows}`; // Retorna o conteúdo CSV
-};
-
-/**
- * Função para exportar os dados do histórico em formato CSV.
- * Gera um arquivo CSV e inicia o download.
- */
-const exportCSV = () => {
-    const csvContent = generateCSV(historico.value); // Gera o CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); // Cria o Blob com o conteúdo CSV
-    const link = document.createElement('a'); // Cria um link para o download
-    const url = URL.createObjectURL(blob); // Cria uma URL temporária para o Blob
-    link.setAttribute('href', url); // Atribui a URL ao link
-    link.setAttribute('download', 'HistoricoAbastecimento.csv'); // Define o nome do arquivo
-    document.body.appendChild(link); // Adiciona o link ao DOM
-    link.click(); // Simula o clique no link para iniciar o download
-    document.body.removeChild(link); // Remove o link do DOM
-};
-
-/**
- * Função para exportar os dados do histórico em formato JSON.
- * Gera um arquivo JSON e inicia o download.
- */
-const exportJSON = () => {
-    const jsonContent = JSON.stringify(historico.value, null, 2); // Converte os dados para formato JSON
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' }); // Cria o Blob com o conteúdo JSON
-    const link = document.createElement('a'); // Cria um link para o download
-    const url = URL.createObjectURL(blob); // Cria uma URL temporária para o Blob
-    link.setAttribute('href', url); // Atribui a URL ao link
-    link.setAttribute('download', 'HistoricoAbastecimento.json'); // Define o nome do arquivo
-    document.body.appendChild(link); // Adiciona o link ao DOM
-    link.click(); // Simula o clique no link para iniciar o download
-    document.body.removeChild(link); // Remove o link do DOM
-};
-
-/**
- * Função para carregar as opções de DM's disponíveis.
- * @async
- * @returns {Promise<void>}
- */
-const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-    try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-        dms.value = [
-            todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`,
-                value: ID_DM
-            }))
-        ]; // Atualiza a lista de DM's com os dados da resposta
-    } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error); // Exibe erro se houver falha
-        toast.add({ severity: 'error', summary: 'Erro', detail: "Não foi possível carregar os DM's. Tente novamente." }); // Exibe uma mensagem de erro
-    }
-};
-
-/**
- * Função para carregar as opções de plantas disponíveis.
- * @async
- * @returns {Promise<void>}
- */
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // ID do cliente
-    };
-    try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Token de autenticação
-            }
-        });
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`,
-                value: id_planta
-            }))
-        ]; // Atualiza a lista de plantas
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error); // Exibe erro se houver falha
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as plantas. Tente novamente.' }); // Exibe uma mensagem de erro
-    }
-};
-
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        setor.value = [
-            todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
-                label: `Setor  ${nome}`,
-                value: id_setor
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
-
-
-const fetchOperador = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listarOperarios', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaOperador.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_operador
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
 
 /**
  * Função para fechar todos os dropdowns abertos.
@@ -438,15 +212,26 @@ const closeAllDropdowns = () => {
 const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns ao abrir o date picker
 };
-
+const loadData = async () => {
+    loading.value = true;
+    try {
+        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
+        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        setor.value = ListaSetorOriginal.value; // Carrega a lista de setores
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        ListaOperador.value = await relatorioService.listaOperador();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
+    }finally{
+        loading.value = false;
+    }
+   
+};
 // Função executada quando o componente é montado.
 // Carrega todas as opções de filtros ao carregar o componente.
 onMounted(() => {
-    fetchDM(); // Carrega a lista de DM's
-    fetchIdPlanta(); // Carrega a lista de plantas
-    fetchSetorDiretoria(); // Carrega a lista de setores
-    fetchOperador(); // Carrega a lista de operadores
-    fetchCentroCusto(); // Carrega a lista de centros de custo
+    loadData();
 });
 </script>
 
@@ -461,7 +246,7 @@ onMounted(() => {
                 <h5 class="my-4 text-2xl">Histórico de Abastecimento</h5>
 
                 <!-- Condição para exibir os campos de filtro -->
-                <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
+                <div class="p-0 m-0 p-fluid formgrid grid col-12" >
                     <!-- Filtro de DM (Documento de Movimento) -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="dm">DM:</label>
@@ -502,7 +287,7 @@ onMounted(() => {
                             v-model="relatorio.data_inicio"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
@@ -520,7 +305,7 @@ onMounted(() => {
                             v-model="relatorio.data_final"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
@@ -586,7 +371,7 @@ onMounted(() => {
                         <Column field="Maquina" sortable header="DM"></Column>
                         <Column field="Dia" sortable class="table-cell" style="width: 25%" header="Data">
                             <template #body="{ data }">
-                                {{ formatTabela(new Date(data.Dia)) }}
+                                {{ formatarDataHora(new Date(data.Dia)) }}
                                 <!-- Formata a data para o formato correto -->
                             </template>
                         </Column>
@@ -596,15 +381,6 @@ onMounted(() => {
                         <Column field="posicao" sortable header="Posição"></Column>
                     </DataTable>
                 </div>
-
-                <!-- Exibe o conteúdo do histórico selecionado quando show for false -->
-                <Card v-if="!show">
-                    <template #title>{{ selectedItem.dm }}</template>
-                    <template #content>
-                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
-                        <!-- Botão para voltar -->
-                    </template>
-                </Card>
             </div>
         </div>
     </div>

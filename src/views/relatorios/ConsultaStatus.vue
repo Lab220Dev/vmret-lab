@@ -4,7 +4,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import {relatorioService}  from '@/services/relatorioService.js';
+import relatorioService  from '@/services/relatorioService.js';
 const liberAv = ref([
     { label: 'Matrícula', value: '1' },
     { label: 'Voucher', value: '2' }

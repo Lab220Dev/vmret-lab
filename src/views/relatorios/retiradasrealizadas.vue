@@ -4,9 +4,11 @@ import { FilterMatchMode } from 'primevue/api'; // Importa o modo de filtro para
 import { useToast } from 'primevue/usetoast'; // Importa o serviço de toast para mensagens rápidas
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS necessário para o VueDatePicker
 import { ref, onMounted, watch } from 'vue'; // Importa os hooks do Vue (ref, onMounted, watch)
-import axios from '@/axios.js'; // Importa a instância de axios configurada para requisições HTTP
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para obter dados de usuário e token
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, toISODate } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 
 const showDialog = ref(false); // Controla a visibilidade do dialog de erro
 const dialogMessage = ref(''); // Armazena a mensagem de erro que será exibida no dialog
@@ -14,6 +16,7 @@ const dialogMessage = ref(''); // Armazena a mensagem de erro que será exibida 
 const filteredCount = ref(0); // Contagem de itens filtrados (para a filtragem de dados)
 
 const store = useAuthStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
+const dataStore = useDataStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
 const toast = useToast(); // Instancia o toast para exibir mensagens ao usuário
 const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem exibida quando não há resultados
 
@@ -65,53 +68,12 @@ const relatorio = ref({
     data_final: new Date() // Data final é o dia atual
 });
 
-// Função para formatar a data como dd/MM/yyyy
-const format = (date) => {
-    const dia = date.getDate().toString().padStart(2, '0');
-    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-    const ano = date.getFullYear();
-    return `${dia}/${mes}/${ano}`;
-};
-
-// Função para formatar a data de forma mais simples (dd/MM/yyyy)
-const formatDate = (date) => {
-    const dia = date.getDate().toString().padStart(2, '0');
-    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-    const ano = date.getFullYear();
-    return `${dia}/${mes}/${ano}`;
-};
-
-// Função para formatar a hora como HH:mm
-const formatTime = (date) => {
-    const horas = date.getHours().toString().padStart(2, '0');
-    const minutos = date.getMinutes().toString().padStart(2, '0');
-    return `${horas}:${minutos}`;
-};
-
-// Função para converter uma data para o formato ISO
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null;
-};
-
 // Função assíncrona para buscar os dados do relatório
 const buscar = async () => {
-    // Monta o objeto com os parâmetros de busca, tratando valores nulos
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm,
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
-        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final)
-    };
+
     try {
         loading.value = true;
-        const response = await axios.post('relatorioRetiRe/relatorio', data);
-        retiradas.value = response.data;
-
+        retiradas.value = await relatorioService.retiradaRealizadas(relatorio)
         // Atualiza a contagem de registros
         filteredCount.value = retiradas.value.length;
 
@@ -126,6 +88,7 @@ const buscar = async () => {
             emptyMessage.value = ''; // Limpa a mensagem de "sem dados"
         }
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life:3000, detail: 'Erro ao buscar dados' });
         console.error('Erro ao buscar retiradas:', error); // Exibe o erro no console caso haja uma falha na requisição
     } finally {
         loading.value = false; // Desativa o spinner de carregamento
@@ -150,200 +113,18 @@ const voltar = () => {
     selectedItem.value = {}; // Limpa o item selecionado
 };
 
-// Funções para exportar os dados em CSV e JSON
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
-};
-
 // Exportação de dados em formato CSV
 const exportCSV = () => {
-    const csvContent = generateCSV(retiradas.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'RetiradasRealizadas.csv');
-    document.body.appendChild(link);
-    link.click(); // Inicia o download do CSV
-    document.body.removeChild(link);
+    gerarEbaixarCSV('RetiradasRealizadas', retiradas.value);
 };
 
 // Exportação de dados em formato JSON
 const exportJSON = () => {
-    const jsonContent = JSON.stringify(retiradas.value, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'RetiradasRealizadas.json');
-    document.body.appendChild(link);
-    link.click(); // Inicia o download do JSON
-    document.body.removeChild(link);
+    gerarEbaixarJSON('RetiradasRealizadas', retiradas.value);
 };
 
-// Função para buscar os DM's disponíveis
-const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // Atualiza as opções de DM
-        dms.value = [
-            todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`,
-                value: ID_DM
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error); // Exibe erro caso a requisição falhe
-    }
-};
-
-// Função para buscar as plantas disponíveis
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // Atualiza as opções de plantas
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`,
-                value: id_planta
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error); // Exibe erro caso a requisição falhe
-    }
-};
-
-// Função para buscar os setores/diretorias disponíveis
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaSetorOriginal.value = [
-            todosOption,
-            ...response.data.map(({ id_setor, nome, id_centro_custo }) => ({
-                label: `Setor  ${nome}`,
-                value: id_setor,
-                id_centro_custo
-            }))
-        ];
-        // Inicializa a lista de setores com todos os dados
-        ListaSetor.value = ListaSetorOriginal.value;
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error); // Exibe erro caso a requisição falhe
-    }
-};
-
-// Função para buscar os centros de custo disponíveis
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error); // Exibe erro caso a requisição falhe
-    }
-};
-
-// Função para filtrar setores baseados no centro de custo selecionado
-const filterSetor = () => {
-    if (relatorio.value.ID_CentroCusto) {
-        // Filtra os setores de acordo com o centro de custo selecionado
-        ListaSetor.value = ListaSetorOriginal.value.filter((setorItem) => setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null);
-
-        // Se a lista de setor estiver vazia após o filtro
-        if (ListaSetor.value.length === 0) {
-            // Adiciona a informação "não há setor"
-            ListaSetor.value = [{ label: 'Não há setor ', value: null }];
-        }
-    } else {
-        ListaSetor.value = ListaSetorOriginal.value; // Exibe todos os setores caso não haja filtro
-    }
-};
-
-// Função para filtrar os funcionários baseados em setor ou planta selecionados
-const filterFuncionarios = () => {
-    // Verifica se há ao menos um filtro selecionado (setor ou planta)
-    if (relatorio.value.id_setor || relatorio.value.id_planta) {
-        // Filtra os funcionários com base no setor e planta
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
-            const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true;
-            const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true;
-
-            return matchesSetor && matchesPlanta; // Retorna os funcionários que atendem ambos os critérios
-        });
-
-        // Se a lista de funcionários estiver vazia após o filtro
-        if (ListaFuncionarios.value.length === 0) {
-            // Adiciona a informação "não há funcionários"
-            ListaFuncionarios.value = [{ label: 'Não há funcionários ', value: null }];
-        }
-    } else {
-        // Se não tiver filtros, exibe todos os funcionários
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-    }
-};
-
-// Função para buscar todos os funcionários disponíveis
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionariosOriginal.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_funcionario,
-                id_setor: funcionario.id_setor,
-                id_planta: funcionario.id_planta
-            }))
-        ];
-        // Inicialize a lista de funcionários com todos os dados
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-    } catch (error) {
-        console.error('Erro ao carregar funcionários:', error); // Exibe erro caso a requisição falhe
-    }
+const filtroGenerico = () => {
+    filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor);
 };
 
 // Função para fechar todos os dropdowns
@@ -359,14 +140,26 @@ const closeAllDropdowns = () => {
 const handleDatepickerOpen = () => {
     closeAllDropdowns();
 };
-
+const loadData = async () => {
+    loading.value = true;
+    try {
+        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
+        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        ListaSetor.value = ListaSetorOriginal.value; // Carrega a lista de setores
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Erro ao carregar dados' });
+    }finally{
+        loading.value = false;
+    }
+   
+};
 // Ao montar o componente, carrega todas as informações necessárias
 onMounted(() => {
-    fetchDM();
-    fetchIdPlanta();
-    fetchSetorDiretoria();
-    fetchFuncionarios();
-    fetchCentroCusto();
+    loadData();
 });
 </script>
 
@@ -389,21 +182,21 @@ onMounted(() => {
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Centro de Custo:</label>
                 <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor" />
+                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Setor -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                 <label for="perfil">Setor:</label>
                 <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
+                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Planta -->
             <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                 <label for="planta">Planta:</label>
                 <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
+                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Funcionário -->
@@ -422,7 +215,7 @@ onMounted(() => {
                     v-model="relatorio.data_inicio"
                     showIcon
                     :showOnFocus="false"
-                    :format="format"
+                    :format="formatDateToString"
                     locale="pt-BR"
                     auto-apply
                     :enable-time-picker="false"
@@ -442,7 +235,7 @@ onMounted(() => {
                     v-model="relatorio.data_final"
                     showIcon
                     :showOnFocus="false"
-                    :format="format"
+                    :format="formatDateToString"
                     locale="pt-BR"
                     auto-apply
                     :enable-time-picker="false"
@@ -556,14 +349,14 @@ onMounted(() => {
 
             <Column field="Dia" sortable class="table-cell" style="width: 10%" header="Data">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
+                    <span v-tooltip="data.Dia">{{ formatDateToString(new Date(data.Dia)) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
 
             <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Hora">{{ formatTime(new Date(data.Dia)) }}</span>
+                    <span v-tooltip="data.Hora">{{ formatTimeToString(new Date(data.Dia)) }}</span>
                     <!-- Exibe a hora formatada -->
                 </template>
             </Column>
