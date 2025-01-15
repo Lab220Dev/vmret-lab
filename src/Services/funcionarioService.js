@@ -1,7 +1,6 @@
 import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore.js';
 import { prepareFuncionarioData, prepareprodutoData } from '@/helpers/HelperFuncionario';
-import { prepareFuncionarioData, prepareprodutoData } from '@/helpers/HelperFuncionario';
 const funcionarioService = {
     async listarFuncionarios(data) {
         return axios.post('/funcionarios/listar', data);
