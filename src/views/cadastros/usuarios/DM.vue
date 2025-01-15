@@ -59,7 +59,8 @@ let DM = reactive({
 const nextValues = reactive({
     2018: { placa: 12 },
     2023: { dip: 2 },
-    Locker: { dip: 3 },
+    "Locker-Padrao": { dip: 3 },
+    "Locker-Ker": { dip: 0 },
     2024: { placa: 101 }
 });
 // Objeto de produto selecionado
@@ -104,7 +105,7 @@ const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false }
 const dialogMessage = ref('');
 const selectedItem = ref(null);
 const todosOption = { label: 'Todos', value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false }, usar_api: false };
-const tipoControladoras = ['2018', '2023', '2024', 'Locker'];
+const tipoControladoras = ['2018', '2023', '2024', 'Locker Padrão', 'Locker Ker'];
 const operador = ref(false);
 const visible = ref(false);
 
