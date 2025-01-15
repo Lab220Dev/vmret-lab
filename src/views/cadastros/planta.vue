@@ -3,13 +3,12 @@
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import plantaService from '@/services/plantaService.js';
 import { resetPlantaForm,applyGlobalFilter} from '@/helpers/formHelper';
 import { useDataStore } from '@/store/dataStore.js';
-
+import { isMobEnabled } from '@/helpers/HelperUtils.js'
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -22,7 +21,7 @@ const visible = ref(false);
 const integracao = ref(false);
 const deletePlantaDialog = ref(false);
 const loading = ref(false);
-
+const Mob = ref(false)
 const filteredCount = ref(0);
 
 let planta = reactive({
@@ -94,11 +93,6 @@ const deletePlanta = async () => {
     let data = { id_planta: planta.id_planta }
   loading.value = true;
   try {
-        // await axios.post('/plantas/deletePlanta', data, {
-        //     headers: {
-        //         Authorization: `Bearer ${store.token}`
-        //     }
-        // });
         await plantaService.deletarPlanta(data);
     toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta deletada com sucesso!', life: 3000 });
     dataStore.invalidatePlantasCache();
@@ -137,18 +131,17 @@ const atualizarPlanta = async () => {
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
-        loadPlanta();
         visible.value = false;
     }
 });
 
 const resetForm = () => resetPlantaForm(planta);
 
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
 
-onMounted(() => loadPlanta());
+onMounted(() => {
+    loadPlanta();
+    Mob.value = isMobEnabled();
+});
 </script>
 
 <template>
@@ -171,7 +164,7 @@ onMounted(() => loadPlanta());
                         :sortOrder="1"
                         dataKey="id"
                         :metaKeySelection="false"
-                        @rowSelect="handleRowSelection"
+                        @rowSelect="onRowSelect"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
@@ -234,9 +227,9 @@ onMounted(() => loadPlanta());
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" />
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" :disabled="Mob"/>
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" :disabled="Mob"/>
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" :disabled="Mob"/>
                                 </div>
                             </form>
                         </div>

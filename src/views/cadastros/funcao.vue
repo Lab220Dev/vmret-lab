@@ -7,12 +7,11 @@ import { FilterMatchMode } from 'primevue/api'; // Importa filtros do PrimeVue p
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import funcaoService from '@/services/funcaoService'; // Importa os serviços para manipulação das funções
 import { resetFuncaoForm } from '@/helpers/formHelper'; // Importa a função para resetar o formulário
-
+import {isMobEnabled } from '@/helpers/HelperUtils.js';
 const dataStore = useDataStore(); // Cria uma instância do store de dados
-
+const Mob = ref(false);
 // Variáveis reativas
 const active = ref(0); // Armazena o índice da aba ativa (para alternar entre 'Listar' e 'Adicionar/Editar')
-const store = useAuthStore(); // Instância do store de autenticação
 const toast = useToast(); // Instância do toast para exibir mensagens de sucesso e erro
 const ListaFuncao = ref([]); // Armazena a lista de funções
 const visible = ref(false); // Controla a visibilidade do formulário de edição/adicionar
@@ -144,6 +143,7 @@ const loadData = async () => {
 
 // Chama a função de carregamento de dados ao montar o componente
 onMounted(() => {
+    Mob.value= isMobEnabled();
     loadFuncoes(); // Carrega a lista de funções
     loadData(); // Carrega os dados dos centros de custo
 });
@@ -233,9 +233,9 @@ onMounted(() => {
 
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- Botões de ação para salvar ou excluir função -->
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" />
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" :disabled="Mob"/>
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob"/>
                                 </div>
                             </form>
                         </div>

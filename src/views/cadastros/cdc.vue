@@ -5,13 +5,14 @@ import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from 'primevue/api';
 import cdcService from '@/services/cdcService';
 import { resetCDCForm } from '@/helpers/formHelper';
-
+import {isMobEnabled} from '@/helpers/HelperUtils.js';
 // Definição de variáveis reativas e referências
 const active = ref(0); // Estado para o índice da aba ativa
 const toast = useToast(); // Hook para usar a funcionalidade de toast
 const centroCusto = ref([]); // Lista dos centros de custo
 const visible = ref(false); // Controle de visibilidade para o formulário de edição/adição
 const deleteCentroDialog = ref(false); // Controle de visibilidade do diálogo de confirmação de exclusão
+const Mob = ref(false)
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global, que verifica se o texto contém o valor
 });
@@ -145,22 +146,12 @@ watch(
 );
 
 /**
- * Função que manipula a seleção de uma linha na tabela.
- * Ela chama a função `onRowSelect` para lidar com os dados da linha selecionada.
- *
- * @param {Object} event - O evento de seleção de linha, contendo os dados da linha selecionada.
- * @param {Object} event.data - Os dados da linha selecionada na tabela.
- */
-const handleRowSelection = async (event) => {
-    await onRowSelect(event); // Chama a função de seleção de linha
-};
-
-/**
  * Função que é chamada ao montar o componente.
  * Ela carrega os dados dos centros de custo chamando a função `loadCentroCusto`.
  */
 onMounted(() => {
     loadCentroCusto(); // Carrega os dados ao montar o componente
+    Mob.value = isMobEnabled();
 });
 </script>
 
@@ -186,7 +177,7 @@ onMounted(() => {
                         :sortField="'Codigo'"
                         :globalFilterFields="['Codigo', 'Nome']"
                         :metaKeySelection="false"
-                        @rowSelect="handleRowSelection"
+                        @rowSelect="onRowSelect"
                     >
                         <!-- A tabela exibe os dados provenientes de "centroCusto" -->
                         <!-- Permite selecionar apenas uma linha por vez -->
@@ -241,9 +232,9 @@ onMounted(() => {
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- Botões de Ação -->
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" />
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob"/>
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" :disabled="Mob"/>
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob"/>
                                 </div>
                                 <!-- </div> -->
                             </form>

@@ -74,7 +74,7 @@ const ListaProdutosDisponiveis = reactive([]);
 const ListaProdutoFuncionario = ref([]);
 const ListaItemsSetor = ref([]);
 const editVisible = ref(false);
-
+const Mob = ref(false)
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -284,6 +284,7 @@ const getImagem = async (filename) => {
 };
 
 onMounted(async () => {
+    Mob.value = formatservices.isMobEnabled();
     await loadData();
     await loadFuncionarios();
     await fetchHieraquiaOptions();
@@ -657,10 +658,10 @@ const hideDialog = () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" :disabled="Mob"/>
+                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" :disabled="Mob"/>
 
-                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario()" />
+                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario()" :disabled="Mob"/>
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">

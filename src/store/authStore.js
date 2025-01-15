@@ -107,6 +107,9 @@ export const useAuthStore = defineStore('auth', {
     userId: (state) => {
       return state.usuario?.id_usuario || ''; // Usando operador de encadeamento opcional
     },
+    Integracao: (state) => {
+      return state.usuario?.mob; 
+    },
     menuItems: (state) => {
       return state.menu || []; // Retorna uma lista vazia se o menu for nulo
     },

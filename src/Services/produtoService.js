@@ -1,5 +1,5 @@
 import axios from '@/axios.js';  // Importa o axios para fazer requisições HTTP.
-import { prepareProdutoData } from '@/helpers/HelperProduto';  // Importa uma função helper para preparar os dados do produto.
+import { prepareProdutoData} from '@/helpers/HelperProduto';  // Importa uma função helper para preparar os dados do produto.
 
 // Define o serviço produtoService que contém métodos para interagir com a API de produtos.
 const produtoService = {

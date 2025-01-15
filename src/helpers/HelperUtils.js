@@ -312,3 +312,6 @@ export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal,List
       return cdcMatch || plantaMatch || setorMatch;
   });
 };
+export function isMobEnabled (){
+  return store.Integracao;
+}

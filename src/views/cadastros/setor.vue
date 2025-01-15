@@ -8,24 +8,23 @@ import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
+import { isMobEnabled } from '@/helpers/HelperUtils.js'
+import setorService from '@/Services/SetorService.js';
 
+const Mob = ref(false)
 const active = ref(0);
-const store = useAuthStore();
 const dataStore = useDataStore();
 const toast = useToast();
 const ListaSetor = ref([]);
 const ListaItensSetor = ref([]);
 const ItensSetor = ref([]);
 const itemDialog = ref(false);
-const ListaItensSelecionados = ref([]);
 const deleteSetorDialog = ref(false);
 const deleteProductDialog = ref(false);
 const visible = ref(false);
 const editVisible = ref(false);
 const integracao = ref(false);
 const item = ref({});
-const selectedProduct = ref({});
-const itemsSelecionadosSetor = ref([]);
 const todosOption = { label: 'Todos', value: null };
 const centroCusto = ref([todosOption]);
 const loading = ref(false);
@@ -44,12 +43,11 @@ const produtoSelecionado = ref({
     id_produto: '',
     quantidade: ''
 });
-const onRowSelect = (event) => {
-    setor = event.data;
+const onRowSelect = async (event) => {
+    setor = { ...event.data };
     active.value = 1;
     editVisible.value = true;
-    fetchProdutoSetor();
-    fetchListaItemSetor();
+    await fetchListaItemSetor();
 };
 
 const onRowSelectItem = (event) => {
@@ -67,12 +65,9 @@ const submitForm = () => {
 };
 
 const loadSetor = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
     loading.value = true;
     try {
-        const response = await axios.post('/Setor/listar', data);
+        const response = await setorService.listarSetores();
         ListaSetor.value = response.data;
 
         filteredCount.value = ListaSetor.value.length;
@@ -84,15 +79,10 @@ const loadSetor = async () => {
 };
 
 const adicionarSetor = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        ...setor
-    };
     loading.value = true;
     try {
-        const response = await axios.post('/Setor/adicionar', data);
+        await setorService.adicionarSetor(setor);
         dataStore.invalidateSetorCache();
-
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor salvo com sucesso', life: 3000 });
         loadSetor();
         active.value = 0;
@@ -101,7 +91,7 @@ const adicionarSetor = async () => {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao salvar setor', life: 3000 });
         console.error('Erro ao adicionar Setores:', error);
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false;
     }
 };
 
@@ -117,14 +107,9 @@ watch(
 );
 
 const deleteSetor = async () => {
-    let data = { id_setor: setor.id_setor };
     loading.value = true;
     try {
-        await axios.post('/Setor/deletar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await setorService.deletarSetor(setor);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Deletado', life: 3000 });
         dataStore.invalidateSetorCache();
         deleteSetorDialog.value = false;
@@ -144,15 +129,8 @@ const deleteSetor = async () => {
 
 const atualizarSetor = async () => {
     loading.value = true;
-    const data = {
-        ...setor
-    };
     try {
-        const response = await axios.post('/Setor/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await setorService.atualizarSetor(setor);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Setor Atualizado', life: 3000 });
         dataStore.invalidateSetorCache();
         loadSetor();
@@ -167,12 +145,8 @@ const atualizarSetor = async () => {
 };
 const fetchListaItemSetor = async () => {
     loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_setor: setor.id_setor
-    };
     try {
-        const response = await axios.post('/setor/itensdisponiveissetor', data);
+        const response = await setorService.listarItensDisponiveis(setor);
         ItensSetor.value = response.data;
     } catch (error) {
         console.error('Erro ao listar itens:', error);
@@ -185,7 +159,6 @@ const fetchListaItemSetor = async () => {
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
-        loadSetor();
         visible.value = false;
         editVisible.value = false;
     }
@@ -198,38 +171,24 @@ const resetForm = () => {
     integracao.value = false;
 };
 
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
-
 const loadData = async () => {
     try {
         centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
+        ListaItensSetor.value = dataStore.produtos || (await dataStore.fetchProdutos());
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
 };
 onMounted(() => {
+    Mob.value = isMobEnabled();
     loadSetor();
     loadData();
 });
 
 const atualizarProdutoSetor = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_produto: item.value.id_produto,
-        id_setor: item.value.id_setor,
-        qtd_limite: item.value.quantidade
-    };
-
     loading.value = true;
     try {
-        const response = await axios.post('/setor/atualizarproduto', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-
+        await setorService.atualizarProdutoSetor(item.value);
         loadSetor();
         fetchListaItemSetor();
         active.value = 1;
@@ -255,47 +214,15 @@ const atualizarProdutoSetor = async () => {
     }
 };
 
-const fetchProdutoSetor = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_setor: setor.id_setor
-    };
-    try {
-        const response = await axios.post('/setor/fetchProdutoSetor', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaItensSetor.value = response.data.map(({ id_produto, nome }) => ({
-            label: nome,
-            value: id_produto
-        }));
-    } catch (error) {
-        console.error('Erro ao recuperar os produtos do setor:', error);
-    }
-};
-
 const SalvarProduto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId,
-        id_produto: produtoSelecionado.value.id_produto,
-        quantidade: produtoSelecionado.value.quantidade,
-        ...setor
-    };
     loading.value = true;
     try {
-        const response = await axios.post('/setor/additem', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await setorService.adicionarProduto(setor,produtoSelecionado.value);
         fetchListaItemSetor();
         visible.value = false;
         toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
-        console.log('Resposta do servidor:', response.data);
     } catch (error) {
-        console.error('Erro ao adicionar item:', error.response ? error.response.data : error.message);
+        console.error('Erro ao adicionar item:', error.message);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
     } finally {
         loading.value = false;
@@ -303,22 +230,10 @@ const SalvarProduto = async () => {
 };
 
 const deletarProduto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_produto: item.value.id_produto,
-        id_setor: item.value.id_setor
-    };
-
-    loading.value = true;
+     loading.value = true;
     try {
-        await axios.post('/setor/deletarProduto', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-
+        await setorService.deletarProduto(item.value);
         fetchListaItemSetor();
-
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso', life: 3000 });
         deleteProductDialog.value = false;
     } catch (error) {
@@ -356,7 +271,7 @@ const deleteProduct = async (itm) => {
                         dataKey="codigo"
                         :globalFilterFields="['codigo', 'nome', 'id_centro_custo']"
                         :metaKeySelection="false"
-                        @rowSelect="handleRowSelection"
+                        @rowSelect="onRowSelect"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
@@ -403,9 +318,9 @@ const deleteProduct = async (itm) => {
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" />
-                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" />
-                                    <Button v-if="!editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" />
+                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarSetor" :disabled="Mob" />
+                                    <Button v-if="editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteSetorDialog = true" :disabled="Mob"/>
+                                    <Button v-if="!editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarSetor" :disabled="Mob"/>
                                 </div>
                                 <div class="col-12">
                                     <TabView v-if="editVisible">
@@ -450,7 +365,7 @@ const deleteProduct = async (itm) => {
                                                 </div>
                                                 <div class="field lg:col-4 md:col-6 sm:col-4">
                                                     <label class="mr-2" for="Quantidade">Quantidade:</label>
-                                                    <InputText id="Quantidade" v-model="item.quantidade" />
+                                                    <InputText id="Quantidade" v-model="item.qtd_limite" />
                                                 </div>
                                             </div>
                                         </div>

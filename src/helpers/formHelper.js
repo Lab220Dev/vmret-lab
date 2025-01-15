@@ -113,7 +113,8 @@ export const resetPlantaForm = (planta) => {
         userId: '',
         senha: '',
         urlapi: '',
-        clienteid: ''
+        clienteid: '',
+        codigo:''
     });
 };
 

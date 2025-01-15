@@ -1,5 +1,15 @@
-import axios from '@/axios.js';  // Importa o axios, responsável por realizar as requisições HTTP para a API.
-
+import axios from '@/axios.js'; 
+import { useAuthStore } from '@/store/authStore.js';
+const authStore = useAuthStore();
+const  prepareData = (...sources) => {
+  let BaseData = {
+    id_cliente:authStore.userIdCliente,
+    id_usuario: authStore.userId,
+  }
+  return sources
+    .filter(source => typeof source === 'object' && source !== null)
+    .reduce((acc, source) => ({ ...acc, ...source }), BaseData);
+};
 const setorService = {
 
   /**
@@ -8,17 +18,10 @@ const setorService = {
    * @param {Object} data - Dados a serem enviados no corpo da requisição.
    * @returns {Promise} - Retorna uma Promise com a resposta da requisição.
    * 
-   * Possíveis respostas esperadas:
-   * - Sucesso: Uma lista de setores conforme os critérios informados.
-   * - Erro: Caso haja um erro na requisição, como dados inválidos ou problemas no servidor.
-   * 
-   * Exemplos de erros:
-   * - Erro 400: Dados inválidos ou mal formatados.
-   * - Erro 500: Problema no servidor ao listar os setores.
    */
-  async listarSetores(data) {
+  async listarSetores() {
    try {
-        // Envia uma requisição POST para listar os setores com os dados fornecidos.
+        const data = prepareData();
         return axios.post('/Setor/listar', data); 
           
 
@@ -37,19 +40,11 @@ const setorService = {
    * @param {Object} data - Dados do setor a ser adicionado.
    * @returns {Promise} - Retorna uma Promise com a resposta da requisição.
    * 
-   * Possíveis respostas esperadas:
-   * - Sucesso: Setor adicionado com sucesso.
-   * - Erro: Caso haja um erro na adição do setor.
-   * 
-   * Exemplos de erros:
-   * - Erro 400: Dados inválidos para o setor.
-   * - Erro 500: Problema no servidor ao adicionar o setor.
    */
-  async adicionarSetor(data) {
+  async adicionarSetor(setor) {
    try {
-          // Envia uma requisição POST para adicionar um setor com os dados fornecidos.
+         const data = prepareData(setor);
           return axios.post('/Setor/adicionar', data);
-
         } catch (error) {
           // Caso ocorra um erro, loga a mensagem de erro no console.
           console.error('Erro ao adicionar setores:', error.message);
@@ -65,18 +60,10 @@ const setorService = {
    * @param {Object} data - Dados do setor a ser atualizado (ex: id do setor, novas informações).
    * @returns {Promise} - Retorna uma Promise com a resposta da requisição.
    * 
-   * Possíveis respostas esperadas:
-   * - Sucesso: Setor atualizado com sucesso.
-   * - Erro: Caso haja um erro na atualização do setor.
-   * 
-   * Exemplos de erros:
-   * - Erro 400: Dados inválidos para a atualização do setor.
-   * - Erro 404: Setor não encontrado para atualização.
-   * - Erro 500: Problema no servidor ao atualizar o setor.
    */
-  async atualizarSetor(data) {
+  async atualizarSetor(setor) {
     try {
-      // Envia uma requisição POST para atualizar um setor com os dados fornecidos.
+      const data = prepareData(setor);
       return axios.post('/Setor/atualizar', data);
 
     } catch (error) {
@@ -94,17 +81,10 @@ const setorService = {
    * @param {Object} data - Dados que identificam o setor a ser deletado (ex: id do setor).
    * @returns {Promise} - Retorna uma Promise com a resposta da requisição.
    * 
-   * Possíveis respostas esperadas:
-   * - Sucesso: Setor deletado com sucesso.
-   * - Erro: Caso haja um erro na remoção do setor.
-   * 
-   * Exemplos de erros:
-   * - Erro 400: Dados inválidos para deletar o setor.
-   * - Erro 404: Setor não encontrado para deleção.
-   * - Erro 500: Problema no servidor ao deletar o setor.
    */
-  async deletarSetor(data) {
+  async deletarSetor(setor) {
     try {
+      const data = prepareData(setor);
       return axios.post('/Setor/deletar', data);  // Envia uma requisição POST para deletar um setor com os dados fornecidos.
 
     } catch (error) {
@@ -130,8 +110,9 @@ const setorService = {
    * - Erro 400: Dados inválidos ou mal formatados.
    * - Erro 500: Problema no servidor ao listar os itens do setor.
    */
-  async listarItensDisponiveis(data) {
+  async listarItensDisponiveis(setor) {
     try {
+      const data = prepareData(setor);
       return axios.post('/setor/itensdisponiveissetor', data);  // Envia uma requisição POST para listar os itens disponíveis no setor.
 
     } catch (error) {
@@ -185,8 +166,9 @@ const setorService = {
    * - Erro 404: Produto ou setor não encontrado.
    * - Erro 500: Problema no servidor ao atualizar o produto.
    */
-  async atualizarProdutoSetor(data) {
+  async atualizarProdutoSetor(item) {
     try {
+      const data = prepareData(item);
       return axios.post('/setor/atualizarproduto', data);  // Envia uma requisição POST para atualizar um produto associado a um setor.
 
     } catch (error) {
@@ -212,8 +194,9 @@ const setorService = {
    * - Erro 400: Dados inválidos para adicionar o produto ao setor.
    * - Erro 500: Problema no servidor ao adicionar o produto ao setor.
    */
-  async adicionarProduto(data) {
+  async adicionarProduto(setor,produto) {
     try {
+      const data = prepareData(setor,produto);
       return axios.post('/setor/additem', data);  // Envia uma requisição POST para adicionar um produto a um setor específico.
 
     } catch (error) {
@@ -240,8 +223,9 @@ const setorService = {
    * - Erro 404: Produto ou setor não encontrado para deleção.
    * - Erro 500: Problema no servidor ao deletar o produto do setor.
    */
-  async deletarProduto(data) {
+  async deletarProduto(setor) {
     try {
+      const data = prepareData(setor);
       return axios.post('/setor/deletarProduto', data);  // Envia uma requisição POST para deletar um produto de um setor específico.
 
     } catch (error) {

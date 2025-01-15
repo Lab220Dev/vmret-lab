@@ -23,6 +23,7 @@ import produtoService from '@/services/produtoService';
 import { resetProdutoForm } from '@/helpers/formHelper';
 // Importando funções auxiliares relacionadas ao produto
 import { enrichProdutoData } from '@/helpers/HelperProduto.js';
+import { isMobEnabled } from '@/helpers/HelperUtils.js'
 
 /**
  * Filtros de pesquisa global aplicados na listagem de produtos.
@@ -40,6 +41,7 @@ const store = useAuthStore(); // Acessa o store de autenticação para obter dad
 const toast = useToast(); // Função para exibir notificações via toast
 const active = ref(0); // Controle de qual aba está ativa
 const loading = ref(false); // Controle de carregamento de dados
+const mob = ref(false); // Controle da habilidade de manipular produtos baseado na integração com Mob
 let formatedPlantaOptions = ref([]); // Opções formatadas para as plantas
 const tipoProduto = ref([
     // Opções de tipos de produtos disponíveis
@@ -331,7 +333,6 @@ watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         // Verifica se a aba foi alterada para a aba inicial (índice 0)
         resetForm(); // Chama a função para resetar o formulário, limpando os dados
-        loadProdutos(); // Recarrega a lista de produtos a partir da primeira página
         visible.value = false; // Torna o formulário de edição de produto invisível
     }
 });
@@ -371,6 +372,7 @@ onMounted(async () => {
         // Carrega os produtos logo que o componente é montado
         await loadProdutos(); // Carrega a lista de produtos ao montar o componente
         loadData(); // Carrega dados adicionais (por exemplo, plantas) ao montar o componente
+        mob.value = isMobEnabled(); // Verifica se a integração com Mob está habilitada
     } catch (error) {
         // Exibe uma mensagem de erro caso algo dê errado durante o carregamento dos produtos ou dados
         console.error('Erro ao carregar dados no onMounted:', error);
@@ -509,9 +511,9 @@ onMounted(async () => {
                 </div>
 
                 <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" />
-                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" />
-                    <Button v-if="!visible" style="width: 15%" class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" />
+                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" :disabled="mob"/>
+                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" :disabled="mob"/>
+                    <Button v-if="!visible" style="width: 15%" class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" :disabled="mob"/>
                 </div>
 
                 <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">

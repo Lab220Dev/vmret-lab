@@ -1,5 +1,6 @@
 import { getFileExtension } from '@/helpers/HelperUtils';
-
+import { useAuthStore } from '@/store/authStore.js';
+const store = useAuthStore()
 /**
  * Prepara os dados do produto para envio ao backend.
  * Remove campos desnecessários e adiciona arquivos.
