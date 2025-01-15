@@ -248,12 +248,12 @@ const deleteUsuario = async (item) => {
                 Authorization: `Bearer ${store.token}` // Envia o token de autorização
             }
         });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Ciente Deletada', life: 3000 }); // Exibe mensagem de sucesso
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuário deletado', life: 3000 }); // Exibe mensagem de sucesso
         deleteUsuarioDialog.value = false; // Fecha o diálogo de confirmação
         fetchUsuarios(); // Atualiza a lista de usuários
         active.value = 0; // Volta à aba de listagem
     } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 }); // Exibe mensagem de erro
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o usuário.', life: 3000 }); // Exibe mensagem de erro
     } finally {
         loading.value = false; // Desativa o carregamento
     }

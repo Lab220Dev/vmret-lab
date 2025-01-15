@@ -257,6 +257,7 @@ watch(
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
+        funcionario = reactive(resetFuncionarioForm());
         resetForm();
         resetItens();
         loadFuncionarios();
@@ -318,6 +319,7 @@ const resetForm = () => {
     TempoFim.value = null;
     imageUploader.value?.clearImageData();
     ListaItemsSetor.value = [];
+    ListaProdutoFuncionario.value = [];
 };
 
 const resetItens = () => {
@@ -336,10 +338,12 @@ const SalvarProduto = async () => {
         visible.value = false;
         resetItens();
         toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
+        itemDialog.value = false;
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
     } finally {
         loading.value = false;
+        
     }
 };
 
@@ -481,7 +485,7 @@ const hideDialog = () => {
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active">
+        <TabView v-model:activeIndex="active" >
             <TabPanel header="Listar Funcionários">
                 <div class="col-12">
                     <DataTable
@@ -523,7 +527,7 @@ const hideDialog = () => {
                 </div>
             </TabPanel>
 
-            <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'">
+            <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">

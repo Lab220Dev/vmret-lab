@@ -30,6 +30,7 @@ let planta = reactive({
     id_planta: '',
     userId: '',
     senha: '',
+    codigo:'',
     urlapi: '',
     clienteid: ''
 });

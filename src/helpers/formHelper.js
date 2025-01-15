@@ -108,12 +108,13 @@ export const resetGenericForm = (form, initialState) => {
 
 export const resetPlantaForm = (planta) => {
     Object.assign(planta, {
-        nome: '',
+      codigo:'',  
+      nome: '',
         id_planta: '',
-        userId: '',
+        userid: '',
         senha: '',
         urlapi: '',
-        clienteid: ''
+        clientid: ''
     });
 };
 
