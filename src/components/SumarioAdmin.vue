@@ -43,6 +43,7 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 /**
  * Define as propriedades que o componente aceita.
  * Neste caso, o componente espera uma propriedade chamada "dados", que é um objeto.

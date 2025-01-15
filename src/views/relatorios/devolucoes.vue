@@ -8,6 +8,8 @@ import axios from '@/axios.js'; // Importa a configuração do Axios para fazer 
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados de usuário
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados para acessar listas e informações
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
+import {filtroGenericoReltorio,gerarEbaixarCSV,gerarEbaixarJSON} from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 
 const dataStore = useDataStore(); // Instancia o store de dados
 const showDialog = ref(false); // Estado reativo para controlar a visibilidade de uma caixa de diálogo
@@ -54,7 +56,7 @@ const loading = ref(false); // Estado reativo para controlar a exibição do spi
 const relatorio = ref({
     id_dm: '',
     id_planta: '',
-    ID_CentroCusto: '',
+    id_centro_custo: '',
     id_setor: '',
     id_funcionario: '',
     data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // Data inicial (primeiro dia do mês)
@@ -136,37 +138,15 @@ const voltar = () => {
 };
 const dt = ref(null); // Referência para o DataTable
 
-// Função para gerar o conteúdo CSV a partir dos dados
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(','); // Obtém os cabeçalhos a partir das chaves do primeiro objeto
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n'); // Converte cada linha em uma string CSV
-    return `${headers}\n${rows}`; // Retorna o conteúdo no formato CSV
-};
 
 // Função para exportar os dados em formato CSV
 const exportCSV = () => {
-    const csvContent = generateCSV(devolucoes.value); // Gera o conteúdo CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); // Cria um blob do CSV
-    const link = document.createElement('a'); // Cria um link de download
-    const url = URL.createObjectURL(blob); // Cria uma URL do blob
-    link.setAttribute('href', url); // Define o link para o arquivo gerado
-    link.setAttribute('download', 'Devoluções.csv'); // Define o nome do arquivo
-    document.body.appendChild(link); // Adiciona o link ao DOM
-    link.click(); // Dispara o clique para iniciar o download
-    document.body.removeChild(link); // Remove o link do DOM
+    gerarEbaixarCSV('Devoluções', devolucoes.value);
 };
 
 // Função para exportar os dados em formato JSON
 const exportJSON = () => {
-    const jsonContent = JSON.stringify(devolucoes.value, null, 2); // Converte os dados em JSON
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' }); // Cria um blob do JSON
-    const link = document.createElement('a'); // Cria um link de download
-    const url = URL.createObjectURL(blob); // Cria uma URL do blob
-    link.setAttribute('href', url); // Define o link para o arquivo gerado
-    link.setAttribute('download', 'Devoluções.json'); // Define o nome do arquivo
-    document.body.appendChild(link); // Adiciona o link ao DOM
-    link.click(); // Dispara o clique para iniciar o download
-    document.body.removeChild(link); // Remove o link do DOM
+    gerarEbaixarJSON('Devoluções', devolucoes.value);
 };
 
 // Função para fechar todos os dropdowns
@@ -180,45 +160,26 @@ const closeAllDropdowns = () => {
 
 // Função para carregar os dados iniciais dos filtros
 const loadData = async () => {
+    loading.value = true;
     try {
         // O operador || verifica se o valor já está armazenado no store, caso contrário, faz a chamada para obter os dados
         dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
         plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
-        ListaSetor.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        ListaSetor.value = ListaSetorOriginal.value; // Carrega a lista de setores
         centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
-        ListaFuncionarios.value = dataStore.funcionarios || (await dataStore.fetchFuncionarios()); // Carrega a lista de funcionários
+        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error); // Exibe erro caso haja falha no carregamento dos dados
+    } finally {
+        loading.value = false; // Desativa o carregamento
     }
 };
 
-// Função para filtrar os setores de acordo com o centro de custo selecionado
-const filterSetor = () => {
-    if (relatorio.value.ID_CentroCusto) {
-        // Filtra os setores de acordo com o centro de custo
-        ListaSetor.value = ListaSetorOriginal.value.filter((setorItem) => setorItem.id_centro_custo === relatorio.value.ID_CentroCusto || setorItem.value === null);
-    } else {
-        ListaSetor.value = ListaSetorOriginal.value; // Se não houver centro de custo selecionado, exibe todos os setores
-    }
+const filtroGenerico = () => {
+    filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor);
 };
-
-// Função para filtrar os funcionários de acordo com os filtros selecionados
-const filterFuncionarios = () => {
-    // Verifica se ao menos um filtro de setor ou planta foi selecionado
-    if (relatorio.value.id_setor || relatorio.value.id_planta) {
-        // Filtra os funcionários conforme os filtros de setor e planta
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
-            const matchesSetor = relatorio.value.id_setor ? funcionario.id_setor === relatorio.value.id_setor : true; // Verifica se o setor corresponde
-            const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true; // Verifica se a planta corresponde
-
-      return matchesSetor && matchesPlanta;
-    });
-  } else {
-    // Se não tiver filtro, exibe todos os funcionários
-    ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-  }
-};
-
 // Função chamada quando o datepicker é aberto, fecha todos os dropdowns
 const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
@@ -244,19 +205,19 @@ onMounted(() => {
 
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filterSetor" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Setor:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filterFuncionarios" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filterFuncionarios" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionariosFiltrado" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
@@ -383,8 +344,8 @@ onMounted(() => {
  * Estiliza o container `.card` para permitir o rolar horizontal do conteúdo.
  * Isso é útil quando o conteúdo excede a largura da caixa e você quer permitir a rolagem horizontal.
  */
- .card {
-    overflow-x: auto;  /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
+.card {
+    overflow-x: auto; /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
 }
 
 /** 
@@ -394,8 +355,8 @@ onMounted(() => {
  * garantindo que ele tenha rolagem horizontal e se ajuste à largura da tela.
  */
 .datatable-wrapper {
-    overflow-x: auto;  /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
-    width: 100vw;  /* Define a largura do contêiner para 100% da largura da janela de visualização (viewport) */
+    overflow-x: auto; /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
+    width: 100vw; /* Define a largura do contêiner para 100% da largura da janela de visualização (viewport) */
 }
 
 /** 
@@ -405,7 +366,7 @@ onMounted(() => {
  * Isso pode ser utilizado para dar um espaço adequado entre os elementos de filtro ou controles.
  */
 .filtrar {
-    margin-top: 25px;  /* Adiciona margem superior de 25px ao elemento */
+    margin-top: 25px; /* Adiciona margem superior de 25px ao elemento */
 }
 
 /** 
@@ -415,7 +376,7 @@ onMounted(() => {
  * Isso garante que o controle ocupe toda a largura disponível no seu contêiner pai.
  */
 .drop {
-    width: 100%;  /* Define a largura do elemento para 100% da largura do contêiner pai */
+    width: 100%; /* Define a largura do elemento para 100% da largura do contêiner pai */
 }
 
 /** 
@@ -425,7 +386,6 @@ onMounted(() => {
  * Essas regras tornam a interface mais responsiva, ajustando a exibição de campos e controles.
  */
 @media (max-width: 580px) {
-    
     /** 
      * .form .field
      * 
@@ -433,9 +393,9 @@ onMounted(() => {
      * A largura máxima será 100% e o campo ocupará toda a largura disponível do contêiner pai.
      */
     .form .field {
-        flex: 0 0 100%;  /* Faz o campo de formulário ocupar 100% da largura do contêiner */
-        max-width: 100%;  /* Garante que o campo de formulário tenha uma largura máxima de 100% */
-        margin-bottom: 1rem;  /* Adiciona um espaço de 1rem abaixo de cada campo */
+        flex: 0 0 100%; /* Faz o campo de formulário ocupar 100% da largura do contêiner */
+        max-width: 100%; /* Garante que o campo de formulário tenha uma largura máxima de 100% */
+        margin-bottom: 1rem; /* Adiciona um espaço de 1rem abaixo de cada campo */
     }
 
     /** 
@@ -445,7 +405,7 @@ onMounted(() => {
      * garantindo que eles se ajustem corretamente em dispositivos móveis.
      */
     .form .field .drop {
-        width: 100%;  /* Define a largura do controle de seleção para 100% */
+        width: 100%; /* Define a largura do controle de seleção para 100% */
     }
 
     /** 
@@ -456,7 +416,7 @@ onMounted(() => {
      */
     .form .field .filtrar,
     .form .field .exportar {
-        width: 100%;  /* Define a largura do controle de filtro e exportação para 100% */
+        width: 100%; /* Define a largura do controle de filtro e exportação para 100% */
     }
 }
 
@@ -467,8 +427,8 @@ onMounted(() => {
  * Também evita que o texto ultrapasse a largura do campo e faz com que o conteúdo quebre se necessário.
  */
 .field {
-    white-space: nowrap;  /* Evita que o texto dentro do campo quebre para a linha seguinte */
-    text-align: left;  /* Alinha o texto à esquerda */
+    white-space: nowrap; /* Evita que o texto dentro do campo quebre para a linha seguinte */
+    text-align: left; /* Alinha o texto à esquerda */
 }
 
 /** 
@@ -478,9 +438,8 @@ onMounted(() => {
  * e exibindo "..." (ellipsis) quando o texto for maior que o espaço disponível.
  */
 .table-cell {
-    overflow: hidden;  /* Oculta qualquer conteúdo que ultrapasse o limite da célula */
-    white-space: nowrap;  /* Impede que o texto dentro da célula quebre em múltiplas linhas */
-    text-overflow: ellipsis;  /* Adiciona "..." quando o texto é cortado */
+    overflow: hidden; /* Oculta qualquer conteúdo que ultrapasse o limite da célula */
+    white-space: nowrap; /* Impede que o texto dentro da célula quebre em múltiplas linhas */
+    text-overflow: ellipsis; /* Adiciona "..." quando o texto é cortado */
 }
-
 </style>

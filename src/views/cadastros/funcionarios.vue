@@ -148,6 +148,7 @@ const loadFuncionarios = async () => {
         resetTable();
         resetItens();
     } catch (error) {
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao carregar os funcionários', life: 3000 });
     } finally {
         loading.value = false;
     }
@@ -283,11 +284,11 @@ const getImagem = async (filename) => {
     }
 };
 
-onMounted(() => {
-    loadData();
-    loadFuncionarios();
-    fetchHieraquiaOptions();
-    fetchItensSetor();
+onMounted(async () => {
+    await loadData();
+    await loadFuncionarios();
+    await fetchHieraquiaOptions();
+    await fetchItensSetor();
 });
 
 const deleteFuncionario = async () => {

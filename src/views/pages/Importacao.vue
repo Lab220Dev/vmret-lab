@@ -171,7 +171,7 @@ import Button from 'primevue/button'; // Componente de botão
 import Chart from 'primevue/chart'; // Componente para renderizar gráficos
 import DataTable from 'primevue/datatable'; // Componente para exibir tabelas de dados
 
-import { normalizeDate, generateCSV, downloadCSV } from '@/helpers/HelperUtils'; // Funções auxiliares para normalização de data, geração e download de CSV
+import { normalizeDateTime, generateCSV, downloadCSV } from '@/helpers/HelperUtils'; // Funções auxiliares para normalização de data, geração e download de CSV
 import { processFileUpload, processFileReupload, revalidateData, formatErrors, exportInvalidData } from '@/helpers/HelperImportacao.js'; // Funções para processamento de upload e reupload de arquivos
 import { validateRow, getFieldLabels } from '@/helpers/HelperImportacao.js'; // Funções para validação de dados e obtenção de rótulos de campos
 

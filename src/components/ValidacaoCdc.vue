@@ -14,7 +14,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';  // Importa as funcionalidades reativas e de observação do Vue
 import Dropdown from 'primevue/dropdown';  // Importa o componente Dropdown do PrimeVue
-import { isValidEmail, isValidCPF } from '@/helpers/Validadores.js'; // Importa funções para validação de email e CPF
+import { isValidEmail, isValidCPF } from '@/helpers/HelperValidacao.js'; // Importa funções para validação de email e CPF
 
 // Props recebidas do componente pai
 /**

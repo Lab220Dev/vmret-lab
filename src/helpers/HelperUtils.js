@@ -3,8 +3,7 @@ import { parseISO, isValid, parse } from 'date-fns';
 import { useAuthStore } from '@/store/authStore.js';
 const store = useAuthStore();
 /**
- * @deprecated Esta função será removida em versões futuras.
- * Use `gerarEbaixarCSV` em vez disso.
+ * @deprecated  Use `gerarEbaixarCSV` em vez disso.
  * 
  * Gera um conteúdo CSV com base nos campos e nos dados fornecidos.
  * @param {string[]} fields - Os campos que serão usados como cabeçalho no CSV.
@@ -18,8 +17,7 @@ export const generateCSV = (fields, data) => {
 };
 
 /**
- * @deprecated Esta função será removida em versões futuras.
- * Use `gerarEbaixarCSV` em vez disso.
+ * @deprecated Use `gerarEbaixarCSV` em vez disso.
  * 
  * Baixa um arquivo CSV com o conteúdo fornecido.
  * @param {string} filename - O nome do arquivo CSV a ser baixado.
@@ -144,7 +142,29 @@ export const formatDateToString = (date) => {
 
   return `${day}/${month}/${year}`;
 };
+/**
+ * Formats a Date object to a string in the format "HH:MM".
+ *
+ * @param {Date} date - The date object to format.
+ * @returns {string} The formatted time string.
+ */
+export const formatTimeToString = (date) => {
+    const horas = date.getHours().toString().padStart(2, '0');
+    const minutos = date.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
+};
 
+/**
+ * Formats a given date object into a string with date and time.
+ *
+ * @param {Date} date - The date object to format.
+ * @returns {string} The formatted date and time string in the format "YYYY-MM-DD - HH:MM:SS".
+ */
+export const formatarDataHora = (date) => {
+  const dataPart = formatDateToString(date);
+  const horaPart = formatTimeToString(date);
+  return `${dataPart} - ${horaPart}`;
+}
 /**
  * Converte um objeto de tempo em uma string ISO.
  * @param {Object} time - { hours, minutes, seconds }.
@@ -219,6 +239,7 @@ export const enrichData = (target) => {
  * @param {Object} relatorio - Objeto contendo os filtros aplicados.
  * @param {Object} ListaSetor - Lista reativa de setores.
  * @param {Object} ListaSetorOriginal - Lista original de setores.
+ * @deprecated Use `filtroGenericoReltorio` em vez disso.
  */
 export const filterSetoresByCDC  = (relatorio, ListaSetor, ListaSetorOriginal) => {
   if (relatorio.ID_CentroCusto) {
@@ -235,18 +256,10 @@ export const filterSetoresByCDC  = (relatorio, ListaSetor, ListaSetorOriginal) =
 * @param {Object} relatorio - Objeto contendo os filtros aplicados.
 * @param {Object} ListaFuncionarios - Lista de funcionários.
 * @param {Object} ListaFuncionarioFiltrado - Lista de funcionarios filtrados.
+* @deprecated Use `filtroGenericoReltorio` em vez disso.
 */
 export const filterFuncionariosBySetorAndPlanta  = (relatorio, ListaFuncionarios, ListaFuncionarioFiltrado) => {
-  // if (relatorio.id_setor || relatorio.id_planta) {
-  //     ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter(funcionario => {
-  //         const matchesSetor = relatorio.id_setor ? funcionario.id_setor === relatorio.id_setor : true;
-  //         const matchesPlanta = relatorio.id_planta ? funcionario.id_planta === relatorio.id_planta : true;
 
-  //         return matchesSetor && matchesPlanta;
-  //     });
-  // } else {
-  //     ListaFuncionarios.value = ListaFuncionariosOriginal.value;
-  // }
     const {id_setor, id_planta} = relatorio;
     if(!(id_setor || id_planta)) {
       ListaFuncionarioFiltrado.value = ListaFuncionarios.value;
@@ -257,4 +270,45 @@ export const filterFuncionariosBySetorAndPlanta  = (relatorio, ListaFuncionarios
 
         return matchesSetor && matchesPlanta;
     });
+};
+
+
+/**
+ * Filtra o relatório com base nos critérios fornecidos e atualiza as listas de funcionários e setores de acordo.
+ *
+ * @param {Object} relatorio - O objeto do relatório contendo os critérios de filtragem.
+ * @param {Object} relatorio.value - O objeto contendo os critérios de filtragem.
+ * @param {string} [relatorio.value.id_centro_custo] - O ID do centro de custo para filtrar.
+ * @param {string} [relatorio.value.id_planta] - O ID da planta para filtrar.
+ * @param {string} [relatorio.value.id_setor] - O ID do setor para filtrar.
+ * @param {Object} listaFuncionariosOriginal - The original list of employees.
+ * @param {Array} listaFuncionariosOriginal.value - O array de objetos originais de funcionários.
+ * @param {Object} ListaFuncionarios - A lista de funcionários que será atualizada.
+ * @param {Array} ListaFuncionarios.value - O array de objetos de funcionários que será atualizado.
+ * @param {Object} ListaSetorOriginal - A lista original de setores.
+ * @param {Array} ListaSetorOriginal.value - O array de objetos originais de setores.
+ * @param {Object} ListaSetor - A lista de setores que será atualizada.
+ * @param {Array} ListaSetor.value - O array de objetos de setores que será atualizado.
+ */
+export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal,ListaFuncionarios, ListaSetorOriginal, ListaSetor) => {
+  const semFiltro = (!relatorio.value.id_centro_custo || relatorio.value.id_centro_custo === '')
+   && (!relatorio.value.id_planta || relatorio.value.id_planta === '')
+    && (!relatorio.value.id_setor || relatorio.value.id_setor === '');
+  if (semFiltro) {
+      ListaFuncionarios.value = [...listaFuncionariosOriginal.value];
+      ListaSetor.value = [...ListaSetorOriginal.value];
+      return;
+  }
+  if (relatorio.value.id_centro_custo) {
+      ListaSetor.value = ListaSetorOriginal.value.filter((setor) => setor.id_centro_custo === relatorio.value.id_centro_custo);
+  } else {
+      ListaSetor.value = [...ListaSetorOriginal.value];
+  }
+  ListaFuncionarios.value = listaFuncionariosOriginal.value.filter((funcionario) => {
+      const cdcMatch = relatorio.value.id_centro_custo && funcionario.id_dentro_custo === relatorio.value.id_centro_custo;
+      const plantaMatch = relatorio.value.id_planta && funcionario.id_planta === relatorio.value.id_planta;
+      const setorMatch = relatorio.value.id_setor && funcionario.id_setor === relatorio.value.id_setor;
+
+      return cdcMatch || plantaMatch || setorMatch;
+  });
 };
