@@ -319,8 +319,9 @@ const getImagem = async (filename) => {
         }
     } catch (error) {
         console.error('Erro ao carregar imagem:', error); // Exibe erro no console
+        return imagePlaceholder; // Retorna o placeholder se houver erro ao carregar a imagem
     }
-    return imagePlaceholder; // Retorna o placeholder se houver erro ao carregar a imagem
+    
 };
 
 /**

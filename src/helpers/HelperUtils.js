@@ -1,6 +1,6 @@
 import { format } from 'date-fns-tz';
 import { parseISO, isValid, parse } from 'date-fns';
-import { useAuthStore } from '@/store/authStore.js';
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 const store = useAuthStore();
 /**
  * @deprecated  Use `gerarEbaixarCSV` em vez disso.

@@ -29,6 +29,7 @@ let planta = reactive({
     id_planta: '',
     userId: '',
     senha: '',
+    codigo:'',
     urlapi: '',
     clienteid: ''
 });
@@ -83,7 +84,8 @@ const adicionarPlanta = async () => {
     resetPlantaForm(planta);
   } catch (error) {
     console.error('Erro ao adicionar planta:', error);
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar planta.', life: 3000 });
+    toast.add({ severity: 'error', summary: 'Erro ao adicionar planta', detail: 'Verifique os dados e tente novamente.', life: 3000 });
+    
   } finally {
     loading.value = false;
   }
@@ -209,7 +211,7 @@ onMounted(() => {
                                         <div v-if="integracao" class="my-3 grid">
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="userid">UserID:</label>
-                                                <InputText class="my-2" id="userid" v-model="planta.userId" required />
+                                                <InputText class="my-2" id="userid" v-model="planta.userid" required />
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="senha">Senha:</label>
@@ -221,7 +223,7 @@ onMounted(() => {
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="idcliente">ID Cliente:</label>
-                                                <InputText class="my-2" id="idcliente" v-model="planta.clienteid" required />
+                                                <InputText class="my-2" id="idcliente" v-model="planta.clientid" required />
                                             </div>
                                         </div>
                                     </div>

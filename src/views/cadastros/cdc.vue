@@ -74,17 +74,17 @@ const submitForm = async () => {
         if (visible.value) {
             // Se o formulário estiver no modo de edição, chama a função de atualizar
             await cdcService.atualizarCentro(cdc); // Atualiza o centro de custo no backend
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro atualizado!' }); // Exibe mensagem de sucesso
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro atualizado!', life: 3000  }); // Exibe mensagem de sucesso
         } else {
             // Se o formulário estiver no modo de adicionar, chama a função de adicionar
             await cdcService.adicionarCentro(cdc); // Adiciona o centro de custo no backend
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro adicionado!' }); // Exibe mensagem de sucesso
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro adicionado!', life: 3000 }); // Exibe mensagem de sucesso
         }
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: error.message }); // Exibe mensagem de erro caso falhe
+        toast.add({ severity: 'error', summary: 'Erro', detail: error.message, life: 3000 }); // Exibe mensagem de erro caso falhe
     }
 };
 
@@ -101,12 +101,13 @@ const submitForm = async () => {
 const deleteCentro = async () => {
     try {
         await cdcService.deletarCentro(cdc); // Chama o serviço para deletar o centro de custo
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro deletado!' }); // Exibe mensagem de sucesso
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro deletado!', life: 3000 }); // Exibe mensagem de sucesso
         deleteCentroDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
+        active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o centro de custo' }); // Exibe mensagem de erro caso falhe
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o centro de custo', life: 3000 }); // Exibe mensagem de erro caso falhe
     }
 };
 
@@ -223,7 +224,7 @@ onMounted(() => {
 
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_centro_custo">Código:</label>
-                                        <InputText class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
+                                        <InputNumber class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Centro de Custo (Nome):</label>

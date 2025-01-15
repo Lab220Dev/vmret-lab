@@ -127,11 +127,13 @@ const deleteUsuario = async (item) => {
         });
         if (response.status === 200) {
             deleteUsuarioDialog.value = false; // Fecha o diálogo se a exclusão for bem-sucedida.
-            fetchUsuarios(); // Recarrega a lista de usuários.
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB deletado', life: 3000 }); // Exibe uma notificação de sucesso.
+        fetchUsuarios();  // Recarrega a lista de usuários.
         }
     } catch (error) {
-        loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao deletar os usuários:', error); // Log do erro de exclusão.
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao excluir o usuário', life: 3000 }); // Notificação de erro.
+        loading.value = false;
     } finally {
         loading.value = false; // Garantia de que o carregamento será desativado após a tentativa.
     }
@@ -188,10 +190,11 @@ const saveUsuario = async () => {
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao adicionar Usuario:', error); // Log do erro de adição.
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao criar o usuário, verifique os dados e tente novamente', life: 3000 }); // Notificação de erro.
     } finally {
         loading.value = false; // Desativa o carregamento.
     }
-    loading.value = true; // Ativa o carregamento.
+    loading.value = false; // Ativa o carregamento.
 };
 
 /**

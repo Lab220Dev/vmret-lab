@@ -53,17 +53,17 @@ const submitForm = async () => {
         if (visible.value) {
             // Se o formulário está no modo de edição, atualiza a função
             await funcaoService.atualizarFuncao(funcao);
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função atualizada' });
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função atualizada', life: 3000 });
         } else {
             // Se o formulário está no modo de adição, adiciona a função
             await funcaoService.adicionarFuncao(funcao);
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função adicionada' });
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função adicionada', life: 3000 });
         }
         loadFuncoes(); // Recarrega a lista de funções após a operação
         active.value = 0; // Volta para a aba de listagem
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar função' }); // Mensagem de erro se a operação falhar
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar função', life: 3000 }); // Mensagem de erro se a operação falhar
     } finally {
         loading.value = false; // Desativa o estado de carregamento
     }
@@ -105,13 +105,13 @@ const deleteFuncao = async () => {
     loading.value = true; // Ativa o estado de carregamento
     try {
         await funcaoService.deletarFuncao(funcao.id_funcao); // Chama o serviço para excluir a função
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função deletada' }); // Mensagem de sucesso
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função deletada', life: 3000 }); // Mensagem de sucesso
         loadFuncoes(); // Recarrega a lista de funções
         deleteFuncaoDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar função' }); // Mensagem de erro se a exclusão falhar
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar função', life: 3000 }); // Mensagem de erro se a exclusão falhar
     } finally {
         loading.value = false; // Desativa o estado de carregamento
     }

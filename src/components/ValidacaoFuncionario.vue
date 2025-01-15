@@ -62,7 +62,6 @@ const fileColumns = ref(Object.keys(props.fileData[0] || {}).map((field) => ({ l
 // Mapeamento das colunas (onde cada campo esperado será mapeado para uma coluna do arquivo)
 const mappedColumns = ref({}); // Armazena o mapeamento das colunas. Cada chave é o nome da coluna esperada e o valor é o nome da coluna mapeada do arquivo.
 
- // Verifica se o mapeamento está completo (se todas as colunas esperadas têm mapeamento)
  /**
   * @type {ComputedRef<boolean>} isMappingComplete
   * Computed property que retorna 'true' se todas as colunas esperadas estiverem mapeadas corretamente.
@@ -78,7 +77,6 @@ watch(isMappingComplete, (isComplete) => {
     }
 });
 
-// Função para obter as opções disponíveis para mapeamento de uma coluna
 /**
  * Função que retorna as opções disponíveis para mapear uma coluna do arquivo
  * @param {string} currentField - O nome da coluna que está sendo mapeada
@@ -91,7 +89,6 @@ const availableOptions = (currentField) => {
     // Retorna as opções de colunas que ainda não foram mapeadas
 };
 
-// Função chamada quando a coluna mapeada é alterada
 /**
  * Função que é chamada sempre que o mapeamento de uma coluna é alterado
  * @param {string} field - O nome do campo que foi alterado no mapeamento
@@ -102,7 +99,6 @@ const handleMappingChange = (field) => {
     }
 };
 
-// Função para validar os dados do arquivo
 /**
  * Função que valida os dados do arquivo carregado, dividindo os dados entre válidos e inválidos
  */

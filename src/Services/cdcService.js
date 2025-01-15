@@ -41,9 +41,15 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
         };
 
         try {
-            // Realiza a requisição POST para adicionar o centro de custo.
-            await axios.post('/cdc/adicionar', data);
-            dataStore.invalidateCDCCache(); // Invalida o cache de centros de custo no store de dados.
+            if (!cdc.Codigo || cdc.Codigo === 0) {
+                console.error('Código do centro de custo é inválido!');  
+                throw new Error('Código do centro de custo é inválido!'); 
+            }
+            else {
+                // Realiza a requisição POST para adicionar o centro de custo.
+                await axios.post('/cdc/adicionar', data);
+                dataStore.invalidateCDCCache(); // Invalida o cache de centros de custo no store de dados.
+            }
         } catch (error) {
             // Caso ocorra algum erro na requisição, exibe o erro no console.
             console.error('Erro ao adicionar centro de custo:', error);

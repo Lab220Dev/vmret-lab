@@ -23,7 +23,6 @@ import { isValidEmail, isValidCPF } from '@/helpers/HelperValidacao.js'; // Impo
  */
 const props = defineProps(['fileData']);
 
-// Emissão de eventos para o componente pai
 /**
  * Emite eventos para o componente pai
  * 
@@ -33,28 +32,24 @@ const props = defineProps(['fileData']);
  */
 const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-completo']);
 
-// Colunas esperadas para funcionários
 /**
  * @type {Ref<Array<string>>} expectedColumns
  * Lista das colunas esperadas para o mapeamento dos dados dos funcionários.
  */
 const expectedColumns = ref(['Nome', 'CPF', 'Matrícula', 'Email']);
 
-// Colunas disponíveis no arquivo carregado
 /**
  * @type {Ref<Array<{ label: string, value: string }>>} fileColumns
  * Mapeamento das colunas do arquivo carregado. Cada item possui 'label' e 'value', ambos referindo-se a uma coluna.
  */
 const fileColumns = ref(Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
 
-// Mapeamento das colunas
 /**
  * @type {Ref<Object>} mappedColumns
  * Objeto de mapeamento das colunas, onde a chave é o nome da coluna esperada e o valor é a coluna mapeada do arquivo carregado.
  */
 const mappedColumns = ref({});
 
-// Verifica se o mapeamento está completo
 /**
  * @type {ComputedRef<boolean>} isMappingComplete
  * Computed que verifica se todas as colunas esperadas estão mapeadas. Retorna 'true' se o mapeamento estiver completo.
@@ -70,7 +65,6 @@ watch(isMappingComplete, (isComplete) => {
     }
 });
 
-// Função para validar os dados
 /**
  * Função que valida os dados do arquivo carregado. Divide os dados em válidos e inválidos.
  */
