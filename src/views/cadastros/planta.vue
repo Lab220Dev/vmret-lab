@@ -85,7 +85,8 @@ const adicionarPlanta = async () => {
     resetPlantaForm(planta);
   } catch (error) {
     console.error('Erro ao adicionar planta:', error);
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar planta.', life: 3000 });
+    toast.add({ severity: 'error', summary: 'Erro ao adicionar planta', detail: 'Verifique os dados e tente novamente.', life: 3000 });
+    
   } finally {
     loading.value = false;
   }

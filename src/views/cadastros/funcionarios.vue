@@ -1,24 +1,36 @@
 <script setup>
+// Importando funções e objetos do Vue.js para usar no componente
 import { reactive, ref, onMounted, watch } from 'vue';
+// Importando a função 'useToast' para exibir notificações de sucesso ou erro
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js';
+// Importando o estilo do componente de data picker
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+// Importando o objeto 'FilterMatchMode' do PrimeVue para configurar os filtros de pesquisa
 import { FilterMatchMode } from 'primevue/api';
+// Importando a imagem de placeholder que será usada caso não haja imagem para um produto
 import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import clockurl from '@/assets/images/OIP.png';
+// Importando o store de autenticação para acessar o estado de autenticação do usuário
 import { useAuthStore } from '@/store/authStore.js';
+// Importando o componente de upload de imagem para ser usado na interface
 import ImageUpload from '@/components/ImageUpload.vue';
+// Importando o store de dados para acessar os dados compartilhados, como plantas
 import { useDataStore } from '@/store/dataStore.js';
+// Importando o componente de spinner de carregamento
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+// Importando o serviço de produto para interagir com a API relacionada aos funcionarios
 import funcionarioService from '@/Services/funcionarioService.js';
 import * as formatservices from '@/helpers/HelperUtils.js';
+// Importando funções de ajuda relacionadas ao formulário do funcionarios
 import {resetFuncionarioForm,resetItens as resetProduto} from '@/helpers/formHelper.js';
 import { validadorcpf, validadoremail,validateForm } from '@/helpers/HelperFuncionario.js';
-const store = useAuthStore();
-const dataStore = useDataStore();
 
-const toast = useToast();
+const store = useAuthStore();// Acessa o store de autenticação para obter dados sobre o usuário logado
+
+const dataStore = useDataStore();// Acessa o store de dados para obter informações sobre plantas e outros dados
+
+const toast = useToast(); // Função para exibir notificações via toast
 const selectedFile = ref(null);
 const handleFileSelected = (file) => {
     selectedFile.value = file;
@@ -277,8 +289,10 @@ const getImagem = async (filename) => {
     }
     try {
         const response = await funcionarioService.obterImagem(store.userIdCliente, filename);
+        if (response.status === 200) {
         const { image, mimeType } = response.data;
         imageUrl.value = `data:${mimeType};base64,${image}`;
+        }
     } catch (error) {
         return imagePlaceholder;
     }

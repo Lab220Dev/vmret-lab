@@ -1,5 +1,5 @@
 import { toISODate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
-import { useAuthStore } from '@/store/authStore.js';
+import { useAuthStore } from '@/store/authStore.js';// Importa o store de autenticação para acessar informações do usuário autenticado.
 import relatorioService from '@/Services/relatorioService.js';
 import jsPDF from 'jspdf'; // Importa a biblioteca jsPDF para gerar PDFs
 import autoTable from 'jspdf-autotable';

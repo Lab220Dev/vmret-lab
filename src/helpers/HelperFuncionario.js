@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/store/authStore.js';
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import { isValidCPF, isValidEmail } from '@/helpers/HelperValidacao';
 const store = useAuthStore();
 
@@ -13,8 +13,8 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
     const formData = new FormData();
 
     // Se um arquivo for selecionado, prepare para substituí-lo
-    if (selectedFile) {
-        const fileExtension = selectedFile.name.split('.').pop();
+    if (selectedFile.value) {
+        const fileExtension = selectedFile.value.name.split('.').pop();
         const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
         formData.append('foto', nomeArquivo);
         formData.append('file', selectedFile);
@@ -48,16 +48,6 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
     return formData;
 };
 
-/**
- * Prepares the product data for a given employee and product.
- *
- * @param {Object} funcionario - The employee object.
- * @param {number} funcionario.id_funcionario - The ID of the employee.
- * @param {Object} produto - The product object.
- * @param {number} produto.id_produto - The ID of the product.
- * @param {number} produto.quantidade - The quantity of the product.
- * @returns {Object} The prepared product data.
- */
 export const prepareprodutoData = (funcionario, produto) => {
     return {
         id_cliente: store.userIdCliente,
@@ -67,15 +57,7 @@ export const prepareprodutoData = (funcionario, produto) => {
         quantidade: produto.value.quantidade
     };
 };
-/**
- * Validates the form data for a "funcionario" object.
- *
- * @param {Object} funcionario - The funcionario object containing form data.
- * @param {Object} errors - An object to store validation error messages.
- * @param {string} funcionario.CPF - The CPF of the funcionario.
- * @param {string} funcionario.email - The email of the funcionario.
- * @returns {Object} An object containing a boolean `isValid` indicating if the form is valid, and an `errors` object with validation error messages.
- */
+
 export const validateForm = (funcionario) => {
     const errors = {};
     if (!funcionario.CPF || !isValidCPF(funcionario.CPF)) {
@@ -104,12 +86,7 @@ export const validadorcpf=(CPF)=>{
         return '';
     }
 }
-/**
- * Validates an email address and updates the errors object.
- *
- * @param {string} email - The email address to validate.
- * @param {Object} errors - The errors object to update with validation messages.
- */
+
 export const validadoremail = (email) => {
     if (!email) {
         return 'O e-mail é obrigatório';

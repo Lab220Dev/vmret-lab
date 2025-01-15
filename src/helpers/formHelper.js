@@ -106,29 +106,59 @@ export const resetGenericForm = (form, initialState) => {
   });
 };
 
+/**
+ * Reseta os campos do formulário de planta, atribuindo valores padrão para cada propriedade.
+ * 
+ * @function
+ * @param {Object} planta - O objeto que representa os dados da planta a serem resetados.
+ * @param {string} planta.codigo - O código da planta.
+ * @param {string} planta.nome - O nome da planta.
+ * @param {string} planta.id_planta - O ID da planta.
+ * @param {string} planta.userid - O ID do usuário associado à planta.
+ * @param {string} planta.senha - A senha associada à planta.
+ * @param {string} planta.urlapi - A URL da API associada à planta.
+ * @param {string} planta.clientid - O ID do cliente associado à planta.
+ */
 export const resetPlantaForm = (planta) => {
-    Object.assign(planta, {
-      codigo:'',  
-      nome: '',
-        id_planta: '',
-        userid: '',
-        senha: '',
-        urlapi: '',
-        clientid: ''
-    });
+  // Reseta o valor da propriedade 'codigo' da planta para uma string vazia.
+  Object.assign(planta, {
+    codigo:'',  // O código da planta será redefinido como uma string vazia.
+    nome: '',   // O nome da planta será redefinido como uma string vazia.
+    id_planta: '',  // O ID da planta será redefinido como uma string vazia.
+    userid: '',  // O ID do usuário será redefinido como uma string vazia.
+    senha: '',  // A senha será redefinida como uma string vazia.
+    urlapi: '',  // A URL da API será redefinida como uma string vazia.
+    clientid: ''  // O ID do cliente será redefinido como uma string vazia.
+  });
 };
 
+/**
+* Reseta os campos do formulário de produto, atribuindo valores padrão para cada propriedade.
+* 
+* @function
+* @param {Object} produto - O objeto que representa os dados do produto a serem resetados.
+* @param {string} produto.codigo - O código do produto.
+* @param {string} produto.id_planta - O ID da planta associada ao produto.
+* @param {string} produto.id_tipoProduto - O tipo de produto.
+* @param {string} produto.id_categoria - A categoria do produto.
+* @param {string} produto.nome - O nome do produto.
+* @param {string} produto.descricao - A descrição do produto.
+* @param {string} produto.unidade_medida - A unidade de medida do produto.
+* @param {number} produto.validadedias - O número de dias de validade do produto.
+* @param {Array} imageRefs - Um array com referências das imagens associadas ao produto (não utilizado diretamente aqui).
+*/
 export const resetProdutoForm = (produto, imageRefs) => {
-    Object.assign(produto, {
-        codigo: '',
-        id_planta: '',
-        id_tipoProduto: '',
-        id_categoria: '',
-        nome: '',
-        descricao: ' ',
-        unidade_medida: '',
-        validadedias: 0
-    });
+  // Reseta o valor da propriedade 'codigo' do produto para uma string vazia.
+  Object.assign(produto, {
+      codigo: '',  // O código do produto será redefinido como uma string vazia.
+      id_planta: '',  // O ID da planta será redefinido como uma string vazia.
+      id_tipoProduto: '',  // O ID do tipo do produto será redefinido como uma string vazia.
+      id_categoria: '',  // O ID da categoria será redefinido como uma string vazia.
+      nome: '',  // O nome do produto será redefinido como uma string vazia.
+      descricao: ' ',  // A descrição do produto será redefinida como um espaço em branco.
+      unidade_medida: '',  // A unidade de medida será redefinida como uma string vazia.
+      validadedias: 0  // O número de dias de validade será redefinido como 0.
+  });
 
     if (imageRefs) {
         imageRefs.forEach((imageRef) => {
@@ -137,55 +167,94 @@ export const resetProdutoForm = (produto, imageRefs) => {
     }
 };
 
+
+/**
+ * Reseta os campos do formulário de setor, atribuindo valores padrão para cada propriedade.
+ * 
+ * @function
+ * @param {Object} setor - O objeto que representa os dados do setor a serem resetados.
+ * @param {string} setor.codigo - O código do setor.
+ * @param {string} setor.nome - O nome do setor.
+ * @param {string} setor.id_centro_custo - O ID do centro de custo associado ao setor.
+ */
 export const resetSetorForm = (setor) => {
-    Object.assign(setor, {
-        codigo: '',
-        nome: '',
-        id_centro_custo: ''
-    });
+  // Reseta o valor da propriedade 'codigo' do setor para uma string vazia.
+  Object.assign(setor, {
+      codigo: '',  // O código do setor será redefinido como uma string vazia.
+      
+      // Reseta o valor da propriedade 'nome' do setor para uma string vazia.
+      nome: '',    // O nome do setor será redefinido como uma string vazia.
+      
+      // Reseta o valor da propriedade 'id_centro_custo' para uma string vazia.
+      id_centro_custo: ''  // O ID do centro de custo será redefinido como uma string vazia.
+  });
 };
 
 /**
- * Reseta o formulário de DM (Dispositivo de Monitoramento).
- * @param {Object} DM - Objeto reativo do DM a ser resetado.
- * @param {Object[]} Controladoras - Lista de controladoras reativas.
- * @param {Object} selectedClient - Objeto reativo do cliente selecionado.
- * @param {Object} nextValues - Valores iniciais para tipos de controladoras.
+ * Reseta os campos do formulário DM e limpa as variáveis associadas, atribuindo valores padrão para cada propriedade.
+ * 
+ * @function
+ * @param {Object} DM - O objeto que representa os dados do DM a serem resetados.
+ * @param {Object} Controladoras - O objeto que armazena as controladoras associadas ao DM.
+ * @param {Object} selectedClient - O objeto que representa o cliente selecionado.
+ * @param {Object} nextValues - O objeto que armazena os valores seguintes associados a chaves específicas.
+ * 
+ * @description
+ * A função `resetDMForm` redefine os valores de vários objetos e propriedades para seus valores iniciais padrão. 
+ * Ela limpa o objeto DM, redefine valores associados ao cliente selecionado e às controladoras, 
+ * e também altera valores em `nextValues` para chaves específicas.
  */
 export const resetDMForm = (DM, Controladoras, selectedClient, nextValues) => {
-    Object.assign(DM, {
-        Ativo: '',
-        Chave: '',
-        ChaveAPI: '',
-        ClienteID: '',
-        ClienteNome: '',
-        Created: '',
-        Enviada: '',
-        ID_CR_Usuario: '',
-        ID_DM: '',
-        IDcliente: '',
-        Identificacao: '',
-        Integracao: '',
-        Numero: '',
-        OP_Biometria: '',
-        OP_Facial: '',
-        OP_Senha: '',
-        URL: '',
-        Updated: '',
-        UserID: '',
-        Versao: '',
-        Devolucao: '',
-        ID_Cliente: null
-    });
+  // Reseta as propriedades do objeto 'DM' para seus valores padrão (string vazia ou nulo).
+  Object.assign(DM, {
+      Ativo: '',  // Reseta a propriedade 'Ativo' para uma string vazia.
+      Chave: '',  // Reseta a propriedade 'Chave' para uma string vazia.
+      ChaveAPI: '',  // Reseta a propriedade 'ChaveAPI' para uma string vazia.
+      ClienteID: '',  // Reseta a propriedade 'ClienteID' para uma string vazia.
+      ClienteNome: '',  // Reseta a propriedade 'ClienteNome' para uma string vazia.
+      Created: '',  // Reseta a propriedade 'Created' para uma string vazia.
+      Enviada: '',  // Reseta a propriedade 'Enviada' para uma string vazia.
+      ID_CR_Usuario: '',  // Reseta a propriedade 'ID_CR_Usuario' para uma string vazia.
+      ID_DM: '',  // Reseta a propriedade 'ID_DM' para uma string vazia.
+      IDcliente: '',  // Reseta a propriedade 'IDcliente' para uma string vazia.
+      Identificacao: '',  // Reseta a propriedade 'Identificacao' para uma string vazia.
+      Integracao: '',  // Reseta a propriedade 'Integracao' para uma string vazia.
+      Numero: '',  // Reseta a propriedade 'Numero' para uma string vazia.
+      OP_Biometria: '',  // Reseta a propriedade 'OP_Biometria' para uma string vazia.
+      OP_Facial: '',  // Reseta a propriedade 'OP_Facial' para uma string vazia.
+      OP_Senha: '',  // Reseta a propriedade 'OP_Senha' para uma string vazia.
+      URL: '',  // Reseta a propriedade 'URL' para uma string vazia.
+      Updated: '',  // Reseta a propriedade 'Updated' para uma string vazia.
+      UserID: '',  // Reseta a propriedade 'UserID' para uma string vazia.
+      Versao: '',  // Reseta a propriedade 'Versao' para uma string vazia.
+      Devolucao: '',  // Reseta a propriedade 'Devolucao' para uma string vazia.
+      ID_Cliente: null  // Reseta a propriedade 'ID_Cliente' para null.
+  });
 
-    Controladoras.value = [];
-    selectedClient.value = { id_cliente: '', nome_cliente: '', usar_api: false };
+  // Limpa o valor das controladoras, atribuindo um array vazio.
+  Controladoras.value = [];  // O valor de 'Controladoras' é redefinido para um array vazio.
 
-    Object.assign(nextValues['2018'], { placa: 12 });
-    Object.assign(nextValues['2023'], { dip: 2 });
-    Object.assign(nextValues['Locker'], { dip: 2 });
-    Object.assign(nextValues['2024'], { placa: 101 });
+  // Limpa o objeto 'selectedClient', atribuindo valores padrão para cada propriedade.
+  selectedClient.value = { 
+      id_cliente: '',  // O 'id_cliente' é redefinido para uma string vazia.
+      nome_cliente: '',  // O 'nome_cliente' é redefinido para uma string vazia.
+      usar_api: false  // O 'usar_api' é redefinido para 'false'.
+  };
+
+  // Modifica o valor associado à chave '2018' em 'nextValues', atribuindo 'placa' com valor 12.
+  Object.assign(nextValues['2018'], { placa: 12 });  // A chave '2018' recebe o valor { placa: 12 }.
+
+  // Modifica o valor associado à chave '2023' em 'nextValues', atribuindo 'dip' com valor 2.
+  Object.assign(nextValues['2023'], { dip: 2 });  // A chave '2023' recebe o valor { dip: 2 }.
+
+  // Modifica o valor associado à chave 'Locker' em 'nextValues', atribuindo 'dip' com valor 2.
+  Object.assign(nextValues['Locker'], { dip: 2 });  // A chave 'Locker' recebe o valor { dip: 2 }.
+
+  // Modifica o valor associado à chave '2024' em 'nextValues', atribuindo 'placa' com valor 101.
+  Object.assign(nextValues['2024'], { placa: 101 });  // A chave '2024' recebe o valor { placa: 101 }.
 };
+
+
 /**
  * Reseta o objeto do produto selecionado para seus valores iniciais.
  *
@@ -199,19 +268,44 @@ export const resetDMForm = (DM, Controladoras, selectedClient, nextValues) => {
  * @property {string} Posicao - Posição associada ao produto.
  * @property {string} Andar - Andar associado ao produto.
  */
+
 export const resetProdutoSelecionado = (produtoSelecionado) => {
-    produtoSelecionado.value = {
-        id_item: '',
-        id_produto: '',
-        Nome_Produto: '',
-        QTD: '',
-        SKU: '',
-        Controladora: '',
-        Motor1: null,
-        Motor2: null,
-        Dip: null,
-        Andar: null,
-        Posicao: null,
-        Capacidade: null
-    };
+  // Atribui um objeto vazio com valores padrão a 'produtoSelecionado.value', resetando os campos do produto.
+  produtoSelecionado.value = {
+      // O identificador único do item de produto.
+      id_item: '', 
+      
+      // O identificador único do produto.
+      id_produto: '', 
+      
+      // Nome do produto.
+      Nome_Produto: '', 
+      
+      // Quantidade disponível ou a quantidade do produto.
+      QTD: '', 
+      
+      // SKU (Stock Keeping Unit) do produto, usado para rastrear o inventário.
+      SKU: '', 
+      
+      // A controladora associada ao produto.
+      Controladora: '', 
+      
+      // Motor 1 associado ao produto. Pode ser nulo se não houver.
+      Motor1: null, 
+      
+      // Motor 2 associado ao produto. Pode ser nulo se não houver.
+      Motor2: null, 
+      
+      // DIP (Digital Interface Protocol), utilizado em algumas controladoras, pode ser nulo.
+      Dip: null, 
+      
+      // Andar onde o produto está localizado, pode ser nulo.
+      Andar: null, 
+      
+      // Posição do produto no andar ou no sistema, pode ser nulo.
+      Posicao: null, 
+      
+      // A capacidade do produto ou da controladora associada, pode ser nula.
+      Capacidade: null 
+  };
 };
