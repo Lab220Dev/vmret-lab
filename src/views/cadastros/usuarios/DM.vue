@@ -222,7 +222,7 @@ const onRowSelect = async (event) => {
         return;
     }
     try {
-        DM = event.data;
+        DM = {...event.data};
         visible.value = true;
         await mapControladoras(DM);
         configurarCliente(DM);
