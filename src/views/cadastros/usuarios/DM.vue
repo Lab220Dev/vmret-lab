@@ -92,7 +92,7 @@ const posicaoOptions = ref([]);
 const placaOptions = ref([]);
 const motorOptions = ref([]);
 const ListaDMS = ref([]);
-
+const controladoraRefs = ref([]);
 // Controles de Estado
 const isEditMode = ref(false);
 const showDialogProduto = ref(false);
@@ -108,7 +108,8 @@ const todosOption = { label: 'Todos', value: { id_cliente: '', nome_cliente: 'To
 const tipoControladoras = ['2018', '2023', '2024', 'Locker Padrão', 'Locker Ker'];
 const operador = ref(false);
 const visible = ref(false);
-
+const currentPage = ref(1);
+const debounceTimeout = ref(null);
 // Propriedades Computadas
 const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
@@ -127,6 +128,11 @@ const validarCampos = () => {
         return false;
     }
 };
+const setRefs = (el) => {
+      if (el) {
+        controladoraRefs.value.push(el);
+      }
+    };
 const selectAllCliente = (index) => {
     selectAll(Controladoras.value[index]);
 };
@@ -140,10 +146,17 @@ const addControladora = () => {
         deleted: false,
         dados: {}
     });
+    setTimeout(() => {
+        const ultimaControladora = controladoraRefs.value[controladoraRefs.value.length - 1];
+        if (ultimaControladora) {
+          ultimaControladora.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+      }, 100);
 };
 const updateTipoControladora = (index, tipo) => {
     try {
         updateControladoraHelper(index, tipo, Controladoras.value, nextValues);
+         // Rola suavemente para a área de configurações.
     } catch (error) {
         console.log('Erro ao atualizar o tipo da controladora:', error);
         toast.add({ severity: 'warn', summary: 'Erro', detail: error.message, life: 3000 });
@@ -260,8 +273,9 @@ const handleCancelar = () => {
  * Função para buscar as DMs através de uma requisição.
  * A requisição é ajustada de acordo com o tipo de usuário (admin ou não).
  */
-const fetchDMS = async () => {
+const fetchDMS = async (page = 1) => {
     loading.value = true; 
+    const searchTerm = filters.value.global.value || '';
     try {
         const data = prepareDMData('listar')
         const response = await dmService.listarDMs(data);
@@ -494,7 +508,10 @@ const loadData = async () => {
         loading.value = false;
     }
 };
-
+const onPageChange = (event) => {
+    currentPage.value = event.page + 1; 
+    fetchDMS(currentPage.value); 
+};
 watch(
     () => DM.ID_Cliente,
     (newClienteId) => {
@@ -514,6 +531,20 @@ watch(active, (newIndex, oldIndex) => {
         visible.value = false;
     }
 });
+watch(
+    () => filters.value.global.value, // Observa mudanças no valor do filtro global
+    (newValue, oldValue) => {
+        if (debounceTimeout.value) {
+            clearTimeout(debounceTimeout.value); // Limpa o timeout anterior
+        }
+
+        // Espera 1 segundo após a digitação
+        debounceTimeout.value = setTimeout(() => {
+            fetchDMS(currentPage.value); // Carrega os produtos com o filtro atualizado
+        }, 1000); // Tempo de espera de 1000ms (1 segundo)
+    },
+    { immediate: true } // Executa a função de busca imediatamente ao observar a mudança
+);
 onMounted(async () => {
     await loadData();
     await fetchCliente();
@@ -545,6 +576,7 @@ onMounted(async () => {
                                 @rowSelect="onRowSelect"
                                 :sortOrder="1"
                                 :sortField="'Identificacao'"
+                                @page="onPageChange"
                             >
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">
@@ -672,7 +704,7 @@ onMounted(async () => {
                             </div>
                         </div>
                         <div>
-                            <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted">
+                            <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
                                 <div class="flex justify-content-between flex-wrap">
                                     <h5>Controladora {{ index + 1 }}</h5>
 
@@ -754,7 +786,7 @@ onMounted(async () => {
                                 </div>
 
                                 <!-- Controladora Locker -->
-                                <div v-if="controladora.tipo === 'Locker'">
+                                <div v-if="controladora.tipo === 'Locker-Padrao'">
                                     <div class="field col-12 mt-3">
                                         <label class="mr-6 p-0">Dip: </label>
                                         <InputText style="width: 250px" v-model="controladora.dados.dip" />
