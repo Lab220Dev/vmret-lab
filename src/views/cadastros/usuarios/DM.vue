@@ -63,6 +63,13 @@ const nextValues = reactive({
     "Locker-Ker": { dip: 0 },
     2024: { placa: 101 }
 });
+const tipoControladoras = [
+  { label: '2018', value: '2018' },
+  { label: '2023', value: '2023' },
+  { label: '2024', value: '2024' },
+  { label: 'Locker Padrão', value: 'Locker-Padrao' },
+  { label: 'Locker Ker', value: 'Locker-Ker' },
+];
 // Objeto de produto selecionado
 const produtoSelecionado = ref({
     id_produto: '',
@@ -105,7 +112,6 @@ const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false }
 const dialogMessage = ref('');
 const selectedItem = ref(null);
 const todosOption = { label: 'Todos', value: { id_cliente: '', nome_cliente: 'Todos', usar_api: false }, usar_api: false };
-const tipoControladoras = ['2018', '2023', '2024', 'Locker Padrão', 'Locker Ker'];
 const operador = ref(false);
 const visible = ref(false);
 const currentPage = ref(1);
@@ -156,7 +162,6 @@ const addControladora = () => {
 const updateTipoControladora = (index, tipo) => {
     try {
         updateControladoraHelper(index, tipo, Controladoras.value, nextValues);
-         // Rola suavemente para a área de configurações.
     } catch (error) {
         console.log('Erro ao atualizar o tipo da controladora:', error);
         toast.add({ severity: 'warn', summary: 'Erro', detail: error.message, life: 3000 });
@@ -714,7 +719,7 @@ onMounted(async () => {
 
                                 <div class="field mt-3 col-12">
                                     <label class="mr-3">Modelo: </label>
-                                    <Dropdown class="" style="width: 250px" v-model="controladora.tipo" :options="tipoControladoras" placeholder="Selecione o tipo de controladora" @change="updateTipoControladora(index, controladora.tipo)" />
+                                    <Dropdown class="" style="width: 250px" v-model="controladora.tipo" optionLabel="label" optionValue="value" :options="tipoControladoras" placeholder="Selecione o tipo de controladora" @change="updateTipoControladora(index, controladora.tipo)" />
                                 </div>
 
                                 <!<!-- Controladora 2018 -->
@@ -795,6 +800,26 @@ onMounted(async () => {
                                         <h4>Posição</h4>
                                         <div class="checkbox-group">
                                             <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
+                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                <label>{{ i }}</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="controladora.tipo === 'Locker-Ker'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-6 p-0">Dip: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                    </div>
+                                    <div class="field card">
+                                        <h4>Posição</h4>
+                                        <div class="checkbox-group">
+                                            <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
                                                 <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                 <label>{{ i }}</label>
                                             </div>
