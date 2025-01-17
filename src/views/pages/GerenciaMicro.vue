@@ -104,6 +104,8 @@ import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o store 
 
 import clientesService from '@/services/clientesService';
 
+import funcionarioService from '@/services/funcionarioService';
+
 
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
@@ -181,10 +183,9 @@ const fetchIfAdmin = async () => {
 const fetchClientes = async () => {
     try {
         // Realiza uma requisição GET para listar os clientes e seus serviços.
-        const response = await axios.get('/admin/cliente/listarClienteServicos');
-        
+        const response = await clientesService.listarClienteServicos();
         // Mapeia a resposta para extrair os clientes e seus serviços.
-        availableClients.value = response.data.map((cliente) => ({
+        availableClients.value = response.map((cliente) => ({
             id: cliente.id_cliente, // ID do cliente.
             name: cliente.nome, // Nome do cliente.
             servicos: cliente.servicos // Lista de serviços do cliente.
@@ -205,11 +206,11 @@ const fetchServicos = async () => {
         };
         
         // Realiza uma requisição POST para buscar os serviços do cliente.
-        const response = await axios.post('/admin/cliente/listarServicos', data);
+        const response = await clientesService.listarServicos();
 
         // Verifica se a resposta foi bem-sucedida (status 200-299).
         if (response.status >= 200 && response.status < 300) {
-            const cliente = response.data[0] || {}; // Obtém o primeiro cliente, se existir.
+            const cliente = response[0] || {}; // Obtém o primeiro cliente, se existir.
 
             // Atribui valores ao cliente e seus serviços de forma segura.
             selectedClient.value = {
@@ -269,8 +270,9 @@ const fetchServicos = async () => {
 const fetchRecipients = async (idCliente) => {
     try {
         // Realiza uma requisição POST para listar os funcionários responsáveis.
-        const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
-        
+        // const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
+        let data = {id_cliente: idCliente};
+        const response= await funcionarioService.listarFuncionariosSimples(data);
         // Mapeia a resposta para extrair os funcionários.
         availableRecipients.value = response.data.map((funcionario) => ({
             id: funcionario.id_funcionario, // ID do funcionário.
@@ -394,7 +396,7 @@ const addServiceWithConfig = async () => {
         };
 
         // Envia os dados ao backend para adicionar o serviço.
-        await axios.post('/admin/cliente/adicionarServico', data);
+        await clientesService.adicionarServico(data);
 
         // Exibe uma notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Serviços adicionados com sucesso!', life: 3000 });
@@ -470,7 +472,7 @@ const removeService = async (service) => {
         };
 
         // Envia a solicitação de remoção ao backend.
-        const response = await axios.post('/admin/cliente/deletarServico', data);
+        const response = await clientesService.deletarServico(data);
 
         // Verifica a resposta da API.
         if (response.status === 200) {

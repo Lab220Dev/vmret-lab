@@ -6,10 +6,13 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importando o co
 import axios from '@/axios.js'; // Importando a instância axios configurada
 import { useAuthStore } from '@/store/authStore.js'; // Importando o store de autenticação
 import { FilterMatchMode } from 'primevue/api'; // Importando a constante de filtros do PrimeVue
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
+
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 
 // Declarando variáveis reativas
 const filteredCount = ref(0); // Contador de itens filtrados
-
+const dataStore = useDataStore(); // Cria uma instância do store de dados
 const store = useAuthStore(); // Acesso ao store de autenticação
 const relatorio = ref({
     id_dm: '', // ID da DM
@@ -27,46 +30,17 @@ const filters = ref({
 });
 
 // Função chamada quando o componente for montado
-onMounted(() => {
-    fetchDM(); // Chama a função para carregar as DMs
+onMounted(async () => {
+    //fetchDM(); // Chama a função para carregar as DMs
+dms.value = dataStore.dms || await dataStore.fetchListaDms(); 
 });
 
-// Função assíncrona para buscar a lista de DMs
-const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente // Passa o id do cliente do usuário autenticado
-    };
-    try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
-            // Requisição POST para obter as DMs
-            headers: {
-                Authorization: `Bearer ${store.token}` // Inclui o token de autenticação no cabeçalho
-            }
-        });
-        // Preenche a lista de DMs com os dados retornados pela API
-        dms.value = [
-            todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`, // Exibe a identificação da DM
-                value: ID_DM // O valor da DM é o ID_DM
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error); // Caso ocorra erro, imprime a mensagem no console
-    }
-};
 
 // Função para manter os dados atualizados conforme o filtro
 const KeepAlive = async () => {
-    const data = {
-        id_cliente: store.userIdCliente, // ID do cliente
-        id_usuario: store.userId, // ID do usuário autenticado
-        id_dm: relatorio.value.id_dm, // ID da DM selecionada
-        dia: relatorio.value.dia.toISOString() // Data em formato ISO
-    };
     try {
-        const response = await axios.post('/SDM/relatorio', data); // Requisição para obter o status da DM
-        StatusDM.value = response.data; // Atualiza o status das DMs com os dados retornados
+        loading.value = true;
+        StatusDM.value =  await relatorioService.statusDM(relatorio);
 
         filteredCount.value = StatusDM.value.length; // Atualiza o contador de itens filtrados
 
@@ -76,6 +50,8 @@ const KeepAlive = async () => {
         }
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error); // Caso ocorra erro, imprime a mensagem no console
+    } finally {
+        loading.value = false; // Desativa o spinner de carregamento
     }
 };
 

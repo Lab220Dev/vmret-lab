@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 
+import estoqueService from '@/services/estoqueService';
+
 // Declara as variáveis reativas
 const loading = ref(false); // Variável para controlar o estado de carregamento
 const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
@@ -33,9 +35,7 @@ const fetchDM = async () => {
 
     try {
         // Envia a requisição para buscar as DM's
-        const response = await axios.post('/Estoque/listar', data, {
-            headers: { Authorization: `Bearer ${store.token}` } // Cabeçalho de autorização com o token do usuário
-        });
+        const response = await estoqueService.listarEstoqueDM(data);
 
         // Preenche a lista de DM's, adicionando a opção "Todos"
         dms.value = [
@@ -66,9 +66,7 @@ const relatorioDM = async () => {
 
     try {
         // Envia a requisição para gerar o relatório de estoque
-        const response = await axios.post('/Estoque/relatorio', data, {
-            headers: { Authorization: `Bearer ${store.token}` } // Cabeçalho de autorização com o token do usuário
-        });
+        const response = await estoqueService.relatorioEstoqueDM(data);
 
         // Preenche a lista de EstoqueDM com a resposta da API
         EstoqueDM.value = response.data;
