@@ -48,17 +48,17 @@ const onRowSelect = async (event) => {
 };
 const onFilterChange = () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
-    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    loadCentroCusto(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
 const onSortChange = (event) => {
     lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
     lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
-    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    loadCentroCusto(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
 const onPageChange = (event) => {
     lazyParams.value.first = event.first; // Atualiza o índice inicial
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
-    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+    loadCentroCusto(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 /**
  * Função para carregar a lista de centros de custo.
