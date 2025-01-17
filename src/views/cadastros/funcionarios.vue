@@ -41,7 +41,13 @@ const status = ref([
     { label: 'Ativo', value: 'Ativo' },
     { label: 'Inativo', value: 'Inativo' }
 ]);
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'nome', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 //IMAGEM
 const imageUploader = ref(null);
 const imageUrl = ref(imagePlaceholder);
@@ -104,6 +110,8 @@ const deleteFuncionarioDialog = ref(false);
 const visible = ref(false);
 const active = ref(0);
 const activeItens = ref(0);
+const totalRecords = ref(0); 
+
 const loading = ref(false);
 
 const dropdown1 = ref(null);
@@ -147,15 +155,34 @@ const cpfvalidate=()=>{
 const validateEmail = () => {
     errors.value.email= validadoremail(funcionario.email);
 };
-const loadFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
+const onFilterChange = () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
+const loadFuncionarios = async (page = 1) => {
+    const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = formatservices.prepareListData(params);
     try {
         loading.value = true;
-        const response = await funcionarioService.listarFuncionarios(data);
-        ListaFuncionarios.value = response.data;
-        filteredCount.value = ListaFuncionarios.value.length;
+        const response = await funcionarioService.listarFuncionariosPaginado(data);
+        ListaFuncionarios.value = response.data.funcionarios;
+        totalRecords.value = response.data.totalRecords
 
         resetTable();
         resetItens();
@@ -510,12 +537,17 @@ const hideDialog = () => {
                         selectionMode="single"
                         stripedRows
                         paginator
+                        lazy
+                        :totalRecords="totalRecords"
+                        :rows="lazyParams.value?.rows || 10"
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
                         dataKey="id"
-                        :sortField="'matricula'"
-                        :sortOrder="1"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField ||'nome'"
+                        @filter="onFilterChange"
+                        @page="onPageChange"
+                        @sort="onSortChange"
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
@@ -524,7 +556,7 @@ const hideDialog = () => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <span>Total de registros: {{ totalRecords }}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>

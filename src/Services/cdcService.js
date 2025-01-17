@@ -25,7 +25,18 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
             throw error; // Lança o erro para que a chamada possa tratá-lo posteriormente.
         }
     },
+    async listarCentrosDeCustoPaginada(data) {
 
+        try {
+            // Realiza a requisição POST para listar os centros de custo.
+            const response = await axios.post('/cdc/listarPaginada', data);
+            return response.data; // Retorna os dados da resposta da requisição.
+        } catch (error) {
+            // Caso ocorra algum erro na requisição, exibe o erro no console.
+            console.error('Erro ao listar centros de custo:', error);
+            throw error; // Lança o erro para que a chamada possa tratá-lo posteriormente.
+        }
+    },
     /**
      * Método para adicionar um novo centro de custo.
      * @param {Object} cdc - O centro de custo a ser adicionado.

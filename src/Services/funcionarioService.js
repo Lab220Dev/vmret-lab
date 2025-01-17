@@ -6,6 +6,9 @@ const funcionarioService = {
     async listarFuncionarios(data) {
         return axios.post('/funcionarios/listar', data);
     },
+    async listarFuncionariosPaginado(data) {
+        return axios.post('/funcionarios/listaPaginado', data);
+    },
     async adicionarFuncionario(funcionario, file) {
         const formData = prepareFuncionarioData(funcionario, file, false);
         return axios.post('/funcionarios/adicionar', formData, {

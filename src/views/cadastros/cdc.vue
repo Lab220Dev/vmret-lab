@@ -5,18 +5,25 @@ import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from 'primevue/api';
 import cdcService from '@/services/cdcService';
 import { resetCDCForm } from '@/helpers/formHelper';
-import {isMobEnabled} from '@/helpers/HelperUtils.js';
+import {isMobEnabled,prepareListData} from '@/helpers/HelperUtils.js';
 // Definição de variáveis reativas e referências
 const active = ref(0); // Estado para o índice da aba ativa
 const toast = useToast(); // Hook para usar a funcionalidade de toast
 const centroCusto = ref([]); // Lista dos centros de custo
 const visible = ref(false); // Controle de visibilidade para o formulário de edição/adição
 const deleteCentroDialog = ref(false); // Controle de visibilidade do diálogo de confirmação de exclusão
-const Mob = ref(false)
+const Mob = ref(false); 
+ 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global, que verifica se o texto contém o valor
 });
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'Codigo', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 const filteredCount = ref(0); // Contador de itens filtrados
 
 // Definição de um objeto reativo para armazenar dados do centro de custo
@@ -39,7 +46,20 @@ const onRowSelect = async (event) => {
     visible.value = true; // Torna o formulário de edição visível
     active.value = 1; // Muda para a aba de edição
 };
-
+const onFilterChange = () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
 /**
  * Função para carregar a lista de centros de custo.
  * Ela chama o serviço para listar os centros de custo, atualiza o contador de registros filtrados
@@ -49,10 +69,19 @@ const onRowSelect = async (event) => {
  * @returns {Promise<void>} Retorna uma Promise que não resolve nenhum valor, pois é uma operação assíncrona.
  * @throws {Error} Caso haja um erro na requisição, o erro será exibido no console e uma mensagem de erro será mostrada ao usuário.
  */
-const loadCentroCusto = async () => {
+const loadCentroCusto = async (page = 1) => {
+    const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = prepareListData(params);
     try {
-        centroCusto.value = await cdcService.listarCentrosDeCusto(); // Chama o serviço para listar os centros de custo
-        filteredCount.value = centroCusto.value.length; // Atualiza o contador de registros filtrados
+        const result = await cdcService.listarCentrosDeCustoPaginada(data); // Chama o serviço para listar os centros de custo
+        centroCusto.value = result.centrosCusto; // Atualiza a lista de centros de custo
+        filteredCount.value =  result.totalRecords; // Atualiza o contador de registros filtrados
     } catch (error) {
         console.error(error.message); // Exibe o erro no console
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar os centros de custo' }); // Exibe mensagem de erro
@@ -172,10 +201,16 @@ onMounted(() => {
                         stripedRows
                         removableSort
                         paginator
+                        lazy
+                        :totalRecords="filteredCount"
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
+                        :rows="lazyParams.value?.rows || 10"
                         dataKey="id"
-                        :sortField="'Codigo'"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField ||'Codigo'"
+                        @filter="onFilterChange"
+                        @page="onPageChange"
+                        @sort="onSortChange"
                         :globalFilterFields="['Codigo', 'Nome']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"

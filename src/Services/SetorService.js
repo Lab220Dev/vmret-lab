@@ -33,7 +33,17 @@ const setorService = {
           throw error; 
         }
       },
-
+      async listarSetoresPaginado(data) {
+        try {
+             return axios.post('/Setor/listarPaginado', data); 
+             } catch (error) {
+               // Caso ocorra um erro, loga a mensagem de erro no console.
+               console.error('Erro ao listar setores:', error.message);
+               
+               // Lança o erro novamente, permitindo que o chamador lide com ele.
+               throw error; 
+             }
+           },
   /**
    * Adiciona um novo setor ao sistema.
    * 

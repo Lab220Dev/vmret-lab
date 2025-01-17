@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
-import { isMobEnabled } from '@/helpers/HelperUtils.js'
+import { isMobEnabled,prepareListData } from '@/helpers/HelperUtils.js'
 import setorService from '@/Services/SetorService.js';
 
 const Mob = ref(false)
@@ -33,7 +33,13 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const filteredCount = ref(0);
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'Codigo', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 let setor = reactive({
     codigo: '',
     nome: '',
@@ -49,7 +55,20 @@ const onRowSelect = async (event) => {
     editVisible.value = true;
     await fetchListaItemSetor();
 };
-
+const onFilterChange = () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
 const onRowSelectItem = (event) => {
     // Atribuir o item selecionado ao `item`
     item.value = { ...event.data }; // Cria uma cópia do item selecionado
@@ -64,13 +83,21 @@ const submitForm = () => {
     }
 };
 
-const loadSetor = async () => {
+const loadSetor = async (page =1) => {
     loading.value = true;
     try {
-        const response = await setorService.listarSetores();
-        ListaSetor.value = response.data;
-
-        filteredCount.value = ListaSetor.value.length;
+        const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = prepareListData(params);
+        // const response = await setorService.listarSetores();
+        const response = await setorService.listarSetoresPaginado(data);
+        ListaSetor.value = response.data.setores;
+        filteredCount.value = response.data.totalRecords;
     } catch (error) {
         console.error('Erro ao listar Setores:', error);
     } finally {
@@ -265,13 +292,17 @@ const deleteProduct = async (itm) => {
                         paginator
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
-                        :sortField="'codigo'"
-                        :sortOrder="1"
+                        :totalRecords="totalRecords"
+                        :rows="lazyParams.value?.rows || 10"
+                        :sortField="lazyParams.value?.sortField ||'codigo'"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
                         dataKey="codigo"
                         :globalFilterFields="['codigo', 'nome', 'id_centro_custo']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
+                        @filter="onFilterChange"
+                        @page="onPageChange"
+                        @sort="onSortChange"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">

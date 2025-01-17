@@ -32,7 +32,21 @@ const funcaoService = {
             throw error;
         }
     },
+    async listarFuncoesPaginadas(data) {
+        try {
+            // Realiza a requisição POST para listar as funções do cliente.
+            const response = await axios.post('/funcao/listarPaginado', data);
 
+            // Retorna os dados da resposta (lista de funções).
+            return response.data;
+        } catch (error) {
+            // Caso ocorra um erro, loga a mensagem de erro no console.
+            console.error('Erro ao listar funções:', error.message);
+
+            // Lança o erro novamente, permitindo que o chamador lide com ele.
+            throw error;
+        }
+    },
     /**
      * Método assíncrono para adicionar uma nova função.
      * @param {Object} funcao - Dados da função a ser adicionada.

@@ -312,6 +312,26 @@ export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal,List
       return cdcMatch || plantaMatch || setorMatch;
   });
 };
+/**
+ * Checks if Mob integration is enabled.
+ *
+ * @returns {boolean} Returns true if the Mob integration is enabled, otherwise false.
+ */
 export function isMobEnabled (){
   return store.Integracao;
+}
+/**
+ * Prepares list data by merging base data with provided parameters.
+ * If the user role is 'Administrador', only the provided parameters are returned.
+ * Otherwise, the base data is merged with the provided parameters.
+ *
+ * @param {Object} params - The parameters to be merged with the base data.
+ * @returns {Object} The prepared list data.
+ */
+export const prepareListData =(params)=>{
+    let baseData = {
+        id_usuario: store.userId || null,  
+        id_cliente: store.userIdCliente || null 
+    }
+    return store.userRole === 'Administrador' ? { ...params} : { ...baseData , ...params}
 }

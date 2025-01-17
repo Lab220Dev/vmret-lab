@@ -7,7 +7,7 @@ import { FilterMatchMode } from 'primevue/api'; // Importa filtros do PrimeVue p
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import funcaoService from '@/services/funcaoService'; // Importa os serviços para manipulação das funções
 import { resetFuncaoForm } from '@/helpers/formHelper'; // Importa a função para resetar o formulário
-import {isMobEnabled } from '@/helpers/HelperUtils.js';
+import {isMobEnabled,prepareListData } from '@/helpers/HelperUtils.js';
 const dataStore = useDataStore(); // Cria uma instância do store de dados
 const Mob = ref(false);
 // Variáveis reativas
@@ -24,7 +24,13 @@ const deleteFuncaoDialog = ref(false); // Controla a visibilidade do diálogo de
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que verifica se o valor contém o texto pesquisado
 });
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'Codigo', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 // Contador de resultados filtrados
 const filteredCount = ref(0);
 
@@ -42,7 +48,20 @@ const onRowSelect = (event) => {
     visible.value = true; // Exibe o formulário de edição
     active.value = 1; // Muda a aba para a de edição
 };
-
+const onFilterChange = () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
 /**
  * Função para enviar o formulário, seja para adicionar ou editar uma função
  * Exibe uma notificação de sucesso ou erro dependendo do resultado
@@ -72,11 +91,21 @@ const submitForm = async () => {
 /**
  * Função para carregar a lista de funções
  */
-const loadFuncoes = async () => {
+const loadFuncoes = async (page=1) => {
     loading.value = true; // Ativa o estado de carregamento
     try {
-        ListaFuncao.value = await funcaoService.listarFuncoes(); // Carrega as funções através do serviço
-        filteredCount.value = ListaFuncao.value.length; // Atualiza o contador de resultados filtrados
+        const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = prepareListData(params);
+        // ListaFuncao.value = await funcaoService.listarFuncoes(); // Carrega as funções através do serviço
+        const result = await funcaoService.listarFuncoesPaginadas(data); // Carrega as funções através do serviço
+        ListaFuncao.value = result.funcoes
+        filteredCount.value = result.totalRecords; // Atualiza o contador de resultados filtrados
     } catch (error) {
         console.error(error.message); // Registra o erro no console
     } finally {
@@ -165,13 +194,18 @@ onMounted(() => {
                         paginator
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
+                        lazy
+                        :totalRecords="filteredCount"
+                        :rows="lazyParams.value?.rows || 10"
                         dataKey="id"
                         :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo']"
-                        :sortField="'id_funcao'"
                         :metaKeySelection="false"
-                        :sortOrder="1"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField ||'id_funcao'"
                         @rowSelect="onRowSelect"
+                        @filter="onFilterChange"
+                        @page="onPageChange"
+                        @sort="onSortChange"
                     >
                         <!-- A tabela exibe os dados provenientes de "ListaFuncao" -->
                         <!-- Permite selecionar apenas uma linha por vez -->
