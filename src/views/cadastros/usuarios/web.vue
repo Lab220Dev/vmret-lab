@@ -7,6 +7,10 @@ import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de cor
 import axios from '@/axios.js'; // Instância do axios configurado para chamadas HTTP.
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
+import { FormatarListaCliente } from '@/helpers/DMHelper.js';
+
+import usuarioService from '@/services/usuarioService';
+
 
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Variável reativa para controlar a aba ativa.
@@ -120,11 +124,7 @@ const deleteUsuario = async (item) => {
     loading.value = true; // Ativa o carregamento enquanto processa a exclusão.
     let data = { id_usuario_delete: item.id_usuario, id_usuario: store.userId, id_cliente: store.userIdCliente }; // Dados para exclusão.
     try {
-        const response = await axios.post('/usuarios/deletar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Autenticação com o token.
-            }
-        });
+        const response = await usuarioService.deletarUsuario(data);
         if (response.status === 200) {
             deleteUsuarioDialog.value = false; // Fecha o diálogo se a exclusão for bem-sucedida.
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB deletado', life: 3000 }); // Exibe uma notificação de sucesso.
@@ -178,11 +178,7 @@ const saveUsuario = async () => {
         data.id_usuario = store.userId; // Define o id do usuário.
     }
     try {
-        const response = await axios.post('/usuarios/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Autenticação com o token.
-            }
-        });
+        const response = await usuarioService.adicionarUsuario(data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB criado', life: 3000 }); // Exibe uma notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
         active.value = 0; // Retorna à aba inicial.
@@ -211,11 +207,7 @@ const atualizarUsuario = async () => {
         delete data.senha; // Se a senha não foi alterada, remove do objeto de dados.
     }
     try {
-        const response = await axios.post('/usuarios/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Autenticação com o token.
-            }
-        });
+        const response = await usuarioService.atualizarUsuario(data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB atualizado', life: 3000 }); // Notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
         active.value = 0; // Retorna à aba inicial.
@@ -236,18 +228,7 @@ const fetchIdPlanta = async () => {
         id_cliente: store.userIdCliente // Passa o id do cliente.
     };
     try {
-        const response = await axios.post('/usuarios/listarPlanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Autenticação.
-            }
-        });
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ id_planta }) => ({
-                label: `Planta  ${id_planta}`,
-                value: id_planta
-            }))
-        ]; // Atualiza a lista de plantas com as opções recebidas.
+        plantas = dataStore.plantas || (await dataStore.fetchPlantas()); // Atualiza a lista de plantas com as opções recebidas.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         //console.error('Erro ao buscar opções de plantas:', error); // Log de erro comentado.
@@ -269,11 +250,7 @@ const fetchUsuarios = async () => {
         data.id_cliente = store.userIdCliente;
     }
     try {
-        const response = await axios.post('/usuarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Autenticação.
-            }
-        });
+        const response = await usuarioService.listarUsuarios(data);
         ListaUsuario.value = response.data; // Atualiza a lista de usuários.
         filteredCount.value = ListaUsuario.value.length; // Atualiza o contador de usuários filtrados.
     } catch (error) {
@@ -302,15 +279,8 @@ watch(
 const fetchCliente = async () => {
     loading.value = true; // Ativa o carregamento ao buscar clientes.
     try {
-        const response = await axios.post('/admin/cliente/listar', {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Autenticação.
-            }
-        });
-        ListaClientes.value = response.data.map(({ id_cliente, nome }) => ({
-            label: nome,
-            value: id_cliente
-        })); // Atualiza a lista de clientes.
+        const response = await usuarioService.listarClientes();
+        ListaClientes.value = [...FormatarListaCliente(response.data)]; // Atualiza a lista de clientes.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao listar Clientes:', error); // Log de erro.

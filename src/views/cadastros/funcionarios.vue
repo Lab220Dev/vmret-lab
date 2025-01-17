@@ -36,135 +36,294 @@ const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
 
-const errors = ref({});
+// Cria uma referência reativa para armazenar erros, inicialmente vazia.
+const errors = ref({}); 
+
+// Cria uma referência reativa para armazenar o status do funcionário, com duas opções: 'Ativo' e 'Inativo'.
 const status = ref([
-    { label: 'Ativo', value: 'Ativo' },
-    { label: 'Inativo', value: 'Inativo' }
+    { label: 'Ativo', value: 'Ativo' },   // Opção de status 'Ativo'.
+    { label: 'Inativo', value: 'Inativo' } // Opção de status 'Inativo'.
 ]);
 
-//IMAGEM
+/**
+ * Cria uma referência reativa para o uploader de imagem, inicialmente nula.
+ * @type {Object|null} Inicialmente, é `null` até que o uploader seja atribuído.
+ */
 const imageUploader = ref(null);
+
+/**
+ * Cria uma referência reativa para armazenar o URL da imagem, inicializada com uma imagem placeholder.
+ * @type {string} O valor inicial é o caminho da imagem placeholder.
+ */
 const imageUrl = ref(imagePlaceholder);
 
+// Cria uma referência reativa para armazenar os centros de custo, inicialmente um array vazio.
 let centroCusto = ref([]);
+
+// Cria uma referência reativa para armazenar os setores, inicialmente um array vazio.
 let setor = ref([]);
+
+// Cria uma referência reativa para armazenar as opções de hierarquia, inicialmente um array vazio.
 let hieraquiaoptions = ref([]);
+
+// Cria uma referência reativa para armazenar as opções de hierarquia formatadas, inicialmente um array vazio.
 let formatedHierarquiaOptions = ref([]);
+
+// Cria uma referência reativa para armazenar as plantas, inicialmente um array vazio.
 let plantas = ref([]);
+
+/**
+ * Cria um objeto reativo para armazenar os dados de um funcionário, com as propriedades iniciais.
+ * 
+ * @type {Object}
+ */
 let funcionario = reactive({
-    id_funcionario: '',
-    matricula: '',
-    senha: '',
-    nome: '',
-    biometria: '',
-    biometria2: '',
-    data_admissao: null,
-    CPF: '',
-    RG: '',
-    CTPS: '',
-    email: '',
-    status: '',
-    hora_inicial: '',
-    hora_final: '',
-    id_centro_custo: '',
-    id_funcao: '',
-    id_planta: '',
-    id_setor: '',
-    segunda: false,
-    terca: false,
-    quarta: false,
-    quinta: false,
-    sexta: false,
-    sabado: false,
-    domingo: false,
-    nomearquivo: '',
-    itens: []
+    id_funcionario: '',     // ID do funcionário.
+    matricula: '',          // Matrícula do funcionário.
+    senha: '',              // Senha do funcionário.
+    nome: '',               // Nome do funcionário.
+    biometria: '',          // Primeira digital do funcionário.
+    biometria2: '',         // Segunda digital do funcionário.
+    data_admissao: null,    // Data de admissão do funcionário.
+    CPF: '',                // CPF do funcionário.
+    RG: '',                 // RG do funcionário.
+    CTPS: '',               // CTPS (Carteira de Trabalho e Previdência Social) do funcionário.
+    email: '',              // E-mail do funcionário.
+    status: '',             // Status do funcionário, como 'Ativo' ou 'Inativo'.
+    hora_inicial: '',       // Hora de início do expediente.
+    hora_final: '',         // Hora de término do expediente.
+    id_centro_custo: '',    // ID do centro de custo.
+    id_funcao: '',          // ID da função.
+    id_planta: '',          // ID da planta onde o funcionário está alocado.
+    id_setor: '',           // ID do setor onde o funcionário está alocado.
+    segunda: false,         // Se o funcionário trabalha na segunda-feira.
+    terca: false,           // Se o funcionário trabalha na terça-feira.
+    quarta: false,          // Se o funcionário trabalha na quarta-feira.
+    quinta: false,          // Se o funcionário trabalha na quinta-feira.
+    sexta: false,           // Se o funcionário trabalha na sexta-feira.
+    sabado: false,          // Se o funcionário trabalha no sábado.
+    domingo: false,         // Se o funcionário trabalha no domingo.
+    nomearquivo: '',        // Nome do arquivo do funcionário (por exemplo, foto ou documento).
+    itens: []               // Lista de itens relacionados ao funcionário.
 });
 
+// Cria uma referência reativa para armazenar a lista de produtos, inicialmente um array vazio.
 const ListaProdutos = ref([]);
+
+/**
+ * Cria uma referência reativa para armazenar a lista de produtos disponíveis,
+ * utilizando `reactive` para garantir que as alterações sejam rastreadas e reativas.
+ * Inicialmente, é um array vazio.
+ * 
+ * @type {Array} Inicializa como um array vazio.
+ */
 const ListaProdutosDisponiveis = reactive([]);
+
+// Cria uma referência reativa para armazenar a lista de produtos de um funcionário específico, inicialmente um array vazio.
 const ListaProdutoFuncionario = ref([]);
+
+// Cria uma referência reativa para armazenar os itens do setor, inicialmente um array vazio.
 const ListaItemsSetor = ref([]);
+
+// Cria uma referência reativa para controlar a visibilidade da edição, inicialmente como `false` (oculto).
 const editVisible = ref(false);
 const Mob = ref(false)
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Configuração para o filtro global de busca.
 });
 
+// Cria uma referência reativa para armazenar o produto selecionado, com propriedades padrão vazias.
 const selectedProduct = ref({
-    id_produto: '',
-    nome: '',
-    sku: '',
-    quantidade: 1
+    id_produto: '',        // ID do produto selecionado.
+    nome: '',              // Nome do produto selecionado.
+    sku: '',               // SKU (Stock Keeping Unit) do produto selecionado.
+    quantidade: 1          // Quantidade do produto selecionado, inicialmente configurada para 1.
 });
+
+// Cria uma referência reativa para armazenar a lista de funcionários, inicialmente um array vazio.
 const ListaFuncionarios = ref([]);
+
+// Cria uma referência reativa para controlar a visibilidade do diálogo de itens, inicialmente configurado para `false` (oculto).
 const itemDialog = ref(false);
+
+// Cria uma referência reativa para controlar a visibilidade do diálogo de exclusão de produto, inicialmente configurado para `false` (oculto).
 const deleteProductDialog = ref(false);
+
+// Cria uma referência reativa para controlar a visibilidade do diálogo de exclusão de funcionário, inicialmente configurado para `false` (oculto).
 const deleteFuncionarioDialog = ref(false);
+
+// Cria uma referência reativa para controlar a visibilidade de um outro elemento, inicialmente configurado para `false` (oculto).
 const visible = ref(false);
+
+// Cria uma referência reativa para armazenar o valor de "ativo", inicialmente configurado para 0.
 const active = ref(0);
+
+// Cria uma referência reativa para armazenar o valor de "itens ativos", inicialmente configurado para 0.
 const activeItens = ref(0);
+
+// Cria uma referência reativa para controlar o estado de carregamento, inicialmente configurado para `false` (não está carregando).
 const loading = ref(false);
 
+// Cria uma referência reativa para armazenar o dropdown 1, inicialmente configurado para `null` (não atribuído).
 const dropdown1 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 2, inicialmente configurado para `null` (não atribuído).
 const dropdown2 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 3, inicialmente configurado para `null` (não atribuído).
 const dropdown3 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 4, inicialmente configurado para `null` (não atribuído).
 const dropdown4 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 5, inicialmente configurado para `null` (não atribuído).
 const dropdown5 = ref(null);
 
-const format = (date) => {
+/**
+ * Formata a data usando o serviço de formatação para transformá-la em uma string.
+ * 
+ * @param {Date} date - A data a ser formatada.
+ * @returns {string} Retorna a data formatada como uma string.
+ */
+ const format = (date) => {
+   // Chama o serviço de formatação para formatar a data em uma string.
    return formatservices.formatDateToString(date);
 };
+
+/**
+ * Cria uma referência reativa para armazenar o tempo de início, inicialmente configurado para `null`.
+ * @type {null} Inicialmente, o valor é `null`.
+ */
 const TempoInicio = ref(null);
+
+/**
+ * Cria uma referência reativa para armazenar o tempo de fim, inicialmente configurado para `null`.
+ * @type {null} Inicialmente, o valor é `null`.
+ */
 const TempoFim = ref(null);
 
+/**
+ * Cria uma referência reativa para armazenar a quantidade de itens filtrados, inicialmente configurada para 0.
+ * @type {number} Inicializa como 0.
+ */
 const filteredCount = ref(0);
 
+/**
+ * Função que é chamada quando uma linha é selecionada em uma tabela ou lista.
+ * 
+ * @param {Object} event - O evento gerado pela seleção da linha.
+ * @property {Object} event.data - Os dados do funcionário selecionado.
+ * 
+ * @returns {Promise<void>} Retorna uma Promise, pois executa ações assíncronas, como chamadas de API.
+ */
 const onRowSelect = async (event) => {
+    // Atribui o funcionário selecionado ao objeto `funcionario`.
     funcionario = event.data;
+
+    // Mapeia os itens do funcionário para incluir uma propriedade 'action' com valor 'new'.
     ListaProdutoFuncionario.value = funcionario.itens.map((item) => ({
         ...item,
-        action: 'new'
+        action: 'new' // A ação é atribuída como 'new' para todos os itens.
     }));
+
+    // Chama o serviço para formatar o tempo de início do funcionário e atribui a referência reativa `TempoInicio`.
     formatservices.setTempo(TempoInicio, funcionario.hora_inicial);
+
+    // Chama o serviço para formatar o tempo de fim do funcionário e atribui a referência reativa `TempoFim`.
     formatservices.setTempo(TempoFim, funcionario.hora_final);
+
+    // Faz uma requisição assíncrona para buscar os itens do setor do funcionário com base no `id_setor`.
     await fetchItensSetor(funcionario.id_setor);
+
+    // Limpa os dados da imagem (provavelmente associada ao funcionário).
     imageUploader.value?.clearImageData();
+
+    // Faz uma requisição assíncrona para buscar a imagem do funcionário com base no nome do arquivo de imagem.
     await getImagem(funcionario.foto);
+
+    // Define o valor de `active` como 1, provavelmente indicando que o funcionário está ativo no sistema.
     active.value = 1;
+
+    // Define a visibilidade do formulário de edição para `true`, permitindo a edição dos dados do funcionário.
     editVisible.value = true;
 };
 
+/**
+ * Função chamada quando o setor selecionado é alterado.
+ * 
+ * @param {Object} event - O evento gerado pela mudança no setor.
+ * @property {any} event.value - O valor do setor selecionado.
+ * 
+ * @returns {Promise<void>} Retorna uma Promise, pois faz uma requisição assíncrona.
+ */
 const setorChange = async (event) => {
-    const idSetorSelecionado = event.value; // Pegando o valor do setor selecionado
+    // Armazena o valor do setor selecionado.
+    const idSetorSelecionado = event.value;
+
+    // Verifica se um setor foi selecionado antes de buscar os itens do setor.
     if (idSetorSelecionado) {
+        // Faz uma requisição assíncrona para buscar os itens do setor selecionado.
         await fetchItensSetor(idSetorSelecionado);
     }
 };
-const cpfvalidate=()=>{
+
+/**
+ * Valida o CPF do funcionário e armazena o erro, se houver.
+ * A função `validadorcpf` verifica se o CPF é válido.
+ */
+const cpfvalidate = () => {
+    // Armazena o resultado da validação do CPF na propriedade `CPF` de `errors`.
     errors.value.CPF = validadorcpf(funcionario.CPF);
-}
-const validateEmail = () => {
-    errors.value.email= validadoremail(funcionario.email);
 };
-const loadFuncionarios = async () => {
+
+/**
+ * Valida o e-mail do funcionário e armazena o erro, se houver.
+ * A função `validadoremail` verifica se o e-mail é válido.
+ */
+const validateEmail = () => {
+    // Armazena o resultado da validação do e-mail na propriedade `email` de `errors`.
+    errors.value.email = validadoremail(funcionario.email);
+};
+
+/**
+ * Carrega a lista de funcionários do servidor com base no ID do cliente armazenado no `store`.
+ * A função faz uma requisição assíncrona para obter os dados e processa a resposta.
+ * 
+ * @returns {Promise<void>} Retorna uma `Promise` indicando que a função é assíncrona e não retorna um valor.
+ */
+ const loadFuncionarios = async () => {
+    // Cria um objeto `data` contendo o ID do cliente do `store`, que será utilizado para a requisição.
     const data = {
-        id_cliente: store.userIdCliente
+        id_cliente: store.userIdCliente // O ID do cliente é obtido do store de autenticação.
     };
+
     try {
+        // Define a referência reativa `loading.value` para `true` para indicar que os dados estão sendo carregados.
         loading.value = true;
+
+        // Faz uma requisição assíncrona para obter a lista de funcionários através do serviço `funcionarioService`.
         const response = await funcionarioService.listarFuncionarios(data);
+
+        // Atribui a lista de funcionários obtida à referência reativa `ListaFuncionarios.value`.
         ListaFuncionarios.value = response.data;
+
+        // Atualiza o contador de funcionários filtrados com o comprimento da lista de funcionários.
         filteredCount.value = ListaFuncionarios.value.length;
 
+        // Chama a função `resetTable` para resetar a tabela (ou reiniciar a visualização da lista).
         resetTable();
+
+        // Chama a função `resetItens` para reiniciar o estado dos itens ou componentes relacionados.
         resetItens();
     } catch (error) {
+        // Em caso de erro, exibe uma notificação de erro com a mensagem 'Erro ao carregar os funcionários'.
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao carregar os funcionários', life: 3000 });
     } finally {
+        // Define a referência reativa `loading.value` para `false` após o carregamento, indicando que o processo foi concluído.
         loading.value = false;
     }
 };
+
 
 watch(
     () => filters.value.global.value,

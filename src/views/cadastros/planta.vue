@@ -185,7 +185,7 @@ onMounted(() => {
                         </template>
 
                         <template #empty> Nenhuma planta adicionada. </template>
-                        <Column field="id_planta" sortable header="Planta de Custo"></Column>
+                        <Column field="id_planta" sortable header="Código"></Column>
                         <Column field="nome" sortable header="Planta (Nome)"></Column>
                     </DataTable>
                 </div>
