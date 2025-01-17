@@ -22,6 +22,10 @@ const plantaService = {
         return axios.post('/plantas/adicionar', planta); // Envia uma requisição POST para adicionar a nova planta.
     },
 
+    async listarPlantaSimples(data) {
+        return axios.post('/plantas/listaSimples', data);
+    },
+
     /**
      * Atualiza os dados de uma planta existente.
      *

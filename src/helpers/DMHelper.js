@@ -777,22 +777,27 @@ export const prepareItemDMData = (action, DM, Produto, Controladoras) => {
  * @param {Object} ListaClientes[].usar_api - Indicates if the client uses the API.
  * @returns {Array} The formatted list of clients.
  */
-export const FormatarListaCliente = (ListaClientes) => {
+export const FormatarListaCliente = (ListaClientes,simple=false) => {
     // Itera sobre a lista de clientes e formata cada um dos itens conforme necessário.
     return ListaClientes.map((cliente) => {
-        return {
-            // 'label' será o nome do cliente, usado como texto exibido na interface.
-            label: cliente.nome, 
+        if (simple) {
+            return {
+                value : cliente.id_cliente,
+                label: cliente.nome
+            };
+        } else {
+            return {
+                // 'label' será o nome do cliente, usado como texto exibido na interface.
+                label: cliente.nome,
 
-            // 'value' contém os dados do cliente, que serão utilizados internamente para identificar o cliente selecionado.
-            value: {
-                id_cliente: cliente.id_cliente, // O ID único do cliente.
-                nome_cliente: cliente.nome, // O nome do cliente.
-                usar_api: cliente.usar_api, // A informação se o cliente usa a API.
-            },
-
-            // O campo 'usar_api' é armazenado diretamente no objeto de nível superior para fácil acesso.
-            usar_api: cliente.usar_api, 
-        };
+                // 'value' contém os dados do cliente, que serão utilizados internamente para identificar o cliente selecionado.
+                value: {id_cliente: cliente.id_cliente,
+                    nome_cliente: cliente.nome,
+                    usar_api: cliente.usar_api,},
+                // O campo 'usar_api' é armazenado diretamente no objeto de nível superior para fácil acesso.
+                usar_api: cliente.usar_api
+            };
+        }
     });
 };
+
