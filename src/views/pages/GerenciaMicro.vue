@@ -102,6 +102,9 @@ import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do componente de
 // Importa a store de autenticação, que contém informações sobre o usuário e cliente.
 import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o store para obter o ID do usuário e do cliente.
 
+import clientesService from '@/services/clientesService';
+
+
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
 

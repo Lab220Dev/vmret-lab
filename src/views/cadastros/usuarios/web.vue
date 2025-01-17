@@ -10,7 +10,7 @@ import { useDataStore } from '@/store/dataStore.js'; // Importação do store de
 import { FormatarListaCliente } from '@/helpers/DMHelper.js';
 
 import usuarioService from '@/services/usuarioService';
-
+import plantaService from '@/services/plantaService';
 
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Variável reativa para controlar a aba ativa.
@@ -34,7 +34,8 @@ let usuario = reactive({
     role: '',
     planta: '',
     senha: '',
-    ativo: true
+    ativo: true,
+    id_cliente: ''
 }); // Objeto reativo para armazenar informações do usuário.
 
 const ListaUsuario = ref([]); // Lista de usuários.
@@ -128,7 +129,7 @@ const deleteUsuario = async (item) => {
         if (response.status === 200) {
             deleteUsuarioDialog.value = false; // Fecha o diálogo se a exclusão for bem-sucedida.
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB deletado', life: 3000 }); // Exibe uma notificação de sucesso.
-        fetchUsuarios();  // Recarrega a lista de usuários.
+            fetchUsuarios(); // Recarrega a lista de usuários.
         }
     } catch (error) {
         console.error('Erro ao deletar os usuários:', error); // Log do erro de exclusão.
@@ -225,10 +226,17 @@ const atualizarUsuario = async () => {
  */
 const fetchIdPlanta = async () => {
     const data = {
-        id_cliente: store.userIdCliente // Passa o id do cliente.
+        id_cliente: usuario.id_cliente // Passa o id do cliente.
     };
     try {
-        plantas = dataStore.plantas || (await dataStore.fetchPlantas()); // Atualiza a lista de plantas com as opções recebidas.
+        const response = await plantaService.listarPlantaSimples(data);
+        plantas.value = [
+            todosOption,
+            ...response.data.map(({ id_planta }) => ({
+                label: `Planta  ${id_planta}`,
+                value: id_planta
+            }))
+        ]; // Atualiza a lista de plantas com as opções recebidas.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         //console.error('Erro ao buscar opções de plantas:', error); // Log de erro comentado.
@@ -280,7 +288,7 @@ const fetchCliente = async () => {
     loading.value = true; // Ativa o carregamento ao buscar clientes.
     try {
         const response = await usuarioService.listarClientes();
-        ListaClientes.value = [...FormatarListaCliente(response.data)]; // Atualiza a lista de clientes.
+        ListaClientes.value = [...FormatarListaCliente(response.data, true)]; // Atualiza a lista de clientes.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao listar Clientes:', error); // Log de erro.
@@ -345,9 +353,13 @@ const loadData = async () => {
     }
 };
 
-onMounted(() => {
-    loadData(); // Carrega os dados ao montar o componente.
-    fetchUsuarios(); // Recarrega a lista de usuários ao montar.
+onMounted(async () => {
+    if (store.userRole === 'Administrador') {
+        await fetchUsuarios();
+    } else {
+        loadData(); // Carrega os dados ao montar o componente.
+        fetchUsuarios(); // Recarrega a lista de usuários ao montar.
+    }
 });
 
 /**
@@ -509,7 +521,7 @@ const resetForm = () => {
 
                             <div v-if="isAdmin" class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
                                 <label for="perfil">Cliente:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
                                 <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
 
