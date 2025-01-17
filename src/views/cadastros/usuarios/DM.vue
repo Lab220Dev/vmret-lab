@@ -18,7 +18,7 @@ import {
     validarMudancaAndar,
     validarCampos as validarCamposHelper,
     updateTipoControladora as updateControladoraHelper,
-    findControladora,
+    findControladora,prepareListData,
     updateProdutoSelecionado,prepareDMData,prepareItemDMData,FormatarListaCliente
 } from '@/helpers/DMHelper.js'; // Import the helper functions
 import { normalizeDateTime } from '@/helpers/HelperUtils.js';
@@ -87,6 +87,13 @@ const produtoSelecionado = ref({
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'Identificacao', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 const ListaItens = ref([]);
 const ListaClientes = ref([]);
 const ListaProdutos = ref([]);
@@ -101,6 +108,7 @@ const motorOptions = ref([]);
 const ListaDMS = ref([]);
 const controladoraRefs = ref([]);
 // Controles de Estado
+const totalRecords = ref(0); 
 const isEditMode = ref(false);
 const showDialogProduto = ref(false);
 const active = ref(0);
@@ -175,7 +183,20 @@ const voltar = () => {
     show.value = false;
     operador.value = false;
 };
-
+const onFilterChange = () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    fetchDMS(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    fetchDMS(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    fetchDMS(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
 //Funções de manipulaçao de estado
 // Função para manipular mudanças na controladora selecionada
 const handleControladoraChange = () => {
@@ -280,11 +301,19 @@ const handleCancelar = () => {
  */
 const fetchDMS = async (page = 1) => {
     loading.value = true; 
-    const searchTerm = filters.value.global.value || '';
     try {
-        const data = prepareDMData('listar')
-        const response = await dmService.listarDMs(data);
-        ListaDMS.value = response.data; // Atualiza a lista de DMs com a resposta
+        const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+
+        const data = prepareListData(params)
+        const response = await dmService.listarDMPaginado(data);
+        ListaDMS.value = response.data.dmsArray; // Atualiza a lista de DMs com a resposta
+        totalRecords.value = response.data.totalRecords; // Atualiza o total de registros
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar DMs', life: 3000 }); // Exibe uma mensagem de erro
         console.error('Erro ao carregar usuários:', error); // Loga o erro no console
@@ -513,10 +542,6 @@ const loadData = async () => {
         loading.value = false;
     }
 };
-const onPageChange = (event) => {
-    currentPage.value = event.page + 1; 
-    fetchDMS(currentPage.value); 
-};
 watch(
     () => DM.ID_Cliente,
     (newClienteId) => {
@@ -571,7 +596,9 @@ onMounted(async () => {
                                 stripedRows
                                 removableSort
                                 paginator
-                                :rows="10"
+                                lazy
+                                :totalRecords="totalRecords"
+                                :rows="lazyParams.value?.rows || 10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
                                 :globalFilterFields="['Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']"
                                 selectionMode="single"
@@ -579,14 +606,16 @@ onMounted(async () => {
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                :sortOrder="1"
-                                :sortField="'Identificacao'"
+                                :sortOrder="lazyParams.value?.sortOrder||1"
+                                :sortField="lazyParams.value?.sortField ||'Identificacao'"
+                                @filter="onFilterChange"
                                 @page="onPageChange"
+                                @sort="onSortChange"
                             >
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">
                                         <div class="flex justify-content-start">
-                                            <span>Total de registros: {{ ListaDMS.length }}</span>
+                                            <span>Total de registros: {{ totalRecords }}</span>
                                         </div>
                                         <div>
                                             <IconField iconPosition="left">
