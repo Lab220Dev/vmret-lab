@@ -25,6 +25,7 @@ const clientesService = {
       throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
     }
   },
+  
 
   /**
    * Método assíncrono para adicionar um novo cliente.

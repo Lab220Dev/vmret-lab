@@ -1,4 +1,4 @@
-import axios from '@/axios.js';
+import axios from '@/axios.js'; // Importa a instância personalizada do axios para realizar requisições HTTP.
 
 const plantaService = {
   async listarPlantas(idCliente) {
@@ -30,4 +30,5 @@ const plantaService = {
     },
   }
 
+// Exporta o serviço `plantaService` para ser utilizado em outros módulos.
 export default plantaService;

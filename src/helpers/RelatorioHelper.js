@@ -7,87 +7,113 @@ import { parse } from 'date-fns';
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 
 const store = useAuthStore();
+
 /**
- * Prepara os dados para relatórios.
- * @param {string} tipoRelatorio - O tipo do relatório.
- * @param {Object} relatorio - Os valores do formulário.
- * @param {Object} store - O estado global (usuário, cliente, etc.).
- * @returns {Object} - O objeto de dados preparado.
+ * Prepara os dados do relatório com base no tipo de relatório fornecido e nos valores do relatório.
+ * A função retorna um objeto com as informações necessárias para o tipo de relatório específico.
+ * 
+ * @param {string} tipoRelatorio - O tipo do relatório para o qual os dados estão sendo preparados (ex.: 'Devoluções', 'Estoque').
+ * @param {Object} relatorio - O objeto contendo os valores específicos para o relatório.
+ * @param {Object} relatorio.value - O objeto interno que contém os valores do relatório.
+ * @param {string} relatorio.value.id_dm - O ID do documento de movimentação (DM), quando aplicável.
+ * @param {string} relatorio.value.id_funcionario - O ID do funcionário, quando aplicável.
+ * @param {string} relatorio.value.id_planta - O ID da planta, quando aplicável.
+ * @param {string} relatorio.value.id_centro_custo - O ID do centro de custo, quando aplicável.
+ * @param {string} relatorio.value.id_setor - O ID do setor, quando aplicável.
+ * @param {string} relatorio.value.data_inicio - A data de início para o filtro, quando aplicável.
+ * @param {string} relatorio.value.data_final - A data final para o filtro, quando aplicável.
+ * @param {string} relatorio.value.id_operador - O ID do operador, quando aplicável.
+ * @param {string} relatorio.value.dia - O dia do relatório, quando aplicável.
+ * 
+ * @returns {Object} O objeto com os dados preparados para o relatório, de acordo com o tipo.
  */
 export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
+
+    // Define a base data com o ID do cliente a partir do store.
     const baseData = {
         id_cliente: store.userIdCliente
     };
+
+    // Verifica o tipo do relatório e prepara os dados conforme o tipo específico.
     switch (tipoRelatorio) {
         case 'Devoluções':
+            // Retorna os dados preparados para o relatório de Devoluções.
             return {
-                ...baseData,
-                id_dm: relatorio.value.id_dm || undefined,
-                id_funcionario: relatorio.value.id_funcionario || undefined,
-                data_inicio: toISODate(relatorio.value.data_inicio),
-                data_final: toISODate(relatorio.value.data_final)
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_dm: relatorio.value.id_dm || undefined, // Adiciona o ID do DM, ou undefined se não existir.
+                id_funcionario: relatorio.value.id_funcionario || undefined, // Adiciona o ID do funcionário, ou undefined se não existir.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
         case 'Estoque':
+            // Retorna os dados preparados para o relatório de Estoque.
             return {
-                ...baseData,
-                id_usuario: store.userId,
-                id_dm: relatorio.value.id_dm
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_usuario: store.userId, // Adiciona o ID do usuário a partir do store.
+                id_dm: relatorio.value.id_dm // Adiciona o ID do DM.
             };
         case 'Retiradas Realizadas':
+            // Retorna os dados preparados para o relatório de Retiradas Realizadas.
             return {
-                ...baseData,
-                id_usuario: store.userId,
-                id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm,
-                id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-                id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
-                id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
-                id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-                data_inicio: toISODate(relatorio.value.data_inicio),
-                data_final: toISODate(relatorio.value.data_final)
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_usuario: store.userId, // Adiciona o ID do usuário a partir do store.
+                id_dm: relatorio.value.id_dm === null ? undefined : relatorio.value.id_dm, // Adiciona o ID do DM ou undefined se for nulo.
+                id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta, // Adiciona o ID da planta ou undefined se for nulo.
+                id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo, // Adiciona o ID do centro de custo ou undefined se for nulo.
+                id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor, // Adiciona o ID do setor ou undefined se for nulo.
+                id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario, // Adiciona o ID do funcionário ou undefined se for nulo.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
         case 'Itens mais Retirados':
+            // Retorna os dados preparados para o relatório de Itens mais Retirados.
             return {
-                ...baseData,
-                id_usuario: store.userId,
-                id_dm: relatorio.value.id_dm || undefined,
-                id_planta: relatorio.value.id_planta || undefined,
-                id_centro_custo: relatorio.value.id_centro_custo || undefined,
-                id_setor: relatorio.value.id_setor || undefined,
-                id_funcionario: relatorio.value.id_funcionario || undefined,
-                data_inicio: toISODate(relatorio.value.data_inicio),
-                data_final: toISODate(relatorio.value.data_final)
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_usuario: store.userId, // Adiciona o ID do usuário a partir do store.
+                id_dm: relatorio.value.id_dm || undefined, // Adiciona o ID do DM, ou undefined se não existir.
+                id_planta: relatorio.value.id_planta || undefined, // Adiciona o ID da planta, ou undefined se não existir.
+                id_centro_custo: relatorio.value.id_centro_custo || undefined, // Adiciona o ID do centro de custo, ou undefined se não existir.
+                id_setor: relatorio.value.id_setor || undefined, // Adiciona o ID do setor, ou undefined se não existir.
+                id_funcionario: relatorio.value.id_funcionario || undefined, // Adiciona o ID do funcionário, ou undefined se não existir.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
         case 'Histórico Abastecimento':
+            // Retorna os dados preparados para o relatório de Histórico de Abastecimento.
             return {
-                ...baseData,
-                id_usuario: store.userId,
-                id_dm: relatorio.value.dm || undefined,
-                id_funcionario: relatorio.value.id_funcionario || undefined,
-                data_inicio: toISODate(relatorio.value.data_inicio),
-                data_final: toISODate(relatorio.value.data_final),
-                id_operador: relatorio.value.id_operador
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_usuario: store.userId, // Adiciona o ID do usuário a partir do store.
+                id_dm: relatorio.value.dm || undefined, // Adiciona o ID do DM, ou undefined se não existir.
+                id_funcionario: relatorio.value.id_funcionario || undefined, // Adiciona o ID do funcionário, ou undefined se não existir.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final), // Converte a data final para o formato ISO.
+                id_operador: relatorio.value.id_operador // Adiciona o ID do operador.
             };
         case 'StatusDM':
+            // Retorna os dados preparados para o relatório de Status de DM.
             return {
-                ...baseData,
-                id_usuario: store.userId,
-                id_dm: relatorio.value.id_dm,
-                dia: relatorio.value.dia.toISOString()
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_usuario: store.userId, // Adiciona o ID do usuário a partir do store.
+                id_dm: relatorio.value.id_dm, // Adiciona o ID do DM.
+                dia: relatorio.value.dia.toISOString() // Converte o dia para o formato ISO.
             };
         case 'Logs':
+            // Retorna os dados preparados para o relatório de Logs.
             return {
-                ...baseData,
-                id_dm: relatorio.value.dm,
-                id_usuario: relatorio.value.id_usuario,
-                id_funcionario: relatorio.value.id_funcionario,
-                operacao: relatorio.value.id_operacao,
-                data_inicio: toISODate(relatorio.value.data_inicio),
-                data_final: toISODate(relatorio.value.data_final)
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_dm: relatorio.value.dm, // Adiciona o ID do DM.
+                id_usuario: relatorio.value.id_usuario, // Adiciona o ID do usuário.
+                id_funcionario: relatorio.value.id_funcionario, // Adiciona o ID do funcionário.
+                operacao: relatorio.value.id_operacao, // Adiciona o ID da operação.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
         default:
+            // Se o tipo do relatório não for reconhecido, retorna apenas a base de dados com o ID do cliente.
             return baseData;
     }
 };
+
 /**
  * Adiciona a opção 'Todos' e organiza os dados de funcionários.
  * @param {Array} funcionarios - Lista de funcionários retornada pela API.

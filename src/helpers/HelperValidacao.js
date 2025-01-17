@@ -127,12 +127,43 @@ export const validarCNPJ = (cnpj) => {
     return resultado == digitos.charAt(1);  // Retorna `true` se o segundo dígito verificador for válido, caso contrário `false`.
 };
 
+/**
+ * Valida se o arquivo enviado é um vídeo válido do tipo .mp4 e não excede o tamanho máximo permitido.
+ * 
+ * @param {File} file - O arquivo que será validado.
+ * @param {string} file.type - O tipo MIME do arquivo, utilizado para verificar se é um vídeo .mp4.
+ * @param {number} file.size - O tamanho do arquivo em bytes, utilizado para verificar se está dentro do limite de 5MB.
+ * 
+ * @returns {Object} O resultado da validação contendo um campo `valid` e, em caso de erro, o campo `error` com a mensagem de erro.
+ * @returns {boolean} valid - Indica se o arquivo é válido ou não.
+ * @returns {string} [error] - A mensagem de erro, caso o arquivo não seja válido.
+ */
 export const isValidVideoFile = (file) => {
+
+    /**
+     * Verifica se o tipo MIME do arquivo inclui a extensão 'mp4'.
+     * Caso contrário, retorna um objeto indicando que o arquivo não é válido.
+     * 
+     * @returns {Object} Se o arquivo não for do tipo .mp4, retorna um erro.
+     */
     if (!file.type.includes('mp4')) {
         return { valid: false, error: 'Apenas arquivos .mp4 são permitidos.' };
     }
+
+    /**
+     * Verifica se o tamanho do arquivo é superior a 5MB (5 * 1024 * 1024 bytes).
+     * Caso o arquivo exceda esse limite, retorna um objeto indicando o erro.
+     * 
+     * @returns {Object} Se o arquivo exceder o tamanho permitido, retorna um erro.
+     */
     if (file.size > 5 * 1024 * 1024) {
         return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };
     }
+
+    /**
+     * Se o arquivo for do tipo .mp4 e não exceder o tamanho de 5MB, retorna um objeto indicando que o arquivo é válido.
+     * 
+     * @returns {Object} O arquivo é válido.
+     */
     return { valid: true };
 };
