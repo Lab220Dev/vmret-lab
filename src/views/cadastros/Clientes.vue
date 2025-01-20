@@ -75,20 +75,6 @@ const onRowSelect = (event) => {
     console.log('Menus Estruturados:', structuredMenus.value); // Exibe os menus estruturados no console
 };
 
-/**
- * Função responsável por resetar o formulário de cliente.
- * Limpa todos os dados do formulário, incluindo o campo `structuredMenus`.
- */
-const resetForm = () => {
-    cliente = reactive({
-        nome: '', // Reseta nome do cliente
-        cnpj: '', // Reseta CNPJ do cliente
-        ativo: true, // Reseta o status de ativo
-        usar_api: false, // Reseta a permissão de uso de API
-        textoretirada: '' // Reseta o campo adicional de texto
-    });
-    structuredMenus.value = []; // Limpa a estrutura de menus associada ao cliente
-};
 const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
     loadClientes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
@@ -180,7 +166,9 @@ const deleteCliente = async (clienteId) => {
         loadClientes(); // Recarrega a lista de clientes
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar cliente' });
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Falha ao deletar cliente' });
+    }finally{
+        deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
     }
 };
 
@@ -411,7 +399,7 @@ onMounted(() => {
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteClienteDialog = false" class="p-button-text" />
                 <!-- Botão para cancelar -->
-                <Button label="Sim" icon="pi pi-check" @click="deleteCliente(item)" class="p-button-text" />
+                <Button label="Sim" icon="pi pi-check" @click="deleteCliente(item.id_cliente )" class="p-button-text" />
                 <!-- Botão para confirmar a exclusão -->
             </template>
         </Dialog>

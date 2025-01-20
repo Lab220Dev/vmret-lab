@@ -29,13 +29,25 @@ export const resetCDCForm = (form) => {
 * Retorna um objeto inicial para o formulário de **Cliente**.
 * @returns {Object} - Objeto com os campos resetados.
 */
-export const resetClienteForm = () => ({
-  nome: '', // Nome do cliente
-  cnpj: '', // CNPJ do cliente
-  ativo: true, // Flag indicando se o cliente está ativo
-  usar_api: false, // Flag indicando se o cliente usa a API
-  textoretirada: '', // Texto de retirada
-});
+export const resetClienteForm = (cliente) => {
+  Object.assign(cliente, {
+    id_cliente: null,
+    nome: '',
+    cpfcnpj: '',
+    ativo: true,
+    deleted: false,
+    created: null,
+    updated: null,
+    last_login: null,
+    usar_api: false,
+    atualizado: 0,
+    textoretirada: '',
+    Sincronizado: null,
+    menus: [],
+    cnpj: '',
+  });
+};
+
 
 /**
 * Retorna um objeto inicial para o formulário de **Função**.
@@ -309,4 +321,45 @@ export const resetProdutoSelecionado = (produtoSelecionado) => {
       // A capacidade do produto ou da controladora associada, pode ser nula.
       Capacidade: null 
   };
+};
+/**
+ * Resets the properties of a given usuario object to their default values.
+ *
+ * @param {Object} usuario - The usuario object to reset.
+ * @param {number} usuario.TotalRecords - The total number of records.
+ * @param {number|null} usuario.id_usuario - The ID of the usuario.
+ * @param {string} usuario.nome - The name of the usuario.
+ * @param {string} usuario.email - The email of the usuario.
+ * @param {string|null} usuario.telefone - The phone number of the usuario.
+ * @param {string|null} usuario.celular - The mobile number of the usuario.
+ * @param {string} usuario.senha - The password of the usuario.
+ * @param {boolean} usuario.ativo - The active status of the usuario.
+ * @param {boolean} usuario.deleted - The deleted status of the usuario.
+ * @param {Date|null} usuario.last_login - The last login date of the usuario.
+ * @param {string} usuario.id_planta - The plant ID associated with the usuario.
+ * @param {number|null} usuario.id_cliente - The client ID associated with the usuario.
+ * @param {string} usuario.role - The role of the usuario.
+ * @param {string} usuario.nome_cliente - The name of the client associated with the usuario.
+ * @param {boolean} usuario.Status - The status of the usuario.
+ * @param {string} usuario.perfil - The profile of the usuario.
+ */
+export const resetUsuario = (usuario) => {
+  Object.assign(usuario, {
+    TotalRecords: 0,
+    id_usuario: null,
+    nome: '',
+    email: '',
+    telefone: null,
+    celular: null,
+    senha: '',
+    ativo: true,
+    deleted: false,
+    last_login: null,
+    id_planta: '',
+    id_cliente: null,
+    role: '',
+    nome_cliente: '',
+    Status: false,
+    perfil: '',
+  });
 };

@@ -18,10 +18,10 @@ import {
     validarMudancaAndar,
     validarCampos as validarCamposHelper,
     updateTipoControladora as updateControladoraHelper,
-    findControladora,prepareListData,
+    findControladora,
     updateProdutoSelecionado,prepareDMData,prepareItemDMData,FormatarListaCliente
 } from '@/helpers/DMHelper.js'; // Import the helper functions
-import { normalizeDateTime } from '@/helpers/HelperUtils.js';
+import { normalizeDateTime,prepareListData } from '@/helpers/HelperUtils.js';
 import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
 import dmService from '@/services/dmService';
 //Store e Variaveis Reativas
@@ -46,9 +46,11 @@ let DM = reactive({
     Identificacao: '',
     Integracao: false,
     Numero: '',
-    OP_Biometria: '',
-    OP_Facial: '',
-    OP_Senha: '',
+    OP_Biometria:false,
+    OP_Facial: false,
+    OP_Senha:false,
+    voucher: false,
+    cracha: false,
     URL: '',
     Updated: '',
     UserID: '',
@@ -233,6 +235,16 @@ const cancelDelete = () => {
     showDialogDItem.value = false;
     selectedItem.value = null;
 };
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 /**
  * Função chamada ao selecionar uma linha de DM na tabela.
  * Preenche as informações relacionadas ao DM selecionado e suas controladoras.
@@ -243,7 +255,8 @@ const onRowSelect = async (event) => {
         return;
     }
     try {
-        DM = {...event.data};
+        // DM = {...event.data};
+        Object.assign(DM, event.data);
         visible.value = true;
         await mapControladoras(DM);
         configurarCliente(DM);
@@ -622,7 +635,7 @@ onMounted(async () => {
                                                 <InputIcon>
                                                     <i class="pi pi-search" />
                                                 </InputIcon>
-                                                <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                                <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
                                             </IconField>
                                         </div>
                                     </div>
@@ -687,23 +700,23 @@ onMounted(async () => {
                                 <label for="fim"></label>
                                 <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
                                     <div class="checkbox-items m-2 flex align-items-end">
-                                        <Checkbox v-model="DM.voucher" inputId="Voucher" value="Voucher" :binary="true" />
+                                        <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
                                         <label for="Voucher" class="ml-2"> Voucher </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.cracha" inputId="cracha" value="cracha" :binary="true" />
+                                        <Checkbox v-model="DM.cracha" inputId="cracha":binary="true" />
                                         <label for="cracha" class="ml-2"> Crachá </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" value="Biometria" :binary="true" />
+                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria"   :binary="true"/>
                                         <label for="Biometria" class="ml-2"> Biometria </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" value="Facial" :binary="true" />
+                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial"  :binary="true" />
                                         <label for="Facial" class="ml-2"> Rec. Facial </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" value="Senha" :binary="true" />
+                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha"  :binary="true" />
                                         <label for="Senha" class="ml-2"> Senha </label>
                                     </div>
                                 </div>
@@ -717,20 +730,20 @@ onMounted(async () => {
                                 <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="senha">UserID API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.UserID" />
+                                <label for="userapi">UserID API:</label>
+                                <InputText class="my-2" id="userapi" v-model="DM.UserID" />
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="senha">Senha API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.ChaveAPI" />
+                                <label for="senhaapi">Senha API:</label>
+                                <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="senha">IdCliente API:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.ClienteID" />
+                                <label for="clienteAPI">IdCliente API:</label>
+                                <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="senha">URL:</label>
-                                <InputText class="my-2" id="senha" v-model="DM.URL" />
+                                <label for="urlapi">URL:</label>
+                                <InputText class="my-2" id="urlapi" v-model="DM.URL" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
                                 <label for="codigo">Senha Chave:</label>

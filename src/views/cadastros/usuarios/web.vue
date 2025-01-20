@@ -4,14 +4,13 @@ import { reactive, ref, onMounted, watch } from 'vue'; // Importação das funç
 import { useToast } from 'primevue/usetoast'; // Importação do hook para exibição de toast messages.
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store de autenticação.
 import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de correspondência.
-import axios from '@/axios.js'; // Instância do axios configurado para chamadas HTTP.
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
 import { FormatarListaCliente } from '@/helpers/DMHelper.js';
 import {prepareListData} from '@/helpers/HelperUtils.js';
 import usuarioService from '@/services/usuarioService';
 import plantaService from '@/services/plantaService';
-
+import {resetUsuario} from '@/helpers/formHelper.js'
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore(); // Instância do store de dados.
@@ -360,6 +359,7 @@ const formatDate = (value) => {
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         // Se mudar para a aba 0 (listagem de usuários).
+        senha.value=''; // Reseta a senha.
         resetForm(); // Reseta o formulário.
         fetchUsuarios(); // Recarrega a lista de usuários.
         visible.value = false; // Fecha o formulário de edição.
@@ -376,7 +376,16 @@ const loadData = async () => {
         console.error('Erro ao carregar dados iniciais:', error); // Log de erro ao carregar dados.
     }
 };
-
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 onMounted(async () => {
     if (store.userRole === 'Administrador') {
         await fetchUsuarios();
@@ -390,7 +399,7 @@ onMounted(async () => {
  * Função para resetar o formulário.
  */
 const resetForm = () => {
-    (usuario.nome = ''), (usuario.Status = true), (usuario.email = ''), (usuario.perfil = ''), (usuario.id_planta = ''), (usuario.senha = ''); // Reseta os campos do formulário.
+    resetUsuario(usuario); // Reseta o formulário.
     senhaAlterada.value = false; // Reseta a flag de senha alterada.
 };
 </script>
@@ -454,7 +463,7 @@ const resetForm = () => {
                                             <InputIcon>
                                                 <i class="pi pi-search" />
                                             </InputIcon>
-                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                            <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
                                             <!-- Campo de busca global para filtrar os usuários -->
                                         </IconField>
                                     </div>

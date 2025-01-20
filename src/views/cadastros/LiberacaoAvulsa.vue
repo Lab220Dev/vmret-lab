@@ -7,13 +7,19 @@ import { useToast } from 'primevue/usetoast';
 /**
  * Importa as funcionalidades reactive e ref do Vue para gerenciar estados reativos.
  */
-import { reactive, ref } from 'vue';
-
+import { reactive, ref,onMounted } from 'vue';
+import { useDataStore } from '@/store/dataStore.js';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import * as formatservices from '@/helpers/HelperUtils.js';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import servicoGenerico from '@/Services/genericService.js';
 /**
  * Inicializa o toast para exibir notificações ao usuário.
  */
+const loading = ref(false);
 const toast = useToast();
-
+const dataStore = useDataStore();
 /**
  * Objeto reativo que armazena os dados do formulário de liberação avulsa.
  * Campos:
@@ -26,14 +32,13 @@ const toast = useToast();
  * - email: String para o email do funcionário.
  */
 const libAvulsa = reactive({
-    matricula: '',
-    voucher: '',
-    sku: '',
-    dm: '',
-    mp: '',
-    prazo: '',
-    email: ''
+    id_funcionario:'',
+    id_produto:'',
+    limiteRetirada:new Date(),
+    enviarEmail: false,
 });
+const listaFuncionarios = ref([]);
+const ListaProdutos = ref([]);
 
 /**
  * Flag reativa para controlar se o email será enviado.
@@ -41,38 +46,27 @@ const libAvulsa = reactive({
  * - true: o email será enviado.
  * - false: o email não será enviado.
  */
-const enviarEmail = ref(false);
-
-/**
- * Lista de opções de DMs disponíveis.
- * Cada objeto possui:
- * - nome: String representando o nome do DM.
- * - code: Código identificador único para o DM.
- */
-const libOptions = ref([
-    { nome: 'DM 1', code: 'plt1' },
-    { nome: 'DM 2', code: 'plt2' }
-]);
-
-/**
- * Lista de opções para molas e portas.
- * Cada objeto possui:
- * - mp: String que descreve a mola ou porta.
- */
-const molaOptions = ref([{ mp: 'Mola 1' }, { mp: 'Mola 2' }, { mp: 'Porta 1' }, { mp: 'Porta 2' }]);
-
-/**
- * Função para salvar os dados de liberação.
- * Quando chamada, exibe uma mensagem de sucesso ao usuário.
- * Possíveis mensagens:
- * - 'Liberação registrada': Exibida quando os dados são salvos com sucesso.
- * - Mensagens de erro não foram implementadas aqui, mas podem ser adicionadas para validações.
- */
-const saveLiberacao = () => {
-    // Exibe uma notificação de sucesso com duração de 3000ms.
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Liberação registrada', life: 3000 });
+const codigo = ref('');
+const AbrirDialogoCodigo = ref(false);
+const format = (date) => {
+   return formatservices.formatDateToString(date);
 };
-
+const gerarCodigo = async () =>{
+    loading.value = true;
+    try {
+        const response = await servicoGenerico.gerarCodigo(libAvulsa);
+        codigo.value = response.data.codigo;
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro',life:3000, detail: error.message });
+    }finally{
+        loading.value = false;
+        AbrirDialogoCodigo.value = true;
+    }
+}
+onMounted(async () => {
+    listaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
+    ListaProdutos.value = dataStore.produtos || await dataStore.fetchProdutos();
+});
 // logquery (mantido como solicitado, caso necessário para logs futuros)
 // console.log('logquery');
 </script>
@@ -91,68 +85,27 @@ const saveLiberacao = () => {
                 <div class="mt-5 mx-0 p-fluid grid">
                     <!-- Campo para a matrícula -->
                     <div class="full lg:col-4 md:col-12 sm:col-12">
-                        <label for="matricula">Matrícula:</label>
+                        <label for="matricula">Funcionario:</label>
                         <!-- Campo de texto vinculado ao modelo libAvulsa.matricula -->
-                        <InputText class="my-2" v-model="libAvulsa.matricula" id="matricula" type="text" />
+                        <Dropdown class="my-2" v-model="libAvulsa.id_funcionario" :options="listaFuncionarios" optionLabel="label" optionValue="value" placeholder="Selecione um Funcionario" />
+                        <!-- <InputText class="my-2" v-model="libAvulsa.matricula" id="matricula" type="text" /> -->
                         <!-- Mensagem esperada: Nenhuma validação direta implementada -->
                     </div>
 
                     <!-- Campo para o voucher -->
                     <div class="full lg:col-4 md:col-12 sm:col-12">
-                        <label for="voucher">Voucher:</label>
+                        <label for="voucher">Produto:</label>
                         <!-- Campo de texto vinculado ao modelo libAvulsa.voucher -->
-                        <InputText class="my-2" v-model="libAvulsa.voucher" id="voucher" />
+                        <Dropdown class="my-2" v-model="libAvulsa.id_produto" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um Produto" />
+                        <!-- <InputText class="my-2" v-model="libAvulsa.voucher" id="voucher" /> -->
                         <!-- Mensagem esperada: Nenhuma validação direta implementada -->
-                    </div>
-
-                    <!-- Campo para o SKU -->
-                    <div class="full lg:col-4 md:col-6 sm:col-12">
-                        <label for="sku">SKU:</label>
-                        <!-- Campo de texto vinculado ao modelo libAvulsa.sku -->
-                        <InputText class="my-2" v-model="libAvulsa.sku" id="sku" />
-                        <!-- Mensagem esperada: Nenhuma validação direta implementada -->
-                    </div>
-
-                    <!-- Dropdown para selecionar o DM -->
-                    <div class="full lg:col-4 md:col-6 sm:col-12">
-                        <label for="dm">DM:</label>
-                        <!-- Dropdown com as opções de DMs -->
-                        <Dropdown
-                            class="my-2"
-                            id="dm"
-                            v-model="libAvulsa.dm"
-                            :options="libOptions"
-                            optionLabel="nome"
-                            placeholder="Escolha uma DM"
-                        />
-                        <!-- Mensagem esperada: Nenhuma validação direta implementada -->
-                    </div>
-
-                    <!-- Dropdown para selecionar a mola ou porta -->
-                    <div class="full lg:col-4 md:col-6 sm:col-12">
-                        <label for="mp">Mola ou Porta:</label>
-                        <!-- Dropdown para seleção de molas ou portas -->
-                        <!-- É desabilitado se nenhum DM for selecionado -->
-                        <Dropdown
-                            class="my-2"
-                            id="mp"
-                            v-model="libAvulsa.mp"
-                            :options="molaOptions"
-                            optionLabel="mp"
-                            :disabled="!libAvulsa.dm"
-                            placeholder="Selecione uma Mola ou Porta"
-                        />
-                        
-                        <!-- Mensagens esperadas:
-                             - Se DM não for selecionado: Dropdown desabilitado.
-                             - Caso contrário: Dropdown habilitado. -->
                     </div>
 
                     <!-- Campo para o prazo de retirada -->
                     <div class="full lg:col-4 md:col-6 sm:col-12">
                         <label for="prazo">Prazo de Retirada:</label>
                         <!-- Componente AutoComplete para o prazo -->
-                        <AutoComplete class="my-2" disabled placeholder="11/11/1111" />
+                        <VueDatePicker class="my-2" v-model="libAvulsa.limiteRetirada" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
                         <!-- Mensagem esperada: Campo sempre desabilitado (placeholder fixo). -->
                     </div>
 
@@ -161,7 +114,7 @@ const saveLiberacao = () => {
                         <div class="flex align-items-center">
                             <!-- Checkbox que ativa ou desativa a flag enviarEmail -->
                             <Checkbox
-                                v-model="enviarEmail"
+                                v-model="libAvulsa.enviarEmail"
                                 inputId="sim"
                                 name="enviarEmail"
                                 value="Sim"
@@ -181,7 +134,7 @@ const saveLiberacao = () => {
                         label="Salvar"
                         icon="pi pi-check"
                         severity="info"
-                        @click="saveLiberacao"
+                        @click="gerarCodigo"
                         class="full mt-2"
                     />
                     <!-- Mensagem esperada ao clicar:
@@ -189,6 +142,7 @@ const saveLiberacao = () => {
                 </div>
             </div>
         </div>
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 

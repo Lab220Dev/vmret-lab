@@ -169,7 +169,16 @@ const loadData = async () => {
         console.error('Erro ao carregar dados iniciais:', error); // Registra o erro no console
     }
 };
-
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 // Chama a função de carregamento de dados ao montar o componente
 onMounted(() => {
     Mob.value= isMobEnabled();
@@ -229,7 +238,7 @@ onMounted(() => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
                                 </IconField>
                             </div>
                         </template>

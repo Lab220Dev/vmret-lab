@@ -275,6 +275,16 @@ const deleteProduct = async (itm) => {
     item.value = itm;
     deleteProductDialog.value = true;
 };
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 </script>
 
 <template>
@@ -300,7 +310,6 @@ const deleteProduct = async (itm) => {
                         :globalFilterFields="['codigo', 'nome', 'id_centro_custo']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
-                        @filter="onFilterChange($event)"
                         @page="onPageChange($event)"
                         @sort="onSortChange($event)"
                     >
@@ -314,7 +323,7 @@ const deleteProduct = async (itm) => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange" />
                                     </IconField>
                                 </div>
                             </div>
