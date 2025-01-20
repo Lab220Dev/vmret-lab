@@ -7,7 +7,7 @@ import MenuSelector from '@/components/MenuSelector.vue'; // Seleção de menus 
 import clientesService from '@/services/clientesService'; // Serviço para manipulação de dados de clientes
 import { validarCNPJ } from '@/helpers/HelperValidacao.js'; // Função para validar CNPJ
 import { resetClienteForm } from '@/helpers/formHelper'; // Função para resetar o formulário de cliente
-import { formatDate } from '@/helpers/HelperUtils.js'; // Função para formatação de datas (não utilizada diretamente)
+import { formatDate,prepareListData } from '@/helpers/HelperUtils.js'; // Função para formatação de datas (não utilizada diretamente)
 
 /**
  * Declaração de variáveis reativas com `ref` e `reactive` do Vue
@@ -25,7 +25,14 @@ const structuredMenus = ref([]); // Estrutura de menus hierárquicos selecionado
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que procura valores que contenham o texto fornecido
 });
-
+const filteredCount = ref(0);
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'id_cliente', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 /**
  * Objeto `cliente` reativo para armazenar os dados do cliente atual.
  * Cada propriedade é reativa, ou seja, qualquer alteração nas propriedades atualizará a interface automaticamente.
@@ -47,7 +54,13 @@ const perfilOptions = [
     { label: 'Operador', value: 3 }, // Perfil Operador
     { label: 'Avulso', value: 4 } // Perfil Avulso
 ];
-
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
 /**
  * Função chamada quando uma linha de cliente é selecionada na tabela.
  * Preenche o objeto `cliente` com os dados da linha selecionada e faz outras configurações de visibilidade e menus.
@@ -76,7 +89,20 @@ const resetForm = () => {
     });
     structuredMenus.value = []; // Limpa a estrutura de menus associada ao cliente
 };
-
+const onFilterChange = async () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    loadClientes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = async (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    loadClientes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = async (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    loadClientes(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
 /**
  * Função chamada ao submeter o formulário.
  * Dependendo da visibilidade do formulário, ele pode ser para adicionar ou atualizar um cliente.
@@ -164,10 +190,20 @@ const deleteCliente = async (clienteId) => {
  * 
  * @async
  */
-const loadClientes = async () => {
+const loadClientes = async (page=1) => {
     loading.value = true; // Ativa o indicador de carregamento
     try {
-        ListaClientes.value = await clientesService.listarClientes(); // Carrega os dados dos clientes
+        const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = prepareListData(params);
+       const result = await clientesService.listarClientesPaginado(data); // Carrega os dados dos clientes
+       ListaClientes.value= result.clientesComMenu;
+       filteredCount.value = result.totalRecords;
     } catch (error) {
         // Em caso de erro, exibe a mensagem no console
         console.error(error.message);
@@ -184,7 +220,9 @@ const loadClientes = async () => {
 const errors = reactive({
     cnpj: '' // Erro relacionado ao CNPJ, se houver
 });
-
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 /**
  * Função para validar o campo CNPJ.
  * Se o CNPJ for inválido, a mensagem de erro é atualizada.
@@ -203,7 +241,6 @@ const validateCNPJField = () => {
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetClienteForm(cliente); // Reseta o formulário
-        loadClientes(); // Recarrega a lista de clientes
         visible.value = false; // Esconde o formulário
     }
 });
@@ -233,15 +270,20 @@ onMounted(() => {
                         selectionMode="single"
                         tableStyle="min-width: 50rem; table-layout: fixed;"
                         :rowsPerPageOptions="[5, 10, 20, 50]"
+                        :totalRecords="filteredCount"
                         stripedRows
                         paginator
-                        :rows="10"
+                        lazy
+                        :rows="lazyParams.value?.rows || 10"
                         dataKey="id"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                         :globalFilterFields="['id_cliente', 'nome', 'last_login']"
-                        :sortOrder="1"
-                        :sortField="'id_cliente'"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField ||'id_cliente'"
                         >
                         <!-- Filtragem global na tabela -->
                         <!-- Dados da tabela (lista de clientes) -->
@@ -265,7 +307,7 @@ onMounted(() => {
                                         <i class="pi pi-search" />
                                         <!--Ícone de pesquisa -->
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
                                     <!-- Campo de busca -->
                                 </IconField>
                             </div>

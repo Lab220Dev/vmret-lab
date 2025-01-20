@@ -48,19 +48,19 @@ const onRowSelect = (event) => {
     visible.value = true; // Exibe o formulário de edição
     active.value = 1; // Muda a aba para a de edição
 };
-const onFilterChange = () => {
+const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
-    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await loadFuncoes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onSortChange = (event) => {
+const onSortChange = async (event) => {
     lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
     lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
-    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await loadFuncoes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onPageChange = (event) => {
+const onPageChange = async (event) => {
     lazyParams.value.first = event.first; // Atualiza o índice inicial
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
-    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+    await loadFuncoes(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 /**
  * Função para enviar o formulário, seja para adicionar ou editar uma função
@@ -203,9 +203,9 @@ onMounted(() => {
                         :sortOrder="lazyParams.value?.sortOrder||1"
                         :sortField="lazyParams.value?.sortField ||'id_funcao'"
                         @rowSelect="onRowSelect"
-                        @filter="onFilterChange"
-                        @page="onPageChange"
-                        @sort="onSortChange"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                     >
                         <!-- A tabela exibe os dados provenientes de "ListaFuncao" -->
                         <!-- Permite selecionar apenas uma linha por vez -->

@@ -55,19 +55,19 @@ const onRowSelect = async (event) => {
     editVisible.value = true;
     await fetchListaItemSetor();
 };
-const onFilterChange = () => {
+const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
-    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await loadSetor(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onSortChange = (event) => {
+const onSortChange = async (event) => {
     lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
     lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
-    loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await loadSetor(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onPageChange = (event) => {
+const onPageChange = async (event) => {
     lazyParams.value.first = event.first; // Atualiza o índice inicial
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
-    loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+    await loadSetor(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 const onRowSelectItem = (event) => {
     // Atribuir o item selecionado ao `item`
@@ -300,9 +300,9 @@ const deleteProduct = async (itm) => {
                         :globalFilterFields="['codigo', 'nome', 'id_centro_custo']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
-                        @filter="onFilterChange"
-                        @page="onPageChange"
-                        @sort="onSortChange"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">

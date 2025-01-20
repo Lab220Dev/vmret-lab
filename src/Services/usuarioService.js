@@ -13,6 +13,9 @@ const usuarioService = {
     async listarUsuarios(data) {
         return postRequest('/usuarios/listar', data);
     },
+    async listarUsuariosPaginado(data) {
+        return postRequest('/usuarios/listarPaginado', data);
+    },
     async adicionarUsuario(data) {
         return postRequest('/usuarios/adicionar', data);
     },

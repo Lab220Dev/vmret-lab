@@ -8,7 +8,7 @@ import axios from '@/axios.js'; // Instância do axios configurado para chamadas
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
 import { FormatarListaCliente } from '@/helpers/DMHelper.js';
-
+import {prepareListData} from '@/helpers/HelperUtils.js';
 import usuarioService from '@/services/usuarioService';
 import plantaService from '@/services/plantaService';
 
@@ -37,7 +37,13 @@ let usuario = reactive({
     ativo: true,
     id_cliente: ''
 }); // Objeto reativo para armazenar informações do usuário.
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'nome', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 const ListaUsuario = ref([]); // Lista de usuários.
 
 const dropdownItems = ref([
@@ -108,6 +114,21 @@ const validateForm = () => {
     validateEmail(); // Valida o e-mail.
     return Object.keys(errors.value).every((key) => errors.value[key] === null); // Retorna true se não houver erros.
 };
+const onFilterChange = async () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    await fetchUsuarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = async (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    await fetchUsuarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = async (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    await fetchUsuarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
+
 
 /**
  * Função que abre o diálogo de exclusão do usuário.
@@ -246,21 +267,24 @@ const fetchIdPlanta = async () => {
 /**
  * Função para buscar a lista de usuários.
  */
-const fetchUsuarios = async () => {
+const fetchUsuarios = async (page =1) => {
     loading.value = true; // Ativa o carregamento ao buscar usuários.
-    let data = null;
+    const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = prepareListData(params);
     if (store.userRole === 'Administrador') {
-        data = ''; // Para administradores, não é necessário passar filtros adicionais.
         isAdmin.value = true; // Marca que o usuário é administrador.
         fetchCliente(); // Chama a função para buscar os clientes.
-    } else {
-        data = {}; // Para outros usuários, precisa filtrar pelo cliente.
-        data.id_cliente = store.userIdCliente;
     }
     try {
-        const response = await usuarioService.listarUsuarios(data);
-        ListaUsuario.value = response.data; // Atualiza a lista de usuários.
-        filteredCount.value = ListaUsuario.value.length; // Atualiza o contador de usuários filtrados.
+        const response = await usuarioService.listarUsuariosPaginado(data);
+        ListaUsuario.value = response.data.usuarios; // Atualiza a lista de usuários.
+        filteredCount.value = response.data.totalRecords; // Atualiza o contador de usuários filtrados.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao carregar usuários:', error); // Log de erro.
@@ -389,8 +413,10 @@ const resetForm = () => {
                                 :value="ListaUsuario"
                                 stripedRows
                                 paginator
+                                lazy
+                                :totalRecords="filteredCount"
                                 removableSort
-                                :rows="10"
+                                :rows="lazyParams.value?.rows || 10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
                                 :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
                                 selectionMode="single"
@@ -399,8 +425,11 @@ const resetForm = () => {
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                :sortOrder="1"
-                                :sortField="'nome'"
+                                @filter="onFilterChange($event)"
+                                @page="onPageChange($event)"
+                                @sort="onSortChange($event)"
+                                :sortOrder="lazyParams.value?.sortOrder||1"
+                                :sortField="lazyParams.value?.sortField ||'nome'"
                             >
                                 <!-- A tabela exibe os dados provenientes de 'ListaUsuario' -->
                                 <!-- Aplica um estilo de linhas alternadas (listradas) para melhorar a legibilidade -->

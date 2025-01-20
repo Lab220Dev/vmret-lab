@@ -183,19 +183,19 @@ const voltar = () => {
     show.value = false;
     operador.value = false;
 };
-const onFilterChange = () => {
+const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
-    fetchDMS(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await fetchDMS(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onSortChange = (event) => {
+const onSortChange = async (event) => {
     lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
     lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
-    fetchDMS(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await fetchDMS(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onPageChange = (event) => {
+const onPageChange = async (event) => {
     lazyParams.value.first = event.first; // Atualiza o índice inicial
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
-    fetchDMS(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+    await fetchDMS(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 //Funções de manipulaçao de estado
 // Função para manipular mudanças na controladora selecionada
@@ -608,9 +608,9 @@ onMounted(async () => {
                                 @rowSelect="onRowSelect"
                                 :sortOrder="lazyParams.value?.sortOrder||1"
                                 :sortField="lazyParams.value?.sortField ||'Identificacao'"
-                                @filter="onFilterChange"
-                                @page="onPageChange"
-                                @sort="onSortChange"
+                                @filter="onFilterChange($event)"
+                                @page="onPageChange($event)"
+                                @sort="onSortChange($event)"
                             >
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">

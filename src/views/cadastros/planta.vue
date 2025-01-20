@@ -54,19 +54,19 @@ const submitForm = () => {
         adicionarPlanta();
     }
 };
-const onFilterChange = () => {
+const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
-    loadPlanta(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await loadPlanta(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onSortChange = (event) => {
+const onSortChange = async (event) => {
     lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
     lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
-    loadPlanta(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+    await loadPlanta(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-const onPageChange = (event) => {
+const onPageChange = async (event) => {
     lazyParams.value.first = event.first; // Atualiza o índice inicial
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
-    loadPlanta(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+    await loadPlanta(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 const loadPlanta = async (page =1) => {
   loading.value = true;
@@ -197,9 +197,9 @@ onMounted(() => {
                         dataKey="id"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
-                        @filter="onFilterChange"
-                        @page="onPageChange"
-                        @sort="onSortChange"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
