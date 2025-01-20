@@ -109,7 +109,7 @@ const funcionarioService = {
      */
     async fetchHieraquiaOptions() {
         const store = useAuthStore(); // Obtém o estado de autenticação através do hook `useAuthStore`.
-        return axios.post('funcionarios/listarhierarquia', { id_cliente: store.userIdCliente }); // Envia uma requisição POST para obter as opções de hierarquia com o ID do cliente do estado.
+        return axios.post('/funcao/listar', { id_cliente: store.userIdCliente }); // Envia uma requisição POST para obter as opções de hierarquia com o ID do cliente do estado.
     }
 };
 

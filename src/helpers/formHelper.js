@@ -168,7 +168,9 @@ export const resetProdutoForm = (produto, imageRefs) => {
       nome: '',  // O nome do produto será redefinido como uma string vazia.
       descricao: ' ',  // A descrição do produto será redefinida como um espaço em branco.
       unidade_medida: '',  // A unidade de medida será redefinida como uma string vazia.
-      validadedias: 0  // O número de dias de validade será redefinido como 0.
+      validadedias: 0 ,// O número de dias de validade será redefinido como 0.
+      quantidademinima: '',//quantidade minima do produto
+      especificacoes: ''
   });
 
     if (imageRefs) {

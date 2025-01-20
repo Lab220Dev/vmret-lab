@@ -48,10 +48,24 @@ const clientesService = {
     }
   },
 
-  async adicionarServico() {
+  async listarServicos(data) {
     try {
       // Realiza uma requisição POST para listar os clientes.
-      const response = await axios.post('/admin/cliente/adicionarServico');
+      console.log('Chamando API para listar serviços com dados:', data);
+      const response = await axios.post('/admin/cliente/listarServicos', data);
+      return response; // Retorna os dados da resposta (listagem de clientes).
+    } catch (error) {
+      // Em caso de erro, exibe a mensagem de erro no console e relança o erro.
+      console.error('Erro ao listar clientes:', error.message);
+      throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
+    }
+  }
+  ,
+
+  async adicionarServico(data) {
+    try {
+      // Realiza uma requisição POST para listar os clientes.
+      const response = await axios.post('/admin/cliente/adicionarServico', data);
       return response.data; // Retorna os dados da resposta (listagem de clientes).
     } catch (error) {
       // Em caso de erro, exibe a mensagem de erro no console e relança o erro.

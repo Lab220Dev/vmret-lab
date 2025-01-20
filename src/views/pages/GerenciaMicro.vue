@@ -206,11 +206,11 @@ const fetchServicos = async () => {
         };
         
         // Realiza uma requisição POST para buscar os serviços do cliente.
-        const response = await clientesService.listarServicos();
+        const response = await clientesService.listarServicos(data);
 
         // Verifica se a resposta foi bem-sucedida (status 200-299).
         if (response.status >= 200 && response.status < 300) {
-            const cliente = response[0] || {}; // Obtém o primeiro cliente, se existir.
+            const cliente = response.data[0] || {}; // Obtém o primeiro cliente, se existir.
 
             // Atribui valores ao cliente e seus serviços de forma segura.
             selectedClient.value = {
@@ -475,14 +475,14 @@ const removeService = async (service) => {
         const response = await clientesService.deletarServico(data);
 
         // Verifica a resposta da API.
-        if (response.status === 200) {
-            toast.add({
+        
+        toast.add({
                 severity: 'success',
                 summary: 'Serviço removido',
                 detail: `O serviço ${service.name} foi removido com sucesso.`,
                 life: 3000
             });
-        }
+        
     } catch (error) {
         // Exibe erro caso a remoção falhe.
         console.error('Erro ao remover serviço:', error);
