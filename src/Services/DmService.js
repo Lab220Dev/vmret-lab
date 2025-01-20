@@ -45,6 +45,9 @@ const dmService = {
     },
     async infoEntrada(data) {
         return postRequest('/DM/recuperarInfo', data);
+    },
+    async atualizarInfo(data) {
+        return postRequest('/DM/updateInfo', data);
     }
 };
 

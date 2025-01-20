@@ -117,7 +117,7 @@ const salvarIntegracao = async () => {
         loading.value = true; // Marca o estado de carregamento como verdadeiro enquanto a requisição é feita.
 
         // Envia uma requisição POST para salvar as informações da integração.
-        const response = await axios.post('/DM/updateInfo', data);
+        const response = await dmService.atualizarInfo(data);
 
         // Se a resposta for de sucesso (status 200 ou 201), exibe uma notificação de sucesso.
         if (response.status === 200 || response.status === 201) {
