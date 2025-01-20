@@ -42,6 +42,12 @@ const dmService = {
     },
     async atualizarProduto(data) {
         return postRequest('/DM/atualizarItens', data);
+    },
+    async infoEntrada(data) {
+        return postRequest('/DM/recuperarInfo', data);
+    },
+    async atualizarInfo(data) {
+        return postRequest('/DM/updateInfo', data);
     }
 };
 

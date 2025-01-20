@@ -10,6 +10,8 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDataStore } from '@/store/dataStore.js';
 
+import usuarioDMService from '@/services/usuarioDMService';
+
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Controle de abas ativas
 const dataStore = useDataStore(); // Acesso aos dados da store
@@ -118,7 +120,7 @@ const saveUsuario = async () => {
         data = { ...usuario.value, id_cliente: store.userIdCliente, id_usuario: store.userId }; // Adiciona o ID do cliente e usuário
     }
     try {
-        const response = await axios.post('/UDM/adicionar', data); // Chamada API para adicionar o usuário
+        const response = await usuarioDMService.adicionarUsuarioDM(data); // Chamada API para adicionar o usuário
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 }); // Exibe a mensagem de sucesso
         fetchUsuarios(); // Atualiza a lista de usuários
         active.value = 0; // Retorna à aba inicial.
@@ -146,8 +148,8 @@ const atualizarUsuario = async () => {
         delete data.senha; // Remove a senha do objeto
     }
     try {
-        const response = await axios.post('/UDM/atualizar', data); // Chamada API para atualizar o usuário
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB atualizado', life: 3000 }); // Exibe a mensagem de sucesso
+        const response = await usuarioDMService.atualizarUsuarioDM(data); // Chamada API para atualizar o usuário
+        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM atualizado', life: 3000 }); // Exibe a mensagem de sucesso
         fetchUsuarios(); // Atualiza a lista de usuários
         active.value = 0; // Volta à aba de listagem
         resetForm(); // Reseta o formulário
@@ -173,7 +175,7 @@ const atualizarUsuario = async () => {
     }
 
     try {
-        const response = await axios.post('/UDM/listar', data); // Chamada API para listar os usuários
+        const response = await usuarioDMService.listarUsuariosDM(data); // Chamada API para listar os usuários
         ListaUsuario.value = response.data; // Armazena os usuários na lista
         filteredCount.value = ListaUsuario.value.length; // Atualiza o contador de usuários
     } catch (error) {
@@ -243,11 +245,7 @@ const deleteUsuario = async (item) => {
     let data = { id: item.id, id_usuario: store.userId }; // Prepara os dados para a requisição
 
     try {
-        await axios.post('/UDM/deletar', data, { // Chamada API para deletar o usuário
-            headers: {
-                Authorization: `Bearer ${store.token}` // Envia o token de autorização
-            }
-        });
+        await usuarioDMService.deletarUsuarioDM(data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuário deletado', life: 3000 }); // Exibe mensagem de sucesso
         deleteUsuarioDialog.value = false; // Fecha o diálogo de confirmação
         fetchUsuarios(); // Atualiza a lista de usuários

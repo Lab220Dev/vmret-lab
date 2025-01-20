@@ -42,6 +42,8 @@ import { useToast } from 'primevue/usetoast';
 // Store para gerenciamento da autenticação do usuário
 import { useAuthStore } from '@/store/authStore.js'; 
 
+import dmService from '@/services/DmService'; // Serviço para manipulação de dados
+
 /**
  * Instâncias das stores e variáveis reativas para gerenciamento de estado.
  */
@@ -116,7 +118,7 @@ const fetchDMS = async () => {
 
     try {
         // Realiza a requisição para buscar os DMs
-        const response = await axios.post('/DM/listar', data); 
+        const response = await dmService.listarDMs(data); 
         ListaDMS.value = response.data; // Armazena os DMs na variável reativa ListaDMS
 
         // Se todos os DMs tiverem vídeo 'N', marca que é a primeira configuração

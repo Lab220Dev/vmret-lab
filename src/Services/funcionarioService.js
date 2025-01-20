@@ -12,6 +12,9 @@ const funcionarioService = {
     async listarFuncionarios(data) {
         return axios.post('/funcionarios/listar', data); // Envia uma requisição POST para listar funcionários.
     },
+    async listarFuncionariosSimples(data) {
+        return axios.post('/funcionarios/listaSimples', data); // Envia uma requisição POST para listar funcionários.
+    },
     async listarFuncionariosPaginado(data) {
         return axios.post('/funcionarios/listaPaginado', data);
     },

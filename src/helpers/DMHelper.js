@@ -767,13 +767,7 @@ export const prepareItemDMData = (action, DM, Produto, Controladoras) => {
             throw new Error('Ação inválida para preparar os dados do serviço de DM.');  // Lança um erro para ações inválidas.
     }
 };
-export const prepareListData =(params)=>{
-    let baseData = {
-        id_usuario: store.userId || null,  
-        id_cliente: store.userIdCliente || null 
-    }
-    return store.userRole === 'Administrador' ? { ...params} : { ...baseData , ...params}
-}
+
 /**
  * Formats a list of clients into a specific structure.
  *

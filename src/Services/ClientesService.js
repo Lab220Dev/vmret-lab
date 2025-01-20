@@ -36,7 +36,6 @@ const clientesService = {
       throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
     }
   },
-//será usado em GerenciaMicro
   async listarClienteServicos() {
     try {
       // Realiza uma requisição POST para listar os clientes.
@@ -49,6 +48,30 @@ const clientesService = {
     }
   },
 
+  async adicionarServico() {
+    try {
+      // Realiza uma requisição POST para listar os clientes.
+      const response = await axios.post('/admin/cliente/adicionarServico');
+      return response.data; // Retorna os dados da resposta (listagem de clientes).
+    } catch (error) {
+      // Em caso de erro, exibe a mensagem de erro no console e relança o erro.
+      console.error('Erro ao listar clientes:', error.message);
+      throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
+    }
+  },
+
+  async deletarServico(data) {
+    try {
+      // Realiza uma requisição POST para listar os clientes.
+      const response = await axios.post('/admin/cliente/deletarServico', data);
+      return response.data; // Retorna os dados da resposta (listagem de clientes).
+    } catch (error) {
+      // Em caso de erro, exibe a mensagem de erro no console e relança o erro.
+      console.error('Erro ao listar clientes:', error.message);
+      throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
+    }
+  },
+  
   /**
    * Método assíncrono para adicionar um novo cliente.
    * @param {Object} cliente - Os dados do cliente a ser adicionado.
@@ -68,6 +91,8 @@ const clientesService = {
       throw error; // Lança o erro novamente para o chamador.
     }
   },
+
+  
 
   /**
    * Método assíncrono para atualizar as informações de um cliente.

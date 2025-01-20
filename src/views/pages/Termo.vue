@@ -26,6 +26,7 @@ import axios from '@/axios.js'; // Importa a instância do axios, que é uma bib
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para gerenciar o estado de login e dados do usuário
 import Editor from '@/components/Editor.vue'; // Importa o componente de Editor (provavelmente um editor de texto rico)
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento para indicar ao usuário que o conteúdo está sendo carregado
+import termoService from '@/Services/termoService.js';
 
 // Declaração de variáveis reativas com Vue.js usando 'ref' para controle de estado no componente
 /**
@@ -69,11 +70,7 @@ const SalvarTexto = async () => {
 
     try {
         // Envia os dados ao servidor usando uma requisição POST
-        await axios.post('/termo/Salvar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`  // Inclui o token de autenticação no cabeçalho da requisição
-            }
-        });
+        await termoService.salvaTermo(data);
         // Se a requisição for bem-sucedida, o servidor salvará o conteúdo do editor
         // Não há necessidade de ação adicional após salvar com sucesso
     } catch (error) {
@@ -103,11 +100,7 @@ const RecuperarTexto = async () => {
 
     try {
         // Realiza a requisição POST para recuperar o conteúdo do servidor
-        const response = await axios.post('/termo/recuperar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Inclui o token de autenticação no cabeçalho da requisição
-            }
-        });
+        const response = await termoService.recuperaTermo(data);
 
         // Verifica se o servidor retornou um conteúdo válido
         if (response.data[0].Texto) {

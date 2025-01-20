@@ -20,6 +20,8 @@ import axios from '@/axios.js'; // Responsável por enviar as requisições HTTP
 // Importa o sistema de toast para notificações do PrimeVue.
 import { useToast } from 'primevue/usetoast'; // Sistema de notificações (toast) para exibir mensagens ao usuário.
 
+import dmService from '@/services/DmService'; // Serviço para manipulação de dados
+
 const toast = useToast(); // Instancia o sistema de toast para mostrar mensagens de sucesso, erro ou aviso ao usuário.
 
 const store = useAuthStore(); // Acessa o store de autenticação para obter as informações do usuário e cliente logados.
@@ -54,7 +56,7 @@ const fetchDadosIniciais = async () => {
         };
 
         // Envia uma requisição POST para buscar os dados da DM.
-        const response = await axios.post('/DM/recuperarInfo', data);
+        const response = await dmService.infoEntrada(data);
 
         primeiraInteracao.value = true; // Marca que a primeira interação foi realizada.
         Dados.value = response.data; // Armazena os dados recebidos da resposta na variável 'Dados'.
@@ -115,7 +117,7 @@ const salvarIntegracao = async () => {
         loading.value = true; // Marca o estado de carregamento como verdadeiro enquanto a requisição é feita.
 
         // Envia uma requisição POST para salvar as informações da integração.
-        const response = await axios.post('/DM/updateInfo', data);
+        const response = await dmService.atualizarInfo(data);
 
         // Se a resposta for de sucesso (status 200 ou 201), exibe uma notificação de sucesso.
         if (response.status === 200 || response.status === 201) {
