@@ -39,6 +39,7 @@ const filteredCount = ref(0); // Contador de resultados filtrados
 
 // Objeto para armazenar os dados do usuário
 const usuario = ref({
+    id_cliente:'',
     nome: '',
     login: '',
     senha: '',
@@ -46,7 +47,7 @@ const usuario = ref({
 });
 
 const ListaUsuario = ref([]); // Lista de usuários
-const isAdmin  = () => {  store.userRole === 'Administrador'}; // Verifica se o usuário é administrador
+const isAdmin  = () => { return store.userRole === 'Administrador'}; // Verifica se o usuário é administrador
 /**
  * Função chamada ao selecionar uma linha da tabela
  * @param {Object} event - Dados do evento gerado ao selecionar uma linha

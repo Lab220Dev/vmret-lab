@@ -205,10 +205,10 @@ const loadData = async () => {
         console.error('Erro ao carregar dados iniciais:', error);
     }
 };
-onMounted(() => {
+onMounted(async () => {
     Mob.value = isMobEnabled();
-    loadSetor();
-    loadData();
+    await loadSetor();
+    await loadData();
 });
 
 const atualizarProdutoSetor = async () => {
