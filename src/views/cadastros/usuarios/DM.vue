@@ -569,7 +569,7 @@ watch(
 );
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
+        resetDMForm(DM, Controladoras, selectedClient, nextValues);
         //fetchDMS();
         visible.value = false;
     }
@@ -656,7 +656,7 @@ onMounted(async () => {
                                         {{ normalizeDateTime(data.Updated, true) }}
                                     </template>
                                 </Column>
-                                <Column style="min-width: 8rem">
+                                <Column style="min-width: 8rem"  v-if="admin()">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteDM(slotProps.data)" />
                                     </template>

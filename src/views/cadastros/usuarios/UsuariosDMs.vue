@@ -57,9 +57,9 @@ const ListaUsuario = ref([]); // Lista de usuários
 
     // Verifica se a propriedade DMOptions existe em usuario
     const dmIds = usuario.value?.DMOptions || []; // Se DMOptions não existir, usa um array vazio
-
-    selectedDM.value = ListaDMS.value.filter(dm => dmIds.includes(dm.id_dm))
-        .map(dm => ({ id_dm: dm.id_dm, Identificacao: dm.Identificacao })); // Filtra e mapeia as opções de DM selecionadas
+    selectedDM.value = ListaDMS.value
+        .filter(dm => dmIds.includes(dm.value)) // Compara os valores de id_dm
+        .map(dm => ({ value: dm.value, label: dm.label })); // Mapeia o objeto final
 
     senha.value = usuario.value.senha; // Armazena a senha para edição
     SenhaBE.value = usuario.value.senha; // Armazena a senha original para comparação

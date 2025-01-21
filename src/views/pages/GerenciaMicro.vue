@@ -79,7 +79,7 @@
         </div></div>
             </Fieldset>
         </div>
-        
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
@@ -90,7 +90,7 @@
  */
 
 // Importa funções reativas do Vue, como `ref` e `onMounted`.
-import { ref, onMounted } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
+import { ref, onMounted,nextTick } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
 
 // Importa a função de toast do PrimeVue, usada para exibir mensagens ao usuário.
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
@@ -105,7 +105,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o store 
 import clientesService from '@/services/clientesService';
 
 import funcionarioService from '@/services/funcionarioService';
-
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; 
 
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
@@ -133,7 +133,7 @@ const openDeleteDialog = (service) => {
 // Criação de variáveis reativas com `ref()` para armazenar o estado do componente.
 const store = useAuthStore(); // Obtém o store de autenticação para acessar o usuário e cliente autenticados.
 const isAdmin = ref(false); // Variável booleana para verificar se o usuário é administrador.
-
+const loading = ref(false);
 const deleteServiceDialog = ref(false); // Variável booleana para controlar a exibição do diálogo de remoção do serviço.
 
 const toast = useToast(); // Instância do sistema de notificações do PrimeVue.
@@ -182,6 +182,7 @@ const fetchIfAdmin = async () => {
  */
 const fetchClientes = async () => {
     try {
+        loading.value = true; // Ativa o estado de carregamento para exibir o spinner.
         // Realiza uma requisição GET para listar os clientes e seus serviços.
         const response = await clientesService.listarClienteServicos();
         // Mapeia a resposta para extrair os clientes e seus serviços.
@@ -192,6 +193,8 @@ const fetchClientes = async () => {
         }));
     } catch (error) {
         console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
+    }finally{
+        loading.value = false; // Desativa o estado de carregamento após a requisição.
     }
 };
 
@@ -199,6 +202,7 @@ const fetchClientes = async () => {
  * Função que busca os serviços de um cliente no servidor.
  */
 const fetchServicos = async () => {
+    loading.value = true; // Ativa o estado de carregamento para exibir o spinner.
     try {
         // Prepara os dados para buscar os serviços do cliente específico.
         const data = {
@@ -260,6 +264,8 @@ const fetchServicos = async () => {
         }
     } catch (error) {
         console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
+    }finally{
+        loading.value = false; // Desativa o estado de carregamento após a requisição.
     }
 };
 
@@ -320,10 +326,10 @@ const onClientSelected = async () => {
 };
 
 // Função que permite editar um serviço existente.
-const editService = (service) => {
+const editService = async  (service) => {
     selectedService.value = service; // Define o serviço selecionado.
     showConfig.value = true; // Exibe as configurações do serviço.
-
+    await nextTick();
     // Rola suavemente para a área de configurações.
     const configSection = document.querySelector('.configuracao-monitoramento');
     if (configSection) {

@@ -2,9 +2,7 @@
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js';
 import '@vuepic/vue-datepicker/dist/main.css';
-import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import { useDataStore } from '@/store/dataStore.js';
@@ -50,7 +48,8 @@ const produtoSelecionado = ref({
     quantidade: ''
 });
 const onRowSelect = async (event) => {
-    setor = { ...event.data };
+    // setor = { ...event.data };
+    Object.assign(setor, event.data);
     active.value = 1;
     editVisible.value = true;
     await fetchListaItemSetor();
