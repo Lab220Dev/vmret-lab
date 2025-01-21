@@ -112,13 +112,13 @@ const submitForm = () => {
 const adicionarCliente = async () => {
     try {
         await clientesService.adicionarCliente(cliente); // Chama o serviço para adicionar o cliente
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado' }); // Exibe uma mensagem de sucesso
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado', life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
         resetClienteForm(cliente); // Limpa o formulário após adicionar o cliente
         active.value = 0; // Reseta o índice ativo para 0 (volta para a visão geral)
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao adicionar cliente' });
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao adicionar cliente', life: 3000  });
     }
 };
 
@@ -131,13 +131,13 @@ const adicionarCliente = async () => {
 const atualizarCliente = async () => {
     try {
         await clientesService.atualizarCliente(cliente); // Chama o serviço para atualizar o cliente
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado' }); // Exibe uma mensagem de sucesso
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado', life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
         resetClienteForm(cliente); // Limpa o formulário após atualizar os dados
         active.value = 0; // Reseta o índice ativo para 0
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao atualizar cliente' });
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao atualizar cliente', life: 3000  });
     }
 };
 
@@ -162,11 +162,11 @@ const deleteClientedes = (itm) => {
 const deleteCliente = async (clienteId) => {
     try {
         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado' }); // Exibe uma mensagem de sucesso
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado', life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Falha ao deletar cliente' });
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Falha ao deletar cliente', life: 3000  });
     }finally{
         deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
     }
