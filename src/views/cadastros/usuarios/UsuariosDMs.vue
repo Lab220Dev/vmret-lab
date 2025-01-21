@@ -9,7 +9,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDataStore } from '@/store/dataStore.js';
-
+import { FormatarListaCliente } from '@/helpers/DMHelper.js';
 import usuarioDMService from '@/services/usuarioDMService';
 
 // Variáveis reativas para controle da aplicação
@@ -26,7 +26,7 @@ const errors = ref({}); // Objeto para armazenar os erros de validação
 const deleteUsuarioDialog = ref(false); // Controle da exibição do diálogo de deleção
 const item = ref({}); // Objeto para armazenar o item selecionado
 const selectedDM = ref(null); // Dados do DM selecionado
-const DMOptions = ref([]); // Opções de DM
+const ListaClientes = ref([]);
 const ListaDMS = ref([]); // Lista de DM
 const isSameSenha = () => { // Função para verificar se a senha inserida é a mesma
     return usuario.value.senha === SenhaBE.value; 
@@ -46,7 +46,7 @@ const usuario = ref({
 });
 
 const ListaUsuario = ref([]); // Lista de usuários
-
+const isAdmin  = () => {  store.userRole === 'Administrador'}; // Verifica se o usuário é administrador
 /**
  * Função chamada ao selecionar uma linha da tabela
  * @param {Object} event - Dados do evento gerado ao selecionar uma linha
@@ -114,7 +114,7 @@ const validateSenha = () => {
  */
 const saveUsuario = async () => {
     let data = null;
-    if (store.userRole === 'Administrador') { // Se o usuário for um administrador
+    if (isAdmin()) { // Se o usuário for um administrador
         data = { ...usuario.value, id_usuario: store.userId }; // Adiciona o ID do usuário
     } else { // Se o usuário for de outro tipo
         data = { ...usuario.value, id_cliente: store.userIdCliente, id_usuario: store.userId }; // Adiciona o ID do cliente e usuário
@@ -168,7 +168,7 @@ const atualizarUsuario = async () => {
     loading.value = true; // Ativa o carregamento
     let data = null;
 
-    if (store.userRole === 'Administrador') { // Se o usuário for um administrador
+    if (isAdmin()) { // Se o usuário for um administrador
         data = ''; // Não filtra por cliente
     } else { // Se o usuário não for administrador
         data = { id_cliente: store.userIdCliente }; // Filtra pelo ID do cliente
@@ -184,7 +184,19 @@ const atualizarUsuario = async () => {
         loading.value = false; // Desativa o carregamento
     }
 };
+const fetchCliente = async () => {
+    loading.value = true; // Ativa o carregamento ao buscar clientes.
+    try {
+            const response = await usuarioDMService.listaSimplesClientes();
+            ListaClientes.value = [...FormatarListaCliente(response.data, true)]; // Atualiza a lista de clientes.
 
+    } catch (error) {
+        loading.value = false; // Desativa o carregamento em caso de erro.
+        console.error('Erro ao listar Clientes:', error); // Log de erro.
+    } finally {
+        loading.value = false; // Desativa o carregamento.
+    }
+};
 /**
  * Watch para atualizar o contador de resultados filtrados
  */
@@ -225,6 +237,9 @@ const loadData = async () => {
 onMounted(() => {
     loadData(); // Carrega os DMs
     fetchUsuarios(); // Carrega a lista de usuários
+    if(store.userRole === 'Administrador'){
+        fetchCliente(); // Carrega a lista de clientes
+    }
 });
 
 /**
@@ -384,20 +399,10 @@ const deleteUsuario = async (item) => {
                             </div>
 
                             <!-- Campo para o login do usuário -->
-                            <div class="full xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                            <div class="full xl:col-8 lg:col-8 md:col-8 sm:col-12">
                                 <label for="email">Login:</label>
                                 <InputText class="my-2" v-model="usuario.login" id="email" />
                             </div>
-
-                            <!-- Campo para indicar se o usuário está ativo -->
-                            <div class="full xl:col-2 flex flex-column align-items-center m-0 lg:col-2 md:col-2 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
-                                <div class="grid mt-3">
-                                    <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
-                                    <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
-                                </div>
-                            </div>
-
                             <!-- Campo para confirmar a senha -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="senha">Confirme a Senha:</label>
@@ -405,7 +410,19 @@ const deleteUsuario = async (item) => {
                                 <!-- Exibe erro se as senhas não coincidirem -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-                            
+                            <div v-if="isAdmin" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <label for="perfil">Cliente:</label>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
+                                <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
+                            </div>
+                            <!-- Campo para indicar se o usuário está ativo -->
+                            <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
+                                <div class="grid mt-3">
+                                    <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
+                                    <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
+                                </div>
+                            </div>
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
