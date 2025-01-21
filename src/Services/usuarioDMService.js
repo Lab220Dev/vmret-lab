@@ -21,8 +21,10 @@ const usuarioDMService = {
     },
     async atualizarUsuarioDM(data) {
         return postRequest('/UDM/atualizar', data);
-    }
-
+    },
+    async listaSimplesClientes() {
+        return postRequest('/admin/cliente/listaSimples');
+    },
 };
 
 export default usuarioDMService;
