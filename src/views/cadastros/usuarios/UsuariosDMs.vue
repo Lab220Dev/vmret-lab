@@ -280,6 +280,7 @@ const deleteUsuario = async (item) => {
     usuario.value.nome = ''; // Reseta o nome
     usuario.value.login = ''; // Reseta o login
     usuario.value.senha = ''; // Reseta a senha
+    usuario.value.id_cliente = ''; // Reseta o cliente
     usuario.value.ativo = true; // Reseta o estado de ativo
     selectedDM.value = []; // Reseta as opções de DM
     senha.value = ''; // Reseta o campo "Confirme a Senha"
@@ -414,11 +415,6 @@ const deleteUsuario = async (item) => {
                                 <!-- Exibe erro se as senhas não coincidirem -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-                            <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">Cliente:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
-                                <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
-                            </div>
                             <!-- Campo para indicar se o usuário está ativo -->
                             <div class="full flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
@@ -427,11 +423,13 @@ const deleteUsuario = async (item) => {
                                     <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
                                 </div>
                             </div>
-                            <div v-if="isAdmin" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                            
+                            <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="perfil">Cliente:</label>
                                 <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
                                 <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
+                            
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />

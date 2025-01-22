@@ -22,6 +22,7 @@
  * Importação de módulos e componentes necessários para o funcionamento do componente.
  */
  import { ref, onMounted } from 'vue'; // Importa os hooks 'ref' (para reatividade) e 'onMounted' (para execução após o componente ser montado) do Vue
+ import { useToast } from 'primevue/usetoast';
 import axios from '@/axios.js'; // Importa a instância do axios, que é uma biblioteca para realizar requisições HTTP, já configurada
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para gerenciar o estado de login e dados do usuário
 import Editor from '@/components/Editor.vue'; // Importa o componente de Editor (provavelmente um editor de texto rico)
@@ -48,6 +49,8 @@ const loading = ref(false);
  */
 const store = useAuthStore();
 
+const toast = useToast();
+
 /**
  * Função para salvar o conteúdo do editor no servidor.
  * Realiza uma requisição HTTP POST para enviar o conteúdo.
@@ -71,11 +74,14 @@ const SalvarTexto = async () => {
     try {
         // Envia os dados ao servidor usando uma requisição POST
         await termoService.salvaTermo(data);
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Texto adicionado com sucesso', life: 3000 });
         // Se a requisição for bem-sucedida, o servidor salvará o conteúdo do editor
         // Não há necessidade de ação adicional após salvar com sucesso
     } catch (error) {
         // Caso ocorra algum erro durante a requisição, este bloco será executado
         console.error('Erro ao salvar texto:', error); // Loga o erro ocorrido ao tentar salvar o conteúdo
+
+        toast.add({ severity: 'error', summary: 'Falha', detail: error.message, life: 3000 });
     } finally {
         // Independente de sucesso ou falha, o indicador de carregamento é desativado
         loading.value = false;

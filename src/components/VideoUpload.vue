@@ -9,7 +9,7 @@
             <Column header="Ações" style="width: 10%">
                 <template #body="slotProps">
                     <!-- Botão de Editar: Exibe o diálogo de associar vídeo -->
-                    <Button label="Editar" style="width: 100px;" icon="pi pi-pencil" class="p-button-sm p-button-warning mb-2" @click="editDM(slotProps.data)" />
+                    <Button label="Editar" style="width: 100px;" icon="pi pi-pencil" class="p-button-sm mb-2" @click="editDM(slotProps.data)" />
                     <Button label="Deletar" style="width: 100px;" icon="pi pi-trash" class="p-button-sm p-button-danger" @click="deleteDM(slotProps.data)" />
                 </template>
             </Column>

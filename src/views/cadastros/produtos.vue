@@ -246,6 +246,7 @@ const saveProduto = async () => {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar produto.', life: 3000 }); // Exibe erro
     } finally {
         loading.value = false; // Desativa o carregamento
+        dataStore.invalidatProdutoCache();
     }
 };
 
@@ -273,6 +274,7 @@ const deleteProduto = async () => {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar produto.', life: 3000 }); // Exibe erro
     } finally {
         loading.value = false; // Desativa o carregamento
+        dataStore.invalidatProdutoCache();
     }
 };
 
@@ -300,6 +302,7 @@ const updateProduto = async () => {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar produto.', life: 3000 }); // Exibe erro
     } finally {
         loading.value = false; // Desativa o carregamento
+        dataStore.invalidatProdutoCache();
     }
 };
 
