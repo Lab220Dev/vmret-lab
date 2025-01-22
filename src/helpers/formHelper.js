@@ -139,7 +139,12 @@ export const resetPlantaForm = (planta) => {
         senha: '',
         urlapi: '',
         clienteid: '',
-        codigo:''
+        codigo:'',
+        userId: '',
+        urlapi: '',
+        senha: '',
+        ordem: 0,
+        id_cliente: '',
     });
 };
 

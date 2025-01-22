@@ -74,7 +74,7 @@ export const handleControladoraChange = (Controladoras, produtoSelecionado, List
         motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
     } 
     // Verifica se o tipo da controladora é 'Locker'.
-    else if (selectedControladora.tipo === 'Locker') {
+    else if (selectedControladora.tipo === 'Locker'||selectedControladora.tipo === 'Locker-Padrao'||selectedControladora.tipo === 'Locker-ker') {
         // Atualiza as opções de DIP para a controladora do tipo Locker.
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
         
@@ -140,7 +140,7 @@ export const preencherControladoraOptions = (Controladoras) => {
         if (tipo === '2018' || tipo === '2024') {
             // Para controladoras dos tipos '2018' e '2024', utiliza a placa como identificador.
             identificador = dados.placa;
-        } else if (tipo === '2023' || tipo === 'Locker') {
+        } else if (tipo === '2023' || tipo === 'Locker'|| tipo === 'Locker-Padrao'|| tipo === 'Locker-ker') {
             // Para controladoras dos tipos '2023' e 'Locker', utiliza o dip como identificador.
             identificador = dados.dip;
         } else {
@@ -800,4 +800,6 @@ export const FormatarListaCliente = (ListaClientes,simple=false) => {
         }
     });
 };
-
+export const isArmario = (tipo) => {
+    return ["Locker", "Locker-Padrao", "Locker-Ker"].includes(tipo?.toString());
+};

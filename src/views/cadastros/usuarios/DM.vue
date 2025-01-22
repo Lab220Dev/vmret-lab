@@ -19,7 +19,7 @@ import {
     validarCampos as validarCamposHelper,
     updateTipoControladora as updateControladoraHelper,
     findControladora,
-    updateProdutoSelecionado,prepareDMData,prepareItemDMData,FormatarListaCliente
+    updateProdutoSelecionado,prepareDMData,prepareItemDMData,FormatarListaCliente,isArmario
 } from '@/helpers/DMHelper.js'; // Import the helper functions
 import { normalizeDateTime,prepareListData } from '@/helpers/HelperUtils.js';
 import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
@@ -131,7 +131,7 @@ const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
     return controladora ? controladora.tipo : null;
 });
-
+const isArmarioSelecionado = computed(() => isArmario(tipo));
 //Funções Ultilitárias
 const validarCampos = () => {
     try {
@@ -1030,7 +1030,7 @@ onMounted(async () => {
                     </div>
                 </template>
 
-                <template v-if="tipoControladoraSelecionada === 'Locker'">
+                <template v-if="isArmario(tipoControladoraSelecionada)">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Dip" class="font-semibold">DIP:</label>
                     </div>
