@@ -58,7 +58,7 @@ const chartOptions = {
     <div class="grid grid-cols-12">
         <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
             <div class="card card-item">
-                <h5>Keep Alive</h5>
+                <h5 class="my-3">Keep Alive</h5>
                 <Chart type="line" :data="dadosDM" :options="chartOptions" />
             </div>
 
@@ -71,7 +71,7 @@ const chartOptions = {
                 <div class="title" style="display: flex; align-items: center">
                     <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
                 </div>
-                <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoqueBaixo" removableSort responsiveLayout="scroll">
+                <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoqueBaixo" removableSort responsiveLayout="scroll" class="mt-3">
                     <!-- A tabela exibe os dados provenientes de 'estoqueBaixo' -->
                     <!-- Exibe 5 linhas por página, com a opção de ordenação removível nas colunas -->
                     <!-- Aplica um estilo com largura mínima de 20rem e layout fixo para garantir que as colunas tenham larguras constantes -->
@@ -111,7 +111,7 @@ const chartOptions = {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

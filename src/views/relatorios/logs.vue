@@ -275,6 +275,7 @@ onMounted(() => {
             removableSort
             :sortOrder="1"
             :sortField="'Dia'"
+            class="mt-4"
         >
             <!--
     A tabela exibe os dados provenientes de 'historico', que contêm informações relacionadas aos registros históricos de abastecimento.

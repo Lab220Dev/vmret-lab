@@ -238,42 +238,39 @@ onMounted(() => {
 <template>
     <!-- Card container para o conteúdo -->
     <div class="card vh">
-        <!-- Formulário que contém os campos de filtros e as tabelas -->
-        <div class="form">
-            <!-- Grid para a disposição dos campos de filtro e a tabela -->
-            <div class="grid mt-3 mx-1 px-1">
+        
                 <!-- Título da página -->
-                <h5 class="my-4 text-2xl">Histórico de Abastecimento</h5>
+                <h5 class="my-6 ml-2 text-2xl">Histórico de Abastecimento</h5>
 
                 <!-- Condição para exibir os campos de filtro -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" >
                     <!-- Filtro de DM (Documento de Movimento) -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
                         <!-- Componente Dropdown para escolher o DM -->
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <!-- Filtro de Planta -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <!-- Componente Dropdown para escolher a planta -->
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
                     <!-- Filtro de Setor -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
                         <!-- Componente Dropdown para escolher o setor -->
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
-                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                    <div class="field lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Centro de Custo:</label>
                         <!-- Componente Dropdown para escolher o centro de custo -->
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
 
                     <!-- Filtro de Operador -->
-                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                    <div class="field lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Operador:</label>
                         <!-- Componente Dropdown para escolher o operador -->
                         <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
@@ -315,13 +312,13 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Botão para filtrar os dados -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
                 </div>
 
                 <!-- DataTable para exibição dos resultados do histórico -->
-                <div class="datatable-wrapper">
+                <div class="mt-6">
                     <DataTable
                         v-model:filters="filters"
                         :value="historico"
@@ -381,8 +378,7 @@ onMounted(() => {
                         <Column field="posicao" sortable header="Posição"></Column>
                     </DataTable>
                 </div>
-            </div>
-        </div>
+           
     </div>
 
     <!-- Componente de carregamento (spinner) exibido enquanto a requisição está sendo processada -->

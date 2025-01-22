@@ -193,29 +193,29 @@ onMounted(() => {
 
 <template>
     <div class="card vh">
-        <div class="form">
-            <div class="grid mt-3 mx-1 px-1">
+        
+            
                 <h5 class="my-6 ml-2 text-2xl">Devoluções</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="id_dm">DM:</label>
                         <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
 
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Centro de Custo:</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
                     </div>
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Funcionário:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
@@ -253,7 +253,7 @@ onMounted(() => {
                             @open="handleDatepickerOpen"
                         />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -267,7 +267,7 @@ onMounted(() => {
                 </div>
 
                 <!--  datatable do relatorio -->
-                <div class="datatable-wrapper mt-6">
+                <div class="mt-6">
                     <DataTable
                         v-model:filters="filters"
                         :value="devolucoes"
@@ -324,8 +324,8 @@ onMounted(() => {
                         <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
                     </template>
                 </Card>
-            </div>
-        </div>
+            
+        
     </div>
     <LoadingSpinner v-if="loading" />
 

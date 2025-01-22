@@ -14,7 +14,7 @@ import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateTo
  * Flag que controla a exibição do modal de mensagem.
  * @default false
  */
- const showDialog = ref(false);
+const showDialog = ref(false);
 
 /**
  * @type {Ref<string>}
@@ -188,9 +188,9 @@ const relatorio = ref({
  * Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
  */
 const buscar = async () => {
-     try {
+    try {
         loading.value = true; // Ativa a flag de carregamento
-        retiradas.value = await relatorioService.itemsMaisRetiradas(relatorio)
+        retiradas.value = await relatorioService.itemsMaisRetiradas(relatorio);
         // Atualiza a contagem de registros filtrados
         filteredCount.value = retiradas.value.length;
 
@@ -310,11 +310,10 @@ const loadData = async () => {
         ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
         ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Erro ao carregar dados' });
-    }finally{
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Erro ao carregar dados' });
+    } finally {
         loading.value = false;
     }
-   
 };
 const filtroGenerico = () => {
     filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor);
@@ -343,184 +342,172 @@ onMounted(() => {
 <template>
     <div class="card vh">
         <!-- Card principal da página -->
-        <div class="form">
-            <!-- Container para o formulário -->
-            <div class="grid mt-3 mx-1 px-1">
-                <!-- Título principal -->
-                <h5 class="my-6 ml-2 text-2xl">Itens mais retirados</h5>
 
-                <div class="p-0 m-0 p-fluid formgrid grid col-12">
-                    <!-- Início do formulário de busca de informações para o relatório -->
-                    <!-- Filtro para DM (Documento de Medição) -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <label for="id_dm">DM:</label>
-                        <!-- Dropdown para selecionar o DM (documento de medição) -->
-                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
-                    </div>
+        <!-- Título principal -->
+        <h5 class="my-6 ml-2 text-2xl">Itens mais retirados</h5>
 
-                    <!-- Filtro para Centro de Custo -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <label for="perfil">Centro de Custo:</label>
-                        <!-- Dropdown para selecionar o centro de custo -->
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
-                    </div>
+        <div class="p-0 m-0 p-fluid formgrid grid col-12">
+            <!-- Início do formulário de busca de informações para o relatório -->
+            <!-- Filtro para DM (Documento de Medição) -->
+            <div class="field lg:col-3 md:col-6 sm:col-12">
+                <label for="id_dm">DM:</label>
+                <!-- Dropdown para selecionar o DM (documento de medição) -->
+                <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+            </div>
 
-                    <!-- Filtro para Setor -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <label for="perfil">Setor:</label>
-                        <!-- Dropdown para selecionar o setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
-                    </div>
+            <!-- Filtro para Centro de Custo -->
+            <div class="field lg:col-3 md:col-6 sm:col-12">
+                <label for="perfil">Centro de Custo:</label>
+                <!-- Dropdown para selecionar o centro de custo -->
+                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
+            </div>
 
-                    <!-- Filtro para Planta -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <label for="planta">Planta:</label>
-                        <!-- Dropdown para selecionar a planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
-                    </div>
+            <!-- Filtro para Setor -->
+            <div class="field lg:col-3 md:col-6 sm:col-12">
+                <label for="perfil">Setor:</label>
+                <!-- Dropdown para selecionar o setor -->
+                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
+            </div>
 
-                    <!-- Filtro para Funcionário -->
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="perfil">Funcionário:</label>
-                        <!-- Dropdown para selecionar o funcionário -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
-                    </div>
+            <!-- Filtro para Planta -->
+            <div class="field lg:col-3 md:col-6 sm:col-12">
+                <label for="planta">Planta:</label>
+                <!-- Dropdown para selecionar a planta -->
+                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
+            </div>
 
-                    <!-- Filtro para Data Inicial -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
-                        <!-- DataPicker para selecionar a data inicial -->
-                        <VueDatePicker
-                            class="drop"
-                            v-model="relatorio.data_inicio"
-                            showIcon
-                            :showOnFocus="false"
-                            :format="formatDateToString"
-                            locale="pt-BR"
-                            :enable-time-picker="false"
-                            auto-apply
-                            ref="datepicker1"
-                            @open="handleDatepickerOpen"
-                            teleport="body"
-                            placeholder="Selecione uma data inicial"
-                        />
-                    </div>
+            <!-- Filtro para Funcionário -->
+            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                <label for="perfil">Funcionário:</label>
+                <!-- Dropdown para selecionar o funcionário -->
+                <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+            </div>
 
-                    <!-- Filtro para Data Final -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <label for="perfil">Data Final:</label>
-                        <!-- DataPicker para selecionar a data final -->
-                        <VueDatePicker
-                            class="drop"
-                            v-model="relatorio.data_final"
-                            showIcon
-                            :showOnFocus="false"
-                            :format="formatDateToString"
-                            locale="pt-BR"
-                            :enable-time-picker="false"
-                            auto-apply
-                            ref="datepicker2"
-                            @open="handleDatepickerOpen"
-                            teleport="body"
-                            placeholder="Selecione uma data final"
-                        />
-                    </div>
+            <!-- Filtro para Data Inicial -->
+            <div class="field lg:col-3 md:col-6 sm:col-6">
+                <label for="perfil">Data Inicial:</label>
+                <!-- DataPicker para selecionar a data inicial -->
+                <VueDatePicker
+                    class="drop"
+                    v-model="relatorio.data_inicio"
+                    showIcon
+                    :showOnFocus="false"
+                    :format="formatDateToString"
+                    locale="pt-BR"
+                    :enable-time-picker="false"
+                    auto-apply
+                    ref="datepicker1"
+                    @open="handleDatepickerOpen"
+                    teleport="body"
+                    placeholder="Selecione uma data inicial"
+                />
+            </div>
 
-                    <!-- Botão de Filtrar -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
-                    </div>
+            <!-- Filtro para Data Final -->
+            <div class="field lg:col-3 md:col-6 sm:col-6">
+                <label for="perfil">Data Final:</label>
+                <!-- DataPicker para selecionar a data final -->
+                <VueDatePicker
+                    class="drop"
+                    v-model="relatorio.data_final"
+                    showIcon
+                    :showOnFocus="false"
+                    :format="formatDateToString"
+                    locale="pt-BR"
+                    :enable-time-picker="false"
+                    auto-apply
+                    ref="datepicker2"
+                    @open="handleDatepickerOpen"
+                    teleport="body"
+                    placeholder="Selecione uma data final"
+                />
+            </div>
 
-                    <!-- Botão para Exportar para CSV -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
-                    </div>
+            <!-- Botão de Filtrar -->
+            <div class="field lg:col-3 md:col-6 sm:col-12">
+                <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+            </div>
 
-                    <!-- Botão para Exportar para JSON -->
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
-                    </div>
-                </div>
+            <!-- Botão para Exportar para CSV -->
+            <div class="field lg:col-3 md:col-6 sm:col-6">
+                <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+            </div>
 
-                <!-- DataTable para exibir os resultados do relatório -->
-                <div class="datatable-wrapper mt-6">
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="retiradas"
-                        stripedRows
-                        showGridlines
-                        paginator
-                        :rows="10"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        rowHover
-                        @rowSelect="onRowSelect"
-                        :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-                        selectionMode="single"
-                        removableSort
-                        :sortOrder="1"
-                        :sortField="'ProdutoSKU'"
-                        ref="dt"
-                        :tableStyle="{ width: '100%' }"
-                    >
-                        <!-- A tabela exibe os dados provenientes de 'retiradas', com informações sobre os produtos retirados -->
-                        <!-- As linhas são alternadas com cores listradas para melhorar a legibilidade -->
-                        <!-- As linhas de grade (linhas de divisão) são exibidas, facilitando a leitura das células -->
-                        <!-- A paginação é habilitada para dividir os dados em páginas -->
-                        <!-- O número de linhas por página é configurado para 10, mas o usuário pode escolher entre 5, 10, 20 ou 50 linhas por página -->
-                        <!-- Um efeito de destaque é aplicado nas linhas quando o mouse passa sobre elas -->
-                        <!-- A tabela permite a seleção de apenas uma linha por vez -->
-                        <!-- A ordenação inicial é aplicada com base no campo 'ProdutoSKU' em ordem crescente -->
-                        <!-- O estilo da tabela é configurado para ocupar 100% da largura disponível -->
-
-                        <template #header>
-                            <div class="flex justify-content-between align-items-center">
-                                <div class="flex justify-content-start">
-                                    <!-- Exibe o total de registros filtrados -->
-                                    <span>Total de registros: {{ filteredCount }}</span>
-                                </div>
-                                <div>
-                                    <!-- Filtro global de pesquisa -->
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                    </IconField>
-                                </div>
-                            </div>
-                        </template>
-
-                        <template #empty>{{ emptyMessage }} </template>
-                        <!-- Colunas da tabela -->
-                        <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="quantidade_no_periodo" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
-                        <Column field="ProdutoSKU" sortable style="width: 15%" header="CA"></Column>
-                    </DataTable>
-
-                    <!-- Exibe os detalhes do produto em um modal -->
-                    <card v-if="show" class="details-card">
-                        <template #title>Detalhes do Produto</template>
-                        <template #content>
-                            <DataTable 
-                            :value="selectedItem" 
-                            stripedRows 
-                            removableSort 
-                            showGridlines 
-                            paginator 
-                            :rows="10" 
-                            :rowsPerPageOptions="[5, 10, 20, 50]" 
-                            rowHover>
-                                <Column field="Identificacao" sortable header="DM"></Column>
-                                <Column field="ProdutoNome" sortable header="Item"></Column>
-                                <Column field="Data" sortable header="Data"></Column>
-                                <Column field="Quantidade" sortable header="Quantidade"> </Column>
-                                <Column field="ProdutoSKU" sortable header="SKU"></Column>
-                            </DataTable>
-                        </template>
-                    </card>
-                </div>
+            <!-- Botão para Exportar para JSON -->
+            <div class="field lg:col-3 md:col-6 sm:col-6">
+                <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
             </div>
         </div>
+
+        <!-- DataTable para exibir os resultados do relatório -->
+
+        <DataTable
+            v-model:filters="filters"
+            :value="retiradas"
+            stripedRows
+            showGridlines
+            paginator
+            :rows="10"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            rowHover
+            @rowSelect="onRowSelect"
+            :globalFilterFields="['ProdutoNome', 'Quantidade', 'ProdutoSKU']"
+            selectionMode="single"
+            removableSort
+            class="mt-6"
+            :sortOrder="1"
+            :sortField="'ProdutoSKU'"
+            ref="dt"
+            :tableStyle="{ width: '100%' }"
+        >
+            <!-- A tabela exibe os dados provenientes de 'retiradas', com informações sobre os produtos retirados -->
+            <!-- As linhas são alternadas com cores listradas para melhorar a legibilidade -->
+            <!-- As linhas de grade (linhas de divisão) são exibidas, facilitando a leitura das células -->
+            <!-- A paginação é habilitada para dividir os dados em páginas -->
+            <!-- O número de linhas por página é configurado para 10, mas o usuário pode escolher entre 5, 10, 20 ou 50 linhas por página -->
+            <!-- Um efeito de destaque é aplicado nas linhas quando o mouse passa sobre elas -->
+            <!-- A tabela permite a seleção de apenas uma linha por vez -->
+            <!-- A ordenação inicial é aplicada com base no campo 'ProdutoSKU' em ordem crescente -->
+            <!-- O estilo da tabela é configurado para ocupar 100% da largura disponível -->
+
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div class="flex justify-content-start">
+                        <!-- Exibe o total de registros filtrados -->
+                        <span>Total de registros: {{ filteredCount }}</span>
+                    </div>
+                    <div>
+                        <!-- Filtro global de pesquisa -->
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        </IconField>
+                    </div>
+                </div>
+            </template>
+
+            <template #empty>{{ emptyMessage }} </template>
+            <!-- Colunas da tabela -->
+            <Column field="ProdutoNome" sortable header="Item"></Column>
+            <Column field="quantidade_no_periodo" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
+            <Column field="ProdutoSKU" sortable style="width: 15%" header="CA"></Column>
+        </DataTable>
+
+        <!-- Exibe os detalhes do produto em um modal -->
+        <card v-if="show" class="details-card">
+            <template #title>Detalhes do Produto</template>
+            <template #content>
+                <DataTable :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                    <Column field="Identificacao" sortable header="DM"></Column>
+                    <Column field="ProdutoNome" sortable header="Item"></Column>
+                    <Column field="Data" sortable header="Data"></Column>
+                    <Column field="Quantidade" sortable header="Quantidade"> </Column>
+                    <Column field="ProdutoSKU" sortable header="SKU"></Column>
+                </DataTable>
+            </template>
+        </card>
     </div>
 
     <!-- Spinner de carregamento, exibido enquanto os dados estão sendo carregados -->

@@ -70,10 +70,9 @@ const relatorio = ref({
 
 // Função assíncrona para buscar os dados do relatório
 const buscar = async () => {
-
     try {
         loading.value = true;
-        retiradas.value = await relatorioService.retiradaRealizadas(relatorio)
+        retiradas.value = await relatorioService.retiradaRealizadas(relatorio);
         // Atualiza a contagem de registros
         filteredCount.value = retiradas.value.length;
 
@@ -88,7 +87,7 @@ const buscar = async () => {
             emptyMessage.value = ''; // Limpa a mensagem de "sem dados"
         }
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life:3000, detail: 'Erro ao buscar dados' });
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Erro ao buscar dados' });
         console.error('Erro ao buscar retiradas:', error); // Exibe o erro no console caso haja uma falha na requisição
     } finally {
         loading.value = false; // Desativa o spinner de carregamento
@@ -151,11 +150,10 @@ const loadData = async () => {
         ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
         ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Erro ao carregar dados' });
-    }finally{
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Erro ao carregar dados' });
+    } finally {
         loading.value = false;
     }
-   
 };
 // Ao montar o componente, carrega todas as informações necessárias
 onMounted(() => {
@@ -172,35 +170,35 @@ onMounted(() => {
         <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
         <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
             <!-- Filtro DM (Departamento ou Manager) -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="dm">DM:</label>
                 <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
                 <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
             </div>
 
             <!-- Filtro Centro de Custo -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <label for="perfil">Centro de Custo:</label>
                 <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Setor -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <label for="perfil">Setor:</label>
                 <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Planta -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
+            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="planta">Planta:</label>
                 <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Funcionário -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <label for="perfil">Funcionário:</label>
                 <!-- Dropdown para selecionar Funcionário -->
                 <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
@@ -247,7 +245,7 @@ onMounted(() => {
             </div>
 
             <!-- Botão de filtro -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
             </div>
 

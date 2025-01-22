@@ -73,16 +73,14 @@ onMounted(async () => {
 
 <template>
     <!-- Estrutura principal da interface -->
-    <div class="grid">
+    <div class="card">
         <!-- Define que o conteúdo será exibido em 12 colunas no grid -->
-        <div class="col-12">
-            <!-- Card para agrupar o conteúdo da liberação avulsa -->
-            <div class="card">
+        
                 <!-- Título do card -->
-                <h5 class="mt-2">Liberação Avulsa</h5>
+                <h5 class="my-6 ml-2 text-2xl">Liberação Avulsa</h5>
 
                 <!-- Grid interno para organizar os campos de entrada -->
-                <div class="mt-5 mx-0 p-fluid grid">
+                <div class="my-6 mx-0 p-fluid grid">
                     <!-- Campo para a matrícula -->
                     <div class="full lg:col-4 md:col-12 sm:col-12">
                         <label for="matricula">Funcionario:</label>
@@ -140,8 +138,7 @@ onMounted(async () => {
                     <!-- Mensagem esperada ao clicar:
                          - Liberação registrada com sucesso (toast com mensagem de sucesso). -->
                 </div>
-            </div>
-        </div>
+            
         <LoadingSpinner v-if="loading" />
     </div>
 </template>

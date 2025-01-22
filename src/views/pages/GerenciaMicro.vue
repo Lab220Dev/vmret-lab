@@ -1,7 +1,7 @@
 <template>
     <div class="card">
-        <h3 class="mt-6">Cadastro de Serviços</h3>
-        <hr />
+        <h5 class="mt-6 ml-2 text-2xl">Cadastro de Serviços</h5>
+        
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
@@ -9,22 +9,29 @@
         </div>
 
         <div v-if="selectedClient?.id" class="mt-8 card services-edit">
-            <div class="flex mt-4 justify-content-between align-items-center">
+            <div class="flex mt-2 justify-content-between align-items-center">
                 <h5 class="mt-3 no-break">
                     Serviços atribuídos:
                     <span v-if="isAdmin">{{ selectedClient.name }}</span>
+                
                 </h5>
+                
                 <div class="add-service flex align-items-center">
                     <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
                     <Button class="ml-3" label="Inserir" @click="addService" />
                 </div>
+                
             </div>
-
+            <hr />
             <DataTable 
-            class="mt-5" 
-            :value="clientServices">
+            class="mt-8" 
+            :value="clientServices"
+            stripedRows
+            showGridlines
+            :tableStyle="{ width: '100%' }"
+            >
                 <template #empty>Não há serviços cadastrados.</template>
-                <Column field="name" header="Serviço"></Column>
+                <Column field="name" style="width: 75%" header="Serviço"></Column>
                 <Column header="Ação">
                     <template #body="slotProps">
                         <Button label="Configurar" class="mr-2 configuracao-monitoramento" icon="pi pi-cog" @click="editService(slotProps.data)" />
@@ -48,7 +55,7 @@
                 </template>
             </Dialog>
 
-            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 px-6 pb-8">
+            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 p-8 mx-8">
                 <!---->
                 <h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
 
@@ -165,7 +172,6 @@ const showConfig = ref(false); // Flag para mostrar as configurações do servi�
 
 const fetchIfAdmin = async () => {
     /**
-     * Função que verifica se o usuário é administrador e carrega os dados de acordo.
      * Caso o usuário seja administrador, carrega a lista de clientes.
      * Caso contrário, carrega os serviços do cliente.
      */
@@ -175,6 +181,9 @@ const fetchIfAdmin = async () => {
     } else {
         await fetchServicos(); // Carrega os serviços do cliente caso não seja administrador.
     }
+};
+
+const resetServico = () => {
 };
 
 /**
@@ -403,12 +412,15 @@ const addServiceWithConfig = async () => {
 
         // Envia os dados ao backend para adicionar o serviço.
         await clientesService.adicionarServico(data);
-
+        showConfig.value = false;
         // Exibe uma notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Serviços adicionados com sucesso!', life: 3000 });
     } catch (error) {
         console.error('Erro ao adicionar os serviços:', error); // Loga o erro ocorrido.
         toast.add({ severity: 'error', summary: 'Erro ao adicionar os serviços', life: 3000 }); // Exibe um erro ao usuário.
+    }
+    finally{
+        
     }
 };
 
@@ -536,13 +548,15 @@ const updateServiceConfig = async () => {
 
         // Envia a atualização dos serviços ao backend.
         await axios.post('/admin/cliente/atualizarServico', data);
-
+        showConfig.value = false;
         // Exibe notificação de sucesso.
         toast.add({ severity: 'success', summary: 'Serviço atualizado com sucesso!', life: 3000 });
     } catch (error) {
         // Exibe erro caso a atualização falhe.
         console.error('Erro ao atualizar os serviços:', error);
         toast.add({ severity: 'error', summary: 'Erro ao atualizar os serviços', life: 3000 });
+    } finally {
+        
     }
 };
 

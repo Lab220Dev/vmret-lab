@@ -100,11 +100,11 @@ onMounted(() => {
 <template>
     <!-- Card principal que contém o formulário de filtros e informações -->
     <div class="card">
-        <div class="form">
+        
             <!-- Grid do formulário, com margens e espaçamento definidos -->
-            <div class="grid mt-3 mx-1 px-1">
+            <div class="">
                 <!-- Título da página "Fichas de Retiradas" -->
-                <h5 class="my-4 text-2xl">Fichas de Retiradas</h5>
+                <h5 class="my-6 ml-2 text-2xl">Fichas de Retiradas</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
@@ -160,7 +160,7 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-        </div>
+    
     </div>
     <!-- Exibe um spinner de carregamento se "loading" for verdadeiro -->
     <LoadingSpinner v-if="loading" />

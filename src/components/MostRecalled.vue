@@ -44,7 +44,7 @@ const props = defineProps({
     removableSort 
     :rows="5" 
     tableStyle="min-width: 20rem; table-layout: fixed;" 
-    responsiveLayout="scroll">
+    responsiveLayout="scroll" class="mt-3">
         <!-- A tabela exibe os dados provenientes de "props.most" -->
         <!-- O usuário pode remover a ordenação clicando na coluna de ordenação -->
         <!-- Define o número de linhas visíveis por página como 5 -->

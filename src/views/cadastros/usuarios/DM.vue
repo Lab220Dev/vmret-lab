@@ -651,8 +651,14 @@ onMounted(async () => {
       </template>
                                 </Column>
 
-                                <Column field="ClienteNome" sortable header="Cliente"></Column>
-                                <Column field="local" sortable header="Localização"></Column>
+                                <Column field="ClienteNome" sortable header="Cliente">
+                                    <template #body="{ data }">
+        <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
+      </template></Column>
+                                <Column field="local" sortable header="Localização">
+                                    <template #body="{ data }">
+        <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
+      </template></Column>
                                 <Column field="Ativo" sortable style="width: 9%; text-align: center" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
