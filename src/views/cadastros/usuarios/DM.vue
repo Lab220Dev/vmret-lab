@@ -641,8 +641,15 @@ onMounted(async () => {
                                     </div>
                                 </template>
                                 <template #empty> Nenhuma DM adicionada. </template>
-                                <Column field="Identificacao" sortable header="Identificação"></Column>
-                                <Column field="Numero" sortable header="Número"></Column>
+                                <Column field="Identificacao" sortable header="Identificação">
+                                    <template #body="{ data }">
+        <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
+      </template></Column>
+                                <Column field="Numero" sortable header="Número">
+                                    <template #body="{ data }">
+        <span class="tooltip-target" v-tooltip="data.Numero">{{ data.Numero }}</span>
+      </template>
+                                </Column>
 
                                 <Column field="ClienteNome" sortable header="Cliente"></Column>
                                 <Column field="local" sortable header="Localização"></Column>
@@ -1117,5 +1124,20 @@ onMounted(async () => {
         align-items: center;
         gap: 5px;
     }
+}
+/* Estilos para a exibição de tooltip */
+.tooltip-target {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* Estilos para o tooltip, permitindo múltiplas linhas de texto */
+.v-tooltip {
+    max-width: 400px;
+    white-space: normal;
 }
 </style>

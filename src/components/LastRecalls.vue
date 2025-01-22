@@ -40,7 +40,7 @@ const formatDateTime = (date) => {
 
 <template>
   <!-- Cabeçalho da tabela -->
-  <div class="header" style="display: flex">
+  <div class="header " style="display: flex">
     <div class="title" style="display: flex; align-items: center">
       <h5 style="margin-right: 5px">Últimas retiradas</h5>
     </div>
@@ -54,7 +54,8 @@ const formatDateTime = (date) => {
   :value="props.products" 
   :rows="5" 
   tableStyle="min-width: 20rem; table-layout: fixed;" 
-  removableSort responsiveLayout="scroll">
+  removableSort responsiveLayout="scroll"
+  class="mt-0 pt-0">
 
   <!-- A tabela exibe os dados provenientes de "props.products" -->
    <!-- Define o número de linhas visíveis por página como 5 -->
@@ -92,7 +93,7 @@ const formatDateTime = (date) => {
   </DataTable>
 </template>
 
-<style>
+<style scoped>
 /* Estilos para a exibição de tooltip */
 .tooltip-target {
     cursor: pointer;

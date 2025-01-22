@@ -767,23 +767,23 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Selecione um Centro de Custo" ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Selecione uma Planta" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" @change="setorChange" ref="dropdown3" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione um Setor" @change="setorChange" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma Função" ref="dropdown4" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um Status" ref="dropdown5"></Dropdown>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="inicio">Hora Início:</label>
@@ -886,7 +886,7 @@ const hideDialog = () => {
                                             <Column field="qtd_limite" header="Quantidade"></Column>
                                         </DataTable>
                                     </TabPanel>
-                                    <TabPanel header="Itens do Funcionario">
+                                    <TabPanel header="Itens do Funcionário">
                                         <Button class="mt-3 justify-content-end" label="Adicionar Itens" @click="abrirDialogAdicionarItem" />
                                         <DataTable
                                             class="mt-3"

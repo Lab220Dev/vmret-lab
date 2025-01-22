@@ -240,7 +240,7 @@ onMounted(() => {
                                     <InputSwitch class="grid mt-3 ml-3" v-model="integracao" inputId="switch1" />
                                     <label class="mt-3 ml-4" for="switch1">Tem integração?</label>
 
-                                    <div v-if="integracao" class="card mt-4">
+                                    <div v-if="integracao" class="card mt-8">
                                         <div v-if="integracao" class="my-3 grid">
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="userid">UserID:</label>
