@@ -39,6 +39,7 @@ const filteredCount = ref(0); // Contador de resultados filtrados
 
 // Objeto para armazenar os dados do usuário
 const usuario = ref({
+    id_cliente:'',
     nome: '',
     login: '',
     senha: '',
