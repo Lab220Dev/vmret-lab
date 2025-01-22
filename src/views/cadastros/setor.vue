@@ -199,8 +199,8 @@ const resetForm = () => {
 
 const loadData = async () => {
     try {
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
-        ListaItensSetor.value = dataStore.produtos || (await dataStore.fetchProdutos());
+        centroCusto.value = dataStore.cdcs || await dataStore.fetchCdc();
+        ListaItensSetor.value = dataStore.produtos || await dataStore.fetchProdutos();
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
     }
@@ -215,11 +215,7 @@ const atualizarProdutoSetor = async () => {
     loading.value = true;
     try {
         await setorService.atualizarProdutoSetor(item.value);
-        loadSetor();
         fetchListaItemSetor();
-        active.value = 1;
-        
-        resetForm();
         itemDialog.value = false;
         toast.add({
             severity: 'success',

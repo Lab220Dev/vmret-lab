@@ -238,7 +238,7 @@ const loadData = async () => {
 onMounted(() => {
     loadData(); // Carrega os DMs
     fetchUsuarios(); // Carrega a lista de usuários
-    if(store.userRole === 'Administrador'){
+    if(isAdmin()){
         fetchCliente(); // Carrega a lista de clientes
     }
 });
@@ -414,7 +414,11 @@ const deleteUsuario = async (item) => {
                                 <!-- Exibe erro se as senhas não coincidirem -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-                            
+                            <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <label for="perfil">Cliente:</label>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
+                                <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
+                            </div>
                             <!-- Campo para indicar se o usuário está ativo -->
                             <div class="full flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
