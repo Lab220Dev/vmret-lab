@@ -46,7 +46,7 @@ const usuario = ref({
 });
 
 const ListaUsuario = ref([]); // Lista de usuários
-const isAdmin  = () => {  store.userRole === 'Administrador'}; // Verifica se o usuário é administrador
+const isAdmin  = () => {  return store.userRole === 'Administrador'}; // Verifica se o usuário é administrador
 /**
  * Função chamada ao selecionar uma linha da tabela
  * @param {Object} event - Dados do evento gerado ao selecionar uma linha
@@ -385,12 +385,20 @@ const deleteUsuario = async (item) => {
                     <TabPanel :header="visible ? 'Editar  Usuário DM' : 'Adicionar  Usuário DM'">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <!-- Campo para o nome do usuário -->
-                            <div class="full xl:col-8 lg:col-8 md:col-8 sm:col-12">
+                            <div class="full xl:col-6 lg:col-6 md:col-8 sm:col-12">
                                 <label for="name">Nome:</label>
                                 <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                             </div>
 
-                            <!-- Campo para a senha do usuário -->
+                        
+
+                            <!-- Campo para o login do usuário -->
+                            <div class="full xl:col-6 lg:col-6 md:col-8 sm:col-12">
+                                <label for="email">Login:</label>
+                                <InputText class="my-2" v-model="usuario.login" id="email" />
+                            </div>
+
+<!-- Campo para a senha do usuário -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="senha">Senha:</label>
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
@@ -398,11 +406,6 @@ const deleteUsuario = async (item) => {
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
 
-                            <!-- Campo para o login do usuário -->
-                            <div class="full xl:col-8 lg:col-8 md:col-8 sm:col-12">
-                                <label for="email">Login:</label>
-                                <InputText class="my-2" v-model="usuario.login" id="email" />
-                            </div>
                             <!-- Campo para confirmar a senha -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="senha">Confirme a Senha:</label>
@@ -410,18 +413,19 @@ const deleteUsuario = async (item) => {
                                 <!-- Exibe erro se as senhas não coincidirem -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
-                            <div v-if="isAdmin" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">Cliente:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
-                                <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
-                            </div>
+                            
                             <!-- Campo para indicar se o usuário está ativo -->
-                            <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                            <div class="full flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
                                 <div class="grid mt-3">
                                     <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
                                     <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
                                 </div>
+                            </div>
+                            <div v-if="isAdmin" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <label for="perfil">Cliente:</label>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
+                                <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
