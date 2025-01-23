@@ -1,23 +1,27 @@
+
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
-
+import plantaService from '@/services/plantaService.js';
+import { resetPlantaForm,applyGlobalFilter} from '@/helpers/formHelper';
+import { useDataStore } from '@/store/dataStore.js';
+import { isMobEnabled,prepareListData } from '@/helpers/HelperUtils.js'
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const active = ref(0);
 const store = useAuthStore();
+const dataStore = useDataStore();
 const toast = useToast();
 const ListaPlanta = ref([]);
 const visible = ref(false);
 const integracao = ref(false);
 const deletePlantaDialog = ref(false);
 const loading = ref(false);
-
+const Mob = ref(false)
 const filteredCount = ref(0);
 
 let planta = reactive({
@@ -25,10 +29,17 @@ let planta = reactive({
     id_planta: '',
     userId: '',
     senha: '',
+    codigo:'',
     urlapi: '',
     clienteid: ''
 });
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'id_planta', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
 const onRowSelect = (event) => {
     planta = event.data;
     active.value = 1;
@@ -43,132 +54,123 @@ const submitForm = () => {
         adicionarPlanta();
     }
 };
-
-const loadPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    loading.value = true;
-    try {
-        const response = await axios.post('/plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaPlanta.value = response.data;
-
-        filteredCount.value = ListaPlanta.value.length;
-    } catch (error) {
-        console.error('Erro ao listar plantas:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+const onFilterChange = async () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    await loadPlanta(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = async (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    await loadPlanta(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = async (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    await loadPlanta(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
+const loadPlanta = async (page =1) => {
+  loading.value = true;
+  try {
+    const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+    const data = prepareListData(params);
+    // const response = await plantaService.listarPlantas(store.userIdCliente, store.token);
+    const response = await plantaService.listarPlantasPaginado(data);
+    ListaPlanta.value = response.data.plantas;
+    filteredCount.value = response.data.totalRecords;
+  } catch (error) {
+    console.error('Erro ao listar plantas:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao listar plantas.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
 watch(
-    () => filters.value.global.value,
-    () => {
-        filteredCount.value = ListaPlanta.value.filter((item) => {
-            const filterValue = filters.value.global.value?.toLowerCase() || '';
-            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
-        }).length;
-    },
-    { immediate: true }
+  () => filters.value.global.value,
+  () => {
+    filteredCount.value = applyGlobalFilter(ListaPlanta.value, filters.value.global.value).length;
+  },
+  { immediate: true }
 );
 
 const adicionarPlanta = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...planta
-    };
-    loading.value = true;
-    try {
-        const response = await axios.post('/plantas/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadPlanta();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao adicionar planta:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  loading.value = true;
+  try {
+    await plantaService.adicionarPlanta(
+      { id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta },
+      store.token
+    );
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta adicionada com sucesso!', life: 3000 });
+    loadPlanta();
+    active.value = 0;
+    resetPlantaForm(planta);
+  } catch (error) {
+    console.error('Erro ao adicionar planta:', error);
+    toast.add({ severity: 'error', summary: 'Erro ao adicionar planta', detail: 'Verifique os dados e tente novamente.', life: 3000 });
+    
+  } finally {
+    loading.value = false;
+  }
 };
 
 const deletePlanta = async () => {
-    let data = { id_planta: planta.id_planta };
-    loading.value = true;
-    try {
-        await axios.post('/planta/deletePlanta', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Planta Deletada', life: 3000 });
-        deletePlantaDialog.value = false;
-        loadPlanta();
-        active.value = 0;
-        resetForm();
-    } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a planta.', life: 3000 });
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+    let data = { id_planta: planta.id_planta }
+  loading.value = true;
+  try {
+        await plantaService.deletarPlanta(data);
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta deletada com sucesso!', life: 3000 });
+    dataStore.invalidatePlantasCache();
+    deletePlantaDialog.value = false;
+    loadPlanta();
     active.value = 0;
+    //resetPlantaForm(planta);
+  } catch (error) {
+    console.error('Erro ao deletar planta:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar planta.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
+
 const atualizarPlanta = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...planta
-    };
-    loading.value = true;
-    try {
-        const response = await axios.post('/plantas/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadPlanta();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao atualizar Plantas:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
+  loading.value = true;
+  try {
+    await plantaService.atualizarPlanta(
+      { id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta },
+      store.token
+    );
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta atualizada com sucesso!', life: 3000 });
+    loadPlanta();
+    active.value = 0;
+    resetPlantaForm(planta);
+  } catch (error) {
+    console.error('Erro ao atualizar planta:', error);
+    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar planta.', life: 3000 });
+  } finally {
+    loading.value = false;
+  }
 };
 
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         resetForm();
-        loadPlanta();
         visible.value = false;
     }
 });
 
-const resetForm = () => {
-    planta.nome = '';
-    planta.codigo = '';
-    planta.id_planta = '';
-    planta.clienteid = '';
-    planta.senha = '';
-    planta.url = '';
-    planta.userId = '';
-    integracao.value = false;
-};
+const resetForm = () => resetPlantaForm(planta);
 
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
 
 onMounted(() => {
     loadPlanta();
+    Mob.value = isMobEnabled();
 });
 </script>
 
@@ -184,15 +186,20 @@ onMounted(() => {
                         tableStyle="min-width: 25%"
                         paginator
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
+                        lazy
+                        :totalRecords="filteredCount"
+                        :rows="lazyParams.value?.rows || 10"
                         removableSort
                         stripedRows
                         :globalFilterFields="['id_planta', 'nome']"
-                        :sortField="'id_planta'"
-                        :sortOrder="1"
+                        :sortField="lazyParams.value?.sortField ||'id_planta'"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
                         dataKey="id"
                         :metaKeySelection="false"
-                        @rowSelect="handleRowSelection"
+                        @rowSelect="onRowSelect"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
@@ -211,7 +218,7 @@ onMounted(() => {
                         </template>
 
                         <template #empty> Nenhuma planta adicionada. </template>
-                        <Column field="id_planta" sortable header="Planta de Custo"></Column>
+                        <Column field="id_planta" sortable header="Código"></Column>
                         <Column field="nome" sortable header="Planta (Nome)"></Column>
                     </DataTable>
                 </div>
@@ -219,7 +226,7 @@ onMounted(() => {
             <TabPanel :header="visible ? 'Editar Planta' : 'Adicionar Planta'">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="mt-5">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
@@ -233,11 +240,11 @@ onMounted(() => {
                                     <InputSwitch class="grid mt-3 ml-3" v-model="integracao" inputId="switch1" />
                                     <label class="mt-3 ml-4" for="switch1">Tem integração?</label>
 
-                                    <div v-if="integracao" class="card mt-4">
+                                    <div v-if="integracao" class="card mt-8">
                                         <div v-if="integracao" class="my-3 grid">
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="userid">UserID:</label>
-                                                <InputText class="my-2" id="userid" v-model="planta.userId" required />
+                                                <InputText class="my-2" id="userid" v-model="planta.userid" required />
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="senha">Senha:</label>
@@ -249,15 +256,15 @@ onMounted(() => {
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
                                                 <label for="idcliente">ID Cliente:</label>
-                                                <InputText class="my-2" id="idcliente" v-model="planta.clienteid" required />
+                                                <InputText class="my-2" id="idcliente" v-model="planta.clientid" required />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" />
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" :disabled="Mob"/>
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" :disabled="Mob"/>
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" :disabled="Mob"/>
                                 </div>
                             </form>
                         </div>

@@ -1,208 +1,242 @@
 <script setup>
-import { ref } from 'vue'; 
-import { useRouter } from 'vue-router'
-import axios from '@/axios.js'
-import { useAuthStore } from '@/store/authStore';
-import { useCountdownStore } from '@/store/countdown';
-import LoadingModal from '@/components/LoadingModal.vue';
+  // Importação dos hooks e funções necessárias
+  import { ref } from 'vue';  // Importa o hook ref para criar variáveis reativas
+  import { useRouter } from 'vue-router'  // Importa o hook useRouter para navegação entre páginas
+  import axios from '@/axios.js'  // Importa a instância configurada do axios para realizar requisições HTTP
+  import { useAuthStore } from '@/store/authStore';  // Importa o store de autenticação para gerenciar o estado do usuário
+  import { useCountdownStore } from '@/store/countdown';  // Importa o store para controlar a contagem regressiva (timer de sessão)
+  import LoadingModal from '@/components/LoadingModal.vue';  // Importa o componente de modal de carregamento (loading)
 
-const isLoading = ref(false);
-const router = useRouter()
-const username = ref('');
-const mail = ref('');
-const password = ref('');
-const error = ref(null);
-const forgotPassword = ref(false);
-const authStore = useAuthStore();
-const countdownStore = useCountdownStore();
+  // Variáveis reativas
+  const isLoading = ref(false);  // Controla o estado de carregamento (loading)
+  const router = useRouter()  // Instancia o hook de navegação do Vue Router
+  const username = ref('');  // Armazena o nome de usuário (email) para login
+  const mail = ref('');  // Armazena o email para recuperação de senha
+  const password = ref('');  // Armazena a senha para login
+  const error = ref(null);  // Armazena qualquer mensagem de erro
+  const forgotPassword = ref(false);  // Controla a visualização do formulário de recuperação de senha
+  const authStore = useAuthStore();  // Instancia o store de autenticação
+  const countdownStore = useCountdownStore();  // Instancia o store de contagem regressiva para a sessão
 
-const resetPassword = async () => {
-    isLoading.value = true;
-    error.value = '';
+  /**
+   * Função para lidar com a recuperação de senha
+   * @returns {Promise<void>} Retorna uma Promise que, ao ser resolvida, finaliza o processo de recuperação de senha
+   */
+  const resetPassword = async () => {
+    isLoading.value = true;  // Ativa o carregamento enquanto o pedido está sendo feito
+    error.value = '';  // Limpa qualquer erro anterior
     try {
-        const response = await axios.post('/recuperar', {
-            email: mail.value,
-        });
-        if (response.status === 200) {
-            alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br");
-            forgotPassword.value = false;
-        }
+      // Envia o pedido de recuperação de senha para a API
+      const response = await axios.post('/recuperar', {
+        email: mail.value,  // Envia o email do usuário para recuperação
+      });
+      // Verifica se o código de status da resposta é 200 (OK)
+      if (response.status === 200) {
+        // Exibe uma mensagem de sucesso caso o link de recuperação tenha sido enviado corretamente
+        alert("O link de recuperação foi enviado com sucesso! Verifique a caixa de entrada seu email. Contate o nosso suporte caso continue enfrentando problemas para logar: suporte@lab220.com.br");
+        forgotPassword.value = false;  // Altera a tela de recuperação para a tela de login novamente
+      }
     } catch (err) {
-        console.error(err); // Adicione um log para depuração
-        error.value = err.response?.data || 'Erro desconhecido';
+      console.error(err);  // Adiciona um log para depuração do erro
+      // Define a mensagem de erro para exibição, ou usa uma mensagem genérica
+      error.value = err.response?.data || 'Erro desconhecido';  // Caso não haja mensagem de erro, usa a padrão
     } finally {
-        isLoading.value = false;
+      isLoading.value = false;  // Desativa o carregamento quando a requisição for concluída (seja com sucesso ou falha)
     }
-};
+  };
 
-const login = async () => {
-    isLoading.value = true;
-    error.value = '';
+  /**
+   * Função para realizar o login do usuário
+   * @returns {Promise<void>} Retorna uma Promise que, ao ser resolvida, realiza o login e redireciona para a Dashboard
+   */
+  const login = async () => {
+    isLoading.value = true;  // Ativa o carregamento enquanto o login está sendo realizado
+    error.value = '';  // Limpa qualquer erro anterior
     try {
-        const response = await axios.post('/login', {
-            email: username.value,
-            senha: password.value,
-        });
-        if (response.status === 200) {
-            authStore.login({ token: response.data.token, usuario: response.data.Usuario, menu: response.data.items});
-            countdownStore.startCountdown(60 * 60 * 1000);
-            router.push({ name: 'Dashboard' });
-        }
+      // Envia as credenciais de login (email e senha) para a API
+      const response = await axios.post('/login', {
+        email: username.value,  // Envia o email como nome de usuário
+        senha: password.value,  // Envia a senha
+      });
+      // Verifica se o código de status da resposta é 200 (OK)
+      if (response.status === 200) {
+        // Realiza o login no sistema armazenando o token e os dados do usuário no store
+        authStore.login({ token: response.data.token, usuario: response.data.Usuario, menu: response.data.items });
+        // Inicia a contagem regressiva para expiração de sessão (1 hora)
+        countdownStore.startCountdown(60 * 60 * 1000);
+        // Redireciona para a página principal (Dashboard)
+        router.push({ name: 'Dashboard' });
+      }
     } catch (err) {
-        console.error(err); // Adicione um log para depuração
-        error.value = err.response?.data || 'Erro desconhecido';
+      console.error(err);  // Adiciona um log para depuração do erro
+      // Define a mensagem de erro para exibição, ou usa uma mensagem genérica
+      error.value = err.response?.data || 'Erro desconhecido';  // Caso não haja mensagem de erro, usa a padrão
     } finally {
-        isLoading.value = false;
+      isLoading.value = false;  // Desativa o carregamento quando o login for concluído (seja com sucesso ou falha)
     }
-};
+  };
 </script>
 
 <template>
-    <LoadingModal :isLoading="isLoading" />
-    <Splitter class=" flex justify-content-center align-items-center min-h-screen" style="height: 300px">
-        <SplitterPanel
-            class="colunaesquerda flex-column h-screen justify-content-center align-items-center text-left m-0"
-            :size="65">
-            <div class="flex align-items-center">
-                <svg class="align-items-center justify-content-center" xmlns="http://www.w3.org/2000/svg" width="6em"
-                    height="6em" viewBox="2 2 22 22">
-                    <path fill="#494c57"
-                        d="m11.614 13.98l4.908 4.922c.39.391.99.36 1.286-.106a8.99 8.99 0 0 0 1.393-4.815a9.005 9.005 0 0 0-1.972-5.631zM9 14.396V7.041a7.008 7.008 0 0 0-6 6.939C3 17.856 6.134 21 10 21a6.946 6.946 0 0 0 4.186-1.403zm7.331-8.183c.39-.391.365-.999-.089-1.313a10.925 10.925 0 0 0-4.251-1.765c-.544-.1-.991.312-.991.865v7.56z" />
-                </svg>
+  <!-- Exibe o modal de carregamento enquanto a requisição está sendo processada -->
+  <LoadingModal :isLoading="isLoading" />
+  <Splitter class=" flex justify-content-center align-items-center min-h-screen" style="height: 300px">
+    
+    <!-- Painel esquerdo da tela com o logo e título -->
+    <SplitterPanel class="colunaesquerda flex-column h-screen justify-content-center align-items-center text-left m-0" :size="65">
+      <div class="flex align-items-center">
+        <!-- SVG do logo -->
+        <svg class="align-items-center justify-content-center" xmlns="http://www.w3.org/2000/svg" width="6em" height="6em" viewBox="2 2 22 22">
+          <path fill="#494c57" d="m11.614 13.98l4.908 4.922c.39.391.99.36 1.286-.106a8.99 8.99 0 0 0 1.393-4.815a9.005 9.005 0 0 0-1.972-5.631zM9 14.396V7.041a7.008 7.008 0 0 0-6 6.939C3 17.856 6.134 21 10 21a6.946 6.946 0 0 0 4.186-1.403zm7.331-8.183c.39-.391.365-.999-.089-1.313a10.925 10.925 0 0 0-4.251-1.765c-.544-.1-.991.312-.991.865v7.56z" />
+        </svg>
 
-                <div class="block justify-content-center">
-                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span
-                            class="font-bold text-blue-600 mt-0 mb-0">WEB</span></h1>
-                    <H4 class="text-lg m-0">Sistema de Gerenciamento de Dispenser Machines</H4>
-                </div>
+        <div class="block justify-content-center">
+          <!-- Título do sistema -->
+          <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span class="font-bold text-blue-600 mt-0 mb-0">WEB</span></h1>
+          <H4 class="text-lg m-0">Sistema de Gerenciamento de Dispenser Machines</H4>
+        </div>
+      </div>
+    </SplitterPanel>
+
+    <!-- Painel direito da tela com o formulário de login ou recuperação de senha -->
+    <SplitterPanel class="flex colunadireita flex-column h-screen justify-content-between bg-white" :size="35" :minSize="30">
+      
+      <!-- Logo da empresa -->
+      <div class="logolab">
+        <img id="img" src="@/assets/images/LogoLabSF.png" alt="Logo da empresa">
+      </div>
+
+      <div>
+        <!-- Formulário de login e recuperação de senha -->
+        <div class="login">
+          <form id="form-login" method="post" autocomplete="off">
+            
+            <!-- Formulário de login (visível quando forgotPassword é false) -->
+            <div v-if="!forgotPassword">
+              <h2 class="text-blue-600 text-5xl">Vamos começar!</h2>
+              <h4>Para acessar o sistema, preencha os campos abaixo.</h4>
+              
+              <!-- Campo de email -->
+              <div class="form mb-3">
+                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
+                <input type="email" v-model="username" name="email" id="email" class="formstyle" placeholder="Digite o seu email" autocomplete="on">
+              </div>
+
+              <!-- Campo de senha -->
+              <div class="form mb-3">
+                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Senha:</label>
+                <input type="password" v-model="password" name="senha" id="senha" class="formstyle" placeholder="Digite a sua senha" autocomplete="on">
+              </div> 
+
+              <!-- Exibe mensagem de erro, caso haja -->
+              <div v-if="error" class="div-error">
+                <small class="p-error">{{ error }}</small>
+              </div>
+
+              <!-- Botão de login -->
+              <button id="btn_button" class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm" @click.prevent="login">LOGIN</button>
+
+              <!-- Link para recuperação de senha -->
+              <h6 class="mt-3 text-center">
+                <a href="#" @click.prevent="forgotPassword = true" class="text-blue-500 font-semibold hover:text-orange-500">Esqueceu sua senha?</a>
+              </h6>
             </div>
 
+            <!-- Formulário de recuperação de senha (visível quando forgotPassword é true) -->
+            <div v-else>
+              <h2 class="text-blue-600 text-5xl">Esqueceu sua senha?</h2>
+              <h4>Insira seu email para recuperar seu acesso:</h4>
+              
+              <!-- Campo de email para recuperação -->
+              <div class="form mb-3">
+                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
+                <input type="email" name="reset-email" id="reset-email" class="formstyle" placeholder="Digite o seu email" autocomplete="on" v-model="mail">
+              </div>
+              
+              <!-- Botão para enviar o link de recuperação -->
+              <button @click.prevent="resetPassword" class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm">Enviar link de recuperação</button>
 
-        </SplitterPanel>
-
-        <SplitterPanel class="flex colunadireita flex-column h-screen justify-content-between bg-white" :size="35"
-            :minSize="30">
-            <div class="logolab">
-                <img id="img" src="@\assets\images\LogoLabSF.png" alt="Logo da empresa">
+              <!-- Link para voltar ao login -->
+              <h6 class="mt-3 text-center">
+                <a href="#" @click.prevent="forgotPassword = false" class="text-blue-500 font-semibold hover:text-orange-500">Voltar para login</a>
+              </h6>
             </div>
-            <div>
+          </form>
+        </div>
+      </div>
 
-                <div class="login">
-                    <form id="form-login" method="post" autocomplete="off">
-                        <div v-if="!forgotPassword">
-                            <h2 class="text-blue-600 text-5xl">Vamos começar!</h2>
-                            <h4>Para acessar o sistema, preencha os campos abaixo.</h4>
-                            <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
-                                <input type="email" v-model="username" name="email" id="email" class="formstyle"
-                                    placeholder="Digite o seu email" autocomplete="on">
-                            </div>
-
-                            <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Senha:</label>
-                                <input type="password" v-model="password" name="senha" id="senha" class="formstyle"
-                                    placeholder="Digite a sua senha" autocomplete="on">
-                            </div> 
-                            <div v-if="error" class="div-error"><small  class="p-error">{{ error }}</small></div>
-                            <button id="btn_button"
-                                class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm"
-                                @click.prevent="login">LOGIN</button>
-                            <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = true"
-                                    class="text-blue-500 font-semibold hover:text-orange-500">Esqueceu sua senha?</a>
-                            </h6>
-                        </div>
-                        <div v-else>
-                            <h2 class="text-blue-600 text-5xl">Esqueceu sua senha?</h2>
-                            <h4>Insira seu email para recuperar seu acesso:</h4>
-                            <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">Email:</label>
-                                <input type="email" name="reset-email" id="reset-email" class="formstyle"
-                                    placeholder="Digite o seu email" autocomplete="on" v-model="mail">
-                            </div>
-                            <button @click.prevent="resetPassword"
-                                class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm">Enviar
-                                link de recuperação</button>
-                            <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = false"
-                                    class="text-blue-500 font-semibold hover:text-orange-500">Voltar para login</a>
-                            </h6>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div>
-                <p class="text-color-secondary text-sm">Visite nosso site <a href="https://www.lab220.com.br/"
-                        class="text-blue-500 font-semibold hover:text-orange-500">lab220.com.br</a></p>
-            </div>
-        </SplitterPanel>
-    </Splitter>
+      <!-- Rodapé com link para o site da empresa -->
+      <div>
+        <p class="text-color-secondary text-sm">Visite nosso site <a href="https://www.lab220.com.br/" class="text-blue-500 font-semibold hover:text-orange-500">lab220.com.br</a></p>
+      </div>
+    </SplitterPanel>
+  </Splitter>
 </template>
-É um serviço de SMTP? Certo. Para enviar o email com a senha, preciso das credenciais (email e senha) junto com o provedor para que o servidor possa fazer o envio. O email que o cliente receberá será enviado a partir do endereço suporte@lab220.com.br.
 
 <style scoped>
+/* Regras para layout responsivo */
 @media (max-width: 768px) {
-    .colunaesquerda {
-        display: none;
-    }
+  .colunaesquerda {
+    display: none;
+  }
 }
 
 @media (min-width: 769px) {
-    .colunaesquerda {
-        display: flex;
-    }
+  .colunaesquerda {
+    display: flex;
+  }
 }
 
 @media (max-width: 2560px) {
-    .colunadireita {
-        border-left: 1px solid #ced4da;
-        padding: 40px;
-    }
+  .colunadireita {
+    border-left: 1px solid #ced4da;
+    padding: 40px;
+  }
 }
 
 .colunaesquerda {
-    background: #e4e4e4;
+  background: #e4e4e4;
 }
 
 .formstyle {
-    color: #212229;
-    font-weight: 500;
-    border-width: 2px;
-    border-color: #dee2e6;
-    width: 100%;
-    height: 38px;
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-
+  color: #212229;
+  font-weight: 500;
+  border-width: 2px;
+  border-color: #dee2e6;
+  width: 100%;
+  height: 38px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
 }
 
 #img {
-    border-style: none;
-    width: 233px;
-    height: 58px;
+  border-style: none;
+  width: 233px;
+  height: 58px;
 }
 
-
 .p-splitter-gutter {
-    display: none !important; /* Esconde o separador */
+  display: none !important;  /* Esconde o separador */
 }
 
 .p-error {
-    color: red;
-    font-weight: bold;
+  color: red;
+  font-weight: bold;
 }
+
 .div-error {
- margin-bottom: 1.25rem;   
+  margin-bottom: 1.25rem;   
 }
+
 .login-button {
-    transition: all 0.5s ease;
-    border: none;
+  transition: all 0.5s ease;
+  border: none;
 }
 
 .login-button:hover {
-    background-color: #fb5c2b;
-    transform: scale(1.02);
+  background-color: #fb5c2b;
+  transform: scale(1.02);
 }
 </style>

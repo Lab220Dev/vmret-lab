@@ -1,204 +1,199 @@
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import { useAuthStore } from '@/store/authStore.js';
-import axios from '@/axios.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { FilterMatchMode } from 'primevue/api';
-import { useDataStore } from '@/store/dataStore.js';
+import { reactive, ref, onMounted, watch } from 'vue'; // Importa os hooks necessários do Vue para estado reativo e controle de ciclo de vida
+import { useToast } from 'primevue/usetoast'; // Hook para exibir mensagens de toast (notificações)
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento (spinner)
+import { FilterMatchMode } from 'primevue/api'; // Importa filtros do PrimeVue para usar na tabela
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
+import funcaoService from '@/services/funcaoService'; // Importa os serviços para manipulação das funções
+import { resetFuncaoForm } from '@/helpers/formHelper'; // Importa a função para resetar o formulário
+import {isMobEnabled,prepareListData } from '@/helpers/HelperUtils.js';
+const dataStore = useDataStore(); // Cria uma instância do store de dados
+const Mob = ref(false);
+// Variáveis reativas
+const active = ref(0); // Armazena o índice da aba ativa (para alternar entre 'Listar' e 'Adicionar/Editar')
+const toast = useToast(); // Instância do toast para exibir mensagens de sucesso e erro
+const ListaFuncao = ref([]); // Armazena a lista de funções
+const visible = ref(false); // Controla a visibilidade do formulário de edição/adicionar
+const todosOption = { label: 'Todos', value: null }; // Opção de filtro 'Todos' para o campo de Centro de Custo
+const centroCusto = ref([todosOption]); // Armazena a lista de centros de custo, com a opção 'Todos'
+const loading = ref(false); // Controla o estado de carregamento (para exibir ou não o spinner)
+const deleteFuncaoDialog = ref(false); // Controla a visibilidade do diálogo de confirmação para exclusão de função
 
-const dataStore = useDataStore();
-
-const active = ref(0);
-const store = useAuthStore();
-const toast = useToast();
-const ListaFuncao = ref([]);
-const visible = ref(false);
-const todosOption = { label: 'Todos', value: null };
-const centroCusto = ref([todosOption]);
-const loading = ref(false);
-const deleteFuncaoDialog = ref(false);
-
+// Filtros para a DataTable
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que verifica se o valor contém o texto pesquisado
 });
-
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'Codigo', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
+// Contador de resultados filtrados
 const filteredCount = ref(0);
 
-let funcao = reactive({
-    codigo: '',
-    nome: '',
-    id_centro_custo: ''
-});
+// Função para resetar os dados do formulário de função
+let funcao = reactive(resetFuncaoForm()); // Inicializa os dados do formulário com a função de reset
 
+/**
+ * Função chamada ao selecionar uma linha na DataTable
+ * Atualiza os dados do formulário com os dados da linha selecionada
+ * Exibe o formulário de edição
+ * @param {Object} event - Evento disparado ao selecionar uma linha
+ */
 const onRowSelect = (event) => {
-    funcao = event.data;
-    visible.value = true;
-    active.value = 1;
-    //loadFuncao();
+    funcao = event.data; // Atualiza os dados do formulário com os dados da linha selecionada
+    visible.value = true; // Exibe o formulário de edição
+    active.value = 1; // Muda a aba para a de edição
 };
-
-const submitForm = () => {
-    if (visible.value) {
-        atualizarFuncao();
-    } else {
-        adicionarFuncao();
-    }
+const onFilterChange = async () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    await loadFuncoes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
 };
-
-const loadFuncao = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    loading.value = true;
+const onSortChange = async (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    await loadFuncoes(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = async (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+    await loadFuncoes(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
+/**
+ * Função para enviar o formulário, seja para adicionar ou editar uma função
+ * Exibe uma notificação de sucesso ou erro dependendo do resultado
+ */
+const submitForm = async () => {
     try {
-        const response = await axios.post('/funcao/listar', data);
-        ListaFuncao.value = response.data;
-
-        filteredCount.value = ListaFuncao.value.length;
+        loading.value = true; // Ativa o estado de carregamento
+        if (visible.value) {
+            // Se o formulário está no modo de edição, atualiza a função
+            await funcaoService.atualizarFuncao(funcao);
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função atualizada', life: 3000 });
+        } else {
+            // Se o formulário está no modo de adição, adiciona a função
+            await funcaoService.adicionarFuncao(funcao);
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função adicionada', life: 3000 });
+        }
+        loadFuncoes(); // Recarrega a lista de funções após a operação
+        active.value = 0; // Volta para a aba de listagem
+        funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
     } catch (error) {
-        console.error('Erro ao listar Funções e Diretorias:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar função', life: 3000 }); // Mensagem de erro se a operação falhar
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Desativa o estado de carregamento
     }
 };
 
+/**
+ * Função para carregar a lista de funções
+ */
+const loadFuncoes = async (page=1) => {
+    loading.value = true; // Ativa o estado de carregamento
+    try {
+        const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = prepareListData(params);
+        // ListaFuncao.value = await funcaoService.listarFuncoes(); // Carrega as funções através do serviço
+        const result = await funcaoService.listarFuncoesPaginadas(data); // Carrega as funções através do serviço
+        ListaFuncao.value = result.funcoes
+        filteredCount.value = result.totalRecords; // Atualiza o contador de resultados filtrados
+    } catch (error) {
+        console.error(error.message); // Registra o erro no console
+    } finally {
+        loading.value = false; // Desativa o estado de carregamento
+    }
+};
+
+// Observa mudanças no filtro global e recalcula a quantidade de resultados filtrados
 watch(
-    () => filters.value.global.value,
+    () => filters.value.global.value, // Observa o valor do filtro global
     () => {
         filteredCount.value = ListaFuncao.value.filter((item) => {
-            const filterValue = filters.value.global.value?.toLowerCase() || '';
+            const filterValue = filters.value.global.value?.toLowerCase() || ''; // Converte o valor do filtro para minúsculas
             return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
-        }).length;
+            // Verifica se algum valor da função contém o texto do filtro
+        }).length; // Atualiza a quantidade de itens filtrados
     },
-    { immediate: true }
+    { immediate: true } // Executa imediatamente ao montar o componente
 );
 
-const adicionarFuncao = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        ...funcao
-    };
-    loading.value = true;
-    try {
-        const response = await axios.post('/funcao/adicionar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadFuncao();
-        active.value = 0;
-        resetForm();
-    } catch (error) {
-        console.error('Erro ao adicionar Funções e Diretorias:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
-
+/**
+ * Função para excluir uma função
+ * Exibe uma mensagem de sucesso ou erro após a operação
+ */
 const deleteFuncao = async () => {
-    let data = { id_funcao: funcao.id_funcao, id_usuario: store.userId };
-    loading.value = true;
+    loading.value = true; // Ativa o estado de carregamento
     try {
-        await axios.post('/funcao/deletar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Função Deletada', life: 3000 });
-        deleteFuncaoDialog.value = false;
-        loadFuncao();
-        active.value = 0;
-        resetForm();
-    } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a função', life: 3000 });
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-    active.value = 0;
-};
-
-const atualizarFuncao = async () => {
-    loading.value = true;
-    const data = {
-        ...funcao
-    };
-    try {
-        const response = await axios.post('/funcao/atualizar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        loadFuncao();
-        active.value = 0;
-        resetForm();
+        await funcaoService.deletarFuncao(funcao.id_funcao); // Chama o serviço para excluir a função
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função deletada', life: 3000 }); // Mensagem de sucesso
+        loadFuncoes(); // Recarrega a lista de funções
+        deleteFuncaoDialog.value = false; // Fecha o diálogo de confirmação de exclusão
+        funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
+        active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        console.error('Erro ao atualizar Funções e Diretorias:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar função', life: 3000 }); // Mensagem de erro se a exclusão falhar
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Desativa o estado de carregamento
     }
 };
 
-/*resetar informações e botões*/
+/**
+ * Função para resetar as informações e botões ao alternar de abas
+ * Recarrega a lista de funções e reseta o formulário
+ */
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
-        resetForm();
-        loadFuncao();
-        visible.value = false;
+        funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
+        loadFuncoes(); // Recarrega a lista de funções
+        visible.value = false; // Esconde o formulário de edição/adicionar
     }
 });
 
-const resetForm = () => {
-    (funcao.codigo = ''), (funcao.nome = ''), (funcao.id_centro_custo = '');
-};
-
-const handleRowSelection = async (event) => {
-    await onRowSelect(event);
-};
-
-const loadCentroCusto = async () => {
-    loading.value = true;
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `DM  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao listar centros de custo:', error);
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-};
+/**
+ * Função para carregar os dados do centro de custo
+ * Carrega os dados do centro de custo no store ou através de uma chamada ao serviço
+ */
 const loadData = async () => {
     try {
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega os centros de custo do store ou faz a chamada ao serviço
     } catch (error) {
-        console.error('Erro ao carregar dados iniciais:', error);
+        console.error('Erro ao carregar dados iniciais:', error); // Registra o erro no console
     }
 };
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
+// Chama a função de carregamento de dados ao montar o componente
 onMounted(() => {
-    loadFuncao();
-    loadData();
+    Mob.value= isMobEnabled();
+    loadFuncoes(); // Carrega a lista de funções
+    loadData(); // Carrega os dados dos centros de custo
 });
 </script>
 
 <template>
     <div class="card vh">
+        <!-- Componente TabView para alternar entre as abas de listagem e edição/adicionar -->
         <TabView v-model:activeIndex="active">
             <TabPanel header="Listar Funções">
                 <div class="col-12">
+                    <!-- Componente DataTable para exibição das funções -->
                     <DataTable
                         v-model:filters="filters"
                         :value="ListaFuncao"
@@ -208,15 +203,34 @@ onMounted(() => {
                         paginator
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
+                        lazy
+                        :totalRecords="filteredCount"
+                        :rows="lazyParams.value?.rows || 10"
                         dataKey="id"
                         :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo']"
-                        :sortField="'id_funcao'"
                         :metaKeySelection="false"
-                        :sortOrder="1"
-                        @rowSelect="handleRowSelection"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField ||'id_funcao'"
+                        @rowSelect="onRowSelect"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                     >
+                        <!-- A tabela exibe os dados provenientes de "ListaFuncao" -->
+                        <!-- Permite selecionar apenas uma linha por vez -->
+                        <!-- Aplica um estilo alternado nas linhas para melhorar a legibilidade -->
+                        <!-- Habilita a funcionalidade de paginação -->
+                        <!-- Permite a ordenação removível, ou seja, a ordenação pode ser removida clicando novamente na coluna de ordenação -->
+                        <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
+                        <!-- Exibe 10 itens por página por padrão -->
+                        <!-- Define a chave única para cada linha como o campo "id" -->
+                        <!-- Aplica o filtro global aos campos "id_funcao", "nome" e "id_centro_custo" -->
+                        <!-- Ordena inicialmente pela coluna "id_funcao" em ordem crescente -->
+                        <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
+                        <!-- Emite o evento 'rowSelect' e chama a função 'onRowSelect' ao selecionar uma linha -->
+
                         <template #header>
+                            <!-- Cabeçalho da tabela com filtro global e contador de registros -->
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <span>Total de registros: {{ filteredCount }}</span>
 
@@ -224,7 +238,7 @@ onMounted(() => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
                                 </IconField>
                             </div>
                         </template>
@@ -236,37 +250,36 @@ onMounted(() => {
                     </DataTable>
                 </div>
             </TabPanel>
+            <!-- Aba para adicionar ou editar função -->
             <TabPanel :header="visible ? 'Editar Função' : 'Adicionar Função'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="mt-5">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
+                                    <!-- Campo para código da função -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_funcao">Código da Função:</label>
                                         <InputText class="my-2" id="id_funcao" v-model="funcao.codigo" required />
                                     </div>
+                                    <!-- Campo para nome da função -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">Função (Nome):</label>
                                         <InputText class="my-2" id="nome" v-model="funcao.nome" required />
                                     </div>
+                                    <!-- Campo para selecionar o centro de custo -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="perfil">Centro de Custo:</label>
                                         <Dropdown class="my-2" v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                                     </div>
                                 </div>
-                                <!-- <div class="flex justify-content-between mt-5 flex-wrap">
-                                    <div class="flex align-items-center">
-                                        <Button label="Limpar Campos" icon="pi pi-eraser" @click="resetForm" />
-                                    </div> -->
-                                <div class="mr-1 mt-4 grid justify-content-end">
-                                    <!-- <Button label="Adicionar" type="submit" /> -->
 
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncao" />
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncao" />
+                                <div class="mr-1 mt-4 grid justify-content-end">
+                                    <!-- Botões de ação para salvar ou excluir função -->
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" :disabled="Mob"/>
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob"/>
                                 </div>
-                                <!-- </div> -->
                             </form>
                         </div>
 
@@ -288,6 +301,8 @@ onMounted(() => {
                 </div>
             </TabPanel>
         </TabView>
+
+        <!-- Componente de loading (spinner) -->
         <LoadingSpinner v-if="loading" />
     </div>
 </template>

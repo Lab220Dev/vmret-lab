@@ -1,313 +1,134 @@
 <script setup>
-import VueDatePicker from '@vuepic/vue-datepicker';
-import { FilterMatchMode } from 'primevue/api';
-import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted } from 'vue';
-import axios from '@/axios.js';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/store/authStore.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { parse } from 'date-fns'; //converte a data para o pdf
+import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueDatePicker para seleção de datas
+import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue
+import { useToast } from 'primevue/usetoast'; // Importa a função `useToast` do PrimeVue para mostrar mensagens de notificação
+import '@vuepic/vue-datepicker/dist/main.css'; // Importa os estilos do VueDatePicker
+import { ref, onMounted } from 'vue'; // Importa funções do Vue: `ref` para reatividade e `onMounted` para ciclo de vida do componente
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
+import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';
 
-// Gerar relatório
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
-const showDialog = ref(false);
-const dialogMessage = ref('');
-
-const loading = ref(false);
-
-const store = useAuthStore();
-const toast = useToast();
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
-const todosOption = { label: 'Todos', value: null };
-const historico = ref([]);
-const ListaFuncionarios = ref([todosOption]);
-const dropdown1 = ref(null);
-const dropdown2 = ref(null);
-const retiradas = ref([]);
-const plantas = ref([todosOption]);
+const showDialog = ref(false); // Controla a exibição de um diálogo
+const dialogMessage = ref(''); // Mensagem exibida no diálogo
+const loading = ref(false); // Obtém o store de autenticação
+const toast = useToast(); // Instancia o toast para notificações
+const todosOption = { label: 'Todos', value: null }; // Opção padrão para filtros
+const plantas = ref([todosOption]); // Lista de plantas disponíveis para seleção
+const ListaFuncionariosOriginal = ref([]); // Lista original de funcionários
+const ListaFuncionarios = ref([]); // Lista filtrada de funcionários
+const dataStore = useDataStore();
+// Filtros para a DataTable
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para busca na tabela
 });
-const show = ref(true);
-const selectedItem = ref({});
+const selectedItem = ref({}); // Item selecionado (funcionário)
 
 const relatorio = ref({
-    id_planta: '',
-    id_funcionario: '',
-    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    data_final: new Date()
+    id_planta: '', // ID da planta
+    id_funcionario: '', // ID do funcionário
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // Data de início (primeiro dia do mês atual)
+    data_final: new Date() // Data final (data atual)
 });
 
-const format = (date) => {
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-        return 'Data inválida';
-    }
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-};
 
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null;
-};
-
-const voltar = () => {
-    show.value = true;
-    selectedItem.value = {};
-};
-
-const fetchRelatorio = async () => {
-    const data = {
-        id_cliente: store.userIdCliente,
-        id_funcionario: selectedItem.value.id_funcionario || null,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final)
-    };
-
-    try {
-        const response = await axios.post('fichasretiradas/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
+/**
+ * Função para filtrar a lista de funcionários com base na planta selecionada.
+ */
+const filterFuncionarios = () => {
+    if (relatorio.value.id_planta) {
+        // Se houver uma planta selecionada
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value.filter((funcionario) => {
+            const matchesPlanta = relatorio.value.id_planta ? funcionario.id_planta === relatorio.value.id_planta : true; // Filtra os funcionários pela planta
+            return matchesPlanta; // Retorna os funcionários que atendem ao critério de planta
         });
-
-        if (response.data) {
-            retiradas.value = response.data;
-        } else {
-            console.error('Erro ao buscar relatório: Dados não encontrados');
-        }
-    } catch (error) {
-        console.error('Erro ao buscar relatório:', error);
+    } else {
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Se não houver filtro, exibe todos os funcionários
     }
 };
 
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
+/**
+ * Função para gerar o PDF do relatório.
+ * Caso o funcionário não tenha sido selecionado, exibe um alerta.
+ */
+const generatePDF = async  () =>{
     try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ id_planta }) => ({
-                label: `Planta  ${id_planta}`,
-                value: id_planta
-            }))
-        ];
+     loading.value = true;
+    await GerarPdfRetirada(selectedItem,relatorio);
     } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
+    }finally{
+        loading.value = false;
     }
-};
+}
 
-const fetchFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({
-            label: funcionario.nome, 
-            value: funcionario 
-        }));
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
-
-
-const generatePDF = async () => {
-    if (!selectedItem.value.nome) {
-        showDialog.value = true;
-        dialogMessage.value = 'Por favor, selecione um funcionário.';
-        return;
-    }
-
-    // checkDataBeforeGeneratingPDF();
-
-    await fetchRelatorio();
-
-    const id_cliente = store.userIdCliente;
-    const textoFicha = await TextoFicha(id_cliente);
-
-    const doc = new jsPDF('l');
-
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F');
-    doc.setTextColor(0, 0, 0);
-    doc.setDrawColor(0, 0, 0);
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 14, 200);
-
-    doc.setFontSize(14);
-    doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', doc.internal.pageSize.width / 2, 20, { align: 'center' });
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-
-    doc.setDrawColor(0, 0, 0); // Cor da borda
-    doc.setLineWidth(0.25); // Largura da linha
-    doc.rect(14, 30, 270, 6); //  o retângulo da linha 1
-
-    // Texto Linha 1
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('NOME:', 15, 35);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedItem.value.nome || ''}`, 30, 35);
-    doc.setFont('helvetica', 'bold');
-    doc.text('N° DE REGISTRO:', 107, 35);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedItem.value.matricula || ''}`, 145, 35);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DATA DE ADMISSÃO:', 203, 35);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${selectedItem.value.data_admissao ? new Date(selectedItem.value.data_admissao).toLocaleDateString('pt-BR') : ''}`, 248, 35);
-
-    // Linha 2
-    doc.rect(14, 36, 270, 6); // o retângulo da linha 2
-
-    // Texto Linha 2
-    doc.setFont('helvetica', 'bold');
-    doc.text('FUNÇÃO:', 15, 41);
-    doc.setFont('helvetica', 'normal');
-    doc.text(` ${selectedItem.value.id_funcao || ''}`, 36, 41);
-    doc.setFont('helvetica', 'bold');
-    doc.text('SETOR:', 107, 41);
-    doc.setFont('helvetica', 'normal');
-    doc.text(` ${selectedItem.value.id_setor || ''}`, 123, 41);
-
-    doc.setFontSize(11);
-    const text = `${textoFicha}`;
-
-    doc.text(text, 14, 55, { maxWidth: 270 });
-
-    const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
-
-    const tableRows = retiradas.value.map((item) => {
-        try {
-            const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date());
-            const formattedDate = format(parsedDate, 'dd/MM/yyyy - HH:mm');
-            return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
-        } catch (error) {
-            console.error('Error parsing date:', error);
-            return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
-        }
-    });
-
-    autoTable(doc, {
-        head: [tableColumn],
-        body: tableRows,
-        width: 270,
-        startY: 85,
-        theme: 'grid',
-        styles: {
-            fillColor: [255, 255, 255],
-            textColor: [0, 0, 0],
-            lineColor: [0, 0, 0],
-            lineWidth: 0.25,
-            fontSize: 10
-        },
-        headStyles: {
-            fillColor: [220, 220, 220],
-            textColor: [0, 0, 0],
-            fontStyle: 'bold',
-            lineWidth: 0.25,
-            halign: 'center'
-        },
-        alternateRowStyles: {
-            fillColor: [245, 245, 245]
-        },
-        columnStyles: {
-            0: { cellWidth: 30 },
-            1: { cellWidth: 30 },
-            2: { cellWidth: 20 },
-            3: { cellWidth: 20 },
-            4: { cellWidth: 70 },
-            5: { cellWidth: 50 }
-        }
-    });
-
-    doc.setFontSize(12);
-    doc.text('Data:', 30, doc.autoTable.previous.finalY + 30);
-    doc.text('_______/_______/_______', 40, doc.autoTable.previous.finalY + 30); // Linha para o campo de data
-
-    doc.setFontSize(12);
-    doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
-    doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
-    doc.save(`LAB220 - ${selectedItem.value.nome || 'Funcionario'}.pdf`);
-};
-
-const TextoFicha = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('fichasretiradas/textoFicha', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        return (
-            response.data[0]?.TextoFicha ||
-            '1- Se o equipamento for danificado ou inutilizado por emprego inadequado, mau uso, negligência ou extravio, a empresa me fornecerá novo equipamento e cobrará o valor de um equipamento da mesma marca ou equivalente ao da praça.\n2- Em caso de dano, inutilização ou extravio do equipamento deverei comunicar imediatamente ao setor competente.\n3- Terminando os serviços ou no caso de rescisão do contrato de trabalho, devolverei o equipamento completo e em perfeito estado de conservação, considerando-se o tempo do uso do mesmo, ao setor competente.\n4- Estando os equipamentos em minha posse, estarei sujeito a inspeções sem prévio aviso.'
-        );
-    } catch (error) {
-        console.error('Erro ao buscar texto da ficha:', error);
-        return;
-    }
-};
-
+/**
+ * Função para fechar todos os dropdowns abertos.
+ */
 const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown1 se estiver visível
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown2 se estiver visível
 };
-
+const selecionaFuncionario = () => {
+    selectedItem.value = ListaFuncionariosOriginal.value.find((funcionario) => funcionario.value === relatorio.value.id_funcionario);
+};
+/**
+ * Função para tratar a abertura do Datepicker.
+ */
 const handleDatepickerOpen = () => {
-    closeAllDropdowns();
+    closeAllDropdowns(); // Fecha os dropdowns ao abrir o Datepicker
 };
-
+const loadData = async () => {
+    loading.value = true;
+    try {
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas());
+        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value; 
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
+    } finally {
+        loading.value = false;
+    }
+};
+// Função executada quando o componente é montado
 onMounted(() => {
-    fetchIdPlanta();
-    fetchFuncionarios();
+    loadData();
 });
 </script>
 
 <template>
+    <!-- Card principal que contém o formulário de filtros e informações -->
     <div class="card">
-        <div class="form">
-            <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Fichas de Retiradas</h5>
-                <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
+        
+            <!-- Grid do formulário, com margens e espaçamento definidos -->
+            <div class="">
+                <!-- Título da página "Fichas de Retiradas" -->
+                <h5 class="my-6 ml-2 text-2xl">Fichas de Retiradas</h5>
+                <div class="p-0 m-0 p-fluid formgrid grid col-12">
+                    <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">Planta:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <!-- Componente Dropdown para selecionar a planta, com lista de opções fornecida por 'plantas' -->
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" @change="filterFuncionarios" />
                     </div>
+                    <!-- Campo de seleção para Funcionário -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
-                        <Dropdown class="drop" v-model="selectedItem" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" />
+                        <!-- Componente Dropdown para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" @change="selecionaFuncionario"/>
                     </div>
+
+                    <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
+                        <!-- Componente VueDatePicker para selecionar a data inicial, com o formato de data "dd/MM/yyyy" -->
                         <VueDatePicker
                             class="drop"
                             v-model="relatorio.data_inicio"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
@@ -316,6 +137,7 @@ onMounted(() => {
                             placeholder="Selecione uma data"
                         />
                     </div>
+                    <!-- Campo de seleção para Data Final -->
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <label for="perfil">Data Final:</label>
                         <VueDatePicker
@@ -323,7 +145,7 @@ onMounted(() => {
                             v-model="relatorio.data_final"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
@@ -332,24 +154,22 @@ onMounted(() => {
                             @open="handleDatepickerOpen"
                         />
                     </div>
+                    <!-- Botão para gerar a ficha -->
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <Button class="filtrar" type="button" label="Gerar Ficha" icon="pi pi-download" severity="info" @click="generatePDF" />
                     </div>
                 </div>
-
-                <Card v-if="!show">
-                    <template #title>{{ selectedItem.dm }}</template>
-                    <template #content>
-                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
-                    </template>
-                </Card>
             </div>
-        </div>
+    
     </div>
+    <!-- Exibe um spinner de carregamento se "loading" for verdadeiro -->
     <LoadingSpinner v-if="loading" />
 
+    <!-- Diálogo que exibe mensagens de alerta ou erro -->
     <Dialog header="" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="false">
         <p>{{ dialogMessage }}</p>
+
+        <!-- Rodapé do diálogo com um botão OK -->
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
         </template>

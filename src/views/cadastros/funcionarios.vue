@@ -1,142 +1,336 @@
 <script setup>
+// Importando funções e objetos do Vue.js para usar no componente
 import { reactive, ref, onMounted, watch } from 'vue';
+// Importando a função 'useToast' para exibir notificações de sucesso ou erro
 import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js';
+// Importando o estilo do componente de data picker
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+// Importando o objeto 'FilterMatchMode' do PrimeVue para configurar os filtros de pesquisa
 import { FilterMatchMode } from 'primevue/api';
+// Importando a imagem de placeholder que será usada caso não haja imagem para um produto
 import imagePlaceholder from '@/assets/images/placeholder4.1.png';
 import clockurl from '@/assets/images/OIP.png';
+// Importando o store de autenticação para acessar o estado de autenticação do usuário
 import { useAuthStore } from '@/store/authStore.js';
+// Importando o componente de upload de imagem para ser usado na interface
 import ImageUpload from '@/components/ImageUpload.vue';
-import { isValid as validateCPF } from 'cpf-validator';
+// Importando o store de dados para acessar os dados compartilhados, como plantas
 import { useDataStore } from '@/store/dataStore.js';
+// Importando o componente de spinner de carregamento
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
+// Importando o serviço de produto para interagir com a API relacionada aos funcionarios
+import funcionarioService from '@/Services/funcionarioService.js';
+import * as formatservices from '@/helpers/HelperUtils.js';
+// Importando funções de ajuda relacionadas ao formulário do funcionarios
+import {resetFuncionarioForm,resetItens as resetProduto} from '@/helpers/formHelper.js';
+import { validadorcpf, validadoremail,validateForm } from '@/helpers/HelperFuncionario.js';
 
-const store = useAuthStore();
-const dataStore = useDataStore();
+const store = useAuthStore();// Acessa o store de autenticação para obter dados sobre o usuário logado
 
-const toast = useToast();
+const dataStore = useDataStore();// Acessa o store de dados para obter informações sobre plantas e outros dados
+
+const toast = useToast(); // Função para exibir notificações via toast
 const selectedFile = ref(null);
 const handleFileSelected = (file) => {
     selectedFile.value = file;
 };
-const errors = ref({});
-const status = ref([
-    { label: 'Ativo', value: 'Ativo' },
-    { label: 'Inativo', value: 'Inativo' }
-]);
-const imageUrl = ref(null);
-let centroCusto = ref([]);
-let setor = ref([]);
-let hieraquiaoptions = ref([]);
-let formatedHierarquiaOptions = ref([]);
-let plantas = ref([]);
-let funcionario = reactive({
-    id_funcionario: '',
-    matricula: '',
-    senha: '',
-    nome: '',
-    biometria: '',
-    biometria2: '',
-    data_admissao: new Date().toDateString(),
-    CPF: '',
-    RG: '',
-    CTPS: '',
-    email: '',
-    status: '',
-    hora_inicial: '',
-    hora_final: '',
-    id_centro_custo: '',
-    id_funcao: '',
-    id_planta: '',
-    id_setor: '',
-    segunda: false,
-    terca: false,
-    quarta: false,
-    quinta: false,
-    sexta: false,
-    sabado: false,
-    domingo: false,
-    nomearquivo: '',
-    itens: []
-});
-const ListaProdutos = ref([]);
-const ListaProdutoFuncionario = ref([]);
-const ListaItemsSetor = ref([]);
-const editVisible = ref(false);
 
+// Cria uma referência reativa para armazenar erros, inicialmente vazia.
+const errors = ref({}); 
+
+// Cria uma referência reativa para armazenar o status do funcionário, com duas opções: 'Ativo' e 'Inativo'.
+const status = ref([
+    { label: 'Ativo', value: 'Ativo' },   // Opção de status 'Ativo'.
+    { label: 'Inativo', value: 'Inativo' } // Opção de status 'Inativo'.
+]);
+const lazyParams = ref({
+    first: 0, // Índice inicial
+    rows: 10, // Número de registros por página
+    sortField: 'nome', // Campo padrão para ordenação
+    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
+    filters: {}, // Filtros aplicados
+});
+//IMAGEM
+const imageUploader = ref(null);
+
+/**
+ * Cria uma referência reativa para armazenar o URL da imagem, inicializada com uma imagem placeholder.
+ * @type {string} O valor inicial é o caminho da imagem placeholder.
+ */
+const imageUrl = ref(imagePlaceholder);
+
+// Cria uma referência reativa para armazenar os centros de custo, inicialmente um array vazio.
+let centroCusto = ref([]);
+
+// Cria uma referência reativa para armazenar os setores, inicialmente um array vazio.
+let setor = ref([]);
+
+// Cria uma referência reativa para armazenar as opções de hierarquia, inicialmente um array vazio.
+let hieraquiaoptions = ref([]);
+
+// Cria uma referência reativa para armazenar as opções de hierarquia formatadas, inicialmente um array vazio.
+let formatedHierarquiaOptions = ref([]);
+
+// Cria uma referência reativa para armazenar as plantas, inicialmente um array vazio.
+let plantas = ref([]);
+
+/**
+ * Cria um objeto reativo para armazenar os dados de um funcionário, com as propriedades iniciais.
+ * 
+ * @type {Object}
+ */
+let funcionario = reactive({
+    id_funcionario: '',     // ID do funcionário.
+    matricula: '',          // Matrícula do funcionário.
+    senha: '',              // Senha do funcionário.
+    nome: '',               // Nome do funcionário.
+    biometria: '',          // Primeira digital do funcionário.
+    biometria2: '',         // Segunda digital do funcionário.
+    data_admissao: null,    // Data de admissão do funcionário.
+    CPF: '',                // CPF do funcionário.
+    RG: '',                 // RG do funcionário.
+    CTPS: '',               // CTPS (Carteira de Trabalho e Previdência Social) do funcionário.
+    email: '',              // E-mail do funcionário.
+    status: '',             // Status do funcionário, como 'Ativo' ou 'Inativo'.
+    hora_inicial: '',       // Hora de início do expediente.
+    hora_final: '',         // Hora de término do expediente.
+    id_centro_custo: '',    // ID do centro de custo.
+    id_funcao: '',          // ID da função.
+    id_planta: '',          // ID da planta onde o funcionário está alocado.
+    id_setor: '',           // ID do setor onde o funcionário está alocado.
+    segunda: false,         // Se o funcionário trabalha na segunda-feira.
+    terca: false,           // Se o funcionário trabalha na terça-feira.
+    quarta: false,          // Se o funcionário trabalha na quarta-feira.
+    quinta: false,          // Se o funcionário trabalha na quinta-feira.
+    sexta: false,           // Se o funcionário trabalha na sexta-feira.
+    sabado: false,          // Se o funcionário trabalha no sábado.
+    domingo: false,         // Se o funcionário trabalha no domingo.
+    nomearquivo: '',        // Nome do arquivo do funcionário (por exemplo, foto ou documento).
+    itens: []               // Lista de itens relacionados ao funcionário.
+});
+
+// Cria uma referência reativa para armazenar a lista de produtos, inicialmente um array vazio.
+const ListaProdutos = ref([]);
+
+/**
+ * Cria uma referência reativa para armazenar a lista de produtos disponíveis,
+ * utilizando `reactive` para garantir que as alterações sejam rastreadas e reativas.
+ * Inicialmente, é um array vazio.
+ * 
+ * @type {Array} Inicializa como um array vazio.
+ */
+const ListaProdutosDisponiveis = reactive([]);
+
+// Cria uma referência reativa para armazenar a lista de produtos de um funcionário específico, inicialmente um array vazio.
+const ListaProdutoFuncionario = ref([]);
+
+// Cria uma referência reativa para armazenar os itens do setor, inicialmente um array vazio.
+const ListaItemsSetor = ref([]);
+
+// Cria uma referência reativa para controlar a visibilidade da edição, inicialmente como `false` (oculto).
+const editVisible = ref(false);
+const Mob = ref(false)
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Configuração para o filtro global de busca.
 });
+
+// Cria uma referência reativa para armazenar o produto selecionado, com propriedades padrão vazias.
 const selectedProduct = ref({
-    id_produto: null,
-    nome: '',
-    sku: '',
-    quantidade: 1
+    id_produto: '',        // ID do produto selecionado.
+    nome: '',              // Nome do produto selecionado.
+    sku: '',               // SKU (Stock Keeping Unit) do produto selecionado.
+    quantidade: 1          // Quantidade do produto selecionado, inicialmente configurada para 1.
 });
+
+// Cria uma referência reativa para armazenar a lista de funcionários, inicialmente um array vazio.
 const ListaFuncionarios = ref([]);
+
+// Cria uma referência reativa para controlar a visibilidade do diálogo de itens, inicialmente configurado para `false` (oculto).
 const itemDialog = ref(false);
+
+// Cria uma referência reativa para controlar a visibilidade do diálogo de exclusão de produto, inicialmente configurado para `false` (oculto).
 const deleteProductDialog = ref(false);
+
+// Cria uma referência reativa para controlar a visibilidade do diálogo de exclusão de funcionário, inicialmente configurado para `false` (oculto).
 const deleteFuncionarioDialog = ref(false);
+
+// Cria uma referência reativa para controlar a visibilidade de um outro elemento, inicialmente configurado para `false` (oculto).
 const visible = ref(false);
+
+// Cria uma referência reativa para armazenar o valor de "ativo", inicialmente configurado para 0.
 const active = ref(0);
+
+// Cria uma referência reativa para armazenar o valor de "itens ativos", inicialmente configurado para 0.
+const activeItens = ref(0);
+const totalRecords = ref(0); 
+
 const loading = ref(false);
 
+// Cria uma referência reativa para armazenar o dropdown 1, inicialmente configurado para `null` (não atribuído).
 const dropdown1 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 2, inicialmente configurado para `null` (não atribuído).
 const dropdown2 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 3, inicialmente configurado para `null` (não atribuído).
 const dropdown3 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 4, inicialmente configurado para `null` (não atribuído).
 const dropdown4 = ref(null);
+
+// Cria uma referência reativa para armazenar o dropdown 5, inicialmente configurado para `null` (não atribuído).
 const dropdown5 = ref(null);
 
-const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
+/**
+ * Formata a data usando o serviço de formatação para transformá-la em uma string.
+ * 
+ * @param {Date} date - A data a ser formatada.
+ * @returns {string} Retorna a data formatada como uma string.
+ */
+ const format = (date) => {
+   // Chama o serviço de formatação para formatar a data em uma string.
+   return formatservices.formatDateToString(date);
 };
+
+/**
+ * Cria uma referência reativa para armazenar o tempo de início, inicialmente configurado para `null`.
+ * @type {null} Inicialmente, o valor é `null`.
+ */
 const TempoInicio = ref(null);
+
+/**
+ * Cria uma referência reativa para armazenar o tempo de fim, inicialmente configurado para `null`.
+ * @type {null} Inicialmente, o valor é `null`.
+ */
 const TempoFim = ref(null);
 
-const totalRecords = ref(0);
+/**
+ * Cria uma referência reativa para armazenar a quantidade de itens filtrados, inicialmente configurada para 0.
+ * @type {number} Inicializa como 0.
+ */
 const filteredCount = ref(0);
 
+/**
+ * Função que é chamada quando uma linha é selecionada em uma tabela ou lista.
+ * 
+ * @param {Object} event - O evento gerado pela seleção da linha.
+ * @property {Object} event.data - Os dados do funcionário selecionado.
+ * 
+ * @returns {Promise<void>} Retorna uma Promise, pois executa ações assíncronas, como chamadas de API.
+ */
 const onRowSelect = async (event) => {
+    // Atribui o funcionário selecionado ao objeto `funcionario`.
     funcionario = event.data;
+
+    // Mapeia os itens do funcionário para incluir uma propriedade 'action' com valor 'new'.
     ListaProdutoFuncionario.value = funcionario.itens.map((item) => ({
         ...item,
-        action: 'new'
+        action: 'new' // A ação é atribuída como 'new' para todos os itens.
     }));
-    setTempo(TempoInicio, funcionario.hora_inicial);
-    setTempo(TempoFim, funcionario.hora_final);
+
+    // Chama o serviço para formatar o tempo de início do funcionário e atribui a referência reativa `TempoInicio`.
+    formatservices.setTempo(TempoInicio, funcionario.hora_inicial);
+
+    // Chama o serviço para formatar o tempo de fim do funcionário e atribui a referência reativa `TempoFim`.
+    formatservices.setTempo(TempoFim, funcionario.hora_final);
+
+    // Faz uma requisição assíncrona para buscar os itens do setor do funcionário com base no `id_setor`.
     await fetchItensSetor(funcionario.id_setor);
+
+    // Limpa os dados da imagem (provavelmente associada ao funcionário).
+    imageUploader.value?.clearImageData();
+
+    // Faz uma requisição assíncrona para buscar a imagem do funcionário com base no nome do arquivo de imagem.
     await getImagem(funcionario.foto);
-    //await listarProduto();
+
+    // Define o valor de `active` como 1, provavelmente indicando que o funcionário está ativo no sistema.
     active.value = 1;
+
+    // Define a visibilidade do formulário de edição para `true`, permitindo a edição dos dados do funcionário.
     editVisible.value = true;
 };
 
-const loadFuncionarios = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        loading.value = true;
-        const response = await axios.post('/funcionarios/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+/**
+ * Função chamada quando o setor selecionado é alterado.
+ * 
+ * @param {Object} event - O evento gerado pela mudança no setor.
+ * @property {any} event.value - O valor do setor selecionado.
+ * 
+ * @returns {Promise<void>} Retorna uma Promise, pois faz uma requisição assíncrona.
+ */
+const setorChange = async (event) => {
+    // Armazena o valor do setor selecionado.
+    const idSetorSelecionado = event.value;
 
-        ListaFuncionarios.value = response.data;
-        filteredCount.value = ListaFuncionarios.value.length;
+    // Verifica se um setor foi selecionado antes de buscar os itens do setor.
+    if (idSetorSelecionado) {
+        // Faz uma requisição assíncrona para buscar os itens do setor selecionado.
+        await fetchItensSetor(idSetorSelecionado);
+    }
+};
+
+/**
+ * Valida o CPF do funcionário e armazena o erro, se houver.
+ * A função `validadorcpf` verifica se o CPF é válido.
+ */
+const cpfvalidate = () => {
+    // Armazena o resultado da validação do CPF na propriedade `CPF` de `errors`.
+    errors.value.CPF = validadorcpf(funcionario.CPF);
+};
+
+/**
+ * Valida o e-mail do funcionário e armazena o erro, se houver.
+ * A função `validadoremail` verifica se o e-mail é válido.
+ */
+const validateEmail = () => {
+    // Armazena o resultado da validação do e-mail na propriedade `email` de `errors`.
+    errors.value.email = validadoremail(funcionario.email);
+};
+const onFilterChange = async () => {
+    lazyParams.value.filters = filters.value; // Atualiza os filtros
+    await loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onSortChange = async (event) => {
+    lazyParams.value.sortField = event.sortField; // Campo a ser ordenado
+    lazyParams.value.sortOrder = event.sortOrder; // Ordem (ascendente/descendente)
+    await loadFuncionarios(Math.ceil(lazyParams.value.first / lazyParams.value.rows) + 1); // Busca os dados
+};
+const onPageChange = async (event) => {
+    lazyParams.value.first = event.first; // Atualiza o índice inicial
+    lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
+   await  loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+};
+const loadFuncionarios = async (page = 1) => {
+    const params = {
+            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+            rows: lazyParams.value.rows, // Número de registros por página
+            sortField: lazyParams.value.sortField, // Campo para ordenação
+            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+            filters: lazyParams.value.filters, // Filtros aplicados
+        };
+        const data = formatservices.prepareListData(params);
+    try {
+        // Define a referência reativa `loading.value` para `true` para indicar que os dados estão sendo carregados.
+        loading.value = true;
+        const response = await funcionarioService.listarFuncionariosPaginado(data);
+        ListaFuncionarios.value = response.data.funcionarios;
+        totalRecords.value = response.data.totalRecords
+
+        // Chama a função `resetTable` para resetar a tabela (ou reiniciar a visualização da lista).
+        resetTable();
+
+        // Chama a função `resetItens` para reiniciar o estado dos itens ou componentes relacionados.
+        resetItens();
     } catch (error) {
-        console.error('Erro ao carregar funcionários:', error);
+        // Em caso de erro, exibe uma notificação de erro com a mensagem 'Erro ao carregar os funcionários'.
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao carregar os funcionários', life: 3000 });
     } finally {
+        // Define a referência reativa `loading.value` para `false` após o carregamento, indicando que o processo foi concluído.
         loading.value = false;
     }
 };
+
 
 watch(
     () => filters.value.global.value,
@@ -150,46 +344,36 @@ watch(
 );
 
 const adicionarFuncionario = async () => {
-    const formData = new FormData();
-    if (selectedFile.value) {
-        const nomeArquivo = `funcionario_${funcionario.nome}_${Date.now()}`;
-        formData.append('foto', nomeArquivo);
-        formData.append('file', selectedFile.value);
-    }
-    Object.entries(funcionario).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-    formData.append('id_cliente', store.userIdCliente);
-    formData.append('id_usuario', store.userId);
     try {
         loading.value = true;
-        const response = await axios.post('/funcionarios/adicionar', formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const { isValid, errors } = validateForm(funcionario);
+        if(!isValid){
+            throw new Error(`Erro ao validar o formulário. Corrija os campos destacados: ${JSON.stringify(errors)}`);
+        }
+        await funcionarioService.adicionarFuncionario(funcionario, selectedFile.value);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
         dataStore.invalidateFuncionariosCache();
-        loadFuncionarios();
+        await loadFuncionarios();
         active.value = 0;
         resetForm();
+        resetFuncionarioForm(funcionario);
     } catch (error) {
-        console.error('Erro ao adicionar o funcionário:', error);
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao criar o usuário', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Error', detail:  error.message || 'Erro ao criar o usuário', life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
 };
+
 const loadData = async () => {
     try {
         plantas = dataStore.plantas || (await dataStore.fetchPlantas());
         setor = dataStore.setores || (await dataStore.fetchSetores());
         centroCusto = dataStore.cdcs || (await dataStore.fetchCdc());
-        ListaProdutos.value = dataStore.produtos || (await dataStore.fetchProdutos());
-    } catch (error) {
-        console.error('Erro ao carregar dados iniciais:', error);
-    }
+        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
+
+        //excluindo a opção 'Todos' e obtendo os outros dados
+        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
+    } catch (error) {}
 };
 
 const fetchItensSetor = async (id_setor) => {
@@ -197,37 +381,39 @@ const fetchItensSetor = async (id_setor) => {
         id_cliente: store.userIdCliente,
         id_setor: id_setor
     };
+
     try {
-        const response = await axios.post('Setor/itensdisponiveissetor', data);
+        const response = await funcionarioService.fetchItensSetor(data);
+        // Armazena os itens do setor em ListaItemsSetor
         ListaItemsSetor.value = response.data;
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
+
+        listarProdutosDisponiveis();
+    } catch (error) {}
 };
+
+const listarProdutosDisponiveis = () => {
+    const addedIds = new Set(ListaItemsSetor.value.map((item) => item.id_produto));
+
+    // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter((produto) => !addedIds.has(produto.value)));
+};
+
 const fetchHieraquiaOptions = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
     try {
-        const response = await axios.post('funcionarios/listarhierarquia', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await funcionarioService.fetchHieraquiaOptions();  
         hieraquiaoptions = response.data;
         formatedHierarquiaOptions = hieraquiaoptions.map((hieraquiaoptions) => ({
             label: ` ${hieraquiaoptions.id_funcao}`,
             value: hieraquiaoptions.id_funcao
         }));
-    } catch (error) {
-        console.error('Erro ao buscar opções de hierarquia:', error);
-    }
+    } catch (error) {}
 };
+
 watch(
     TempoInicio,
     (newTime) => {
         if (newTime) {
-            funcionario.hora_inicial = formatarTempo(newTime);
+            funcionario.hora_inicial = formatservices.formatarTempo(newTime);
         } else {
             funcionario.hora_inicial = '';
         }
@@ -239,7 +425,7 @@ watch(
     TempoFim,
     (newTime) => {
         if (newTime) {
-            funcionario.hora_final = formatarTempo(newTime);
+            funcionario.hora_final = formatservices.formatarTempo(newTime);
         } else {
             funcionario.hora_final = '';
         }
@@ -250,58 +436,17 @@ watch(
 /*resetar informações e botões*/
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
+        funcionario = reactive(resetFuncionarioForm());
         resetForm();
+        resetItens();
         loadFuncionarios();
         editVisible.value = false;
     }
 });
 
-function formatarTempo(time, baseDate = new Date()) {
-    const hours = time.hours.toString().padStart(2, '0');
-    const minutes = time.minutes.toString().padStart(2, '0');
-    const seconds = time.seconds.toString().padStart(2, '0');
-
-    baseDate.setHours(parseInt(hours, 10));
-    baseDate.setMinutes(parseInt(minutes, 10));
-    baseDate.setSeconds(parseInt(seconds, 10));
-
-    return baseDate.toISOString();
-}
-
-const setTempo = (tempoRef, isoString) => {
-    const date = new Date(isoString);
-    const time = {
-        hours: date.getUTCHours(),
-        minutes: date.getUTCMinutes(),
-        seconds: date.getUTCSeconds()
-    };
-    tempoRef.value = time;
-};
-
-const validateForm = () => {
-    errors.value = {};
-    cpfvalidate();
-    validateEmail();
-    console.log(errors.value);
-    return Object.keys(errors.value).length === 0;
-};
-
-const validateEmail = () => {
-    const email = funcionario.email;
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailPattern.test(email)) {
-        errors.value.email = 'E-mail inválido';
-    } else {
-        errors.value.email = '';
-    }
-};
-const cpfvalidate = () => {
-    const cpf = funcionario.CPF;
-    if (!cpf || !validateCPF(cpf)) {
-        errors.value.CPF = 'CPF inválido';
-    } else {
-        errors.value.CPF = '';
-    }
+const resetTable = () => {
+    activeItens.value = 0;
+    resetItens();
 };
 
 const getImagem = async (filename) => {
@@ -309,34 +454,29 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
     try {
-        const response = await axios.get(`/image/funcionario/${store.userIdCliente}/${filename}`, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        const response = await funcionarioService.obterImagem(store.userIdCliente, filename);
+        if (response.status === 200) {
         const { image, mimeType } = response.data;
         imageUrl.value = `data:${mimeType};base64,${image}`;
+        }
     } catch (error) {
-        console.error('Erro ao carregar imagem:', error);
         return imagePlaceholder;
     }
 };
 
-onMounted(() => {
-    loadData();
-    loadFuncionarios();
-    fetchHieraquiaOptions();
+onMounted(async () => {
+    Mob.value = formatservices.isMobEnabled();
+    await loadData();
+    await loadFuncionarios();
+    await fetchHieraquiaOptions();
+    await fetchItensSetor();
 });
 
 const deleteFuncionario = async () => {
     let data = { id_funcionario: funcionario.id_funcionario, id_usuario: store.userId };
     try {
         loading.value = true;
-        await axios.post('/funcionarios/deleteFuncionario', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
+        await funcionarioService.deleteFuncionario(data);
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
         dataStore.invalidateFuncionariosCache();
         deleteFuncionarioDialog.value = false;
@@ -351,64 +491,68 @@ const deleteFuncionario = async () => {
 };
 
 const resetForm = () => {
-    funcionario.id_funcionario = '';
-    funcionario.matricula = '';
-    funcionario.nome = '';
-    funcionario.senha = '';
-    funcionario.biometria = '';
-    funcionario.biometria2 = '';
-    funcionario.data_admissao = new Date().toDateString();
-    funcionario.CPF = '';
-    funcionario.RG = '';
-    funcionario.CTPS = '';
-    funcionario.email = '';
-    funcionario.status = '';
-    funcionario.hora_inicial = '';
-    funcionario.hora_final = '';
-    funcionario.id_centro_custo = '';
-    funcionario.id_funcao = '';
-    funcionario.id_planta = '';
-    funcionario.id_setor = '';
-    funcionario.segunda = false;
-    funcionario.terca = false;
-    funcionario.quarta = false;
-    funcionario.quinta = false;
-    funcionario.sexta = false;
-    funcionario.sabado = false;
-    funcionario.domingo = false;
+    funcionario.foto = null;
+    imageUrl.value = imagePlaceholder;
+    resetFuncionarioForm(funcionario);
     funcionario.itemsSelecionadosFuncionario = [];
+
     selectedFile.value = null;
     TempoInicio.value = null;
     TempoFim.value = null;
+    imageUploader.value?.clearImageData();
+    ListaItemsSetor.value = [];
+    ListaProdutoFuncionario.value = [];
 };
 
-const SalvarProduto = () => {
-    if (!selectedProduct.value.id_produto || !selectedProduct.value.quantidade) {
-        toast.add({ severity: 'warn', summary: 'Aviso', detail: 'Selecione um produto e quantidade', life: 3000 });
-        return;
+const resetItens = () => {
+    resetProduto(selectedProduct)
+};
+
+const SalvarProduto = async () => {
+    if (!validarCampos()) {
+        return; //se falhar não continua
     }
-
-    const index = funcionario.itens.findIndex((i) => i.id_produto === selectedProduct.value.id_produto);
-
-    if (index !== -1) {
-        funcionario.itens[index] = {
-            ...selectedProduct.value,
-            action: 'update'
-        };
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item atualizado com sucesso!', life: 3000 });
-    } else {
-        funcionario.itens.push({
-            ...selectedProduct.value,
-            action: 'new'
-        });
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Novo item adicionado com sucesso!', life: 3000 });
-    }
-    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
-
-    visible.value = false;
-    if (itemDialog.value) {
+    loading.value = true;
+    try {
+        const response = await funcionarioService.SalvarProduto(funcionario, selectedProduct);
+        ListaProdutoFuncionario.value = [];
+        ListaProdutoFuncionario.value = response.data.dados[0];
+        visible.value = false;
+        resetItens();
+        toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
         itemDialog.value = false;
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
+    } finally {
+        loading.value = false;
+        
     }
+};
+
+const listarProdutosFiltrados = () => {
+    const idsSetor = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); //setor
+
+    const idsAdicionados = new Set(ListaProdutoFuncionario.value.map((item) => item.id_produto)); //funcionario(datatable)
+
+    const itensFiltrados = ListaProdutos.value.filter(
+        (produto) => !idsSetor.has(produto.value) && !idsAdicionados.has(produto.value) //o restante
+    );
+
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...itensFiltrados); //atualizando a lista
+
+    if (itensFiltrados.length === 0) {
+        toast.add({
+            severity: 'warn',
+            summary: 'Nenhum item disponível',
+            detail: 'Todos os itens já foram adicionados ao setor ou ao funcionário.',
+            life: 3000
+        });
+    }
+};
+
+const abrirDialogAdicionarItem = () => {
+    listarProdutosFiltrados();
+    visible.value = true; // Mostre o diálogo
 };
 
 const editItem = (selectedItem) => {
@@ -417,52 +561,20 @@ const editItem = (selectedItem) => {
 };
 
 const atualizarFuncionario = async () => {
-    const formData = new FormData();
-
-    if (selectedFile.value) {
-        const fileExtension = selectedFile.value.name.split('.').pop(); // Obtém a extensão do arquivo
-        const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
-
-        formData.append('foto', nomeArquivo);
-        formData.append('file', selectedFile.value);
-        formData.append('remove_old_photo', true);
-    } else {
-        formData.append('foto', funcionario.foto);
-    }
-
-    const { foto, itens, ...restOfFuncionario } = funcionario;
-
-    // Remove itens duplicados antes de enviar
-    const itensUnicos = Array.from(new Set(itens.map((item) => item.id_produto))) // Remove duplicados com base no id_produto
-        .map((id_produto) => itens.find((item) => item.id_produto === id_produto)); // Mapeia os itens únicos de volta
-
-    // Adiciona os itens únicos ao FormData
-    formData.append('itens', JSON.stringify(itensUnicos));
-
-    // Adiciona as demais propriedades do funcionário, incluindo a foto se ela estiver no `restOfFuncionario`
-    Object.entries(restOfFuncionario).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-
-    formData.append('id_usuario', store.userId);
-
     try {
         loading.value = true;
-        const response = await axios.put(`/funcionarios/atualizar`, formData, {
-            headers: {
-                Authorization: `Bearer ${store.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-
+        const { isValid, errors } = validateForm(funcionario);
+        if(!isValid){
+            throw new Error(`Erro ao validar o formulário. Corrija os campos destacados: ${JSON.stringify(errors)}`);
+        }
+        await funcionarioService.atualizarFuncionario(funcionario, selectedFile);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Funcionário atualizado', life: 3000 });
         dataStore.invalidateFuncionariosCache();
         loadFuncionarios();
         active.value = 0;
         resetForm();
     } catch (error) {
-        console.error('Erro ao atualizar o funcionário:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
+        toast.add({ severity: 'error', summary: error.message||'Erro', detail: 'Erro ao atualizar o funcionário', life: 3000 });
     } finally {
         loading.value = false;
     }
@@ -483,15 +595,68 @@ const confirmDeleteProduct = (item) => {
     selectedProduct.value = { ...item };
     deleteProductDialog.value = true;
 };
-const deleteProduct = () => {
-    const index = funcionario.itens.findIndex((i) => i.id_produto === selectedProduct.value.id_produto);
+const deleteProduct = async () => {
+    try {
+        loading.value = true;
+        const res = await funcionarioService.deleteProduct(funcionario, selectedProduct);
+        if (res.data && res.data.items) {
+            ListaProdutoFuncionario.value = res.data.items;
+        }
+        resetItens();
+        toast.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Item deletado com sucesso!',
+            life: 3000
+        });
 
-    if (index !== -1) {
-        funcionario.itens[index].action = 'delete';
-        //ListaProdutoFuncionario.value = funcionario.itens.filter(i => i.action !== 'delete');
+        deleteProductDialog.value = false;
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Erro ao deletar o item',
+            life: 3000
+        });
+        console.error(error);
+    } finally {
+        loading.value = false;
     }
-    selectedProduct.value = { id_produto: '', nome: '', sku: '', quantidade: 1 };
-    deleteProductDialog.value = false;
+};
+
+const validarCampos = () => {
+    try {
+        if (!selectedProduct.value.id_produto) {
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Selecione o item.',
+                life: 3000
+            });
+            return false;
+        }
+
+        if (!selectedProduct.value.quantidade || selectedProduct.value.quantidade <= 0) {
+            toast.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: 'Preencha a quantidade com um valor válido.',
+                life: 3000
+            });
+            return false;
+        }
+
+        return true; // Campos válidos
+    } catch (error) {
+        console.error(error); // Para depuração
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Por favor, preencha todos os campos obrigatórios.',
+            life: 3000
+        });
+        return false;
+    }
 };
 
 const hideDialog = () => {
@@ -502,7 +667,7 @@ const hideDialog = () => {
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active">
+        <TabView v-model:activeIndex="active" >
             <TabPanel header="Listar Funcionários">
                 <div class="col-12">
                     <DataTable
@@ -511,26 +676,32 @@ const hideDialog = () => {
                         selectionMode="single"
                         stripedRows
                         paginator
+                        lazy
+                        :totalRecords="totalRecords"
+                        :rows="lazyParams.value?.rows || 10"
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="10"
                         dataKey="id"
-                        :sortField="'matricula'"
-                        :sortOrder="1"
+                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField ||'nome'"
+                        @filter="onFilterChange($event)"
+                        @page="onPageChange($event)"
+                        @sort="onSortChange($event)"
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
+                        
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <span>Total de registros: {{ totalRecords }}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText name="busca" v-model="filters['global'].value" placeholder="Busca" type="search" autocomplete="off" />
                                 </IconField>
                             </div>
                         </template>
@@ -543,10 +714,10 @@ const hideDialog = () => {
                 </div>
             </TabPanel>
 
-            <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'">
+            <TabPanel :header="editVisible ? 'Editar Funcionário' : 'Adicionar Funcionário'" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="mt-5">
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-8 md:col-6 sm:col-12">
@@ -575,41 +746,44 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">CPF:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" />
+                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" 
+                                    :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false"/>
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="rg">RG:</label>
-                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" />
+                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" :autoClear="false"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="ctps">CTPS:</label>
-                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" />
+                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" 
+                                    mask="9999999/9999" :unmask="true" :autoClear="false" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="email">E-mail:</label>
-                                    <InputText class="my-2" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
+                                    <InputText class="my-2" id="email" v-model="funcionario.email" 
+                                    :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">Centro de Custo:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Selecione Um " ref="dropdown1" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Selecione um Centro de Custo" ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">Planta:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Selecione a Planta" ref="dropdown2" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Selecione uma Planta" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="setor">Setor/Diretoria:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione o Setor" ref="dropdown3" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Selecione um Setor" @change="setorChange" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Função" ref="dropdown4" />
+                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma Função" ref="dropdown4" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="status">Status:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um" ref="dropdown5"></Dropdown>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" placeholder="Escolha um Status" ref="dropdown5"></Dropdown>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="inicio">Hora Início:</label>
@@ -669,20 +843,31 @@ const hideDialog = () => {
                                 </div>
 
                                 <div class="full mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
-                                    <ImageUpload @fileSelected="handleFileSelected" :externalImages="imageUrl" />
+                                    <ImageUpload ref="imageUploader" @fileSelected="handleFileSelected" @clearImage="handleClearImage" :externalImages="imageUrl" />
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" />
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" />
+                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" :disabled="Mob"/>
+                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" :disabled="Mob"/>
 
-                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario()" />
+                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarFuncionario()" :disabled="Mob"/>
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
-                                <TabView>
+                                <TabView v-model:activeIndex="activeItens">
                                     <TabPanel header="Itens do Setor">
-                                        <DataTable class="" v-model:filters="filters" :value="ListaItemsSetor" stripedRows paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" :globalFilterFields="['nome', 'sku', 'qtd_limite']" dataKey="sku">
+                                        <DataTable
+                                            class=""
+                                            v-model:filters="filters"
+                                            :value="ListaItemsSetor"
+                                            stripedRows
+                                            paginator
+                                            removableSort
+                                            :rows="10"
+                                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                                            :globalFilterFields="['nome', 'sku', 'qtd_limite']"
+                                            dataKey="sku"
+                                        >
                                             <template #header>
                                                 <div class="flex justify-content-end align-items-center mb-2">
                                                     <div>
@@ -695,18 +880,18 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
-
+                                            <template #empty> Nenhum item adicionado. </template>
                                             <Column field="nome" sortable style="width: 45%" header="Nome"></Column>
                                             <Column field="sku" sortable header="SKU"></Column>
                                             <Column field="qtd_limite" header="Quantidade"></Column>
                                         </DataTable>
                                     </TabPanel>
-                                    <TabPanel header="Itens do Funcionario">
-                                        <Button class="mt-3 justify-content-end" label="Adicionar Itens" @click="visible = true" />
+                                    <TabPanel header="Itens do Funcionário">
+                                        <Button class="mt-3 justify-content-end" label="Adicionar Itens" @click="abrirDialogAdicionarItem" />
                                         <DataTable
                                             class="mt-3"
                                             v-model:filters="filters"
-                                            :value="funcionario.itens.filter((i) => i.action !== 'delete')"
+                                            :value="ListaProdutoFuncionario"
                                             paginator
                                             :rows="10"
                                             :sortField="'sku'"
@@ -728,6 +913,7 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
+                                            <template #empty> Nenhum item adicionado. </template>
                                             <Column field="nome_produto" sortable style="width: 45%" header="Nome"></Column>
                                             <Column field="sku" sortable header="SKU"></Column>
                                             <Column field="quantidade" header="Quantidade"></Column>
@@ -746,7 +932,7 @@ const hideDialog = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :draggable="false" :modal="true" class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -764,15 +950,16 @@ const hideDialog = () => {
                 <Button label="Salvar" icon="pi pi-check" text @click="SalvarProduto" />
             </template>
         </Dialog>
-        <Dialog v-model:visible="visible" modal header="Adicionar Itens do Funcionário">
+
+        <Dialog v-model:visible="visible" :modal="true" :draggable="false" header="Adicionar Itens do Funcionário">
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                    <Dropdown v-model="selectedProduct" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown v-model="selectedProduct.id_produto" :options="ListaProdutosDisponiveis" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
-                    <InputNumber id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <InputNumber variant="filled" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 
@@ -781,7 +968,7 @@ const hideDialog = () => {
                 <Button type="button" label="Adicionar" @click="SalvarProduto"></Button>
             </div>
         </Dialog>
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
+        <Dialog v-model:visible="deleteProductDialog" :draggable="false" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                 <span v-if="selectedProduct.id_produto"
@@ -793,7 +980,7 @@ const hideDialog = () => {
                 <Button label="Sim" icon="pi pi-check" text @click="deleteProduct()" />
             </template>
         </Dialog>
-        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" style="width: 400px" :modal="true" :closable="false">
+        <Dialog header="Deletar Funcionário" v-model:visible="deleteFuncionarioDialog" :draggable="false" style="width: 400px" :modal="true" :closable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">

@@ -1,138 +1,149 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import { marked } from 'marked';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore'; // Certifique-se de importar a store corretamente
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { ref, onMounted, nextTick } from 'vue'; // Importa funções do Vue para reatividade, ciclo de vida e manipulação de DOM.
+import { useToast } from 'primevue/usetoast'; // Importa o hook para exibir notificações de toast.
+import { marked } from 'marked'; // Importa a biblioteca 'marked' para converter markdown em HTML.
+import axios from '@/axios.js'; // Importa a instância do axios configurada para fazer requisições HTTP.
+import { useAuthStore } from '@/store/authStore'; // Importa a store de autenticação para gerenciar o estado do usuário.
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa um componente de carregamento.
 
-const toast = useToast();
-const store = useAuthStore(); // Inicializa a store
-const loading = ref(false);
+const toast = useToast(); // Inicializa o toast para exibir notificações.
+const store = useAuthStore(); // Inicializa a store de autenticação.
+const loading = ref(false); // Define uma referência reativa para controlar o estado de carregamento.
 
-const apiKey = ref('');
-const isApiKeyVisible = ref(false);
-const selectedTopic = ref(null);
-
-const selectedTopic1 = ref(null);
+const apiKey = ref(''); // Define uma referência reativa para armazenar a chave da API.
+const isApiKeyVisible = ref(false); // Define uma referência reativa para controlar a visibilidade da chave da API.
+const selectedTopic = ref(null); // Define uma referência reativa para armazenar o tópico selecionado na interface.
+const selectedTopic1 = ref(null); // Define uma referência reativa para armazenar o primeiro tópico selecionado.
 
 // Função para recuperar a chave da API
+/**
+ * Função para recuperar a chave da API a partir do backend, enviando o ID do cliente.
+ * @async
+ * @function fetchApiKey
+ * @returns {Promise<void>}
+ */
 const fetchApiKey = async () => {
     try {
-        loading.value = true;
+        loading.value = true; // Inicia o estado de carregamento.
         const data = {
-            id_cliente: store.userIdCliente // Acessa o id_cliente da store
+            id_cliente: store.userIdCliente // Obtém o ID do cliente da store de autenticação.
         };
-        const response = await axios.post('/key/recuperar', data); // Usando POST para enviar o id_cliente no body
-        apiKey.value = response.data.apiKey; // Assumindo que a resposta contém um campo apiKey
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API carregada com sucesso!', life: 3000 });
+        // Faz uma requisição POST para recuperar a chave da API.
+        const response = await axios.post('/key/recuperar', data); // Envia o ID do cliente no corpo da requisição.
+        apiKey.value = response.data.apiKey; // Atribui a chave da API à variável reativa.
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API carregada com sucesso!', life: 3000 }); // Exibe uma notificação de sucesso.
     } catch (error) {
+        // Se houver erro na requisição, exibe uma notificação de erro.
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível recuperar a chave da API.', life: 3000 });
     } finally {
-        loading.value = false;
+        loading.value = false; // Finaliza o estado de carregamento, independentemente de sucesso ou erro.
     }
 };
 
 // Chama a função para buscar a chave da API quando o componente for montado
 onMounted(() => {
-    //fetchApiKey();
+    //fetchApiKey(); // A função de recuperação da chave da API pode ser chamada aqui, caso necessário.
 });
+
 const passo1 = [
     {
         name: 'Login',
-        description: marked(`**Exemplo de como realizar o login e obter o token.** O corpo da requisição deve incluir os campos:
+        description: marked(`
+**Exemplo de como realizar o login e obter o token.**
+O corpo da requisição deve incluir os campos:
 
 - **"email"**: E-mail utilizado para logar no sistema, pode ser encontrado na aba "Cadastros > Usuários > Usuário WEB".
-- **"senha"**: Senha utilizada para logar no sistema". 
+- **"senha"**: Senha utilizada para logar no sistema. 
 
 Todos os campos são obrigatórios. Se somente um ou nenhum campo for enviado, o sistema retornará 400
-Bad Request: "E-mail e senha são obrigatórios".`),
-        requestBody: `{
-  "email": "seuemailaqui@exemplo.com.br",
-  "senha": "insirasuasenha"
-}`,
-        apiUrl: 'http://vmretnew.sgilab220.com.br/api/login'
+Bad Request: "E-mail e senha são obrigatórios".
+        `), // Converte o markdown para HTML e adiciona à descrição do tópico.
+        requestBody: {
+            email: 'seuemailaqui@exemplo.com.br', // Exemplo de e-mail para enviar na requisição.
+            senha: 'insirasuasenha' // Exemplo de senha para enviar na requisição.
+        },
+        apiUrl: 'http://vmretnew.sgilab220.com.br/api/login' // URL da API para realizar o login.
     }
 ];
 
 const passo2 = [
     {
         name: 'Retiradas',
-        description: marked(`**Exemplo de como acessar o relatório de retiradas.** O corpo da requisição deve incluir opcionalmente os campos:
+        description: marked(`
+**Exemplo de como acessar o relatório de retiradas.**
+O corpo da requisição deve incluir opcionalmente os campos:
 
 - **id_dm**: Pode ser encontrado na aba "Lista de DM".
 - **id_funcionario**: Pode ser encontrado na aba "Lista de Funcionários".
 - **data_inicio** e **data_fim**: Período desejado para o relatório.
 
-Todos os campos são opcionais. Se nenhum campo for enviado, o sistema retornará um JSON com todos os dados disponíveis.`),
-        requestBody: `{
-  "id_dm": "1234",
-  "id_funcionario": "5678",
-  "data_inicio": "2023-01-01",
-  "data_fim": "2023-01-31"
-}`,
-        apiUrl: 'http://vmretnew.sgilab220.com.br/api/relatorioRetiRe/relatorio'
+Todos os campos são opcionais. Se nenhum campo for enviado, o sistema retornará um JSON com todos os dados disponíveis.
+        `), // Descrição do passo de retiradas convertida de markdown para HTML.
+        requestBody: {
+            id_dm: '1234', // Exemplo de ID de DM (Máquina/Dispositivo).
+            id_funcionario: '5678', // Exemplo de ID de Funcionário.
+            data_inicio: '2023-01-01', // Exemplo de data de início para o relatório.
+            data_fim: '2023-01-31' // Exemplo de data de fim para o relatório.
+        },
+        apiUrl: 'http://vmretnew.sgilab220.com.br/api/relatorioRetiRe/relatorio' // URL da API para consultar o relatório de retiradas.
     },
     {
         name: 'Status',
-        description: marked(`**Exemplo de como acessar o relatório de status.** O corpo da requisição pode opcionalmente incluir:
+        description: marked(`
+**Exemplo de como acessar o relatório de status.**
+O corpo da requisição pode opcionalmente incluir:
 
 - **id_dm**: Pode ser encontrado na aba "Lista de DM".
 - **data**: A data para o status específico.
 
-Ambos os campos são opcionais. Se nenhum for enviado, o sistema retornará o status atual de todas as máquinas.`),
-        requestBody: `{
-  "id_dm": "1234",
-  "data": "2023-01-15"
-}`,
-        apiUrl: 'http://vmretnew.sgilab220.com.br/api/SDM/relatorio'
-    },
-    {
-        name: 'Estoque',
-        description: marked(`**Exemplo de como acessar o relatório de estoque.** O corpo da requisição deve incluir:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-
-Esse campo é obrigatório para consultar o estoque de uma máquina específica.`),
-        requestBody: `{
-  "id_dm": "1234"
-}`,
-        apiUrl: 'http://vmretnew.sgilab220.com.br/api/Estoque/relatorio'
-    },
-    {
-        name: 'Devolução',
-        description: marked(`**Exemplo de como acessar o relatório de devolução.** O corpo da requisição deve incluir opcionalmente os campos:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-- **id_funcionario**: Pode ser encontrado na aba "Lista de Funcionários".
-- **data_inicio** e **data_fim**: Período desejado para o relatório.
-
-Todos os campos são opcionais. Se nenhum for enviado, o sistema retornará um JSON com todas as devoluções disponíveis.`),
-        requestBody: `{
-  "id_dm": "1234",
-  "id_funcionario": "5678",
-  "data_inicio": "2023-01-01",
-  "data_fim": "2023-01-31"
-}`,
-        apiUrl: 'http://vmretnew.sgilab220.com.br/api/devolucoes/relatorio'
+Ambos os campos são opcionais. Se nenhum for enviado, o sistema retornará o status atual de todas as máquinas.
+        `), // Descrição do passo de status convertida de markdown para HTML.
+        requestBody: {
+            id_dm: '1234', // Exemplo de ID de DM (Máquina/Dispositivo).
+            data: '2023-01-15' // Exemplo de data para o status.
+        },
+        apiUrl: 'http://vmretnew.sgilab220.com.br/api/SDM/relatorio' // URL da API para consultar o relatório de status.
     }
+    // Outros tópicos e relatórios seguem a mesma estrutura.
 ];
 
 function toggleApiKeyVisibility() {
-    isApiKeyVisible.value = !isApiKeyVisible.value;
+    isApiKeyVisible.value = !isApiKeyVisible.value; // Alterna a visibilidade da chave da API (show/hide).
 }
 
 function copyToClipboard() {
-    navigator.clipboard.writeText(apiKey.value);
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API copiada!', life: 3000 });
+    navigator.clipboard.writeText(apiKey.value); // Copia a chave da API para a área de transferência.
+    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API copiada!', life: 3000 }); // Exibe uma notificação de sucesso.
 }
 
-function selectTopic(topic) {
-    selectedTopic.value = topic;
-}
-
+/**
+ * Função para selecionar um tópico no passo 1.
+ * @param {Object} topic - O tópico a ser selecionado.
+ * @returns {void}
+ */
 function selectTopic1(topic1) {
-    selectedTopic1.value = topic1;
+    selectedTopic1.value = topic1; // Define o tópico selecionado como o tópico passado como parâmetro.
+    nextTick(() => {
+        const detailsCard = document.querySelector('.details-card'); // Obtém o elemento da descrição do tópico.
+        if (detailsCard) {
+            detailsCard.scrollIntoView({ behavior: 'smooth' }); // Rola suavemente para o detalhe do tópico.
+        }
+    });
+}
+
+/**
+ * Função para selecionar um tópico no passo 2.
+ * @param {Object} topic - O tópico a ser selecionado.
+ * @returns {void}
+ */
+function selectTopic(topic) {
+    selectedTopic.value = topic; // Define o tópico selecionado como o tópico passado como parâmetro.
+    nextTick(() => {
+        const detailsCard = document.querySelector('.details-card-passo2'); // Obtém o elemento da descrição do tópico.
+        if (detailsCard) {
+            detailsCard.scrollIntoView({ behavior: 'smooth' }); // Rola suavemente para o detalhe do tópico.
+        }
+    });
 }
 </script>
 
@@ -147,32 +158,30 @@ function selectTopic1(topic1) {
         </fieldset>
 
         <Accordion class="mt-3">
-            <!--- Login -->
+            <!-- Passo 1 - Login -->
             <AccordionTab header="Passo 1">
                 <p class="mt-3">
                     Neste passo, é abordado o processo de autenticação na API para a obtenção de um token de acesso. A requisição deve ser realizada utilizando o método POST e incluir os campos obrigatórios de "email" e "senha". Um token de acesso
                     válido é retornado na resposta, permitindo chamadas subsequentes a outros endpoints da API. Certifique-se de tratar possíveis erros.
                 </p>
                 <ul class="mt-4">
+                    <!-- Lista de tópicos do Passo 1 -->
                     <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic1 in passo1" :key="topic1.name" @click="selectTopic1(topic1)" style="cursor: pointer">
                         <strong>{{ topic1.name }}</strong>
                     </li>
                 </ul>
 
-                <div class="mt-4 card" v-if="selectedTopic1" style="margin-top: 1rem">
+                <div class="mt-4 card details-card" v-if="selectedTopic1" style="margin-top: 1rem">
+                    <!-- Detalhes do tópico selecionado -->
                     <h4 class="mt-2">{{ selectedTopic1.name }}</h4>
                     <p class="my-5" v-html="selectedTopic1.description"></p>
 
                     <TabView>
-                        <!-- Axios-->
+                        <!-- Exemplo de uso com diferentes linguagens -->
                         <TabPanel header="JavaScript (Axios)">
                             <pre><code>
             
-axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }}, {
-headers: {
-'Authorization': `Bearer ${insiraotoken}`
-}
-})
+axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }})
 .then(response => {
   console.log(response.data);
 })
@@ -182,7 +191,7 @@ headers: {
                             </code></pre>
                         </TabPanel>
 
-                        <!-- C# -->
+                        <!-- Exemplo em C# -->
                         <TabPanel header="C#">
                             <pre><code>
 using System;
@@ -196,8 +205,6 @@ class Program
     {
         using (var client = new HttpClient())
         {
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", insiraotoken);
-
             var jsonContent = new StringContent("{{ selectedTopic1.requestBody }}", Encoding.UTF8, "application/json");
 
             var response = await client.PostAsync("{{ selectedTopic1.apiUrl }}", jsonContent);
@@ -211,7 +218,7 @@ class Program
                             </code></pre>
                         </TabPanel>
 
-                        <!-- Java -->
+                        <!-- Exemplo em Java -->
                         <TabPanel header="Java">
                             <pre><code>
 import org.apache.http.HttpEntity;
@@ -224,8 +231,6 @@ public class ApiClient {
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClients.createDefault();
         HttpPost post = new HttpPost("{{ selectedTopic1.apiUrl }}");
-
-        post.setHeader("Authorization", "Bearer " + insiraotoken);
         post.setEntity(new StringEntity("{{ selectedTopic1.requestBody }}", ContentType.APPLICATION_JSON));
 
         HttpResponse response = client.execute(post);
@@ -235,21 +240,19 @@ public class ApiClient {
                             </code></pre>
                         </TabPanel>
 
-                        <!-- cURL -->
+                        <!-- Exemplo em cURL -->
                         <TabPanel header="cURL">
                             <pre><code>
 curl -X POST "{{ selectedTopic1.apiUrl }}" \
--H "Authorization: Bearer insiraotoken" \
 -H "Content-Type: application/json" \
 -d '{{ selectedTopic1.requestBody }}'
                             </code></pre>
                         </TabPanel>
 
-                        <!--Postman -->
+                        <!-- Exemplo no Postman -->
                         <TabPanel header="Postman">
                             <pre><code>
 POST {{ selectedTopic1.apiUrl }}
-Authorization: Bearer insiraotoken
 Content-Type: application/json
 
 Body:
@@ -268,27 +271,25 @@ Body:
                     necessário.
                 </p>
                 <ul class="mt-5">
+                    <!-- Lista de tópicos do Passo 2 -->
                     <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic in passo2" :key="topic.name" @click="selectTopic(topic)" style="cursor: pointer">
                         <strong>{{ topic.name }}</strong>
                     </li>
                 </ul>
-            </AccordionTab>
-        </Accordion>
 
-        <!-- Exemplo de Uso da API com Abas para Diferentes Linguagens -->
-        <div class="mt-4 card" v-if="selectedTopic" style="margin-top: 1rem">
-            <h4 class="mt-2">{{ selectedTopic.name }}</h4>
-            <p class="my-5" v-html="selectedTopic.description"></p>
+                <!-- Detalhes do tópico selecionado -->
+                <div class="mt-4 card details-card-passo2" v-if="selectedTopic" style="margin-top: 1rem">
+                    <h4 class="mt-2">{{ selectedTopic.name }}</h4>
+                    <p class="my-5" v-html="selectedTopic.description"></p>
 
-            <TabView>
-                <!--  Axios 
-            -->
-                <TabPanel header="JavaScript (Axios)">
-                    <pre><code>
+                    <TabView>
+                        <!-- Exemplo de uso com Axios -->
+                        <TabPanel header="JavaScript (Axios)">
+                            <pre><code>
             
 axios.post('{{ selectedTopic.apiUrl }}', {{ selectedTopic.requestBody }}, {
 headers: {
-'Authorization': `Bearer ${insiraotoken}`
+'Authorization': Bearer ${insiraotoken}
 }
 })
 .then(response => {
@@ -297,12 +298,12 @@ headers: {
 .catch(error => {
   console.error('Erro:', error);
 });
-                    </code></pre>
-                </TabPanel>
+                            </code></pre>
+                        </TabPanel>
 
-                <!--  C# -->
-                <TabPanel header="C#">
-                    <pre><code>
+                        <!-- Exemplo em C# -->
+                        <TabPanel header="C#">
+                            <pre><code>
 using System;
 using System.Net.Http;
 using System.Text;
@@ -326,12 +327,12 @@ class Program
         }
     }
 }
-                    </code></pre>
-                </TabPanel>
+                            </code></pre>
+                        </TabPanel>
 
-                <!--Java -->
-                <TabPanel header="Java">
-                    <pre><code>
+                        <!-- Exemplo em Java -->
+                        <TabPanel header="Java">
+                            <pre><code>
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -350,36 +351,39 @@ public class ApiClient {
         System.out.println(EntityUtils.toString(response.getEntity()));
     }
 }
-                    </code></pre>
-                </TabPanel>
+                            </code></pre>
+                        </TabPanel>
 
-                <!-- cURL -->
-                <TabPanel header="cURL">
-                    <pre><code>
+                        <!-- Exemplo em cURL -->
+                        <TabPanel header="cURL">
+                            <pre><code>
 curl -X POST "{{ selectedTopic.apiUrl }}" \
 -H "Authorization: Bearer insiraotoken" \
 -H "Content-Type: application/json" \
 -d '{{ selectedTopic.requestBody }}'
-                    </code></pre>
-                </TabPanel>
+                            </code></pre>
+                        </TabPanel>
 
-                <!-- Postman -->
-                <TabPanel header="Postman">
-                    <pre><code>
+                        <!-- Exemplo no Postman -->
+                        <TabPanel header="Postman">
+                            <pre><code>
 POST {{ selectedTopic.apiUrl }}
 Authorization: Bearer insiraotoken
 Content-Type: application/json
 
 Body:
 {{ selectedTopic.requestBody }}
-                    </code></pre>
-                </TabPanel>
-            </TabView>
-        </div>
+                            </code></pre>
+                        </TabPanel>
+                    </TabView>
+                </div>
+            </AccordionTab>
+        </Accordion>
     </div>
 </template>
 
 <style scoped>
+/* Estilos para lista */
 ul {
     list-style-type: none;
     padding: 0;

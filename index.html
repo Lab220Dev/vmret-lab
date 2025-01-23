@@ -1,17 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
+    <!--
+    A declaração DOCTYPE é usada para informar ao navegador que tipo de documento está sendo carregado. 
+    'html' aqui indica que é um documento HTML5.
+    A linguagem é configurada como inglês, através do atributo lang="en".
+    -->
 
-<head>
-      <meta charset="UTF-8">
-      <link rel="icon" href="/src/assets/images/Icone.ico">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Lab 220</title>
-      <link id="theme-css" rel="stylesheet" type="text/css" href="/themes/aura-light-blue/theme.css">
-</head>
+    <head>
+        <!--
+        A tag <head> contém metadados sobre o documento, como links para folhas de estilo, scripts, e informações de codificação.
+        -->
 
-<body>
-      <div id="app"></div>
-      <script type="module" src="/src/main.js"></script>
-</body>
+        <meta charset="UTF-8">
+        <!--
+        Define o conjunto de caracteres utilizado para codificar o documento HTML. UTF-8 é amplamente utilizado, pois suporta todos os caracteres.
+        -->
+        
+        <link rel="icon" href="/src/assets/images/Icone.ico">
+        <!--
+        Define o ícone que aparecerá na aba do navegador ao carregar o site. O arquivo de ícone está em '/src/assets/images/Icone.ico'.
+        -->
+        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--
+        A tag meta viewport é usada para controlar a forma como a página é exibida em dispositivos móveis.
+        'width=device-width' define a largura da página como sendo a mesma do dispositivo.
+        'initial-scale=1.0' define o nível de zoom inicial.
+        Isso ajuda a garantir que a página será responsiva.
+        -->
+
+        <title>Lab 220</title>
+        <!--
+        Define o título da página que aparecerá na aba do navegador.
+        Aqui está configurado como "Lab 220", mas pode ser alterado conforme necessário.
+        -->
+
+        <link id="theme-css" rel="stylesheet" type="text/css" href="/themes/aura-light-blue/theme.css">
+        <!--
+        Esta tag <link> carrega o arquivo CSS do tema, no caso o tema "aura-light-blue" está localizado em '/themes/aura-light-blue/theme.css'.
+        O atributo "rel" é usado para especificar a relação entre o documento atual e o arquivo de link. O valor 'stylesheet' indica que o arquivo é uma folha de estilo.
+        O atributo "type" é do tipo "text/css", informando que é uma folha de estilo CSS.
+        -->
+
+    </head>
+
+    <body>
+        <!--
+        A tag <body> contém o conteúdo visível da página. Tudo dentro dela será exibido ao usuário.
+        -->
+
+        <div id="app"></div>
+        <!--
+        Um contêiner vazio com o id 'app', onde o conteúdo dinâmico da aplicação (por exemplo, uma SPA) será montado. 
+        No Vue.js, React ou outras SPAs (Single Page Application), esse é o ponto onde o framework irá injetar o conteúdo da aplicação.
+        -->
+
+        <script type="module" src="/src/main.js"></script>
+        <!--
+        Carrega o script JavaScript principal da aplicação. 
+        Atributo "type='module'" indica que este é um módulo JavaScript, o que permite a utilização de imports/exports.
+        O arquivo "main.js" está localizado em "/src/main.js".
+        Caso o arquivo não exista ou seja referenciado incorretamente, o navegador lançará um erro 404 (arquivo não encontrado).
+        -->
+
+    </body>
 
 </html>

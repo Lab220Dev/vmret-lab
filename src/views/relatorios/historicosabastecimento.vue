@@ -1,84 +1,184 @@
 <script setup>
+/**
+ * Importa o componente `VueDatePicker` para exibição de seletor de data.
+ * @module @vuepic/vue-datepicker
+ */
 import VueDatePicker from '@vuepic/vue-datepicker';
-import { FilterMatchMode } from 'primevue/api';
-import { useToast } from 'primevue/usetoast';
-import '@vuepic/vue-datepicker/dist/main.css';
-import { ref, onMounted, watch } from 'vue';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
+/**
+ * Importa o tipo `FilterMatchMode` para configurar os filtros no componente DataTable.
+ * @module primevue/api
+ */
+import { FilterMatchMode } from 'primevue/api';
+
+/**
+ * Importa o serviço de Toast para exibição de mensagens rápidas para o usuário.
+ * @module primevue/usetoast
+ */
+import { useToast } from 'primevue/usetoast';
+
+/**
+ * Importa o CSS necessário para o VueDatePicker.
+ * @module @vuepic/vue-datepicker/dist/main.css
+ */
+import '@vuepic/vue-datepicker/dist/main.css';
+
+/**
+ * Importa as funções reativas e do ciclo de vida do Vue, como `ref`, `onMounted`, e `watch`.
+ * @module vue
+ */
+import { ref, onMounted } from 'vue';
+
+/**
+ * Importa o Axios configurado para realizar requisições HTTP.
+ * @module axios
+ */
+import axios from '@/axios.js';
+
+/**
+ * Importa o store de autenticação para acessar informações do usuário.
+ * @module store/authStore.js
+ */
+import { useAuthStore } from '@/store/authStore.js';
+
+/**
+ * Importa o componente de spinner de carregamento.
+ * @module components/LoadingSpinner.vue
+ */
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import {  formatDateToString, formatarDataHora } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
+
+// Definindo referências reativas para a UI e lógica do aplicativo.
+
+/**
+ * Flag que controla a exibição do modal de mensagem.
+ * @type {ref<boolean>}
+ */
 const showDialog = ref(false);
+
+/**
+ * Mensagem exibida no modal.
+ * @type {ref<string>}
+ */
 const dialogMessage = ref('');
 
+/**
+ * Contagem de registros filtrados.
+ * @type {ref<number>}
+ */
 const filteredCount = ref(0);
 
+/**
+ * Flag para exibir ou não o spinner de carregamento.
+ * @type {ref<boolean>}
+ */
 const loading = ref(false);
 
-const store = useAuthStore();
+/**
+ * Armazena a store de autenticação para o usuário atual.
+ * @type {object}
+ */
+const dataStore = useDataStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
+
+/**
+ * Serviço de Toast para exibir mensagens.
+ * @type {object}
+ */
 const toast = useToast();
+
+/**
+ * Mensagem padrão quando não há dados encontrados.
+ * @type {ref<string>}
+ */
 const emptyMessage = ref('Ainda não foi feita nenhuma busca');
+
+/**
+ * Referências para os dropdowns de filtros.
+ * @type {ref<any>}
+ */
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
 const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
+
+/**
+ * Dados do histórico de abastecimento.
+ * @type {ref<Array<object>>}
+ */
 const historico = ref([]);
+
+/**
+ * Opção para exibir todos os itens no filtro.
+ * @type {object}
+ */
 const todosOption = { label: 'Todos', value: null };
+
+/**
+ * Lista de operadores disponíveis.
+ * @type {ref<Array<object>>}
+ */
 const ListaOperador = ref(null);
+const ListaOperadorOriginal = ref(null);
+
+/**
+ * Lista de DM's disponíveis.
+ * @type {ref<Array<object>>}
+ */
 const dms = ref([todosOption]);
+
+/**
+ * Lista de plantas disponíveis.
+ * @type {ref<Array<object>>}
+ */
 const plantas = ref([todosOption]);
+
+/**
+ * Lista de setores disponíveis.
+ * @type {ref<Array<object>>}
+ */
 const setor = ref([todosOption]);
+const ListaSetorOriginal = ref([todosOption]);
+
+/**
+ * Lista de centros de custo disponíveis.
+ * @type {ref<Array<object>>}
+ */
 const centroCusto = ref([todosOption]);
+
+/**
+ * Objeto contendo os filtros globais para o DataTable.
+ * @type {ref<object>}
+ */
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que procura correspondências parciais
 });
-const show = ref(true);
-const selectedItem = ref([]);
+
+/**
+ * Objeto contendo os dados do relatório, com filtros específicos.
+ * @type {ref<object>}
+ */
 const relatorio = ref({
     dm: '',
     id_planta: '',
     id_centro_custo: '',
     id_setor: '',
     id_operador: '',
-    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    data_final: new Date()
+    data_inicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // Data inicial (1º dia do mês atual)
+    data_final: new Date() // Data final (data atual)
 });
 
-const format = (date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
-};
-
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null;
-};
-
-const buscar = async () => {
-    const data = {
-        id_usuario: store.userId,
-        id_cliente: store.userIdCliente,
-        id_dm: relatorio.value.dm === null ? undefined : relatorio.value.dm,
-        id_planta: relatorio.value.id_planta === null ? undefined : relatorio.value.id_planta,
-        id_centro_custo: relatorio.value.id_centro_custo === null ? undefined : relatorio.value.id_centro_custo,
-        id_setor: relatorio.value.id_setor === null ? undefined : relatorio.value.id_setor,
-        id_funcionario: relatorio.value.id_funcionario === null ? undefined : relatorio.value.id_funcionario,
-        data_inicio: toISODate(relatorio.value.data_inicio),
-        data_final: toISODate(relatorio.value.data_final),
-        id_operador: relatorio.value.id_operador
-    };
+/**
+ * Função para buscar o histórico de abastecimento com base nos filtros.
+ * @async
+ * @returns {Promise<void>}
+ */
+ const buscar = async () => {
     try {
         loading.value = true;
-        const response = await axios.post('', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        historico.value = response.data;
-
+        historico.value = await relatorioService.historicoAbastecimento(relatorio);
         filteredCount.value = historico.value.length;
 
         if (historico.value.length === 0) {
@@ -92,203 +192,99 @@ const buscar = async () => {
         loading.value = false; // Desativando loading
     }
 };
-const voltar = () => {
-    show.value = true;
-    selectedItem.value = {};
-};
-const dt = ref(null);
 
-const generateCSV = (data) => {
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((row) => Object.values(row).join(',')).join('\n');
-    return `${headers}\n${rows}`;
-};
 
-const exportCSV = () => {
-    const csvContent = generateCSV(historico.value);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'HistoricoAbastecimento.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-const exportJSON = () => {
-    const jsonContent = JSON.stringify(historico.value, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'HistoricoAbastecimento.json');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-const fetchDM = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/relatorioRetiRe/listardm', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        dms.value = [
-            todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`,
-                value: ID_DM
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar lista de dms:', error);
-    }
-};
-const fetchIdPlanta = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('plantas/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        // usar o id_dm para acessar quais as plantas e setores estão disponiveis
-        plantas.value = [
-            todosOption,
-            ...response.data.map(({ nome, id_planta }) => ({
-                label: `Planta  ${nome}`,
-                value: id_planta
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar opções de plantas:', error);
-    }
-};
-const fetchSetorDiretoria = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('Setor/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        setor.value = [
-            todosOption,
-            ...response.data.map(({ id_setor, nome }) => ({
-                label: `Setor  ${nome}`,
-                value: id_setor
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar setores/diretorias:', error);
-    }
-};
-const fetchCentroCusto = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('cdc/listar', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        centroCusto.value = [
-            todosOption,
-            ...response.data.map(({ ID_CentroCusto, Nome }) => ({
-                label: `Centro de Custo  ${Nome}`,
-                value: ID_CentroCusto
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao buscar centros de custo:', error);
-    }
-};
-
-const fetchOperador = async () => {
-    const data = {
-        id_cliente: store.userIdCliente
-    };
-    try {
-        const response = await axios.post('/funcionarios/listarOperarios', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}`
-            }
-        });
-        ListaOperador.value = [
-            todosOption,
-            ...response.data.map((funcionario) => ({
-                label: funcionario.nome,
-                value: funcionario.id_operador
-            }))
-        ];
-    } catch (error) {
-        console.error('Erro ao carregar usuários:', error);
-    }
-};
+/**
+ * Função para fechar todos os dropdowns abertos.
+ */
 const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown do DM
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown da planta
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o dropdown do setor
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Fecha o dropdown do centro de custo
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o dropdown do operador
 };
 
+/**
+ * Função para tratar o evento de abertura do date picker.
+ * Fecha todos os dropdowns ao abrir o date picker.
+ */
 const handleDatepickerOpen = () => {
-    closeAllDropdowns();
+    closeAllDropdowns(); // Fecha todos os dropdowns ao abrir o date picker
 };
+const loadData = async () => {
+    loading.value = true;
+    try {
+        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
+        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        setor.value = ListaSetorOriginal.value; // Carrega a lista de setores
+        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        ListaOperador.value = await relatorioService.listaOperador();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
+    }finally{
+        loading.value = false;
+    }
+   
+};
+// Função executada quando o componente é montado.
+// Carrega todas as opções de filtros ao carregar o componente.
 onMounted(() => {
-    fetchDM();
-    fetchIdPlanta();
-    fetchSetorDiretoria();
-    fetchOperador();
-    fetchCentroCusto();
+    loadData();
 });
 </script>
 
 <template>
+    <!-- Card container para o conteúdo -->
     <div class="card vh">
-        <div class="form">
-            <div class="grid mt-3 mx-1 px-1">
-                <h5 class="my-4 text-2xl">Histórico de Abastecimento</h5>
-                <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-                    <!-- div de busca de informações para o relatorio -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+        
+                <!-- Título da página -->
+                <h5 class="my-6 ml-2 text-2xl">Histórico de Abastecimento</h5>
+
+                <!-- Condição para exibir os campos de filtro -->
+                <div class="p-0 m-0 p-fluid formgrid grid col-12" >
+                    <!-- Filtro de DM (Documento de Movimento) -->
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
+                        <!-- Componente Dropdown para escolher o DM -->
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <!-- Filtro de Planta -->
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
+                        <!-- Componente Dropdown para escolher a planta -->
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <!-- Filtro de Setor -->
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
+                        <!-- Componente Dropdown para escolher o setor -->
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
-                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                    <!-- Filtro de Centro de Custo -->
+                    <div class="field lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Centro de Custo:</label>
+                        <!-- Componente Dropdown para escolher o centro de custo -->
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
 
-                    <div class="field lg:col-6 md:col-6 sm:col-6">
+                    <!-- Filtro de Operador -->
+                    <div class="field lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Operador:</label>
+                        <!-- Componente Dropdown para escolher o operador -->
                         <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
+                    <!-- Filtro de Data Inicial -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
+                        <!-- Componente VueDatePicker para escolher a data inicial -->
                         <VueDatePicker
                             class="drop"
                             v-model="relatorio.data_inicio"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
@@ -297,14 +293,16 @@ onMounted(() => {
                             placeholder="Selecione uma data inicial"
                         />
                     </div>
+                    <!-- Filtro de Data Final -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Data Final:</label>
+                        <!-- Componente VueDatePicker para escolher a data final -->
                         <VueDatePicker
                             class="drop"
                             v-model="relatorio.data_final"
                             showIcon
                             :showOnFocus="false"
-                            :format="format"
+                            :format="formatDateToString"
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
@@ -313,20 +311,14 @@ onMounted(() => {
                             placeholder="Selecione uma data final"
                         />
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <!-- botão de filtrar -->
+                    <!-- Botão para filtrar os dados -->
+                    <div class="field lg:col-4 md:col-6 sm:col-12">
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
-
-                    <!-- <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
-                    </div>
-                    <div class="field lg:col-3 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
-                    </div> -->
                 </div>
-                <!--  datatable do relatorio -->
-                <div class="datatable-wrapper">
+
+                <!-- DataTable para exibição dos resultados do histórico -->
+                <div class="mt-6">
                     <DataTable
                         v-model:filters="filters"
                         :value="historico"
@@ -339,45 +331,66 @@ onMounted(() => {
                         :globalFilterFields="['ID_DM', 'Data', 'operador', 'item', 'Quantidade', 'Mola']"
                         :tableStyle="{ width: '100%' }"
                         ref="dt"
-                        :sortField="'ID_DM'"  
+                        :sortField="'ID_DM'"
                         :sortOrder="1"
                     >
-                        <!-- @rowSelect="onRowSelect"  -->
+                        <!-- Filtragem global ativada -->
+                        <!-- Dados da tabela --><!-- Linhas alternadas para melhorar a legibilidade -->
+                        <!-- Exibe as linhas da tabela -->
+                        <!-- Paginação habilitada -->
+                        <!-- Número de linhas por página -->
+                        <!-- Opções de linhas por página -->
+                        <!-- Destaca as linhas quando o mouse passa por cima -->
+                        <!-- Campos que podem ser filtrados globalmente -->
+                        <!-- Estilo para a tabela ocupar toda a largura disponível -->
+                        <!-- Referência para o DataTable -->
+                        <!-- Campo de ordenação inicial -->
+                        <!-- Ordem crescente de classificação -->
+
+                        <!-- Cabeçalho da tabela -->
                         <template #header>
                             <div class="flex justify-content-end">
+                                <!-- Campo de busca dentro da tabela -->
                                 <IconField iconPosition="left">
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
                                     <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <!-- Campo de entrada para pesquisa global -->
                                 </IconField>
                             </div>
                         </template>
+
+                        <!-- Mensagem quando não houver dados -->
                         <template #empty>{{ emptyMessage }} </template>
-                        <Column field="ID_DM" sortable header="DM"></Column>
-                        <Column field="Data" sortable header="Data"></Column>
-                        <Column field="operador" sortable header="Operador"></Column>
-                        <Column field="item" sortable header="Item"></Column>
-                        <Column field="Quantidade" sortable header="Quantidade" class="text-center"></Column>
-                        <Column field="Mola" sortable header="Mola"></Column>
+
+                        <!-- Definição das colunas da tabela -->
+                        <Column field="Maquina" sortable header="DM"></Column>
+                        <Column field="Dia" sortable class="table-cell" style="width: 25%" header="Data">
+                            <template #body="{ data }">
+                                {{ formatarDataHora(new Date(data.Dia)) }}
+                                <!-- Formata a data para o formato correto -->
+                            </template>
+                        </Column>
+                        <Column field="Operador" sortable header="Operador"></Column>
+                        <Column field="Nome_Produto" sortable header="Item"></Column>
+                        <Column field="quantidade_abastecido" sortable header="Quantidade" class="text-center"></Column>
+                        <Column field="posicao" sortable header="Posição"></Column>
                     </DataTable>
                 </div>
-                <Card v-if="!show">
-                    <template #title>{{ selectedItem.dm }}</template>
-                    <template #content>
-                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
-                    </template>
-                </Card>
-            </div>
-        </div>
+           
     </div>
+
+    <!-- Componente de carregamento (spinner) exibido enquanto a requisição está sendo processada -->
     <LoadingSpinner v-if="loading" />
 
-    <!--  mensagem de erro -->
+    <!-- Dialog de erro ou informação -->
     <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
         <p>{{ dialogMessage }}</p>
+        <!-- Mensagem exibida no dialog -->
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+            <!-- Botão para fechar o dialog -->
         </template>
     </Dialog>
 </template>
