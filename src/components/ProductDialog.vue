@@ -1,6 +1,6 @@
 <template>
   <!-- Componente de Diálogo para Adicionar Produto -->
-  <Dialog class="" header="Adicionar Produto" :visible.sync="showDialogProduto" :modal="true" :closable="false">
+  <Dialog class="" header="Adicionar Produto" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
       <div class="box card">
           <div class="grid">
               <!-- Campos do formulário para adicionar produto (a serem definidos) -->

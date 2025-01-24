@@ -96,9 +96,10 @@ const relatorioService = {
     },
     async logDesktop(relatorio) {
         try {
-            const data = prepararDadosRelatorio('Logs', relatorio);
-            // Realiza uma requisição POST para o endpoint '/Log/relatoriodesko' com os dados preparados.
+            const data = prepararDadosRelatorio('LogsDesk', relatorio);
+            // Realiza uma requisição POST para o endpoint '/Log/relatoriodesk' com os dados preparados.
             const response = await axios.post('/Log/relatoriodesk', data);
+            console.log(response.data);
             // Retorna os dados da resposta da requisição.
             return response.data;
         } catch (error) {

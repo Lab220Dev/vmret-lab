@@ -115,7 +115,8 @@ onMounted(() => {
             rowHover  
             :globalFilterFields="['nome', 'quantidadeReferencia', 'codigo']"  
             selectionMode="single"  
-            tableStyle="min-width: 50rem; table-layout: fixed;">  
+            tableStyle="max-width: 100%; table-layout: fixed;" 
+            >
 
             <!-- Cabeçalho da tabela -->
             <template #header>
@@ -139,8 +140,12 @@ onMounted(() => {
 
             <!-- Colunas da tabela -->
             <Column field="nome" sortable style="width: 70%" header="Item"></Column>  <!-- Coluna de nome -->
-            <Column field="quantidadeReferencia" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>  <!-- Coluna de quantidade -->
-            <Column field="codigo" sortable style="width: 15%" header="CA"></Column>  <!-- Coluna de código -->
+            <Column field="quantidadeReferencia"  sortable class="text-center table-cell">
+                <template #header>
+                    <span v-tooltip="'Quantidade'">Quant.</span>
+                    <!-- Tooltip para a coluna de quantidade mínima -->
+                </template></Column> <!-- Coluna de quantidade -->
+            <Column field="codigo" sortable style="width: 10%; text-align: center" header="CA"></Column>  <!-- Coluna de código -->
 
             <!-- Coluna adicional de status, visível somente após sincronização -->
             <Column v-if="sincronizado" header="Status">

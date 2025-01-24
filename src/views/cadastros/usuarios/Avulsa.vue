@@ -49,7 +49,7 @@ const toast = useToast();// Função para exibir notificações
         <div class="col-12">
             <div class="card">
                 <!-- Título do formulário -->
-                <h5 class="mt-2">Novo usuário de liberação avulsa</h5>
+                <h5 class="my-6 ml-2 text-2xl">Novo usuário de liberação avulsa</h5>
                 <div class="mt-5 mx-0 p-fluid grid">
                     <!-- Campo de Nome do Usuário -->
                     <div class="full lg:col-12 md:col-12 sm:col-12">

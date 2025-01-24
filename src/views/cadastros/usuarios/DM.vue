@@ -19,9 +19,13 @@ import {
     validarCampos as validarCamposHelper,
     updateTipoControladora as updateControladoraHelper,
     findControladora,
-    updateProdutoSelecionado,prepareDMData,prepareItemDMData,FormatarListaCliente,isArmario
+    updateProdutoSelecionado,
+    prepareDMData,
+    prepareItemDMData,
+    FormatarListaCliente,
+    isArmario
 } from '@/helpers/DMHelper.js'; // Import the helper functions
-import { normalizeDateTime,prepareListData } from '@/helpers/HelperUtils.js';
+import { normalizeDateTime, prepareListData } from '@/helpers/HelperUtils.js';
 import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
 import dmService from '@/services/dmService';
 //Store e Variaveis Reativas
@@ -46,9 +50,9 @@ let DM = reactive({
     Identificacao: '',
     Integracao: false,
     Numero: '',
-    OP_Biometria:false,
+    OP_Biometria: false,
     OP_Facial: false,
-    OP_Senha:false,
+    OP_Senha: false,
     voucher: false,
     cracha: false,
     URL: '',
@@ -61,16 +65,16 @@ let DM = reactive({
 const nextValues = reactive({
     2018: { placa: 12 },
     2023: { dip: 2 },
-    "Locker-Padrao": { dip: 3 },
-    "Locker-Ker": { dip: 0 },
+    'Locker-Padrao': { dip: 3 },
+    'Locker-Ker': { dip: 0 },
     2024: { placa: 101 }
 });
 const tipoControladoras = [
-  { label: '2018', value: '2018' },
-  { label: '2023', value: '2023' },
-  { label: '2024', value: '2024' },
-  { label: 'Locker Padrão', value: 'Locker-Padrao' },
-  { label: 'Locker Ker', value: 'Locker-Ker' },
+    { label: '2018', value: '2018' },
+    { label: '2023', value: '2023' },
+    { label: '2024', value: '2024' },
+    { label: 'Locker Padrão', value: 'Locker-Padrao' },
+    { label: 'Locker Ker', value: 'Locker-Ker' }
 ];
 // Objeto de produto selecionado
 const produtoSelecionado = ref({
@@ -94,7 +98,7 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'Identificacao', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 const ListaItens = ref([]);
 const ListaClientes = ref([]);
@@ -110,7 +114,7 @@ const motorOptions = ref([]);
 const ListaDMS = ref([]);
 const controladoraRefs = ref([]);
 // Controles de Estado
-const totalRecords = ref(0); 
+const totalRecords = ref(0);
 const isEditMode = ref(false);
 const showDialogProduto = ref(false);
 const active = ref(0);
@@ -145,10 +149,10 @@ const validarCampos = () => {
     }
 };
 const setRefs = (el) => {
-      if (el) {
+    if (el) {
         controladoraRefs.value.push(el);
-      }
-    };
+    }
+};
 const selectAllCliente = (index) => {
     selectAll(Controladoras.value[index]);
 };
@@ -165,9 +169,9 @@ const addControladora = () => {
     setTimeout(() => {
         const ultimaControladora = controladoraRefs.value[controladoraRefs.value.length - 1];
         if (ultimaControladora) {
-          ultimaControladora.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            ultimaControladora.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
-      }, 100);
+    }, 100);
 };
 const updateTipoControladora = (index, tipo) => {
     try {
@@ -313,17 +317,17 @@ const handleCancelar = () => {
  * A requisição é ajustada de acordo com o tipo de usuário (admin ou não).
  */
 const fetchDMS = async (page = 1) => {
-    loading.value = true; 
+    loading.value = true;
     try {
         const params = {
             first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
             rows: lazyParams.value.rows, // Número de registros por página
             sortField: lazyParams.value.sortField, // Campo para ordenação
             sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
+            filters: lazyParams.value.filters // Filtros aplicados
         };
 
-        const data = prepareListData(params)
+        const data = prepareListData(params);
         const response = await dmService.listarDMPaginado(data);
         ListaDMS.value = response.data.dmsArray; // Atualiza a lista de DMs com a resposta
         totalRecords.value = response.data.totalRecords; // Atualiza o total de registros
@@ -332,13 +336,13 @@ const fetchDMS = async (page = 1) => {
         console.error('Erro ao carregar usuários:', error); // Loga o erro no console
     } finally {
         loading.value = false; // Desativa o loading após a requisição
-    }
+    }
 };
 
 const adicionarDM = async () => {
     loading.value = true;
     try {
-        const data = prepareDMData('adicionar',DM,selectedClient.value,Controladoras.value)
+        const data = prepareDMData('adicionar', DM, selectedClient.value, Controladoras.value);
         await dmService.adicionarDM(data);
         dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM adicionada com sucesso', life: 3000 });
@@ -356,10 +360,10 @@ const atualizarDM = async () => {
     dataStore.invalidateDMCache();
     loading.value = true;
     const preparedControladoras = Controladoras.value.map((controladora) => ({
-    ...controladora,
-    ID: controladora.ID || null,
-}));
-    const data = prepareDMData('atualizar',DM,selectedClient,preparedControladoras) 
+        ...controladora,
+        ID: controladora.ID || null
+    }));
+    const data = prepareDMData('atualizar', DM, selectedClient, preparedControladoras);
     try {
         await dmService.atualizarDM(data);
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM atualizada com sucesso', life: 3000 });
@@ -374,7 +378,7 @@ const atualizarDM = async () => {
     }
 };
 const deleteDM = async (item) => {
-    const data = prepareDMData('deletar',item)
+    const data = prepareDMData('deletar', item);
     loading.value = true;
     try {
         await dmService.deletarDM(data);
@@ -434,7 +438,7 @@ const adicionarProduto = async () => {
         return; //se falhar não continua
     }
 
-    const data = prepareItemDMData('adicionar',DM,produtoSelecionado,Controladoras)
+    const data = prepareItemDMData('adicionar', DM, produtoSelecionado, Controladoras);
     try {
         loading.value = true;
         await dmService.adicionarItem(data);
@@ -451,7 +455,7 @@ const adicionarProduto = async () => {
 };
 // Função para atualizar o produto selecionado
 const atualizarProduto = async () => {
-    const data = prepareItemDMData('atualizar',DM,produtoSelecionado,Controladoras)
+    const data = prepareItemDMData('atualizar', DM, produtoSelecionado, Controladoras);
     try {
         loading.value = true;
         await dmService.atualizarProduto(data);
@@ -484,7 +488,7 @@ const confirmDelete = async () => {
     loading.value = true;
 
     try {
-        const data = prepareItemDMData('deletar',DM,selectedItem)
+        const data = prepareItemDMData('deletar', DM, selectedItem);
         await dmService.deletarItem(data);
         // Atualiza a lista de itens após exclusão
         fetchItemDM();
@@ -528,7 +532,7 @@ const configurarCliente = () => {
 const fetchItemDM = async () => {
     loading.value = true;
     try {
-        const data = prepareItemDMData('listar',DM)
+        const data = prepareItemDMData('listar', DM);
         const response = await dmService.fetchItemDM(data);
         ListaItens.value = response.data;
     } catch (error) {
@@ -618,8 +622,8 @@ onMounted(async () => {
                                 dataKey="id"
                                 :metaKeySelection="false"
                                 @rowSelect="onRowSelect"
-                                :sortOrder="lazyParams.value?.sortOrder||1"
-                                :sortField="lazyParams.value?.sortField ||'Identificacao'"
+                                :sortOrder="lazyParams.value?.sortOrder || 1"
+                                :sortField="lazyParams.value?.sortField || 'Identificacao'"
                                 @filter="onFilterChange($event)"
                                 @page="onPageChange($event)"
                                 @sort="onSortChange($event)"
@@ -634,7 +638,7 @@ onMounted(async () => {
                                                 <InputIcon>
                                                     <i class="pi pi-search" />
                                                 </InputIcon>
-                                                <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
+                                                <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange" />
                                             </IconField>
                                         </div>
                                     </div>
@@ -642,22 +646,25 @@ onMounted(async () => {
                                 <template #empty> Nenhuma DM adicionada. </template>
                                 <Column field="Identificacao" sortable header="Identificação">
                                     <template #body="{ data }">
-        <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
-      </template></Column>
+                                        <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
+                                    </template></Column
+                                >
                                 <Column field="Numero" sortable header="Número">
                                     <template #body="{ data }">
-        <span class="tooltip-target" v-tooltip="data.Numero">{{ data.Numero }}</span>
-      </template>
+                                        <span class="tooltip-target" v-tooltip="data.Numero">{{ data.Numero }}</span>
+                                    </template>
                                 </Column>
 
                                 <Column field="ClienteNome" sortable header="Cliente">
                                     <template #body="{ data }">
-        <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
-      </template></Column>
+                                        <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
+                                    </template></Column
+                                >
                                 <Column field="local" sortable header="Localização">
                                     <template #body="{ data }">
-        <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
-      </template></Column>
+                                        <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
+                                    </template></Column
+                                >
                                 <Column field="Ativo" sortable style="width: 9%; text-align: center" header="Ativo">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
@@ -668,7 +675,7 @@ onMounted(async () => {
                                         {{ normalizeDateTime(data.Updated, true) }}
                                     </template>
                                 </Column>
-                                <Column style="min-width: 8rem"  v-if="admin()">
+                                <Column style="min-width: 8rem" v-if="admin()">
                                     <template #body="slotProps">
                                         <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteDM(slotProps.data)" />
                                     </template>
@@ -716,19 +723,19 @@ onMounted(async () => {
                                         <label for="Voucher" class="ml-2"> Voucher </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.cracha" inputId="cracha":binary="true" />
+                                        <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
                                         <label for="cracha" class="ml-2"> Crachá </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria"   :binary="true"/>
+                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
                                         <label for="Biometria" class="ml-2"> Biometria </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial"  :binary="true" />
+                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
                                         <label for="Facial" class="ml-2"> Rec. Facial </label>
                                     </div>
                                     <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha"  :binary="true" />
+                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
                                         <label for="Senha" class="ml-2"> Senha </label>
                                     </div>
                                 </div>
@@ -773,7 +780,16 @@ onMounted(async () => {
 
                                 <div class="field mt-3 col-12">
                                     <label class="mr-3">Modelo: </label>
-                                    <Dropdown class="" style="width: 250px" v-model="controladora.tipo" optionLabel="label" optionValue="value" :options="tipoControladoras" placeholder="Selecione o tipo de controladora" @change="updateTipoControladora(index, controladora.tipo)" />
+                                    <Dropdown
+                                        class=""
+                                        style="width: 250px"
+                                        v-model="controladora.tipo"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        :options="tipoControladoras"
+                                        placeholder="Selecione o tipo de controladora"
+                                        @change="updateTipoControladora(index, controladora.tipo)"
+                                    />
                                 </div>
 
                                 <!<!-- Controladora 2018 -->
@@ -936,8 +952,16 @@ onMounted(async () => {
 
                                 <template #empty> Nenhum item adicionado. </template>
 
-                                <Column field="SKU" style="width: 9%" sortable header="SKU"></Column>
-                                <Column field="Nome_Produto" sortable style="width: 30%" header="Produto"></Column>
+                                <Column field="SKU" style="width: 9%" sortable header="SKU">
+                                    <template #body="{ data }">
+                                        <span class="tooltip-target" v-tooltip="data.SKU">{{ data.SKU }}</span>
+                                    </template>
+                                </Column>
+                                <Column field="Nome_Produto" sortable style="width: 30%" header="Produto">
+                                    <template #body="{ data }">
+                                        <span class="tooltip-target" v-tooltip="data.Nome_Produto">{{ data.Nome_Produto }}</span>
+                                    </template></Column
+                                >
                                 <Column field="Posicao" sortable style="width: 40%" header="Posição">
                                     <template #body="{ data }">
                                         <span v-tooltip="data.modelo === '2018' ? 'Controladora / Placa / Motor 1 / Motor 2' : data.modelo === '2023' ? 'Controladora / DIP / Andar / Posição' : 'Placa / Motor'">
@@ -948,7 +972,7 @@ onMounted(async () => {
                                 <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" v-tooltip="{ value: 'Excluir Produto', showDelay: 1000, hideDelay: 300 }" />
                                     </template>
                                 </Column>
                                 <template #groupheader="slotProps">
@@ -967,7 +991,7 @@ onMounted(async () => {
             </div>
         </div>
     </div>
-    <Dialog class="" :header="isEditMode ? 'Editar Produto' : 'Adicionar Produto'" :visible.sync="showDialogProduto" :modal="true" :closable="false">
+    <Dialog class="" :header="isEditMode ? 'Editar Produto' : 'Adicionar Produto'" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
         <div class="box card">
             <div class="grid">
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
@@ -1070,14 +1094,14 @@ onMounted(async () => {
             <Button type="button" :label="isEditMode ? 'Atualizar' : 'Salvar'" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
-    <Dialog header="Deletar Item" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false">
+    <Dialog header="Deletar Item" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
             <Button label="OK" icon="pi pi-check" @click="confirmDelete" />
         </template>
     </Dialog>
-    <Dialog header="Deletar DM" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false">
+    <Dialog header="Deletar DM" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />

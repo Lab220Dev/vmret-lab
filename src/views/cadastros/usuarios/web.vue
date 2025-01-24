@@ -410,8 +410,6 @@ const resetForm = () => {
         <div class="col-12">
             <!-- Coluna que ocupa toda a largura da tela -->
             <div class="card">
-                <h5 class="mt-2">Usuário Web</h5>
-                <!-- Título da página -->
                 <TabView v-model:activeIndex="active">
                     <!-- Componente de abas (TabView), controla qual aba está ativa -->
                     <TabPanel header="Listar Usuário Web">
@@ -595,7 +593,7 @@ const resetForm = () => {
                         </div>
                     </TabPanel>
                 </TabView>
-                <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false">
+                <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                     <!-- Diálogo para confirmar a exclusão do usuário -->
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>

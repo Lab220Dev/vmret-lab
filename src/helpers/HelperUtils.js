@@ -11,32 +11,14 @@ const store = useAuthStore();
  * @returns {string} Uma string formatada no padrão CSV.
  */
 export const generateCSV = (fields, data) => {
-  /**
-   * Cria a primeira linha do CSV com os nomes dos campos (cabeçalho), separados por vírgula.
-   * A função `join(',')` une os elementos do array `fields` em uma única string, com vírgulas como separadores.
-   * 
-   * @type {string}
-   */
+
   const header = fields.join(',');
 
-  /**
-   * Cria as linhas do CSV a partir dos dados fornecidos.
-   * Para cada item em `data`, mapeia os campos definidos em `fields` e extrai o valor correspondente.
-   * Se o campo não existir no objeto `row`, insere uma string vazia no lugar.
-   * Depois, junta os valores de cada linha com vírgulas.
-   * 
-   * @type {Array<string>}
-   */
+
   const rows = data.map((row) =>
     fields.map((field) => row[field] || '').join(',')
   );
 
-  /**
-   * Retorna a string CSV completa, que consiste no cabeçalho seguido pelas linhas de dados.
-   * O método `join('\n')` une todas as partes com uma nova linha entre elas, criando a estrutura de um CSV.
-   * 
-   * @returns {string} A string no formato CSV.
-   */
   return [header, ...rows].join('\n');
 };
 
@@ -47,52 +29,18 @@ export const generateCSV = (fields, data) => {
  * @param {string} csvContent - O conteúdo do CSV que será baixado.
  */
 export const downloadCSV = (filename, csvContent) => {
-  
-  /**
-   * Codifica o conteúdo do CSV para um formato adequado para download.
-   * O método `encodeURIComponent` garante que o conteúdo seja corretamente formatado para uso em uma URL.
-   * O tipo MIME "text/csv" é especificado para informar que o arquivo será um CSV.
-   * 
-   * @type {string}
-   */
-  const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
 
-  /**
-   * Cria um novo elemento de link (anchor) no DOM.
-   * Esse elemento será utilizado para simular um clique e iniciar o download do arquivo CSV.
-   * 
-   * @type {HTMLAnchorElement}
-   */
+  const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
   const link = document.createElement('a');
 
-  /**
-   * Define o atributo 'href' do link com a URI codificada do CSV.
-   * Isso faz com que o link aponte para o conteúdo do arquivo CSV.
-   */
   link.setAttribute('href', encodedUri);
 
-  /**
-   * Define o atributo 'download' do link com o nome do arquivo.
-   * Isso permite que o arquivo seja baixado com o nome especificado quando o link for clicado.
-   */
   link.setAttribute('download', filename);
 
-  /**
-   * Adiciona o link criado ao corpo do documento (DOM).
-   * O link precisa estar no DOM para que a ação de clique possa ser simulada.
-   */
   document.body.appendChild(link);
 
-  /**
-   * Simula um clique no link, o que inicia o download do arquivo CSV.
-   * A simulação de clique é feita programaticamente, sem a interação direta do usuário.
-   */
   link.click();
 
-  /**
-   * Remove o link do DOM após o clique.
-   * Isso limpa o DOM, já que o link não precisa mais estar presente após o download.
-   */
   document.body.removeChild(link);
 };
 
@@ -104,12 +52,7 @@ export const downloadCSV = (filename, csvContent) => {
  * @param {boolean} [warnIfEmpty] - Exibe um aviso no console se `data` estiver vazio (padrão: `false`).
  */
 export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {
-  
-  /**
-   * Valida se há dados para exportar.
-   * Se os dados estiverem vazios e a flag `warnIfEmpty` for verdadeira,
-   * lança um erro informando que não há dados para exportar.
-   */
+
   if (!data.length) {
     if (warnIfEmpty) {
       // Lança um erro caso a lista de dados esteja vazia e a flag de alerta esteja ativada
@@ -119,38 +62,17 @@ export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {
     return;
   }
 
-  /**
-   * Determina os campos para o cabeçalho, usando os campos fornecidos ou, se não fornecidos,
-   * usa as chaves do primeiro objeto em `data` como os campos padrão.
-   */
   const selectedFields = fields || Object.keys(data[0]);
 
-  /**
-   * Gera a linha de cabeçalho do CSV com os campos selecionados, separados por vírgulas.
-   * A função `join(',')` cria uma string com os campos separados por vírgulas.
-   */
+
   const header = selectedFields.join(',');
 
-  /**
-   * Gera as linhas do CSV com os dados. Para cada objeto em `data`, cria uma linha no CSV.
-   * Para cada campo em `selectedFields`, o valor correspondente é extraído de cada objeto `row`.
-   * Se o campo não existir no objeto, insere uma string vazia.
-   * Depois, os valores são unidos com vírgulas, criando uma linha do CSV.
-   */
   const rows = data.map(row =>
     selectedFields.map(field => row[field] || '').join(',')
   );
 
-  /**
-   * Junta o cabeçalho e as linhas de dados em uma única string representando o conteúdo do CSV.
-   * As linhas são unidas com uma nova linha (`\n`).
-   */
   const csvContent = [header, ...rows].join('\n');
 
-  /**
-   * Cria um Blob (objeto de dados binários) a partir do conteúdo CSV gerado.
-   * O tipo MIME `text/csv;charset=utf-8;` é especificado para garantir que o arquivo seja tratado corretamente como CSV.
-   */
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 
   /**
@@ -674,31 +596,12 @@ export const enrichData = (target) => {
  * @param {number|null} relatorio.ID_CentroCusto - O ID do Centro de Custo no relatório. Se presente, será usado para filtrar os setores.
  */
 export const filterSetoresByCDC = (relatorio, ListaSetor, ListaSetorOriginal) => {
-  
-  /**
-   * Verifica se o relatório contém um ID de Centro de Custo (`ID_CentroCusto`).
-   * Se existir, filtra os setores para incluir apenas aqueles que possuem o mesmo ID de Centro de Custo ou onde o valor é `null`.
-   */
+ 
   if (relatorio.ID_CentroCusto) {
-    
-    /**
-     * Filtra a lista de setores original (`ListaSetorOriginal.value`), mantendo apenas os setores
-     * que possuem o `id_centro_custo` igual ao `ID_CentroCusto` do relatório ou setores com `value === null`.
-     * O resultado é atribuído a `ListaSetor.value`, que é a lista de setores filtrados.
-     * 
-     * @param {Object} setorItem - Um item individual da lista de setores.
-     * @param {number} setorItem.id_centro_custo - O ID de Centro de Custo do setor.
-     * @param {null} setorItem.value - O valor do setor, que pode ser `null` em alguns casos.
-     */
     ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
       setorItem.id_centro_custo === relatorio.ID_CentroCusto || setorItem.value === null
     );
   } else {
-    
-    /**
-     * Caso o relatório não tenha um `ID_CentroCusto`, a lista de setores filtrados (`ListaSetor.value`)
-     * é simplesmente atribuída com a lista original de setores (`ListaSetorOriginal.value`).
-     */
     ListaSetor.value = ListaSetorOriginal.value;
   }
 };
@@ -718,63 +621,21 @@ export const filterSetoresByCDC = (relatorio, ListaSetor, ListaSetorOriginal) =>
  */
 export const filterFuncionariosBySetorAndPlanta = (relatorio, ListaFuncionarios, ListaFuncionarioFiltrado) => {
 
-  /**
-   * Desestrutura os valores `id_setor` e `id_planta` do objeto `relatorio`.
-   * Esses valores serão usados como critérios de filtro para a lista de funcionários.
-   * 
-   * @type {number|null}
-   */
   const {id_setor, id_planta} = relatorio;
 
-  /**
-   * Verifica se tanto o `id_setor` quanto o `id_planta` são nulos ou não definidos.
-   * Se ambos forem falsos, a lista filtrada de funcionários é simplesmente atribuída com a lista original.
-   */
   if (!(id_setor || id_planta)) {
     ListaFuncionarioFiltrado.value = ListaFuncionarios.value;
   }
 
-  /**
-   * Filtra a lista de funcionários para que ela contenha apenas aqueles que correspondem
-   * ao `id_setor` e/ou `id_planta` fornecidos no relatório.
-   * A filtragem ocorre de acordo com a presença de `id_setor` e `id_planta`.
-   * 
-   * Para cada funcionário na lista, verificamos se o `id_setor` e `id_planta` são correspondentes,
-   * caso esses valores estejam presentes no relatório.
-   * 
-   * @param {Object} funcionario - Um item da lista de funcionários a ser filtrado.
-   * @param {number} funcionario.id_setor - O ID do setor do funcionário.
-   * @param {number} funcionario.id_planta - O ID da planta do funcionário.
-   * 
-   * @returns {boolean} Retorna `true` se o funcionário corresponder aos filtros de setor e planta, caso contrário, retorna `false`.
-   */
   ListaFuncionarioFiltrado.value = ListaFuncionarios.value.filter(funcionario => {
-    /**
-     * Verifica se o funcionário corresponde ao setor (`id_setor`) fornecido no relatório.
-     * Se o `id_setor` estiver presente no relatório, é realizada a comparação entre o setor do funcionário
-     * e o valor de `id_setor` no relatório. Caso contrário, o filtro para setor é ignorado.
-     * 
-     * @type {boolean}
-     */
+
     const matchesSetor = id_setor ? funcionario.id_setor === id_setor : true;
 
-    /**
-     * Verifica se o funcionário corresponde à planta (`id_planta`) fornecida no relatório.
-     * Se o `id_planta` estiver presente no relatório, é realizada a comparação entre a planta do funcionário
-     * e o valor de `id_planta` no relatório. Caso contrário, o filtro para planta é ignorado.
-     * 
-     * @type {boolean}
-     */
     const matchesPlanta = id_planta ? funcionario.id_planta === id_planta : true;
 
-    /**
-     * Retorna `true` se o funcionário atender ambos os critérios de filtro (setor e planta),
-     * ou se um dos filtros não foi fornecido. Caso contrário, retorna `false`.
-     */
     return matchesSetor && matchesPlanta;
   });
 };
-
 
 /**
  * Filtra o relatório com base nos critérios fornecidos e atualiza as listas de funcionários e setores de acordo.
@@ -795,96 +656,37 @@ export const filterFuncionariosBySetorAndPlanta = (relatorio, ListaFuncionarios,
  */
 export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor) => {
 
-  /**
-   * Verifica se não há filtros aplicados (centro de custo, planta e setor estão ausentes ou vazios).
-   * A variável `semFiltro` é verdadeira se nenhum dos filtros estiver presente no relatório.
-   * 
-   * @type {boolean}
-   */
   const semFiltro = (!relatorio.value.id_centro_custo || relatorio.value.id_centro_custo === '')
    && (!relatorio.value.id_planta || relatorio.value.id_planta === '')
     && (!relatorio.value.id_setor || relatorio.value.id_setor === '');
 
-  /**
-   * Se não houver filtros, a lista de funcionários e a lista de setores são restauradas para os valores originais.
-   * A função retorna imediatamente para evitar aplicar filtros.
-   */
   if (semFiltro) {
       ListaFuncionarios.value = [...listaFuncionariosOriginal.value];
       ListaSetor.value = [...ListaSetorOriginal.value];
       return;
   }
 
-  /**
-   * Se o filtro `id_centro_custo` estiver presente no relatório, filtra a lista de setores 
-   * para incluir apenas os setores que correspondem ao `id_centro_custo` fornecido no relatório.
-   * Caso contrário, a lista de setores é mantida intacta.
-   */
   if (relatorio.value.id_centro_custo) {
       ListaSetor.value = ListaSetorOriginal.value.filter((setor) => setor.id_centro_custo === relatorio.value.id_centro_custo);
   } else {
       ListaSetor.value = [...ListaSetorOriginal.value];
   }
 
-  /**
-   * Filtra a lista de funcionários com base no centro de custo, planta e setor fornecidos no relatório.
-   * Para cada funcionário, a função verifica se ele corresponde a qualquer um dos filtros de centro de custo, planta ou setor.
-   * 
-   * @param {Object} funcionario - Um item da lista de funcionários a ser filtrado.
-   * @param {string} funcionario.id_dentro_custo - O ID do centro de custo do funcionário.
-   * @param {string} funcionario.id_planta - O ID da planta do funcionário.
-   * @param {string} funcionario.id_setor - O ID do setor do funcionário.
-   * 
-   * @returns {boolean} Retorna `true` se o funcionário corresponder a qualquer um dos filtros de centro de custo, planta ou setor, caso contrário retorna `false`.
-   */
   ListaFuncionarios.value = listaFuncionariosOriginal.value.filter((funcionario) => {
-      /**
-       * Verifica se o funcionário corresponde ao centro de custo fornecido no relatório.
-       * Se o filtro de `id_centro_custo` estiver presente, compara com o `id_dentro_custo` do funcionário.
-       * 
-       * @type {boolean}
-       */
+
       const cdcMatch = relatorio.value.id_centro_custo && funcionario.id_dentro_custo === relatorio.value.id_centro_custo;
 
-      /**
-       * Verifica se o funcionário corresponde à planta fornecida no relatório.
-       * Se o filtro de `id_planta` estiver presente, compara com o `id_planta` do funcionário.
-       * 
-       * @type {boolean}
-       */
       const plantaMatch = relatorio.value.id_planta && funcionario.id_planta === relatorio.value.id_planta;
-
-      /**
-       * Verifica se o funcionário corresponde ao setor fornecido no relatório.
-       * Se o filtro de `id_setor` estiver presente, compara com o `id_setor` do funcionário.
-       * 
-       * @type {boolean}
-       */
       const setorMatch = relatorio.value.id_setor && funcionario.id_setor === relatorio.value.id_setor;
 
-      /**
-       * Retorna `true` se o funcionário corresponder a qualquer um dos filtros (centro de custo, planta ou setor),
-       * ou `false` caso contrário.
-       */
       return cdcMatch || plantaMatch || setorMatch;
   });
 };
-/**
- * Checks if Mob integration is enabled.
- *
- * @returns {boolean} Returns true if the Mob integration is enabled, otherwise false.
- */
+
 export function isMobEnabled (){
   return store.Integracao;
 }
-/**
- * Prepares list data by merging base data with provided parameters.
- * If the user role is 'Administrador', only the provided parameters are returned.
- * Otherwise, the base data is merged with the provided parameters.
- *
- * @param {Object} params - The parameters to be merged with the base data.
- * @returns {Object} The prepared list data.
- */
+
 export const prepareListData =(params)=>{
     let baseData = {
         id_usuario: store.userId || null,  

@@ -284,7 +284,7 @@ onMounted(() => {
                         </div>
 
                         <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
-                        <Dialog header="Deletar Função" v-model:visible="deleteFuncaoDialog" style="width: 400px" :modal="true" :closable="false">
+                        <Dialog header="Deletar Função" v-model:visible="deleteFuncaoDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">

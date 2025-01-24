@@ -41,7 +41,7 @@
         </template>
 
         <!-- Pop-up com Detalhes da Máquina -->
-        <Dialog v-model:visible="showDialog" header="Detalhes da Máquina" :modal="true" :closable="true" :style="{ width: '50vw' }">
+        <Dialog v-model:visible="showDialog" header="Detalhes da Máquina" :modal="true" :closable="true" :style="{ width: '50vw' } " :draggable="false">
             <div>
                 <p><strong>Nome:</strong> {{ selectedMachine?.name }}</p>
                 <p><strong>Última Notificação:</strong> {{ selectedMachine?.lastNotification || 'Não disponível' }}</p>

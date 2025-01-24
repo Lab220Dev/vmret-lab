@@ -520,7 +520,7 @@ onMounted(async () => {
                     <Button v-if="!visible" style="width: 15%" class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" :disabled="mob"/>
                 </div>
 
-                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false">
+                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span>

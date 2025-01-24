@@ -269,7 +269,7 @@ onMounted(() => {
                             </form>
                         </div>
 
-                        <Dialog header="Deletar Planta" v-model:visible="deletePlantaDialog" style="width: 400px" :modal="true" :closable="false">
+                        <Dialog header="Deletar Planta" v-model:visible="deletePlantaDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">

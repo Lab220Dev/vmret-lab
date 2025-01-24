@@ -1,6 +1,6 @@
 <template>
   <!-- Componente de diálogo para confirmação de exclusão -->
-  <Dialog header="Deletar Item" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
+  <Dialog header="Deletar Item" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
     <p>{{ dialogMessage }}</p>
     <!-- Rodapé do diálogo com botões para cancelar ou confirmar -->
     <template #footer>

@@ -473,7 +473,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!-- Diálogo de erro (caso ocorra algum erro na execução da busca) -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>  <!-- Exibe a mensagem do erro -->
         <template #footer>
             <!-- Botão de OK no diálogo de erro -->

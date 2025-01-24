@@ -13,6 +13,9 @@ const usuarioDMService = {
     async listarUsuariosDM(data) {
         return postRequest('/UDM/listar', data);
     },
+    async listarUDMSimples(data) {
+        return postRequest('/UDM/listaSimples', data);
+    },
     async adicionarUsuarioDM(data) {
         return postRequest('/UDM/adicionar', data);
     },
