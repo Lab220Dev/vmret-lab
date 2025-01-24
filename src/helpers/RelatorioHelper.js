@@ -108,6 +108,17 @@ export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
                 data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
                 data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
+        case 'LogsDesk':
+            // Retorna os dados preparados para o relatório de Logs.
+            return {
+                id_cliente: relatorio.value.dm.id_cliente,
+                id_dm: relatorio.value.dm.value, // Adiciona o ID do DM.
+                id_usuario: relatorio.value.id_usuario, // Adiciona o ID do usuário.
+                id_funcionario: relatorio.value.id_funcionario, // Adiciona o ID do funcionário.
+                operacao: relatorio.value.id_operacao, // Adiciona o ID da operação.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
+            };
         default:
             // Se o tipo do relatório não for reconhecido, retorna apenas a base de dados com o ID do cliente.
             return baseData;

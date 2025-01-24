@@ -136,7 +136,7 @@ onMounted(() => {
             :metaKeySelection="false"
             :sortOrder="1"
             :sortField="'sku'"
-            tableStyle="min-width: 50rem; table-layout: fixed;"
+            tableStyle="max-width: 100%; table-layout: fixed;"
         >
             <!-- A tabela exibe os dados provenientes da variável 'EstoqueDM' com várias funcionalidades de interatividade, como filtros, paginação e ordenação. -->
             <!-- O usuário pode filtrar os dados globalmente usando os campos definidos em ':globalFilterFields', como 'sku', 'nome', 'Posicao', 'quantidade', etc. -->
@@ -170,10 +170,17 @@ onMounted(() => {
             <template #empty> {{ emptyMessage }} </template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="sku" class="table-cell" sortable header="SKU"></Column>
+            <Column field="sku" class="table-cell" style="width: 10%;" sortable header="SKU">
+            
+                <template #body="{ data }">
+                    <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span>
+                    <!-- Exibe o nome do produto com tooltip -->
+                </template>
+            
+            </Column>
             <Column field="nome" sortable header="Produto">
                 <template #body="{ data }">
-                    <span v-tooltip="data.nome">{{ data.nome }}</span>
+                    <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
                     <!-- Exibe o nome do produto com tooltip -->
                 </template>
             </Column>
@@ -197,7 +204,7 @@ onMounted(() => {
                     <!-- Tooltip para a coluna de quantidade mínima -->
                 </template>
             </Column>
-            <Column field="capacidade" sortable style="text-align: center" header="Capacidade"></Column>
+            <Column field="capacidade" sortable  style=" width: 20%;text-align: center " header="Capacidade"></Column>
             <!-- Coluna para capacidade -->
         </DataTable>
 

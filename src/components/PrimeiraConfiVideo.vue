@@ -22,7 +22,7 @@
                     </div>
 
                     <!-- Caixa de diálogo de erro -->
-                    <Dialog v-model:visible="showDialog" header="Erro!" :closable="false" :style="{ width: '300px' }">
+                    <Dialog v-model:visible="showDialog" header="Erro!" :closable="false" :style="{ width: '300px' }" :draggable="false">
                         <p v-if="fileError" class="error">{{ fileError }}</p>
                     </Dialog>
 

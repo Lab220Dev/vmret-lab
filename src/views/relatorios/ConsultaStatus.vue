@@ -172,7 +172,7 @@ const handleRowSelection = async (event) => {
             <LoadingSpinner v-if="loading" /> <!-- Exibe o componente de carregamento -->
             
             <!-- Modal para alterar prazo -->
-            <Dialog :header="selectedItem ? `Alterar Prazo de Retirada: ${selectedItem.nome}` : 'Alterar Prazo de Retirada'" v-model:visible="modalVisible" modal>
+            <Dialog :header="selectedItem ? `Alterar Prazo de Retirada: ${selectedItem.nome}` : 'Alterar Prazo de Retirada'" v-model:visible="modalVisible" modal :draggable="false">
                 <div v-if="selectedItem">
                     <label for="novoPrazo">Novo Prazo:</label>
                     <InputText id="novoPrazo" v-model="novoPrazo" class="w-full mt-2" />

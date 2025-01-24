@@ -166,7 +166,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!-- Diálogo que exibe mensagens de alerta ou erro -->
-    <Dialog header="" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="false">
+    <Dialog header="" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
 
         <!-- Rodapé do diálogo com um botão OK -->

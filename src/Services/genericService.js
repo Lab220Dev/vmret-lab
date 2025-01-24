@@ -1,4 +1,4 @@
-import axios from '@/axios.js'; // Importa a instância personalizada do axios para realizar requisições HTTP.
+import axios from '@/axios.js';
 
 const servicoGenerico ={}
 

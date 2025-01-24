@@ -389,7 +389,7 @@ onMounted(() => {
         </TabView>
 
         <!--caixa de diálogo de confirmação para deletar cliente -->
-        <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true" :closable="false">
+        <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class=""

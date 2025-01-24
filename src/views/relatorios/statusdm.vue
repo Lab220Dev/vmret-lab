@@ -132,7 +132,7 @@ const handleDatepickerOpen = () => {
             :globalFilterFields="['Identificacao', 'status', 'dataHora']"
             selectionMode="single"
             :metaKeySelection="false"
-            tableStyle="min-width: 50rem; table-layout: fixed;"
+            tableStyle="max-width: 100%; table-layout: fixed;"
             :sortOrder="1"
             :sortField="'Identificacao'"
         >
@@ -196,17 +196,17 @@ const handleDatepickerOpen = () => {
             <template #empty> {{ emptyMessage }} </template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="Identificacao" sortable header="DM"></Column>
+            <Column field="Identificacao" style="width: 20%;" sortable header="DM"></Column>
             <Column field="status" sortable header="Status"></Column>
-            <Column field="dataHora" sortable header="Data">
+            <Column field="dataHora" style="width: 20%; text-align: center" sortable header="Data">
                 <template #body="{ data }">
-                    <span v-tooltip="data.dataHora">{{ formatDate(new Date(data.dataHora)) }}</span>
+                    <span >{{ formatDate(new Date(data.dataHora)) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
-            <Column field="Hora" sortable header="Hora">
+            <Column field="Hora" style="width: 15%; text-align: center" sortable header="Hora">
                 <template #body="{ data }">
-                    <span v-tooltip="data.dataHora">{{ formatTime(new Date(data.dataHora)) }}</span>
+                    <span>{{ formatTime(new Date(data.dataHora)) }}</span>
                     <!-- Exibe a hora formatada -->
                 </template>
             </Column>

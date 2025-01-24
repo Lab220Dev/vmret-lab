@@ -295,8 +295,6 @@ const deleteUsuario = async (item) => {
         <!-- Coluna principal que contém a card com o título e o conteúdo -->
         <div class="col-12">
             <div class="card">
-                <!-- Título da página -->
-                <h4 class="mt-2">Usuários Dispenser Machines</h4>
                 <!-- Componente TabView para controlar as abas de navegação -->
                 <TabView v-model:activeIndex="active">
                     <!-- Aba para listar os usuários DM -->
@@ -488,7 +486,7 @@ const deleteUsuario = async (item) => {
                 </TabView>
 
                 <!-- Diálogo de confirmação de exclusão de usuário -->
-                <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false">
+                <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">

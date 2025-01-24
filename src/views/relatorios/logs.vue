@@ -4,8 +4,12 @@ import { FilterMatchMode } from 'primevue/api'; // Importação do FilterMatchMo
 import { useToast } from 'primevue/usetoast'; // Importação do hook useToast para exibir mensagens de notificação
 import '@vuepic/vue-datepicker/dist/main.css'; // Importação do CSS do VueDatePicker
 import { ref, onMounted, watch } from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
-import axios from '@/axios.js'; // Importação do Axios para realizar requisições HTTP
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store para gerenciar o estado de autenticação
+import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs web
+import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
+import usuarioService from '@/services/usuarioService';
+
+import funcionarioService from '@/Services/funcionarioService.js';
 
 const filteredCount = ref(0); // Contador reativo para o número de registros filtrados
 
@@ -79,30 +83,14 @@ const toISODate = (date) => {
 
 // Função que busca os logs filtrados
 const buscar = async () => {
-    const data = {
-        // Prepara os dados para a requisição
-        id_cliente: store.userIdCliente, // ID do cliente autenticado
-        id_dm: relatorio.value.dm, // Filtro de DM
-        id_usuario: relatorio.value.id_usuario, // Filtro de usuário
-        id_funcionario: relatorio.value.id_funcionario, // Filtro de funcionário
-        operacao: relatorio.value.id_operacao, // Filtro de operação
-        data_inicio: toISODate(relatorio.value.data_inicio), // Data inicial (convertida para formato ISO)
-        data_final: toISODate(relatorio.value.data_final) // Data final (convertida para formato ISO)
-    };
+        try {
 
-    try {
-        const response = await axios.post('/Log/relatorio', data, {
-            // Realiza a requisição POST para buscar os logs
-            headers: {
-                Authorization: `Bearer ${store.token}` // Envia o token de autenticação no cabeçalho
-            }
-        });
-        historico.value = response.data; // Armazena a resposta na variável historico
+        historico.value = await relatorioService.logs(relatorio); 
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao buscar logs:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os logs.' }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os logs.', life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -125,10 +113,7 @@ const fetchDM = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await axios.post('/DM/listar', data, {
-            // Realiza a requisição para listar os DMs
-            headers: { Authorization: `Bearer ${store.token}` } // Envia o token de autenticação
-        });
+        const response = await dmService.listarDMs(data); 
         dms.value = [
             // Atualiza a lista de DMs com a resposta
             todosOption,
@@ -141,7 +126,7 @@ const fetchDM = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de dms:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de DMs.' }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de DMs.', life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -150,10 +135,7 @@ const fetchUsuario = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await axios.post('/usuarios/listar', data, {
-            // Realiza a requisição para listar os usuários
-            headers: { Authorization: `Bearer ${store.token}` } // Envia o token de autenticação
-        });
+        const response = await usuarioService.listarUsuarios(data);
         usuario.value = response.data.map(({ id_usuario, nome }) => ({
             // Mapeia a resposta para o formato esperado
             label: nome,
@@ -162,7 +144,7 @@ const fetchUsuario = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de usuários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de usuários.' }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de usuários.', life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -171,10 +153,7 @@ const fetchFuncionarios = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await axios.post('/funcionarios/listar', data, {
-            // Realiza a requisição para listar os funcionários
-            headers: { Authorization: `Bearer ${store.token}` } // Envia o token de autenticação
-        });
+        const response = await funcionarioService.listarFuncionarios(data);
         ListaFuncionarios.value = response.data.map((funcionario) => ({
             // Mapeia a resposta para o formato esperado
             label: funcionario.nome,
@@ -183,7 +162,7 @@ const fetchFuncionarios = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar funcionários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de funcionários.' }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de funcionários.', life: 3000 }); // Exibe uma notificação de erro
     }
 };
 

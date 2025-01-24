@@ -391,7 +391,7 @@ const debouncedFilterChange = debounce(() => {
                                     </TabView>
 
                                     <!-- dialogo editar item-->
-                                    <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-2">
+                                    <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :modal="true" class="p-2" :draggable="false">
                                         <div>
                                             <div class="p-fluid formgrid grid">
                                                 <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -411,11 +411,13 @@ const debouncedFilterChange = debounce(() => {
                                     </Dialog>
 
                                     <!-- dialogo adicionar item-->
-                                    <Dialog v-model:visible="visible" modal header="Adicionar Itens do Setor">
+                                    <Dialog v-model:visible="visible" modal header="Adicionar Itens do Setor" :draggable="false">
                                         <div class="grid ">
                                             <div class="col-12">
                                                 <label for="Produto" class=" font-semibold col-2">Produto: </label>
-                                                <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaItensSetor" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+                                                <Dropdown v-model="produtoSelecionado.id_produto" :options="ListaItensSetor" 
+                                                :virtualScrollerOptions="{ itemSize: 30 }"
+                                                optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0"/>
                                             </div>
                                             <div class="col-12">
                                                 <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>
@@ -429,7 +431,7 @@ const debouncedFilterChange = debounce(() => {
                                     </Dialog>
 
                                     <!-- dialogo deletar produto-->
-                                    <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true">
+                                    <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Deletar Item" :modal="true" :draggable="false">
                                         <div class="confirmation-content">
                                             <i  style="font-size: 2rem" />
                                             <span v-if="item"
@@ -443,7 +445,7 @@ const debouncedFilterChange = debounce(() => {
                                     </Dialog>
 
                                     <!-- dialogo deletar setor-->
-                                    <Dialog header="Deletar setor?" v-model:visible="deleteSetorDialog" style="width: 400px" :modal="true" :closable="false">
+                                    <Dialog header="Deletar setor?" v-model:visible="deleteSetorDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                                         <div class="confirmation-content">
                                             <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                             <span

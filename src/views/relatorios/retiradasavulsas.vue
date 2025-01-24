@@ -352,7 +352,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!-- Mensagem de erro exibida em um diálogo -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true">
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <!-- Botão para fechar o diálogo de erro -->

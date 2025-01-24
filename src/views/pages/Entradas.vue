@@ -198,7 +198,7 @@ onMounted(() => {
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="chave">Chave:</label>
-                    <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden" style="min-height: 20px" inputClass="w-full" rows="2" cols="30" :disabled="validador" />
+                    <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden" style="min-height: 30px" inputClass="w-full" rows="2" cols="30" :disabled="validador" />
                 </div>
                 <div class="full lg:col-12 md:col-12 sm:col-12">
                     <Button type="submit" label="Sincronizar" icon="pi pi-check" class="mt-4" :disabled="validador" />

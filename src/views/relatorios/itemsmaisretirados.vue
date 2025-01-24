@@ -514,7 +514,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!-- Diálogo de erro com a mensagem de erro -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />

@@ -932,7 +932,7 @@ const hideDialog = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :draggable="false" :modal="true" class="p-fluid">
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" header="Edição do Item" :draggable="false" :modal="true" class="p-fluid" >
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
@@ -951,11 +951,21 @@ const hideDialog = () => {
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="visible" :modal="true" :draggable="false" header="Adicionar Itens do Funcionário">
+        <Dialog v-model:visible="visible" 
+        :modal="true" 
+        :draggable="false" 
+        header="Adicionar Itens do Funcionário">
             <div class="grid">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">Produto: </label>
-                    <Dropdown v-model="selectedProduct.id_produto" :options="ListaProdutosDisponiveis" optionLabel="label" optionValue="value" placeholder="Selecione um produto" class="col-8 p-0" />
+                    <Dropdown 
+                    v-model="selectedProduct.id_produto" :options="ListaProdutosDisponiveis" optionLabel="label" 
+                    :virtualScrollerOptions="{ itemSize: 30 }"
+                    :filter="true"
+                    :filterBy="'label'"
+                    optionValue="value" 
+                    placeholder="Selecione um produto" 
+                    class="col-8 p-0" />
                 </div>
                 <div class="col-12">
                     <label for="Quantidade" class="font-semibold w-6rem mr-2">Quantidade: </label>

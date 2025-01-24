@@ -5,8 +5,14 @@ import { FilterMatchMode } from 'primevue/api'; // Modo de filtragem do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Função para exibir mensagens de toast
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilo do VueDatePicker
 import { ref, onMounted, watch } from 'vue'; // Funções do Vue para reatividade e ciclo de vida
-import axios from '@/axios.js'; // Axios para realizar requisições HTTP
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação e dados do usuário
+
+import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
+import usuarioDMService from '@/services/usuarioDMService';
+
+import funcionarioService from '@/Services/funcionarioService.js';
+
+import relatorioService  from '@/Services/relatorioService'; // Serviço para buscar logs de desktop
 
 // Contadores e mensagens reativas
 const filteredCount = ref(0); // Contador de registros filtrados
@@ -21,8 +27,11 @@ const dropdown3 = ref(null); // Referência para o terceiro dropdown
 const todosOption = { label: 'Todos', value: null }; // Opção padrão para "Todos" nos dropdowns
 
 // Variáveis para armazenar os dados de DMs, operações e filtros
-const historicoDesk = ref([]); // Armazena os registros históricos
+const historico = ref([]); // Armazena os registros históricos
 const dms = ref([todosOption]); // Lista de DMs para o dropdown
+
+
+
 const operacao = ref([ // Lista de tipos de operação para o dropdown
     { label: 'Todos', value: null },
     { label: 'Insert', value: 'INSERT' },
@@ -37,7 +46,7 @@ const filters = ref({
 
 // Variáveis para armazenar as opções de funcionários e usuários
 const ListaFuncionarios = ref([todosOption]);
-const usuario = ref([]); // Lista de usuários
+const operador = ref([]); // Lista de usuários
 const relatorioDesk = ref({ // Objeto que armazena os filtros para a busca de logs
     dm: '',
     id_usuario: '',
@@ -79,83 +88,76 @@ const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null; // Retorna a data em formato ISO, ou null se não houver data
 };
 
-// Função para buscar logs com base nos filtros selecionados
-const buscar = async () => {
-    // Dados que serão enviados para a requisição
-    const data = {
-        id_cliente: store.userIdCliente, // ID do cliente da store de autenticação
-        id_dm: relatorioDesk.value.dm, // DM selecionado
-        id_usuario: relatorioDesk.value.id_usuario, // ID do usuário selecionado
-        id_funcionario: relatorioDesk.value.id_funcionario, // ID do funcionário selecionado
-        operacao: relatorioDesk.value.id_operacao, // Operação selecionada
-        data_inicio: toISODate(relatorioDesk.value.data_inicio), // Data inicial
-        data_final: toISODate(relatorioDesk.value.data_final) // Data final
-    };
-    try {
-        const response = await axios.post('/Log/relatoriodesk', data); // Requisição para buscar logs
-        historicoDesk.value = response.data; // Armazena os dados retornados na variável reativa
-        filteredCount.value = historicoDesk.value.length; // Atualiza o contador de registros filtrados
-    } catch (error) {
-        console.error('Erro ao buscar logs:', error); // Log de erro caso a requisição falhe
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível buscar os logs' }); // Mensagem de erro
-    }
-};
-
 // Função que monitora mudanças no filtro global e atualiza o contador de registros filtrados
 watch(() => filters.value.global.value, () => {
-    filteredCount.value = historicoDesk.value.filter(item => {
+    filteredCount.value = historico.value.filter(item => {
         const filterValue = filters.value.global.value?.toLowerCase() || ''; // Valor do filtro global
         return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum valor no item contém o filtro
     }).length; // Atualiza o contador de registros filtrados
 }, { immediate: true }); // O watch é executado imediatamente após a inicialização
 
+// Função para buscar a lista de usuários (Usuário DM = Operador)
+const fetchUsuarioDM = async () => {
+    const data = { id_cliente: relatorioDesk.value.dm.id_cliente  }; // Dados para a requisição
+    try {
+        const response = await usuarioDMService.listarUDMSimples(data); // Requisição para buscar usuários
+        operador.value = response.data.map(({ id, nome, id_cliente }) => ({ // Mapeia os usuários para o formato esperado no dropdown
+            label: nome, 
+            value: id,
+            id_cliente: id_cliente
+        }));
+    } catch (error) {
+        console.error('Erro ao carregar lista de operadores:', error); // Log de erro
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os operadores', life: 3000  }); // Mensagem de erro
+    }
+};
 // Função para buscar DMs disponíveis
 const fetchDM = async () => {
-    const data = { id_cliente: store.userIdCliente }; // Dados para a requisição
     try {
-        const response = await axios.post('/DM/listar', data); // Requisição para buscar DMs
-        dms.value = [todosOption, ...response.data.map(({ ID_DM, Identificacao }) => ({ // Mapeia as DMs para o formato esperado no dropdown
+        const response = await dmService.listarDMId(); // Requisição para buscar DMs
+        dms.value = [todosOption, ...response.data.map(({ id_dm, Identificacao , id_cliente}) => ({ // Mapeia as DMs para o formato esperado no dropdown
             label: Identificacao, 
-            value: ID_DM
+            value: id_dm,
+            id_cliente: id_cliente
         }))]; // Atualiza a lista de DMs
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error); // Log de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as DMs' }); // Mensagem de erro
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as DMs', life: 3000 }); // Mensagem de erro
     }
 };
 
-// Função para buscar a lista de usuários
-const fetchUsuario = async () => {
-    const data = { id_cliente: store.userIdCliente }; // Dados para a requisição
-    try {
-        const response = await axios.post('/UDM/listaSimples', data); // Requisição para buscar usuários
-        usuario.value = response.data.map(({ id, nome }) => ({ // Mapeia os usuários para o formato esperado no dropdown
-            label: nome, 
-            value: id
-        }));
-    } catch (error) {
-        console.error('Erro ao carregar lista de usuários:', error); // Log de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os usuários' }); // Mensagem de erro
-    }
-};
-
-// Função para buscar a lista de funcionários
+// Função que busca os funcionários disponíveis
 const fetchFuncionarios = async () => {
-    const data = { id_cliente: store.userIdCliente }; // Dados para a requisição
+    const data = { id_cliente: relatorioDesk.value.dm.id_cliente }; // Prepara os dados para a requisição
+
     try {
-        const response = await axios.post('/funcionarios/listaSimples', data, { // Requisição para buscar funcionários
-            headers: {
-                Authorization: `Bearer ${store.token}` // Cabeçalho de autenticação
-            }
-        });
-        ListaFuncionarios.value = response.data.map((funcionario) => ({ // Mapeia os funcionários para o formato esperado no dropdown
-            label: funcionario.nome, 
-            value: funcionario.id_funcionario
+        const response= await funcionarioService.listarFuncionariosSimples(data);
+        ListaFuncionarios.value = response.data.map((funcionario) => ({
+            value: funcionario.id_funcionario, // ID do funcionário.
+            label: funcionario.nome // Nome do funcionário.
         }));
     } catch (error) {
-        console.error('Erro ao carregar funcionários:', error); // Log de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os funcionários' }); // Mensagem de erro
+        // Caso ocorra um erro na requisição
+        console.error('Erro ao carregar funcionários:', error); // Exibe o erro no console
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de funcionários.', life: 3000 }); // Exibe uma notificação de erro
     }
+};
+
+const buscar = async () => {
+
+    try {
+        historico.value = await relatorioService.logDesktop(relatorioDesk); // Requisição para buscar logs
+        filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
+    } catch (error) {
+        console.error('Erro ao buscar logs:', error); // Log de erro caso a requisição falhe
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível buscar os logs', life: 3000 }); // Mensagem de erro
+    }
+};
+
+const handleDmChange = async () => {
+    await fetchUsuarioDM(); // Busca os usuários
+    await fetchFuncionarios(); // Busca os funcionários
+    
 };
 
 // Função para fechar todos os dropdowns abertos
@@ -170,12 +172,11 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
 };
 
+
+
 // Função chamada ao montar o componente, para buscar dados iniciais
 onMounted(() => {
     fetchDM(); // Busca as DMs
-    fetchUsuario(); // Busca os usuários
-    fetchFuncionarios(); // Busca os funcionários
-    //fetchOperacao(); // Função comentada, talvez usada no futuro
 });
 </script>
 
@@ -183,36 +184,36 @@ onMounted(() => {
     <!-- Formulário de filtros para a busca dos logs -->
     <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-6 ml-2 text-2xl">Log de Maquina</h5>
+            <h5 class="my-6 ml-2 text-2xl">Log de Máquina</h5>
             <div class="grid mt-3 mx-1 p-1">
                 <!-- Filtros para DM, Operação, Usuário, Funcionário, e Data -->
-                <div class="field lg:col-4 md:col-6 sm:col-6">
-                    <label for="usuario">DMs:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label"
-                        optionValue="value" placeholder="Todos" ref="dropdown3" />
+                <div class="field lg:col-2 md:col-6 sm:col-6">
+                    <label for="operador">DMs:</label>
+                    <Dropdown class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter
+                         placeholder="Todos" ref="dropdown1" @change="handleDmChange" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <!-- <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
                     <Dropdown class="drop" v-model="relatorioDesk.id_operacao" :options="operacao" optionLabel="label"
                         optionValue="value" placeholder="Todos" />
+                </div> -->
+                <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <label for="operador">Operador:</label>
+                    <Dropdown class="drop" v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label"
+                        optionValue="value" placeholder="Todos" ref="dropdown2" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
-                    <label for="usuario">Usuário:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.id_usuario" :options="usuario" optionLabel="label"
+                <div class="field lg:col-3 md:col-6 sm:col-6">
+                    <label for="operador">Funcionario:</label>
+                    <Dropdown class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
                         optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
-                    <label for="usuario">Funcionario:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
-                        optionValue="value" placeholder="Todos" ref="dropdown4" />
-                </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-2 md:col-6 sm:col-6">
                     <label for="perfil">Data Inicial:</label>
                     <VueDatePicker class="drop" v-model="relatorioDesk.data_inicio" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
                         :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
                 </div>
-                <div class="field lg:col-4 md:col-6 sm:col-6">
+                <div class="field lg:col-2 md:col-6 sm:col-6">
                     <label for="perfil">Data Final:</label>
                     <VueDatePicker class="drop" v-model="relatorioDesk.data_final" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
@@ -227,7 +228,7 @@ onMounted(() => {
         <!-- Tabela para exibição dos logs -->
         <DataTable 
         v-model:filters="filters"
-        :value="historicoDesk" 
+        :value="historico" 
         stripedRows 
         showGridlines 
         paginator 

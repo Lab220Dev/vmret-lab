@@ -16,7 +16,7 @@
         </DataTable>
 
         <!-- Diálogo para associar vídeo -->
-        <Dialog v-model:visible="showDialog" header="Editar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false">
+        <Dialog v-model:visible="showDialog" header="Editar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
             <hr class="my-0" />
             <form class="card formdevideo mx-4 my-3 py-3" @submit.prevent="uploadVideo">
                 <!-- Campo de seleção de arquivo (oculto) -->
@@ -43,7 +43,7 @@
                 <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
             </div>
         </Dialog>
-        <Dialog v-model:visible="showDeleteDialog" header="Apagar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false">
+        <Dialog v-model:visible="showDeleteDialog" header="Apagar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
             <hr class="my-0" />
             <div class="m-5">
                 <p class="text-sm "><strong>Você tem certeza que quer apagar o video:</strong></p>

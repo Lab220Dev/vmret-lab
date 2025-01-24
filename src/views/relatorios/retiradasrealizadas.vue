@@ -201,7 +201,12 @@ onMounted(() => {
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <label for="perfil">Funcionário:</label>
                 <!-- Dropdown para selecionar Funcionário -->
-                <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                <Dropdown class="drop" 
+                v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                optionLabel="label" 
+                optionValue="value" 
+                placeholder="Todos" 
+                ref="dropdown5" />
             </div>
 
             <!-- Filtro Data Inicial -->
@@ -272,12 +277,11 @@ onMounted(() => {
             :rowsPerPageOptions="[5, 10, 20, 50]"
             rowHover
             :globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-            tableStyle="min-width: 50rem; table-layout: fixed;"
+            tableStyle="max-width: 100%;"
             ref="dt"
             class="mt-6"
             :sortField="'ProdutoSKU'"
             :sortOrder="1"
-            :tableStyle="{ width: '100%' }"
         >
             <!-- 
     A tabela exibe os dados contidos na variável 'retiradas', que provavelmente são registros de algum tipo de transação ou retirada de itens. Cada linha da tabela corresponde a um item dessa lista.
@@ -338,62 +342,58 @@ onMounted(() => {
             <template #empty> {{ emptyMessage }} </template>
 
             <!-- Colunas da tabela -->
-            <Column field="Identificacao" class="table-cell" sortable style="width: 8%" header="DM">
-                <template #body="{ data }">
+            <Column field="Identificacao" class="table-cell" sortable header="DM">
+                <!-- <template #body="{ data }">
                     <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
-                    <!-- Exibe o DM com tooltip -->
+                </template> -->
+            </Column>
+
+            <Column field="Dia" sortable class="table-cell"  header="Data">
+                <template #body="{ data }">
+                    <span>{{ formatDateToString(new Date(data.Dia)) }}</span>
                 </template>
             </Column>
 
-            <Column field="Dia" sortable class="table-cell" style="width: 10%" header="Data">
-                <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatDateToString(new Date(data.Dia)) }}</span>
-                    <!-- Exibe a data formatada -->
-                </template>
-            </Column>
-
-            <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
-                <template #body="{ data }">
+            <Column field="Hora" sortable class="table-cell"  header="Hora">
+                <!-- <template #body="{ data }">
                     <span v-tooltip="data.Hora">{{ formatTimeToString(new Date(data.Dia)) }}</span>
-                    <!-- Exibe a hora formatada -->
-                </template>
+                </template> -->
             </Column>
 
-            <Column field="Matricula" sortable class="table-cell" style="width: 10%" header="Matricula">
-                <template #body="{ data }">
+            <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  header="Matricula">
+                <!-- <template #body="{ data }">
                     <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
-                    <!-- Exibe a matrícula -->
-                </template>
+                </template> -->
             </Column>
 
-            <Column field="Nome" class="table-cell" style="width: 10%" sortable header="Nome">
-                <template #body="{ data }">
+            <Column field="Nome" class="table-cell"  sortable header="Nome">
+                <!-- <template #body="{ data }">
                     <span v-tooltip="data.Nome">{{ data.Nome }}</span>
-                    <!-- Exibe o nome com tooltip -->
-                </template>
+                </template> -->
             </Column>
 
-            <Column field="Email" sortable class="table-cell" header="E-mail">
-                <template #body="{ data }">
+            <Column field="Email" sortable class="table-cell"  header="E-mail">
+                <!-- <template #body="{ data }">
                     <span v-tooltip="data.Email">{{ data.Email }}</span>
-                    <!-- Exibe o email com tooltip -->
+                </template> -->
+            </Column>
+
+            <Column field="ProdutoNome" sortable class="table-cell" header="Item">
+                <template #body="{ data }">
+                    <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
                 </template>
             </Column>
 
-            <Column field="ProdutoNome" style="width: 20%" sortable class="table-cell" header="Item">
-                <template #body="{ data }">
-                    <span v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
-                    <!-- Exibe o nome do produto -->
-                </template>
-            </Column>
+            <Column field="Quantidade"  sortable class="text-center table-cell">
+                <template #header>
+                    <span v-tooltip="'Quantidade'">Quant.</span>
+                    <!-- Tooltip para a coluna de quantidade mínima -->
+                </template></Column>
 
-            <Column field="Quantidade" style="width: 10%" sortable header="Quant" class="text-center table-cell"></Column>
-
-            <Column field="ProdutoSKU" class="table-cell" style="width: 10%" sortable header="CA">
-                <template #body="{ data }">
+            <Column field="ProdutoSKU" class="table-cell"  sortable header="CA">
+                <!-- <template #body="{ data }">
                     <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
-                    <!-- Exibe o SKU do produto -->
-                </template>
+                </template> -->
             </Column>
         </DataTable>
 
@@ -411,7 +411,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!-- Caixa de diálogo de erro -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false">
+    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <!-- Mensagem de erro -->
         <template #footer>
@@ -501,5 +501,21 @@ onMounted(() => {
 
     /* Alinha o texto à esquerda nos campos do formulário */
     text-align: left;
+}
+
+/* Estilos para a exibição de tooltip */
+.tooltip-target {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* Estilos para o tooltip, permitindo múltiplas linhas de texto */
+.v-tooltip {
+    max-width: 400px;
+    white-space: normal;
 }
 </style>

@@ -80,7 +80,7 @@ onMounted(async () => {
                 <h5 class="my-6 ml-2 text-2xl">Liberação Avulsa</h5>
 
                 <!-- Grid interno para organizar os campos de entrada -->
-                <div class="my-6 mx-0 p-fluid grid">
+                <div class="card my-6 mx-0 p-fluid grid">
                     <!-- Campo para a matrícula -->
                     <div class="full lg:col-4 md:col-12 sm:col-12">
                         <label for="matricula">Funcionario:</label>
@@ -94,7 +94,7 @@ onMounted(async () => {
                     <div class="full lg:col-4 md:col-12 sm:col-12">
                         <label for="voucher">Produto:</label>
                         <!-- Campo de texto vinculado ao modelo libAvulsa.voucher -->
-                        <Dropdown class="my-2" v-model="libAvulsa.id_produto" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um Produto" />
+                        <Dropdown class="my-2" v-model="libAvulsa.id_produto" :options="ListaProdutos" optionLabel="label" optionValue="value" placeholder="Selecione um Produto" :virtualScrollerOptions="{ itemSize: 30 }" />
                         <!-- <InputText class="my-2" v-model="libAvulsa.voucher" id="voucher" /> -->
                         <!-- Mensagem esperada: Nenhuma validação direta implementada -->
                     </div>
