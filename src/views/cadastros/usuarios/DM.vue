@@ -547,7 +547,6 @@ const loadData = async () => {
             value: value
         }));
 
-        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);

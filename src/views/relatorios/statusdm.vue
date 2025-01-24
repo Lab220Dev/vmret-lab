@@ -7,7 +7,7 @@ import axios from '@/axios.js'; // Importando a instância axios configurada
 import { useAuthStore } from '@/store/authStore.js'; // Importando o store de autenticação
 import { FilterMatchMode } from 'primevue/api'; // Importando a constante de filtros do PrimeVue
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
-
+import {getTimeFromString,getDateFromString} from'@/helpers/HelperUtils.js'
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 
 // Declarando variáveis reativas
@@ -200,14 +200,13 @@ const handleDatepickerOpen = () => {
             <Column field="status" sortable header="Status"></Column>
             <Column field="dataHora" sortable header="Data">
                 <template #body="{ data }">
-                    <span v-tooltip="data.dataHora">{{ formatDate(new Date(data.dataHora)) }}</span>
+                    <span v-tooltip="data.dataHora">{{ getDateFromString(data.dataHora) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
             <Column field="Hora" sortable header="Hora">
                 <template #body="{ data }">
-                    <span v-tooltip="data.dataHora">{{ formatTime(new Date(data.dataHora)) }}</span>
-                    <!-- Exibe a hora formatada -->
+                    {{ getTimeFromString(data.dataHora) }}
                 </template>
             </Column>
         </DataTable>
