@@ -115,7 +115,7 @@ const fetchUsuarioDM = async () => {
 const fetchDM = async () => {
     try {
         const response = await dmService.listarDMId(); // Requisição para buscar DMs
-        dms.value = [todosOption, ...response.data.map(({ id_dm, Identificacao , id_cliente}) => ({ // Mapeia as DMs para o formato esperado no dropdown
+        dms.value = [...response.data.map(({ id_dm, Identificacao , id_cliente}) => ({ // Mapeia as DMs para o formato esperado no dropdown
             label: Identificacao, 
             value: id_dm,
             id_cliente: id_cliente
