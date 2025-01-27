@@ -29,24 +29,13 @@ import '@vuepic/vue-datepicker/dist/main.css';
  */
 import { ref, onMounted } from 'vue';
 
-/**
- * Importa o Axios configurado para realizar requisições HTTP.
- * @module axios
- */
-import axios from '@/axios.js';
-
-/**
- * Importa o store de autenticação para acessar informações do usuário.
- * @module store/authStore.js
- */
-import { useAuthStore } from '@/store/authStore.js';
 
 /**
  * Importa o componente de spinner de carregamento.
  * @module components/LoadingSpinner.vue
  */
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import {  formatDateToString, formatarDataHora } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import {  formatDateToString, formatStringDate } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 
@@ -368,8 +357,7 @@ onMounted(() => {
                         <Column field="Maquina" sortable header="DM"></Column>
                         <Column field="Dia" sortable class="table-cell" style="width: 25%" header="Data">
                             <template #body="{ data }">
-                                {{ formatarDataHora(new Date(data.Dia)) }}
-                                <!-- Formata a data para o formato correto -->
+                                {{formatStringDate(data.Dia) }}
                             </template>
                         </Column>
                         <Column field="Operador" sortable header="Operador"></Column>

@@ -66,7 +66,7 @@ const nextValues = reactive({
     2018: { placa: 12 },
     2023: { dip: 2 },
     'Locker-Padrao': { dip: 3 },
-    'Locker-Ker': { dip: 0 },
+    'Locker-Ker': { dip: '0' },
     2024: { placa: 101 }
 });
 const tipoControladoras = [

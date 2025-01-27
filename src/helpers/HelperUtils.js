@@ -273,26 +273,8 @@ export const gerarEbaixarJSON = (filename, data) => {
  */
 export const formatDate = (value) => {
 
-  /**
-   * Verifica se o valor fornecido é inválido ou está ausente.
-   * Se `value` for falsy (null, undefined, ou string vazia), retorna uma string vazia.
-   */
   if (!value) return '';
-
-  /**
-   * Converte o valor fornecido para um objeto `Date`. A função `new Date(value)` tenta criar uma data válida a partir do valor fornecido.
-   * O valor pode ser uma string ou um número (timestamp), ou um objeto `Date` válido.
-   * 
-   * @type {Date}
-   */
   const date = new Date(value);
-
-  /**
-   * Usa a função `format` (presumivelmente importada de uma biblioteca como `date-fns`) para formatar a data no formato `dd/MM/yyyy`.
-   * O formato retornado será uma string com o dia, mês e ano no formato de dois dígitos (ex: 01/01/2025).
-   * 
-   * @returns {string} A data formatada.
-   */
   return format(date, 'dd/MM/yyyy');
 };
 
@@ -300,7 +282,7 @@ export const formatDate = (value) => {
  * Formata uma data no formato `dd/MM/yyyy`.
  * 
  * @param {Date} date - O objeto `Date` a ser formatado.
- * 
+ * @deprecated
  * @returns {string} A data formatada como `dd/MM/yyyy`.
  */
 export const formatDateToString = (date) => {
@@ -311,7 +293,12 @@ export const formatDateToString = (date) => {
 
   return `${day}/${month}/${year}`;
 };
+export const formatStringDate = (dateString) => {
+  const DatePart =   getDateFromString(dateString);
+  const timePart = getTimeFromString(dateString);
 
+  return `${DatePart} - ${timePart}`;
+};
 export const getTimeFromString = (dateTimeString) => {
   if (!dateTimeString || typeof dateTimeString !== 'string') {
     throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
