@@ -75,14 +75,6 @@ const formatDate = (date) => {
     const ano = date.getFullYear(); // Obtém o ano
     return `${dia}/${mes}/${ano}`; // Retorna a data no formato dd/MM/yyyy
 };
-
-// Função para formatar a hora
-const formatTime = (date) => {
-    const horas = date.getHours().toString().padStart(2, '0'); // Obtém a hora com dois dígitos
-    const minutos = date.getMinutes().toString().padStart(2, '0'); // Obtém os minutos com dois dígitos
-    return `${horas}:${minutos}`; // Retorna o horário no formato HH:mm
-};
-
 // Função para fechar todos os dropdowns
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Verifica se o dropdown está visível e o esconde
