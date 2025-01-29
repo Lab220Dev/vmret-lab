@@ -13,7 +13,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import * as formatservices from '@/helpers/HelperUtils.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import servicoGenerico from '@/Services/genericService.js';
+// import servicoGenerico from '@/Services/genericService.js';
 /**
  * Inicializa o toast para exibir notificações ao usuário.
  */
@@ -54,7 +54,7 @@ const format = (date) => {
 const gerarCodigo = async () =>{
     loading.value = true;
     try {
-        const response = await servicoGenerico.gerarCodigo(libAvulsa);
+        // const response = await servicoGenerico.gerarCodigo(libAvulsa);
         codigo.value = response.data.codigo;
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro',life:3000, detail: error.message });

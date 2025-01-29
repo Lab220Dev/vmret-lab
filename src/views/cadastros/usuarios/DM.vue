@@ -546,11 +546,17 @@ const loadData = async () => {
     loading.value = true;
     try {
         const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
-        ListaProdutos.value = produtos.map(({ value, codigo, label }) => ({
-            label: `${codigo} | ${label}`,
-            value: value
-        }));
-
+        ListaProdutos.value = produtos
+            .filter(({ codigo, label }) => !(codigo === null && label === 'Todos')) // Remove o item com valor null e label "Todos"
+            .map(({ value, codigo, label }) => ({
+                label: `${codigo} | ${label}`,
+                value: value
+            }))
+            .sort((a, b) => {
+                const codigoA = parseInt(a.label.split(' | ')[0], 10); // Converte para número
+                const codigoB = parseInt(b.label.split(' | ')[0], 10); // Converte para número
+                return codigoA - codigoB; // Ordem crescente
+            });
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);

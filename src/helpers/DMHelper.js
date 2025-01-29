@@ -150,7 +150,7 @@ export const preencherControladoraOptions = (Controladoras) => {
 
         // Retorna um objeto formatado para a lista de opções com o identificador e o ID da controladora.
         return {
-            label: `Identificador: ${identificador}`, // O texto a ser exibido na opção.
+            label: `${tipo}: ${identificador}`, // O texto a ser exibido na opção.
             value: id // O valor associado à opção, que é o ID da controladora.
         };
     });
