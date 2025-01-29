@@ -72,10 +72,10 @@ export const handleControladoraChange = (Controladoras, produtoSelecionado, List
         // Atualiza as opções de motor com o motor da controladora.
         motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
     } 
-    // Verifica se o tipo da controladora é 'Locker'.
+    // Verifica se o tipo da controladora é um 'Locker'.
     else if (selectedControladora.tipo === 'Locker'||selectedControladora.tipo === 'Locker-Padrao'||selectedControladora.tipo === 'Locker-Ker') {
         // Atualiza as opções de DIP para a controladora do tipo Locker.
-        dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
+        dipOptions.value = [{ label: selectedControladora.dados.dip.toString(), value: selectedControladora.dados.dip }];
         
         // Atualiza as opções de posição para a controladora do tipo Locker.
         posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
@@ -149,7 +149,7 @@ export const preencherControladoraOptions = (Controladoras) => {
 
         // Retorna um objeto formatado para a lista de opções com o identificador e o ID da controladora.
         return {
-            label: `Identificador: ${identificador}`, // O texto a ser exibido na opção.
+            label: `${tipo}: ${identificador}`, // O texto a ser exibido na opção.
             value: id // O valor associado à opção, que é o ID da controladora.
         };
     });
@@ -223,23 +223,21 @@ export const ajustarContagemInicial = (Controladoras, nextValues) => {
 export const mapControladoras = async (DM) => {
     // Retorna uma lista de controladoras mapeadas a partir de DM.Controladoras.
     return DM.Controladoras.map((controladora) => ({
-       
+
         id: controladora.ID,
-        
         tipo: controladora.Tipo_Controladora,
-
         deleted: false,
-
         dados: {
-            
             placa: controladora.Placa || null,
-
-            dip: controladora.DIP || null,
-
+            dip: controladora.DIP ?? null,
             andar: Array.isArray(controladora.Andar) ? controladora.Andar.map(Number) : controladora.Andar?.split(',').map(Number) || [],
-
             posicao: Array.isArray(controladora.Posicao) ? controladora.Posicao.map(Number) : controladora.Posicao?.split(',').map(Number) || [],
 
+            /**
+             * Lista de molas associadas à controladora. Se a propriedade Mola1 for uma string, ela é dividida por vírgulas.
+             * 
+             * @type {number[]}
+             */
             molas: Array.isArray(controladora.Mola1) ? controladora.Mola1.map(Number) : controladora.Mola1?.split(',').map(Number) || []
         }
     }));

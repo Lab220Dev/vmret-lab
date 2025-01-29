@@ -1,4 +1,4 @@
-import { format } from 'date-fns-tz';
+import { format ,formatInTimeZone } from 'date-fns-tz';
 import { parseISO, isValid, parse } from 'date-fns';
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 const store = useAuthStore();
@@ -273,26 +273,8 @@ export const gerarEbaixarJSON = (filename, data) => {
  */
 export const formatDate = (value) => {
 
-  /**
-   * Verifica se o valor fornecido é inválido ou está ausente.
-   * Se `value` for falsy (null, undefined, ou string vazia), retorna uma string vazia.
-   */
   if (!value) return '';
-
-  /**
-   * Converte o valor fornecido para um objeto `Date`. A função `new Date(value)` tenta criar uma data válida a partir do valor fornecido.
-   * O valor pode ser uma string ou um número (timestamp), ou um objeto `Date` válido.
-   * 
-   * @type {Date}
-   */
   const date = new Date(value);
-
-  /**
-   * Usa a função `format` (presumivelmente importada de uma biblioteca como `date-fns`) para formatar a data no formato `dd/MM/yyyy`.
-   * O formato retornado será uma string com o dia, mês e ano no formato de dois dígitos (ex: 01/01/2025).
-   * 
-   * @returns {string} A data formatada.
-   */
   return format(date, 'dd/MM/yyyy');
 };
 
@@ -300,38 +282,42 @@ export const formatDate = (value) => {
  * Formata uma data no formato `dd/MM/yyyy`.
  * 
  * @param {Date} date - O objeto `Date` a ser formatado.
- * 
+ * @deprecated
  * @returns {string} A data formatada como `dd/MM/yyyy`.
  */
 export const formatDateToString = (date) => {
-  /**
-   * Obtém o dia da data fornecida.
-   * A função `getDate()` retorna o dia do mês (1-31) da data.
-   * 
-   * @type {number}
-   */
-  const day = date.getDate();
+  const offsetDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+  const day = String(offsetDate.getDate()).padStart(2, '0');
+  const month = String(offsetDate.getMonth() + 1).padStart(2, '0');
+  const year = offsetDate.getFullYear();
 
-  /**
-   * Obtém o mês da data fornecida. 
-   * A função `getMonth()` retorna o mês como um valor entre 0 e 11, então adicionamos 1 para ajustá-lo ao formato usual (1-12).
-   * 
-   * @type {number}
-   */
-  const month = date.getMonth() + 1;
+  return `${day}/${month}/${year}`;
+};
+export const formatStringDate = (dateString) => {
+  const DatePart =   getDateFromString(dateString);
+  const timePart = getTimeFromString(dateString);
 
-  /**
-   * Obtém o ano da data fornecida.
-   * A função `getFullYear()` retorna o ano com quatro dígitos.
-   * 
-   * @type {number}
-   */
-  const year = date.getFullYear();
+  return `${DatePart} - ${timePart}`;
+};
+export const getTimeFromString = (dateTimeString) => {
+  if (!dateTimeString || typeof dateTimeString !== 'string') {
+    throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
+  }
 
-  /**
-   * Retorna a data formatada como `dd/MM/yyyy`.
-   * O valor é formatado usando a interpolação de string para gerar o formato desejado.
-   */
+  // Divide a string na parte de data e hora
+  const [, time] = dateTimeString.replace('T', ' ').split(' ');
+
+  // Retorna apenas horas e minutos (HH:mm)
+  return time.split(':').slice(0, 2).join(':');
+};
+export const getDateFromString = (dateTimeString) => {
+  if (!dateTimeString || typeof dateTimeString !== 'string') {
+    throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
+  }
+
+  // Divide a string na parte de data e hora
+  const [date] = dateTimeString.replace('T', ' ').split(' ');
+  const [year, month, day] = date.split('-');
   return `${day}/${month}/${year}`;
 };
 
@@ -343,31 +329,34 @@ export const formatDateToString = (date) => {
  * @returns {string} A hora formatada como `HH:mm`.
  */
 export const formatTimeToString = (date) => {
-  /**
-   * Obtém as horas da data fornecida e as converte para string.
-   * A função `getHours()` retorna a hora (0-23) e, em seguida, usamos `padStart(2, '0')` 
-   * para garantir que a hora tenha sempre dois dígitos (ex: '09' ao invés de '9').
-   * 
-   * @type {string}
-   */
-  const horas = date.getHours().toString().padStart(2, '0');
-
-  /**
-   * Obtém os minutos da data fornecida e os converte para string.
-   * A função `getMinutes()` retorna os minutos (0-59) e, da mesma forma que as horas, 
-   * usamos `padStart(2, '0')` para garantir que os minutos tenham sempre dois dígitos (ex: '05' ao invés de '5').
-   * 
-   * @type {string}
-   */
-  const minutos = date.getMinutes().toString().padStart(2, '0');
-
-  /**
-   * Retorna a hora formatada como `HH:mm`.
-   * A interpolação de string é utilizada para juntar as horas e os minutos no formato desejado.
-   */
-  return `${horas}:${minutos}`;
+  const dataAserCorrigida = new Date(date);
+  const isDev = import.meta.env.VITE_API_URL === 'http://localhost:3000/api';
+  const offsetHours = isDev ? 3 : 5;
+  const offsetMillis = offsetHours * 60 * 60 * 1000;
+  const adjustedDate = new Date(dataAserCorrigida.getTime() - offsetMillis + dataAserCorrigida.getTimezoneOffset() * 60000);
+  const hours = String(adjustedDate.getHours()).padStart(2, '0');
+  const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
-
+export const formatTimeToString2 = (date) => {
+  const dataAserCorrigida = new Date(date);
+  const isDev = import.meta.env.VITE_API_URL === 'http://localhost:3000/api';
+  const offsetHours = isDev ? 3 : 8;
+  const offsetMillis = offsetHours * 60 * 60 * 1000;
+  const adjustedDate = new Date(dataAserCorrigida.getTime() - offsetMillis + dataAserCorrigida.getTimezoneOffset() * 60000);
+  const hours = String(adjustedDate.getHours()).padStart(2, '0');
+  const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+export const HoraRelatorio =(date)=>{
+  const dataASerCorrigida = new Date(date);
+  if (isNaN(dataASerCorrigida.getTime())) {
+    throw new Error("A string ou valor fornecido não é uma data válida.");
+  }
+  const hours = String(dataASerCorrigida.getHours()).padStart(2, '0');
+  const minutes = String(dataASerCorrigida.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
 /**
  * Formata uma data e hora no formato `dd/MM/yyyy - HH:mm`.
  * 

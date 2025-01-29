@@ -7,7 +7,7 @@ import axios from '@/axios.js'; // Importando a instância axios configurada
 import { useAuthStore } from '@/store/authStore.js'; // Importando o store de autenticação
 import { FilterMatchMode } from 'primevue/api'; // Importando a constante de filtros do PrimeVue
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
-
+import {getTimeFromString,getDateFromString} from'@/helpers/HelperUtils.js'
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 
 // Declarando variáveis reativas
@@ -75,14 +75,6 @@ const formatDate = (date) => {
     const ano = date.getFullYear(); // Obtém o ano
     return `${dia}/${mes}/${ano}`; // Retorna a data no formato dd/MM/yyyy
 };
-
-// Função para formatar a hora
-const formatTime = (date) => {
-    const horas = date.getHours().toString().padStart(2, '0'); // Obtém a hora com dois dígitos
-    const minutos = date.getMinutes().toString().padStart(2, '0'); // Obtém os minutos com dois dígitos
-    return `${horas}:${minutos}`; // Retorna o horário no formato HH:mm
-};
-
 // Função para fechar todos os dropdowns
 const closeAllDropdowns = () => {
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Verifica se o dropdown está visível e o esconde
@@ -200,14 +192,13 @@ const handleDatepickerOpen = () => {
             <Column field="status" sortable header="Status"></Column>
             <Column field="dataHora" style="width: 20%; text-align: center" sortable header="Data">
                 <template #body="{ data }">
-                    <span >{{ formatDate(new Date(data.dataHora)) }}</span>
+                    <span v-tooltip="data.dataHora">{{ getDateFromString(data.dataHora) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
             <Column field="Hora" style="width: 15%; text-align: center" sortable header="Hora">
                 <template #body="{ data }">
-                    <span>{{ formatTime(new Date(data.dataHora)) }}</span>
-                    <!-- Exibe a hora formatada -->
+                    {{ getTimeFromString(data.dataHora) }}
                 </template>
             </Column>
         </DataTable>

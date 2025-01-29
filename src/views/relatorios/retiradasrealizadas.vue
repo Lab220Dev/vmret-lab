@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, toISODate } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString,getDateFromString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 
 const showDialog = ref(false); // Controla a visibilidade do dialog de erro
 const dialogMessage = ref(''); // Armazena a mensagem de erro que será exibida no dialog
@@ -350,14 +350,16 @@ onMounted(() => {
 
             <Column field="Dia" sortable class="table-cell"  header="Data">
                 <template #body="{ data }">
-                    <span>{{ formatDateToString(new Date(data.Dia)) }}</span>
+                    <span v-tooltip="data.Dia">{{ getDateFromString(data.Dia) }}</span>
+                    <!-- Exibe a data formatada -->
                 </template>
             </Column>
 
-            <Column field="Hora" sortable class="table-cell"  header="Hora">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.Hora">{{ formatTimeToString(new Date(data.Dia)) }}</span>
-                </template> -->
+            <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
+                <template #body="{ data }">
+                    {{ getTimeFromString(data.Dia) }}
+                    <!-- Exibe a hora formatada -->
+                </template>
             </Column>
 
             <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  header="Matricula">

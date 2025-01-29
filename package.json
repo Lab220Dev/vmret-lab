@@ -1,6 +1,6 @@
 {
     "name": "Lab220RetiradaV2",
-    "version": "2.2.0",
+    "version": "2.2.13",
     "scripts": {
         "prebuild": "npm version patch --no-git-tag-version && node update-version.js",
         "dev": "vite",
@@ -16,7 +16,7 @@
         "cpf-cnpj-validator": "^1.0.3",
         "cpf-validator": "^1.0.1",
         "crypto-js": "^4.2.0",
-        "date-fns": "^3.6.0",
+        "date-fns": "^4.1.0",
         "date-fns-tz": "^3.2.0",
         "express": "^4.19.2",
         "jspdf": "^2.5.1",

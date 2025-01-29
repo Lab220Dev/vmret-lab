@@ -255,47 +255,11 @@ const dt = ref(null);
 
 // Função para exportar os dados para um arquivo CSV
 const exportCSV = () => {
-    // if (Array.isArray(retiradas.value)) {
-    //     // Verifica se retiradas.value é um array
-    //     // Agrega detalhes de cada produto
-    //     const detalhesAgregados = retiradas.value.flatMap((produto) => {
-    //         if (Array.isArray(produto.Detalhes)) {
-    //             return produto.Detalhes; // Retorna os detalhes do produto
-    //         } else {
-    //             console.warn(`Detalhes não é um array para o produto ${produto.ProdutoID}`); // Alerta no console se detalhes não for um array
-    //             return [];
-    //         }
-    //     });
-
-    //     // Gera o conteúdo CSV
-    //     const csvContent = generateCSV(detalhesAgregados);
-
-    //     // Cria um Blob e link para download
-    //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    //     const link = document.createElement('a');
-    //     const url = URL.createObjectURL(blob);
-    //     link.setAttribute('href', url);
-    //     link.setAttribute('download', 'Items_Mais_Retiradas.csv'); // Nome do arquivo CSV
-    //     document.body.appendChild(link);
-    //     link.click();
-    //     document.body.removeChild(link);
-    // } else {
-    //     console.error('retiradas.value não é um array.'); // Exibe erro se retiradas.value não for um array
-    // }
     gerarEbaixarCSV('ItensMaisRetirados', retiradas.value);
 };
 
 // Função para exportar os dados para um arquivo JSON
 const exportJSON = () => {
-    // const jsonContent = JSON.stringify(retiradas.value, null, 2); // Converte os dados em JSON com espaçamento
-    // const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' }); // Cria um Blob com os dados JSON
-    // const link = document.createElement('a');
-    // const url = URL.createObjectURL(blob);
-    // link.setAttribute('href', url);
-    // link.setAttribute('download', 'RetiradasRealizadas.json'); // Nome do arquivo JSON
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
     gerarEbaixarJSON('ItensMaisRetirados', retiradas.value);
 };
 
