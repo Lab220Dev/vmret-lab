@@ -340,6 +340,16 @@ const fetchDMS = async (page = 1) => {
 };
 
 const adicionarDM = async () => {
+    //DIP obrigaório para lockers e 2023
+    if ((DM.tipo === 'Locker-Padrao' || DM.tipo === 'Locker-Ker' || DM.tipo === '2023') && (!DM.dip || DM.dip == null || DM.dip < 0)) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'DIP é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
+        return;
+    }
+    if ((DM.tipo === '2018') && (!DM.placa || DM.placa == null || DM.placa < 0)) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Placa é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
+        return;
+    }
+
     loading.value = true;
     try {
         const data = prepareDMData('adicionar', DM, selectedClient.value, Controladoras.value);
@@ -357,6 +367,15 @@ const adicionarDM = async () => {
     }
 };
 const atualizarDM = async () => {
+   //DIP obrigaório para lockers e 2023
+    if ((DM.tipo === 'Locker-Padrao' || DM.tipo === 'Locker-Ker' || DM.tipo === '2023') && (!DM.dip || DM.dip == null || DM.dip < 0)) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'DIP é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
+        return;
+    }
+    if ((DM.tipo === '2018') && (!DM.placa || DM.placa == null || DM.placa < 0)) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Placa é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
+        return;
+    }
     dataStore.invalidateDMCache();
     loading.value = true;
     const preparedControladoras = Controladoras.value.map((controladora) => ({
@@ -381,6 +400,8 @@ const deleteDM = async (item) => {
     const data = prepareDMData('deletar', item);
     loading.value = true;
     try {
+        dialogMessage.value = `Você tem certeza que deseja excluir a DM ${DM.Identificacao}?`;
+        showDialogDVM.value = true;
         await dmService.deletarDM(data);
         dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
