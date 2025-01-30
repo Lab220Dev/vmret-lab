@@ -2,7 +2,7 @@
 /**
  * Importação dos módulos necessários do Vue.js e PrimeVue
  */
-import { onMounted, shallowRef, defineAsyncComponent } from 'vue'; // Importação dos hooks do Vue.js
+import { onMounted, shallowRef, defineAsyncComponent,watch } from 'vue'; // Importação dos hooks do Vue.js
 import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação
 import { useToast } from 'primevue/usetoast'; // Importa o hook de notificações do PrimeVue
 
@@ -14,18 +14,22 @@ const store = useAuthStore();
 
 // Ref reativa para controlar o componente da dashboard que será carregado dinamicamente
 const atual = shallowRef(null); 
-
 /**
- * Função para verificar a permissão do usuário com base no papel.
- * Caso o papel seja 'Master' ou 'Operador', o usuário terá permissão para ver os recalls.
+ * Exibe mensagens globais do store, incluindo mudanças de idioma.
  */
-const checkPermission = () => {
-    if (store.userRole === 'Master' || store.userRole === 'Operador') {
-        // Se o papel for 'Master' ou 'Operador', permite ver os recalls.
-        canViewLastRecalls.value = true; 
+ const exibirMensagemGlobal = (mensagem) => {
+    if (mensagem) {
+        toast.add({
+            severity: "info", // Tipo de mensagem
+            summary: "Notificação", // Título do toast
+            detail: mensagem, // Mensagem do store
+            life: 3000, // Duração do toast
+        });
+
+        // Limpa a mensagem após exibição para evitar duplicações
+        store.clearGlobalMessage();
     }
 };
-
 /**
  * Função para carregar a dashboard correspondente com base no papel do usuário.
  * A dashboard é carregada dinamicamente com o Vue's defineAsyncComponent.
@@ -58,7 +62,14 @@ const DashPorTipo = () => {
             // A mensagem de erro deve ser exibida no console do navegador
     }
 };
-
+watch(
+    () => store.globalMessage,
+    (newMessage) => {
+        if (newMessage) {
+            exibirMensagemGlobal(newMessage);
+        }
+    }
+);
 /**
  * Hook 'onMounted' do Vue.js é executado assim que o componente é montado
  * É utilizado para realizar a inicialização dos dados e verificar permissões.
@@ -66,18 +77,8 @@ const DashPorTipo = () => {
 onMounted(() => {
     // Verifica se existe alguma mensagem global na store
     if (store.getGlobalMessage) {
-        // Se houver uma mensagem, exibe um toast com a mensagem de acesso negado
-        toast.add({
-            severity: 'warn', // Tipo de severidade da mensagem (aviso)
-            summary: 'Acesso Negado', // Título do toast
-            detail: store.getGlobalMessage, // Detalhe (mensagem de acesso negado)
-            life: 3000 // A mensagem será exibida por 3 segundos
-        });
-        
-        // Limpa a mensagem global após exibi-la
-        store.clearGlobalMessage();
+        exibirMensagemGlobal(store.getGlobalMessage);
     }
-
     // Chama a função que decide qual dashboard carregar com base no papel do usuário
     DashPorTipo();
 });
