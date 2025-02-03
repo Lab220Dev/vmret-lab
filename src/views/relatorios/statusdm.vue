@@ -1,24 +1,22 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'; // Importando hooks do Vue
+import { onMounted, ref, watch,computed } from 'vue'; // Importando hooks do Vue
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importando o componente de data
 import '@vuepic/vue-datepicker/dist/main.css'; // Importando o CSS do componente de data
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importando o componente de Loading Spinner
-import axios from '@/axios.js'; // Importando a instância axios configurada
-import { useAuthStore } from '@/store/authStore.js'; // Importando o store de autenticação
 import { FilterMatchMode } from 'primevue/api'; // Importando a constante de filtros do PrimeVue
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import {getTimeFromString,getDateFromString} from'@/helpers/HelperUtils.js'
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Declarando variáveis reativas
 const filteredCount = ref(0); // Contador de itens filtrados
 const dataStore = useDataStore(); // Cria uma instância do store de dados
-const store = useAuthStore(); // Acesso ao store de autenticação
 const relatorio = ref({
     id_dm: '', // ID da DM
     dia: new Date() // Data selecionada (inicia com a data atual)
 });
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem padrão caso não haja dados
+const emptyMessage = computed(() => t('no_search_made'));// Mensagem padrão caso não haja dados
 const todosOption = { label: 'Todos', value: null }; // Opção para "Todos"
 const loading = ref(false); // Estado de carregamento (true ou false)
 const dms = ref([todosOption]); // Lista de DMs, começando com a opção 'Todos'
@@ -46,7 +44,7 @@ const KeepAlive = async () => {
 
         // Caso não haja registros, exibe uma mensagem de erro
         if (StatusDM.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            emptyMessage.value = t('no_data_found');
         }
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error); // Caso ocorra erro, imprime a mensagem no console
@@ -89,7 +87,7 @@ const handleDatepickerOpen = () => {
 <template>
     <div class="card vh">
         <!-- Cabeçalho com título -->
-        <h5 class="my-6 ml-2 text-2xl">Status DM</h5>
+        <h5 class="my-6 ml-2 text-2xl">{{t('status_dm')}}</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
             <!-- Dropdown para selecionar DM -->
             <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
@@ -169,7 +167,7 @@ const handleDatepickerOpen = () => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
-                        <span>Total de registros: {{ filteredCount }}</span>
+                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
                         <!-- Exibe o número total de registros -->
                     </div>
                     <div>
@@ -177,7 +175,7 @@ const handleDatepickerOpen = () => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <InputText v-model="filters['global'].value":placeholder="t('search')" />
                             <!-- Campo de busca global -->
                         </IconField>
                     </div>
@@ -188,15 +186,15 @@ const handleDatepickerOpen = () => {
             <template #empty> {{ emptyMessage }} </template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="Identificacao" style="width: 20%;" sortable header="DM"></Column>
-            <Column field="status" sortable header="Status"></Column>
-            <Column field="dataHora" style="width: 20%; text-align: center" sortable header="Data">
+            <Column field="Identificacao" style="width: 20%;" sortable :header="t('dm')"></Column>
+            <Column field="status" sortable :header="t('status')"></Column>
+            <Column field="dataHora" style="width: 20%; text-align: center" sortable :header="t('date')">
                 <template #body="{ data }">
                     <span v-tooltip="data.dataHora">{{ getDateFromString(data.dataHora) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
-            <Column field="Hora" style="width: 15%; text-align: center" sortable header="Hora">
+            <Column field="Hora" style="width: 15%; text-align: center" sortable :header="t('time')">
                 <template #body="{ data }">
                     {{ getTimeFromString(data.dataHora) }}
                 </template>

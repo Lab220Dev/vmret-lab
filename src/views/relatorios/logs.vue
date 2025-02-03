@@ -3,13 +3,15 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Importação do component
 import { FilterMatchMode } from 'primevue/api'; // Importação do FilterMatchMode para configurar filtros na DataTable
 import { useToast } from 'primevue/usetoast'; // Importação do hook useToast para exibir mensagens de notificação
 import '@vuepic/vue-datepicker/dist/main.css'; // Importação do CSS do VueDatePicker
-import { ref, onMounted, watch } from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
+import { ref, onMounted, watch , computed} from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store para gerenciar o estado de autenticação
 import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs web
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
 import usuarioService from '@/services/usuarioService';
 
 import funcionarioService from '@/Services/funcionarioService.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const filteredCount = ref(0); // Contador reativo para o número de registros filtrados
 
@@ -33,7 +35,7 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para a DataTable (por padrão, filtra por "CONTÉM")
 });
 
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem a ser exibida se não houver dados filtrados
+const emptyMessage = computed(() => t('no_search_made')); // Mensagem a ser exibida se não houver dados filtrados
 
 const ListaFuncionarios = ref([todosOption]); // Lista reativa que armazenará os funcionários disponíveis
 const usuario = ref([]); // Lista reativa que armazenará os usuários disponíveis
@@ -126,7 +128,7 @@ const fetchDM = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de dms:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de DMs.', life: 3000 }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_dm_list'), life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -144,7 +146,7 @@ const fetchUsuario = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de usuários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de usuários.', life: 3000 }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error',summary: t('title_error'),  detail: t('load_user_list'), life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -162,7 +164,7 @@ const fetchFuncionarios = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar funcionários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de funcionários.', life: 3000 }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary:t('title_error'), detail: t('load_employee_list'), life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -193,15 +195,15 @@ onMounted(() => {
             <div class="grid mt-3 mx-1 p-1">
                 <!-- Campos para filtros -->
                 <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="usuario">Usuário:</label>
+                    <label for="usuario">{{t('user')}}:</label>
                     <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="operacao">Operação:</label>
+                    <label for="operacao">{{t('operation')}}:</label>
                     <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="perfil">Data Inicial:</label>
+                    <label for="perfil">{{t('initial_date')}}:</label>
                     <VueDatePicker
                         class="drop"
                         v-model="relatorio.data_inicio"
@@ -217,7 +219,7 @@ onMounted(() => {
                     />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="perfil">Data Final:</label>
+                    <label for="perfil">{{t('end_date')}}:</label>
                     <VueDatePicker
                         class="drop"
                         v-model="relatorio.data_final"
@@ -233,7 +235,7 @@ onMounted(() => {
                     />
                 </div>
                 <div class="field lg:col-12 md:col-12 sm:col-12">
-                    <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                    <Button class="filtrar" type="button":label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                 </div>
             </div>
         </div>
@@ -290,14 +292,14 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ filteredCount }}</span>
+                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
                     </div>
                     <div>
                         <IconField iconPosition="left">
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                         </IconField>
                     </div>
                 </div>
@@ -305,20 +307,20 @@ onMounted(() => {
 
             <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="dataHora" sortable header="Data">
+            <Column field="dataHora" sortable :header="t('date')">
                 <template #body="{ data }">
                     <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
                 </template></Column
             >
-            <Column field="Hora" sortable header="Hora">
+            <Column field="Hora" sortable :header="t('time')">
                 <template #body="{ data }">
                     <span v-tooltip="data.Dia">{{ formatTime(new Date(data.Dia)) }}</span>
                 </template></Column
             >
-            <Column field="Operacao" sortable style="max-width: 10%" header="Operação"></Column>
-            <Column field="ID_Usuario" sortable style="max-width: 8%" header="Usuário"></Column>
-            <Column field="Log_Web" sortable style="max-width: 500px" header="Resumo"></Column>
-            <Column field="Resultado" sortable style="max-width: 10%" header="Resultado"></Column>
+            <Column field="Operacao" sortable style="max-width: 10%" :header="t('operation')"></Column>
+            <Column field="ID_Usuario" sortable style="max-width: 8%" :header="t('user')"></Column>
+            <Column field="Log_Web" sortable style="max-width: 500px" :header="t('summary')"></Column>
+            <Column field="Resultado" sortable style="max-width: 10%" :header="t('result')"></Column>
         </DataTable>
     </div>
 </template>

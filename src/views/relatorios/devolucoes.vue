@@ -10,7 +10,8 @@ import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import {filtroGenericoReltorio,gerarEbaixarCSV,gerarEbaixarJSON} from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const dataStore = useDataStore(); // Instancia o store de dados
 const showDialog = ref(false); // Estado reativo para controlar a visibilidade de uma caixa de diálogo
 const dialogMessage = ref(''); // Estado reativo para armazenar a mensagem a ser exibida no diálogo
@@ -20,7 +21,7 @@ const filteredCount = ref(0); // Conta os itens filtrados para exibição
 const store = useAuthStore(); // Instancia o store de autenticação
 const toast = useToast(); // Instancia o hook de toast para notificações
 
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem padrão quando não há resultados
+const emptyMessage = computed(() => t('no_search_made')); // Mensagem padrão quando não há resultados
 const dropdown1 = ref(null); // Referência para o primeiro dropdown
 const dropdown2 = ref(null); // Referência para o segundo dropdown
 const dropdown3 = ref(null); // Referência para o terceiro dropdown
@@ -103,12 +104,12 @@ const buscar = async () => {
 
         // Se não houver resultados, exibe uma mensagem de erro
         if (Array.isArray(devolucoes.value) && devolucoes.value.length === 0) {
-            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            dialogMessage.value = t('no_data_found');
             showDialog.value = true; // Abre a caixa de diálogo com a mensagem de erro
         }
         // Se não houver resultados, altera a mensagem padrão
         if (devolucoes.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            emptyMessage.value = t('no_data_found');
         } else {
             emptyMessage.value = ''; // Limpa a mensagem se houver resultados
         }
@@ -195,32 +196,32 @@ onMounted(() => {
     <div class="card vh">
         
             
-                <h5 class="my-6 ml-2 text-2xl">Devoluções</h5>
+                <h5 class="my-6 ml-2 text-2xl">{{t('devolucoes')}}</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <label for="id_dm">DM:</label>
+                        <label for="id_dm">{{t('dm')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
                     </div>
 
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">Centro de Custo:</label>
+                        <label for="perfil">{{t('cost_center')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">Setor:</label>
+                        <label for="perfil">{{t('sector')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <label for="planta">Planta:</label>
+                        <label for="planta">{{t('factory')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">Funcionário:</label>
+                        <label for="perfil">{{t('employee')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
+                        <label for="perfil">{{t('initial_date')}}:</label>
                         <VueDatePicker
                             class="drop"
                             v-model="relatorio.data_inicio"
@@ -237,7 +238,7 @@ onMounted(() => {
                         />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Final:</label>
+                        <label for="perfil">{{t('end_date')}}:</label>
                         <VueDatePicker
                             class="drop"
                             v-model="relatorio.data_final"
@@ -255,14 +256,14 @@ onMounted(() => {
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+                        <Button class="exportar" icon="pi pi-file":label="$t('export_csv')" @click="exportCSV"></Button>
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')"  @click="exportJSON"></Button>
                     </div>
                 </div>
 
@@ -294,28 +295,28 @@ onMounted(() => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                                     </IconField>
                                 </div>
                             </div>
                         </template>
 
                         <template #empty> {{ emptyMessage }} </template>
-                        <Column field="ID_DM" sortable header="DM"></Column>
-                        <Column field="Dia" sortable header="Data"></Column>
-                        <Column field="matricula" sortable header="Matricula"></Column>
-                        <Column field="nome" sortable header="Nome"></Column>
-                        <Column field="email" sortable header="E-mail"></Column>
-                        <Column field="ProdutoNome" sortable header="Item"></Column>
-                        <Column field="Quantidade" sortable header="Quant" class="text-center"></Column>
-                        <Column field="ProdutoSKU" header="CA"></Column>
+                        <Column field="ID_DM" sortable  :header="t('dm')"></Column>
+                        <Column field="Dia" sortable :header="t('date')">></Column>
+                        <Column field="matricula" sortable :header="t('employee_id')"></Column>
+                        <Column field="nome" sortable :header="t('name')"></Column>
+                        <Column field="email" sortable :header="t('email')"></Column>
+                        <Column field="ProdutoNome" sortable :header="t('item')"></Column>
+                        <Column field="Quantidade" sortable :header="t('quantity_short')" class="text-center"></Column>
+                        <Column field="ProdutoSKU" :header="t('ca')"></Column>
                     </DataTable>
                 </div>
                 <Card v-if="!show">

@@ -9,6 +9,8 @@ import { useDataStore } from '@/store/dataStore.js'; // Importa o store de auten
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const showDialog = ref(false); // Controla a exibição de um diálogo
 const dialogMessage = ref(''); // Mensagem exibida no diálogo
@@ -104,24 +106,24 @@ onMounted(() => {
             <!-- Grid do formulário, com margens e espaçamento definidos -->
             <div class="">
                 <!-- Título da página "Fichas de Retiradas" -->
-                <h5 class="my-6 ml-2 text-2xl">Fichas de Retiradas</h5>
+                <h5 class="my-6 ml-2 text-2xl">{{t('fichas_de_retiradas')}}</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="planta">Planta:</label>
+                        <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para selecionar a planta, com lista de opções fornecida por 'plantas' -->
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" @change="filterFuncionarios" />
                     </div>
                     <!-- Campo de seleção para Funcionário -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="perfil">Funcionário:</label>
+                        <label for="perfil">{{t('employee')}}:</label>
                         <!-- Componente Dropdown para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" @change="selecionaFuncionario"/>
                     </div>
 
                     <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
+                        <label for="perfil">{{t('initial_date')}}</label>
                         <!-- Componente VueDatePicker para selecionar a data inicial, com o formato de data "dd/MM/yyyy" -->
                         <VueDatePicker
                             class="drop"
@@ -139,7 +141,7 @@ onMounted(() => {
                     </div>
                     <!-- Campo de seleção para Data Final -->
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <label for="perfil">Data Final:</label>
+                        <label for="perfil">{{t('end_date')}}</label>
                         <VueDatePicker
                             class="datepicker"
                             v-model="relatorio.data_final"

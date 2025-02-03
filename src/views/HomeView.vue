@@ -2,34 +2,14 @@
 /**
  * Importação dos módulos necessários do Vue.js e PrimeVue
  */
-import { onMounted, shallowRef, defineAsyncComponent,watch } from 'vue'; // Importação dos hooks do Vue.js
+import { onMounted, shallowRef, defineAsyncComponent } from 'vue'; // Importação dos hooks do Vue.js
 import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação
-import { useToast } from 'primevue/usetoast'; // Importa o hook de notificações do PrimeVue
-
-// Instancia o toast para exibir notificações ao usuário
-const toast = useToast(); 
 
 // Acessa a store de autenticação para pegar dados do usuário (como o papel)
 const store = useAuthStore(); 
 
 // Ref reativa para controlar o componente da dashboard que será carregado dinamicamente
 const atual = shallowRef(null); 
-/**
- * Exibe mensagens globais do store, incluindo mudanças de idioma.
- */
- const exibirMensagemGlobal = (mensagem) => {
-    if (mensagem) {
-        toast.add({
-            severity: "info", // Tipo de mensagem
-            summary: "Notificação", // Título do toast
-            detail: mensagem, // Mensagem do store
-            life: 3000, // Duração do toast
-        });
-
-        // Limpa a mensagem após exibição para evitar duplicações
-        store.clearGlobalMessage();
-    }
-};
 /**
  * Função para carregar a dashboard correspondente com base no papel do usuário.
  * A dashboard é carregada dinamicamente com o Vue's defineAsyncComponent.
@@ -62,23 +42,12 @@ const DashPorTipo = () => {
             // A mensagem de erro deve ser exibida no console do navegador
     }
 };
-watch(
-    () => store.globalMessage,
-    (newMessage) => {
-        if (newMessage) {
-            exibirMensagemGlobal(newMessage);
-        }
-    }
-);
+
 /**
  * Hook 'onMounted' do Vue.js é executado assim que o componente é montado
  * É utilizado para realizar a inicialização dos dados e verificar permissões.
  */
 onMounted(() => {
-    // Verifica se existe alguma mensagem global na store
-    if (store.getGlobalMessage) {
-        exibirMensagemGlobal(store.getGlobalMessage);
-    }
     // Chama a função que decide qual dashboard carregar com base no papel do usuário
     DashPorTipo();
 });

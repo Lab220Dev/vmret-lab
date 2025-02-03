@@ -4,14 +4,12 @@ import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/store/authStore.js';
 import { FilterMatchMode } from 'primevue/api';
-import axios from '@/axios.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useDataStore } from '@/store/dataStore.js';
 import { FormatarListaCliente } from '@/helpers/DMHelper.js';
 import usuarioDMService from '@/services/usuarioDMService';
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Controle de abas ativas
 const dataStore = useDataStore(); // Acesso aos dados da store
@@ -335,7 +333,7 @@ const deleteUsuario = async (item) => {
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>Total de registros: {{ filteredCount }}</span> <!-- Exibe a quantidade de registros filtrados -->
+                                            <span>{{$t('total_records')}}:{{  filteredCount  }}</span><!-- Exibe a quantidade de registros filtrados -->
                                         </div>
                                         <!-- Componente para busca global na tabela -->
                                         <IconField iconPosition="left">
@@ -343,7 +341,7 @@ const deleteUsuario = async (item) => {
                                                 <i class="pi pi-search" /> <!-- Ícone de busca -->
                                             </InputIcon>
                                             <!-- Campo de texto para busca -->
-                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                                         </IconField>
                                     </div>
                                 </template>
@@ -352,10 +350,10 @@ const deleteUsuario = async (item) => {
                                 <template #empty> Nenhum usuário adicionado. </template>
 
                                 <!-- Coluna para o nome do usuário -->
-                                <Column field="nome" sortable style="width: 30%;" header="Nome"></Column>
+                                <Column field="nome" sortable style="width: 30%;" :header="t('name')"></Column>
 
                                 <!-- Coluna para o login do usuário -->
-                                <Column field="login" sortable style="width: 50%;" header="Login">
+                                <Column field="login" sortable style="width: 50%;" :header="t('login')">
                                     <template #body="{ data }">
                                         <!-- Exibe o login com tooltip -->
                                         <span v-tooltip="data.login">{{ data.login }}</span>
@@ -363,7 +361,7 @@ const deleteUsuario = async (item) => {
                                 </Column>
 
                                 <!-- Coluna para status de ativo do usuário -->
-                                <Column field="ativo" sortable style="width: 9%; text-align: center;" header="Ativo">
+                                <Column field="ativo" sortable style="width: 9%; text-align: center;" :header="t('status_active')">
                                     <template #body="{ data }">
                                         <!-- Ícone condicional para exibir se o usuário está ativo ou inativo -->
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
@@ -382,11 +380,11 @@ const deleteUsuario = async (item) => {
                     </TabPanel>
 
                     <!-- Aba para editar ou adicionar um usuário DM -->
-                    <TabPanel :header="visible ? 'Editar  Usuário DM' : 'Adicionar  Usuário DM'">
+                    <TabPanel :header="visible ?  t('edit_dm') : t('add_dm')">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <!-- Campo para o nome do usuário -->
                             <div class="full xl:col-6 lg:col-6 md:col-8 sm:col-12">
-                                <label for="name">Nome:</label>
+                                <label for="name">{{$t('name')}}</label>
                                 <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                             </div>
 
@@ -394,13 +392,13 @@ const deleteUsuario = async (item) => {
 
                             <!-- Campo para o login do usuário -->
                             <div class="full xl:col-6 lg:col-6 md:col-8 sm:col-12">
-                                <label for="email">Login:</label>
+                                <label for="email">{{$t('login')}}</label>
                                 <InputText class="my-2" v-model="usuario.login" id="email" />
                             </div>
 
 <!-- Campo para a senha do usuário -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="senha">Senha:</label>
+                                <label for="senha">{{$t('password')}}</label>
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <!-- Exibe erro se a senha for inválida -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
@@ -408,14 +406,14 @@ const deleteUsuario = async (item) => {
 
                             <!-- Campo para confirmar a senha -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="senha">Confirme a Senha:</label>
+                                <label for="senha">{{$t('confirm_password')}}</label>
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <!-- Exibe erro se as senhas não coincidirem -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
                             <!-- Campo para indicar se o usuário está ativo -->
                             <div class="full flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
+                                <label class="mt-0 text-nowrap" for="switch2">{{$t('active_user')}}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
                                     <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
@@ -423,17 +421,17 @@ const deleteUsuario = async (item) => {
                             </div>
                             
                             <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">Cliente:</label>
+                                <label for="perfil">{{$t('client')}}</label>
                                 <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
                                 <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
                             
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
-                                <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
-                                <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
-                                <Button style="width: 15%" class="buttons flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
-                                <Button v-if="!visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" />
+                                <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('save')" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
+                                <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('delete')" icon="pi pi-trash" severity="danger" @click="deleteUsuariodes(usuario)" />
+                                <Button style="width: 15%" class="buttons flex align-items-center justify-content-center m-2 mr-0" :label="t('back')" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
+                                <Button v-if="!visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('save')" icon="pi pi-check" severity="info" @click="submitForm" />
                             </div>
 
                             <!-- Divider para separar a seção -->
@@ -472,32 +470,32 @@ const deleteUsuario = async (item) => {
                                             <InputIcon>
                                                 <i class="pi pi-search" /> <!-- Ícone de busca -->
                                             </InputIcon>
-                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                                         </IconField>
                                     </div>
                                 </template>
                                 <!-- Coluna para a seleção múltipla de DMs -->
                                 <Column selectionMode="multiple" :style="{ width: '5%' }"></Column>
                                 <!-- Coluna para o nome da DM -->
-                                <Column field="label" sortable header="Nome" class="col-12 md:col-6" :style="{ width: '80%' }"> </Column>
+                                <Column field="label" sortable :header="t('name')" class="col-12 md:col-6" :style="{ width: '80%' }"> </Column>
                             </DataTable>
                         </div>
                     </TabPanel>
                 </TabView>
 
                 <!-- Diálogo de confirmação de exclusão de usuário -->
-                <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                <Dialog :header="t('delete_user')" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
                             <!-- Mensagem de confirmação de exclusão -->
-                            Você tem certeza que deseja deletar o Usuario <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b> ?
+                            {{ $t('confirm_delete_user', { id: item.id_cliente, name: item.nome }) }}
                         </span>
                     </div>
                     <!-- Rodapé do diálogo com botões de "Não" e "Sim" -->
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteUsuarioDialog = false" class="p-button-text" />
-                        <Button label="Sim" icon="pi pi-check" @click="deleteUsuario(item)" class="p-button-text" />
+                        <Button :label="t('no')" icon="pi pi-times" @click="deleteUsuarioDialog = false" class="p-button-text" />
+                        <Button :label="t('yes')" icon="pi pi-check" @click="deleteUsuario(item)" class="p-button-text" />
                     </template>
                 </Dialog>
                 <!-- Componente de carregamento enquanto a ação é processada -->

@@ -3,7 +3,7 @@
         <!-- Máquinas Online vs Offline -->
         <div class="col-4">
             <div class="card card-item">
-                <h5>Máquinas Online vs Offline</h5>
+                <h5>{{$t('machines_online_offline')}}</h5>
                 <div class="chart-container " v-if="isDataLoaded">
                     <Chart type="doughnut" :data="machinesChartData" :options="doughnutChartOptions" />
                 </div>
@@ -16,10 +16,10 @@
         <!-- Notificações Enviadas -->
         <div class="col-4">
             <div class="card card-item">
-                <h5>Notificações Enviadas</h5>
+                <h5>{{$t('sent_notifications')}}</h5>
                 <div class="chart-container" v-if="isDataLoaded">
                     <Chart type="bar" :data="notificationsChartData" :options="barChartOptions" />
-                    <template v-if="!notificationsChartDataReady"><p class="text-center text-gray-500">Nenhuma notificação enviada</p></template>
+                    <template v-if="!notificationsChartDataReady"><p class="text-center text-gray-500">{{$t('no_notifications')}}</p></template>
                   </div>
                   <div v-else>
                     <Skeleton width="100%" height="150px" />
@@ -30,7 +30,7 @@
         <!-- Clientes com Mais Retiradas -->
         <div class="col-4">
             <div class="card card-item">
-                <h5>Clientes com Mais Retiradas</h5>
+                <h5>{{$t('clients_most_withdrawal')}}</h5>
                 <div class="chart-container" v-if="isDataLoaded">
                     <Chart type="pie" :data="clientsChartData" :options="doughnutChartOptions" />
                 </div>
@@ -44,6 +44,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 /**
  * Define as propriedades que o componente aceita.
  * Neste caso, o componente espera uma propriedade chamada "dados", que é um objeto.
@@ -62,7 +63,7 @@ import { ref, computed } from 'vue';
  * @type {ComputedRef<boolean>}
  */
 const isDataLoaded = computed(() => !!props.dados && Object.keys(props.dados).length > 0);
-
+const { t } = useI18n();
 /**
  * Opções específicas para gráficos de barras.
  * Define a configuração para os gráficos de barras, incluindo aspectos como a manutenção da proporção,
@@ -168,7 +169,7 @@ const notificationsChartData = computed(() => ({
     labels: ['E-mail', 'Push'], // Labels do gráfico
     datasets: [
         {
-            label: 'Notificações', // Rótulo para a legenda do gráfico
+            label: t('notifications'), // Rótulo para a legenda do gráfico
             data: [
                 props.dados.notificacoes?.email || 0, // Número de notificações por email
                 props.dados.notificacoes?.push || 0 // Número de notificações push

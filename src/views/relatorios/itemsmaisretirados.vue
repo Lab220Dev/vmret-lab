@@ -3,12 +3,13 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente de c
 import { FilterMatchMode } from 'primevue/api'; // Importa o tipo de filtro para a tabela (DataTable) do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa a função para exibir mensagens de toast (notificações)
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o estilo do componente VueDatePicker
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'; // Importa funções reativas e de ciclo de vida do Vue
+import { ref, onMounted, computed, nextTick, watch } from 'vue'; // Importa funções reativas e de ciclo de vida do Vue
 import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 /**
  * @type {Ref<boolean>}
  * Flag que controla a exibição do modal de mensagem.
@@ -46,7 +47,7 @@ const toast = useToast();
  * Mensagem padrão exibida quando não há dados encontrados.
  * @default 'Ainda não foi feita nenhuma busca'
  */
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
+ const emptyMessage = computed(() => t('no_search_made'));
 
 /**
  * @type {Ref<any>}
@@ -196,17 +197,23 @@ const buscar = async () => {
 
         // Se não houver dados, exibe mensagem informativa
         if (retiradas.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.'; // Mensagem de erro
+            emptyMessage.value = t('no_data_found'); // Mensagem de erro
         } else {
             emptyMessage.value = ''; // Limpa a mensagem de erro
         }
 
         // Caso não haja resultados, exibe o diálogo de erro
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
-            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.'; // Mensagem de erro no modal
+            dialogMessage.value = t('no_data_found'); // Mensagem de erro no modal
             showDialog.value = true; // Exibe o modal com a mensagem de erro
         }
     } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: t('title'),
+            life: 3000,
+            detail: t('fetch_data')
+        });
         console.error('Erro ao buscar dados:', error); // Exibe erro no console se ocorrer falha
     } finally {
         loading.value = false; // Desativa o carregamento ao finalizar a requisição
@@ -274,7 +281,12 @@ const loadData = async () => {
         ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
         ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Erro ao carregar dados' });
+        toast.add({
+            severity: 'error',
+            summary: t('title'),
+            life: 3000,
+            detail: t('fetch_data')
+        });
     } finally {
         loading.value = false;
     }
@@ -308,48 +320,48 @@ onMounted(() => {
         <!-- Card principal da página -->
 
         <!-- Título principal -->
-        <h5 class="my-6 ml-2 text-2xl">Itens mais retirados</h5>
+        <h5 class="my-6 ml-2 text-2xl">{{t('most_withdrawn_items')}}</h5>
 
         <div class="p-0 m-0 p-fluid formgrid grid col-12">
             <!-- Início do formulário de busca de informações para o relatório -->
             <!-- Filtro para DM (Documento de Medição) -->
             <div class="field lg:col-3 md:col-6 sm:col-12">
-                <label for="id_dm">DM:</label>
+                <label for="id_dm">{{t('dispenser_machine')}}</label>
                 <!-- Dropdown para selecionar o DM (documento de medição) -->
                 <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
             </div>
 
             <!-- Filtro para Centro de Custo -->
             <div class="field lg:col-3 md:col-6 sm:col-12">
-                <label for="perfil">Centro de Custo:</label>
+                <label for="perfil">{{t('cost_center')}}</label>
                 <!-- Dropdown para selecionar o centro de custo -->
                 <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Setor -->
             <div class="field lg:col-3 md:col-6 sm:col-12">
-                <label for="perfil">Setor:</label>
+                <label for="perfil">{{t('sector')}}:</label>
                 <!-- Dropdown para selecionar o setor -->
                 <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Planta -->
             <div class="field lg:col-3 md:col-6 sm:col-12">
-                <label for="planta">Planta:</label>
+                <label for="planta">{{t('factory')}}:</label>
                 <!-- Dropdown para selecionar a planta -->
                 <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Funcionário -->
             <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="perfil">Funcionário:</label>
+                <label for="perfil">{{t('employee')}}:</label>
                 <!-- Dropdown para selecionar o funcionário -->
                 <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
             </div>
 
             <!-- Filtro para Data Inicial -->
             <div class="field lg:col-3 md:col-6 sm:col-6">
-                <label for="perfil">Data Inicial:</label>
+                <label for="perfil">{{t('initial_date')}}</label>
                 <!-- DataPicker para selecionar a data inicial -->
                 <VueDatePicker
                     class="drop"
@@ -369,7 +381,7 @@ onMounted(() => {
 
             <!-- Filtro para Data Final -->
             <div class="field lg:col-3 md:col-6 sm:col-6">
-                <label for="perfil">Data Final:</label>
+                <label for="perfil">{{t('end_date')}}</label>
                 <!-- DataPicker para selecionar a data final -->
                 <VueDatePicker
                     class="drop"
@@ -389,17 +401,17 @@ onMounted(() => {
 
             <!-- Botão de Filtrar -->
             <div class="field lg:col-3 md:col-6 sm:col-12">
-                <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
             </div>
 
             <!-- Botão para Exportar para CSV -->
             <div class="field lg:col-3 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+                <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
             </div>
 
             <!-- Botão para Exportar para JSON -->
             <div class="field lg:col-3 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
+                <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
             </div>
         </div>
 
@@ -438,7 +450,7 @@ onMounted(() => {
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
                         <!-- Exibe o total de registros filtrados -->
-                        <span>Total de registros: {{ filteredCount }}</span>
+                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
                     </div>
                     <div>
                         <!-- Filtro global de pesquisa -->
@@ -446,7 +458,7 @@ onMounted(() => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                         </IconField>
                     </div>
                 </div>
@@ -454,21 +466,21 @@ onMounted(() => {
 
             <template #empty>{{ emptyMessage }} </template>
             <!-- Colunas da tabela -->
-            <Column field="ProdutoNome" sortable header="Item"></Column>
-            <Column field="quantidade_no_periodo" sortable style="width: 15%" header="Quantidade" class="text-center"></Column>
-            <Column field="ProdutoSKU" sortable style="width: 15%" header="CA"></Column>
+            <Column field="ProdutoNome" sortable :header="t('item')"></Column>
+            <Column field="quantidade_no_periodo" sortable style="width: 15%":header="t('quantity')" class="text-center"></Column>
+            <Column field="ProdutoSKU" sortable style="width: 15%" :header="t('ca')"></Column>
         </DataTable>
 
         <!-- Exibe os detalhes do produto em um modal -->
         <card v-if="show" class="details-card">
-            <template #title>Detalhes do Produto</template>
+            <template #title>{{ $t('details') }}</template>
             <template #content>
                 <DataTable :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
-                    <Column field="Identificacao" sortable header="DM"></Column>
-                    <Column field="ProdutoNome" sortable header="Item"></Column>
-                    <Column field="Data" sortable header="Data"></Column>
-                    <Column field="Quantidade" sortable header="Quantidade"> </Column>
-                    <Column field="ProdutoSKU" sortable header="SKU"></Column>
+                    <Column field="Identificacao" sortable :header="t('dm')"></Column>
+                    <Column field="ProdutoNome" sortable :header="t('item')"></Column>
+                    <Column field="Data" sortable :header="t('date')"></Column>
+                    <Column field="Quantidade" sortable :header="t('quantity')"> </Column>
+                    <Column field="ProdutoSKU" sortable :header="t('SKU')"></Column>
                 </DataTable>
             </template>
         </card>
@@ -478,7 +490,7 @@ onMounted(() => {
     <LoadingSpinner v-if="loading" />
 
     <!-- Diálogo de erro com a mensagem de erro -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+    <Dialog :header="t('info')" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />

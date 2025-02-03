@@ -3,12 +3,14 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueD
 import { FilterMatchMode } from 'primevue/api'; // Importa o modo de filtro para correspondência de filtros globais
 import { useToast } from 'primevue/usetoast'; // Importa o serviço de toast para mensagens rápidas
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS necessário para o VueDatePicker
-import { ref, onMounted, watch } from 'vue'; // Importa os hooks do Vue (ref, onMounted, watch)
+import { ref, onMounted, watch,computed } from 'vue'; // Importa os hooks do Vue (ref, onMounted, watch)
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString,getDateFromString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const showDialog = ref(false); // Controla a visibilidade do dialog de erro
 const dialogMessage = ref(''); // Armazena a mensagem de erro que será exibida no dialog
@@ -18,8 +20,7 @@ const filteredCount = ref(0); // Contagem de itens filtrados (para a filtragem d
 const store = useAuthStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
 const dataStore = useDataStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
 const toast = useToast(); // Instancia o toast para exibir mensagens ao usuário
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem exibida quando não há resultados
-
+const emptyMessage = computed(() => t('no_search_made'));
 // Refs para os dropdowns no formulário de filtro
 const dropdown1 = ref(null);
 const dropdown2 = ref(null);
@@ -78,17 +79,22 @@ const buscar = async () => {
 
         // Exibe um diálogo caso não haja dados retornados
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
-            dialogMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            dialogMessage.value = t('no_data_found');
             showDialog.value = true;
         }
         if (retiradas.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            emptyMessage.value = t('no_data_found');
         } else {
             emptyMessage.value = ''; // Limpa a mensagem de "sem dados"
         }
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Erro ao buscar dados' });
-        console.error('Erro ao buscar retiradas:', error); // Exibe o erro no console caso haja uma falha na requisição
+        toast.add({
+            severity: 'error',
+            summary: t('title_error'),
+            life: 3000,
+            detail: t('fetch_data')
+        });
+        console.error(t('console_fetch_data'), error); // Exibe o erro no console caso haja uma falha na requisição
     } finally {
         loading.value = false; // Desativa o spinner de carregamento
     }
@@ -165,41 +171,41 @@ onMounted(() => {
     <!-- Card principal para exibição do relatório -->
     <div class="card vh">
         <!-- Título do card -->
-        <h5 class="my-6 ml-2 text-2xl">Retiradas Realizadas</h5>
+        <h5 class="my-6 ml-2 text-2xl">{{$t('retiradas_realizadas')}}</h5>
 
         <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
         <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
             <!-- Filtro DM (Departamento ou Manager) -->
             <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="dm">DM:</label>
+                <label for="dm">{{ $t('dm') }}</label>
                 <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
                 <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
             </div>
 
             <!-- Filtro Centro de Custo -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">Centro de Custo:</label>
+                <label for="perfil">{{$t('cost_center')}}</label>
                 <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Setor -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">Setor:</label>
+                <label for="perfil">{{ $t('sector') }}</label>
                 <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Planta -->
             <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="planta">Planta:</label>
+                <label for="planta">{{$t('factory')}}:</label>
                 <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
                 <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro Funcionário -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">Funcionário:</label>
+                <label for="perfil">{{t('employee')}}:</label>
                 <!-- Dropdown para selecionar Funcionário -->
                 <Dropdown class="drop" 
                 v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
@@ -211,7 +217,7 @@ onMounted(() => {
 
             <!-- Filtro Data Inicial -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">Data Inicial:</label>
+                <label for="perfil">{{t('initial_date')}}:</label>
                 <!-- DatePicker para selecionar a Data Inicial -->
                 <VueDatePicker
                     class="drop"
@@ -231,7 +237,7 @@ onMounted(() => {
 
             <!-- Filtro Data Final -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">Data Final:</label>
+                <label for="perfil">{{$t('end_date')}}:</label>
                 <!-- DatePicker para selecionar a Data Final -->
                 <VueDatePicker
                     class="drop"
@@ -251,17 +257,17 @@ onMounted(() => {
 
             <!-- Botão de filtro -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
             </div>
 
             <!-- Botão para exportar dados em CSV -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+                <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
             </div>
 
             <!-- Botão para exportar dados em JSON -->
             <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
+                <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
             </div>
         </div>
 
@@ -323,7 +329,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ filteredCount }}</span>
+                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
                         <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
@@ -331,7 +337,7 @@ onMounted(() => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                             <!-- Campo de busca global -->
                         </IconField>
                     </div>
@@ -342,45 +348,45 @@ onMounted(() => {
             <template #empty> {{ emptyMessage }} </template>
 
             <!-- Colunas da tabela -->
-            <Column field="Identificacao" class="table-cell" sortable header="DM">
+            <Column field="Identificacao" class="table-cell" sortable :header="t('dm')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
                 </template> -->
             </Column>
 
-            <Column field="Dia" sortable class="table-cell"  header="Data">
+            <Column field="Dia" sortable class="table-cell"  :header="t('date')">
                 <template #body="{ data }">
                     <span v-tooltip="data.Dia">{{ getDateFromString(data.Dia) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
 
-            <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
+            <Column field="Hora" sortable class="table-cell" style="width: 7%" :header="t('time')">
                 <template #body="{ data }">
                     {{ getTimeFromString(data.Dia) }}
                     <!-- Exibe a hora formatada -->
                 </template>
             </Column>
 
-            <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  header="Matricula">
+            <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  :header="t('employee_id')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
                 </template> -->
             </Column>
 
-            <Column field="Nome" class="table-cell"  sortable header="Nome">
+            <Column field="Nome" class="table-cell"  sortable :header="t('name')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Nome">{{ data.Nome }}</span>
                 </template> -->
             </Column>
 
-            <Column field="Email" sortable class="table-cell"  header="E-mail">
+            <Column field="Email" sortable class="table-cell"  :header="t('email')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Email">{{ data.Email }}</span>
                 </template> -->
             </Column>
 
-            <Column field="ProdutoNome" sortable class="table-cell" header="Item">
+            <Column field="ProdutoNome" sortable class="table-cell" :header="t('item')">
                 <template #body="{ data }">
                     <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
                 </template>
@@ -388,7 +394,7 @@ onMounted(() => {
 
             <Column field="Quantidade"  sortable class="text-center table-cell">
                 <template #header>
-                    <span v-tooltip="'Quantidade'">Quant.</span>
+                    <span v-tooltip="$t('quantity')">{{ $t('quantity_short') }}</span>
                     <!-- Tooltip para a coluna de quantidade mínima -->
                 </template></Column>
 

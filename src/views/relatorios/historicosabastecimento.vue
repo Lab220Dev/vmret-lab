@@ -27,9 +27,8 @@ import '@vuepic/vue-datepicker/dist/main.css';
  * Importa as funções reativas e do ciclo de vida do Vue, como `ref`, `onMounted`, e `watch`.
  * @module vue
  */
-import { ref, onMounted } from 'vue';
-
-
+import { ref, onMounted,computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 /**
  * Importa o componente de spinner de carregamento.
  * @module components/LoadingSpinner.vue
@@ -41,17 +40,7 @@ import { useDataStore } from '@/store/dataStore.js'; // Importa o store de auten
 
 // Definindo referências reativas para a UI e lógica do aplicativo.
 
-/**
- * Flag que controla a exibição do modal de mensagem.
- * @type {ref<boolean>}
- */
-const showDialog = ref(false);
-
-/**
- * Mensagem exibida no modal.
- * @type {ref<string>}
- */
-const dialogMessage = ref('');
+const { t } = useI18n();
 
 /**
  * Contagem de registros filtrados.
@@ -81,7 +70,7 @@ const toast = useToast();
  * Mensagem padrão quando não há dados encontrados.
  * @type {ref<string>}
  */
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
+ const emptyMessage = computed(() => t('no_search_made'));
 
 /**
  * Referências para os dropdowns de filtros.
@@ -171,7 +160,7 @@ const relatorio = ref({
         filteredCount.value = historico.value.length;
 
         if (historico.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            emptyMessage.value = t('no_data_found');
         } else {
             emptyMessage.value = '';
         }
@@ -229,44 +218,44 @@ onMounted(() => {
     <div class="card vh">
         
                 <!-- Título da página -->
-                <h5 class="my-6 ml-2 text-2xl">Histórico de Abastecimento</h5>
+                <h5 class="my-6 ml-2 text-2xl">{{t('historico_de_abastecimento')}}</h5>
 
                 <!-- Condição para exibir os campos de filtro -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" >
                     <!-- Filtro de DM (Documento de Movimento) -->
                     <div class="field lg:col-4 md:col-6 sm:col-12">
-                        <label for="dm">DM:</label>
+                        <label for="dm">{{t('dm')}}:</label>
                         <!-- Componente Dropdown para escolher o DM -->
                         <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
                     <!-- Filtro de Planta -->
                     <div class="field lg:col-4 md:col-6 sm:col-12">
-                        <label for="planta">Planta:</label>
+                        <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para escolher a planta -->
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
                     </div>
                     <!-- Filtro de Setor -->
                     <div class="field lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">Setor:</label>
+                        <label for="perfil">{{t('sector')}}:</label>
                         <!-- Componente Dropdown para escolher o setor -->
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
                     <div class="field lg:col-6 md:col-6 sm:col-12">
-                        <label for="perfil">Centro de Custo:</label>
+                        <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Componente Dropdown para escolher o centro de custo -->
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
                     </div>
 
                     <!-- Filtro de Operador -->
                     <div class="field lg:col-6 md:col-6 sm:col-12">
-                        <label for="perfil">Operador:</label>
+                        <label for="perfil">{{t('operator')}}:</label>
                         <!-- Componente Dropdown para escolher o operador -->
                         <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <!-- Filtro de Data Inicial -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
+                        <label for="perfil">{{t('initial_date')}}:</label>
                         <!-- Componente VueDatePicker para escolher a data inicial -->
                         <VueDatePicker
                             class="drop"
@@ -284,7 +273,7 @@ onMounted(() => {
                     </div>
                     <!-- Filtro de Data Final -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Data Final:</label>
+                        <label for="perfil">{{t('end_date')}}:</label>
                         <!-- Componente VueDatePicker para escolher a data final -->
                         <VueDatePicker
                             class="drop"
@@ -302,7 +291,7 @@ onMounted(() => {
                     </div>
                     <!-- Botão para filtrar os dados -->
                     <div class="field lg:col-4 md:col-6 sm:col-12">
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
                 </div>
 
@@ -344,7 +333,7 @@ onMounted(() => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                                     <!-- Campo de entrada para pesquisa global -->
                                 </IconField>
                             </div>
@@ -354,16 +343,16 @@ onMounted(() => {
                         <template #empty>{{ emptyMessage }} </template>
 
                         <!-- Definição das colunas da tabela -->
-                        <Column field="Maquina" sortable header="DM"></Column>
-                        <Column field="Dia" sortable class="table-cell" style="width: 25%" header="Data">
+                        <Column field="Maquina" sortable  :header="t('dm')"></Column>
+                        <Column field="Dia" sortable class="table-cell" style="width: 25%" :header="t('date')">
                             <template #body="{ data }">
                                 {{formatStringDate(data.Dia) }}
                             </template>
                         </Column>
-                        <Column field="Operador" sortable header="Operador"></Column>
-                        <Column field="Nome_Produto" sortable header="Item"></Column>
-                        <Column field="quantidade_abastecido" sortable header="Quantidade" class="text-center"></Column>
-                        <Column field="posicao" sortable header="Posição"></Column>
+                        <Column field="Operador" sortable :header="t('operator')"></Column>
+                        <Column field="Nome_Produto" sortable :header="t('item')"></Column>
+                        <Column field="quantidade_abastecido" sortable :header="t('quantity')" class="text-center"></Column>
+                        <Column field="posicao" sortable :header="t('position')"></Column>
                     </DataTable>
                 </div>
            
@@ -372,15 +361,6 @@ onMounted(() => {
     <!-- Componente de carregamento (spinner) exibido enquanto a requisição está sendo processada -->
     <LoadingSpinner v-if="loading" />
 
-    <!-- Dialog de erro ou informação -->
-    <Dialog header="Informação" :visible.sync="showDialog" style="width: 50vw" :modal="true" :closable="true" :draggable="false">
-        <p>{{ dialogMessage }}</p>
-        <!-- Mensagem exibida no dialog -->
-        <template #footer>
-            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
-            <!-- Botão para fechar o dialog -->
-        </template>
-    </Dialog>
 </template>
 <style>
 .card {
