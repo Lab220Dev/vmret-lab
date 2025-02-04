@@ -14,14 +14,12 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Exibe um spinne
 // Importa a loja de autenticação, que contém as informações do usuário e do cliente.
 import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o estado de autenticação do usuário e cliente.
 
-// Importa a instância do Axios configurada para realizar as requisições HTTP.
-import axios from '@/axios.js'; // Responsável por enviar as requisições HTTP para o backend.
-
 // Importa o sistema de toast para notificações do PrimeVue.
 import { useToast } from 'primevue/usetoast'; // Sistema de notificações (toast) para exibir mensagens ao usuário.
 
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const toast = useToast(); // Instancia o sistema de toast para mostrar mensagens de sucesso, erro ou aviso ao usuário.
 
 const store = useAuthStore(); // Acessa o store de autenticação para obter as informações do usuário e cliente logados.
@@ -66,8 +64,8 @@ const fetchDadosIniciais = async () => {
             validador.value = true; // Marca a falha na integração.
             toast.add({
                 severity: 'warn', // Exibe a notificação como aviso.
-                summary: 'Info', // Título da notificação.
-                detail: `${error.response?.data?.message || 'Máquina sem integração'}`, // Detalhes do erro, se disponíveis.
+                summary: t('info'), // Título da notificação.
+                detail: `${error.response?.data?.message || t('entrada_fetch_dm_default')}`, // Detalhes do erro, se disponíveis.
                 life: 3000 // Duração da notificação.
             });
         } else {
@@ -123,20 +121,20 @@ const salvarIntegracao = async () => {
         if (response.status === 200 || response.status === 201) {
             toast.add({
                 severity: 'success', // Notificação de sucesso.
-                summary: 'Sucesso', // Título da notificação.
-                detail: 'Dados de integração salvos com sucesso!', // Detalhe da notificação.
+                summary: t('title_sucess'), // Título da notificação.
+                detail: t('entrada_save_data_sucess'), // Detalhe da notificação.
                 life: 3000 // Duração da notificação.
             });
         } else {
             // Se a resposta não for sucesso (status diferente de 200 ou 201), lança um erro.
-            throw new Error('Falha ao salvar dados de integração');
+            throw new Error('entrada_save_error');
         }
     } catch (error) {
         // Se ocorrer um erro durante a requisição, exibe uma notificação de erro.
         toast.add({
             severity: 'error', // Notificação de erro.
-            summary: 'Erro', // Título da notificação.
-            detail: `${error.response?.data?.message || 'Erro ao salvar dados de integração'}`, // Detalhes do erro.
+            summary: t('title_error'), // Título da notificação.
+            detail: `${error.response?.data?.message || t('error.message')}`, // Detalhes do erro.
             life: 3000 // Duração da notificação.
         });
 
@@ -155,7 +153,7 @@ onMounted(() => {
 
 <template>
     <div class="card">
-        <h2 class="my-6 text-2xl">Configurações de Integração</h2>
+        <h2 class="my-6 text-2xl">{{t('integration_configuration')}}</h2>
 
         <div class="justify-content-between align-items-baseline flex">
             <!-- Dropdown para selecionar a DM -->
@@ -173,7 +171,7 @@ onMounted(() => {
                 @change="handleDMChange()"
             />
             <!-- Mensagem informativa caso não haja interação e validador não esteja ativo -->
-            <InlineMessage class="inlinemessage " v-if="!validador && primeiraInteracao" severity="info"> Selecione uma DM para continuar </InlineMessage>
+            <InlineMessage class="inlinemessage " v-if="!validador && primeiraInteracao" severity="info">{{t('entrada_first')}}</InlineMessage>
         </div>
 
         <!-- Formulário para editar e salvar as configurações da integração -->
@@ -181,27 +179,27 @@ onMounted(() => {
         <form @submit.prevent="salvarIntegracao">
             <div class="p-fluid grid">
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
-                    <label for="userid">UserID API:</label>
+                    <label for="userid">{{t('userid_api')}}:</label>
                     <InputText class="my-2" id="userid" v-model="Integracao.UserID" type="text" :disabled="validador" />
                 </div>
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
-                    <label for="senha">URL API:</label>
+                    <label for="senha">{{t('url_api')}}:</label>
                     <InputText class="my-2" id="senha" v-model="Integracao.URL" type="text" :disabled="validador" />
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
-                    <label for="idcliente">IdCliente API:</label>
+                    <label for="idcliente">{{t('idclient_api')}}:</label>
                     <InputText class="my-2" id="idcliente" v-model="Integracao.ClienteID" type="text" :disabled="validador" />
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
-                    <label for="chaveapi">senha API:</label>
+                    <label for="chaveapi">{{t('api_password')}}:</label>
                     <InputText class="my-2" id="chaveapi" v-model="Integracao.ChaveAPI" type="text" :disabled="validador" />
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
-                    <label for="chave">Chave:</label>
+                    <label for="chave">{{t('key')}}:</label>
                     <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden" style="min-height: 30px" inputClass="w-full" rows="2" cols="30" :disabled="validador" />
                 </div>
                 <div class="full lg:col-12 md:col-12 sm:col-12">
-                    <Button type="submit" label="Sincronizar" icon="pi pi-check" class="mt-4" :disabled="validador" />
+                    <Button type="submit" :label="$t('sync')" icon="pi pi-check" class="mt-4" :disabled="validador" />
                 </div>
             </div>
         </form>

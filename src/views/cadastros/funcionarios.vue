@@ -25,7 +25,8 @@ import * as formatservices from '@/helpers/HelperUtils.js';
 // Importando funções de ajuda relacionadas ao formulário do funcionarios
 import {resetFuncionarioForm,resetItens as resetProduto} from '@/helpers/formHelper.js';
 import { validadorcpf, validadoremail,validateForm } from '@/helpers/HelperFuncionario.js';
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const store = useAuthStore();// Acessa o store de autenticação para obter dados sobre o usuário logado
 
 const dataStore = useDataStore();// Acessa o store de dados para obter informações sobre plantas e outros dados
@@ -40,9 +41,9 @@ const handleFileSelected = (file) => {
 const errors = ref({}); 
 
 // Cria uma referência reativa para armazenar o status do funcionário, com duas opções: 'Ativo' e 'Inativo'.
-const status = ref([
-    { label: 'Ativo', value: 'Ativo' },   // Opção de status 'Ativo'.
-    { label: 'Inativo', value: 'Inativo' } // Opção de status 'Inativo'.
+const status  = computed(() => [
+    { label: t('active'), value: 'Ativo' },   // Opção de status 'Ativo'.
+    { label: t('inactive'), value: 'Inativo' } // Opção de status 'Inativo'.
 ]);
 const lazyParams = ref({
     first: 0, // Índice inicial
@@ -324,7 +325,7 @@ const loadFuncionarios = async (page = 1) => {
         resetItens();
     } catch (error) {
         // Em caso de erro, exibe uma notificação de erro com a mensagem 'Erro ao carregar os funcionários'.
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao carregar os funcionários', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_employee_list'), life: 3000 });
     } finally {
         // Define a referência reativa `loading.value` para `false` após o carregamento, indicando que o processo foi concluído.
         loading.value = false;
@@ -348,17 +349,17 @@ const adicionarFuncionario = async () => {
         loading.value = true;
         const { isValid, errors } = validateForm(funcionario);
         if(!isValid){
-            throw new Error(`Erro ao validar o formulário. Corrija os campos destacados: ${JSON.stringify(errors)}`);
+            throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
         }
         await funcionarioService.adicionarFuncionario(funcionario, selectedFile.value);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário criado', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_added'), life: 3000 });
         dataStore.invalidateFuncionariosCache();
         await loadFuncionarios();
         active.value = 0;
         resetForm();
         resetFuncionarioForm(funcionario);
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Error', detail:  error.message || 'Erro ao criar o usuário', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail:  error.message || t('employee_form_default_error'), life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -477,14 +478,14 @@ const deleteFuncionario = async () => {
     try {
         loading.value = true;
         await funcionarioService.deleteFuncionario(data);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Funcionário Deletado', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('deleted_employee_form_sucess'), life: 3000 });
         dataStore.invalidateFuncionariosCache();
         deleteFuncionarioDialog.value = false;
         loadFuncionarios();
         active.value = 0;
         resetForm();
     } catch {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o funcionário', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('deleted_employee_form_error'), life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -519,10 +520,10 @@ const SalvarProduto = async () => {
         ListaProdutoFuncionario.value = response.data.dados[0];
         visible.value = false;
         resetItens();
-        toast.add({ severity: 'success', summary: 'Produto Adicionado', detail: 'O produto foi adicionado com sucesso!', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_product_sucess'), life: 3000 });
         itemDialog.value = false;
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar o produto', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('employee_product_error'), life: 3000 });
     } finally {
         loading.value = false;
         

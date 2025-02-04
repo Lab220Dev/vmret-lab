@@ -422,6 +422,15 @@ const ajustarContagemInicial = () => {
 const preencherOpcoesControladoras = () => {
     pocHelper(Controladoras.value, { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions });
 };
+const getTooltipText = (data) => {
+    if (data.modelo === '2018') {
+        return t('controller_2018');
+    } else if (data.modelo === '2023') {
+        return t('controller_2023');
+    } else {
+        return t('default_controller');
+    }
+};
 const configurarVisibilidade = () => {
     if (!admin()) {
         show.value = true;
@@ -782,7 +791,7 @@ onMounted(async () => {
                         <div>
                             <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
                                 <div class="flex justify-content-between flex-wrap">
-                                    <h5>{{ $t('controller', { number: index + 1 }) }}</h5>
+                                    <h5>{{ $t('controller_number', { number: index + 1 }) }}</h5>
 
                                     <!-- Botão de Remoção -->
                                     <Button icon="pi pi-trash" :label="$t('remove')" class="p-button-danger" @click="removeControladora(index)" />
@@ -972,22 +981,22 @@ onMounted(async () => {
                                         <span class="tooltip-target" v-tooltip="data.Nome_Produto">{{ data.Nome_Produto }}</span>
                                     </template></Column
                                 >
-                                <Column field="Posicao" sortable style="width: 40%" header="Posição">
+                                <Column field="Posicao" sortable style="width: 40%" :header="t('Posição')">
                                     <template #body="{ data }">
-                                        <span v-tooltip="data.modelo === '2018' ? 'Controladora / Placa / Motor 1 / Motor 2' : data.modelo === '2023' ? 'Controladora / DIP / Andar / Posição' : 'Placa / Motor'">
+                                        <span  v-tooltip="getTooltipText(data)">
                                             {{ data.Posicao }}
                                         </span>
                                     </template>
                                 </Column>
-                                <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
+                                <Column field="QTD" sortable style="width: 9%" :header="t('quantity_short')"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" v-tooltip="{ value: 'Excluir Produto', showDelay: 1000, hideDelay: 300 }" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" v-tooltip="{ value: $t('delete_product'), showDelay: 1000, hideDelay: 300 }" />
                                     </template>
                                 </Column>
                                 <template #groupheader="slotProps">
                                     <div class="flex align-items-center text-3xl gap-2">
-                                        <span v-tooltip="'Modelo da controladora'">
+                                        <span v-tooltip="$t('controller_model')">
                                             {{ slotProps.data.modelo }}
                                         </span>
                                     </div>
@@ -995,17 +1004,17 @@ onMounted(async () => {
                             </DataTable>
                         </div>
                     </div>
-                    <Button class="m-1" label="Voltar" @click="voltar()" />
+                    <Button class="m-1" :label="$t('back')" @click="voltar()" />
                 </div>
                 <LoadingSpinner v-if="loading" />
             </div>
         </div>
     </div>
-    <Dialog class="" :header="isEditMode ? 'Editar Produto' : 'Adicionar Produto'" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
+    <Dialog class="" :header="isEditMode ?  $t('edit_product') : $t('add_product')" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
         <div class="box card">
             <div class="grid">
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Produto" class="font-semibold">Produto:</label>
+                    <label for="Produto" class="font-semibold">{{t('product')}}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <Dropdown
@@ -1019,99 +1028,101 @@ onMounted(async () => {
                         v-model:filters="filters"
                         optionLabel="label"
                         optionValue="value"
-                        placeholder="Selecione um produto"
+                        :placeholder="t('select_product')"
                     />
                 </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Controladora" class="font-semibold">Controladora:</label>
+                    <label for="Controladora" class="font-semibold">{{t('controller')}}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" placeholder="Selecione uma controladora" />
+                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" :placeholder="$t('controller_select')" />
                 </div>
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="tipoControladoraSelecionada === '2018'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">Placa:</label>
+                        <label for="Dip" class="font-semibold">{{t('board')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Placa" />
+                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" :placeholder="$t('board_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="molas" class="font-semibold">Molas:</label>
+                        <label for="molas" class="font-semibold">{{t('spring')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" placeholder="Selecione as Molas" />
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" :placeholder="$t('spring_select')" />
                     </div>
                 </template>
 
                 <template v-if="tipoControladoraSelecionada === '2023'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">DIP:</label>
+                        <label for="Dip" class="font-semibold">{{t('dip')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Andar" class="font-semibold">Andar:</label>
+                        <label for="Andar" class="font-semibold">{{t('level_floor')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" placeholder="Selecione o andar" @change="handleAndarChange" />
+                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" :placeholder="$t('floor_select')" @change="handleAndarChange" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Posicao" class="font-semibold">Posição:</label>
+                        <label for="Posicao" class="font-semibold">{{t('position')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" @change="validarAndarSelecionado" />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" @change="validarAndarSelecionado" />
                     </div>
                 </template>
 
                 <template v-if="tipoControladoraSelecionada === '2024'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Motor" class="font-semibold">Motor:</label>
+                        <label for="Motor" class="font-semibold">{{t('motor')}}:</label>
                     </div>
-                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
+                    <div class="lg:col-8 md:c
+                    
+                    ol-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" :placeholder="$t('motor_select')" />
                     </div>
                 </template>
 
                 <template v-if="isArmario(tipoControladoraSelecionada)">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">DIP:</label>
+                        <label for="Dip" class="font-semibold">{{t('dip')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Posicao" class="font-semibold">Posição:</label>
+                        <label for="Posicao" class="font-semibold">{{t('position')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')"  />
                     </div>
                 </template>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Capacidade" class="font-semibold">Capacidade:</label>
+                    <label for="Capacidade" class="font-semibold">{{t('capacity')}}:</label>
                 </div>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
-                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades" />
+                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" :suffix="$t('capacity_suffix')" />
                 </div>
             </div>
         </div>
 
         <div class="flex justify-content-end gap-2 mt-4">
-            <Button type="button" label="Cancelar" severity="secondary" @click="handleCancelar()"></Button>
-            <Button type="button" :label="isEditMode ? 'Atualizar' : 'Salvar'" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
+            <Button type="button" :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
+            <Button type="button":label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
-    <Dialog header="Deletar Item" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+    <Dialog :header="$t('dialog_delete_item')" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
-            <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
+            <Button :label="$t('cancel')" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
             <Button label="OK" icon="pi pi-check" @click="confirmDelete" />
         </template>
     </Dialog>
-    <Dialog header="Deletar DM" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+    <Dialog :header="$t('dialog_delte_dm')" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
