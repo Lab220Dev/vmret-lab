@@ -164,249 +164,218 @@ onMounted(() => {
 <template>
     <!-- Card principal para exibição do relatório -->
     <div class="card vh">
-        <!-- Título do card -->
-        <h5 class="my-6 ml-2 text-2xl">Retiradas Realizadas</h5>
-
-        <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
-        <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-            <!-- Filtro DM (Departamento ou Manager) -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="dm">DM:</label>
-                <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
-                <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
-            </div>
-
-            <!-- Filtro Centro de Custo -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">Centro de Custo:</label>
-                <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
-            </div>
-
-            <!-- Filtro Setor -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">Setor:</label>
-                <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
-            </div>
-
-            <!-- Filtro Planta -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="planta">Planta:</label>
-                <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
-            </div>
-
-            <!-- Filtro Funcionário -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">Funcionário:</label>
-                <!-- Dropdown para selecionar Funcionário -->
-                <Dropdown class="drop" 
-                v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                optionLabel="label" 
-                optionValue="value" 
-                placeholder="Todos" 
-                ref="dropdown5" />
-            </div>
-
-            <!-- Filtro Data Inicial -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">Data Inicial:</label>
-                <!-- DatePicker para selecionar a Data Inicial -->
-                <VueDatePicker
-                    class="drop"
-                    v-model="relatorio.data_inicio"
-                    showIcon
-                    :showOnFocus="false"
-                    :format="formatDateToString"
-                    locale="pt-BR"
-                    auto-apply
-                    :enable-time-picker="false"
-                    placeholder="Selecione uma data inicial"
-                    teleport="body"
-                    ref="datepicker1"
-                    @open="handleDatepickerOpen"
-                />
-            </div>
-
-            <!-- Filtro Data Final -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">Data Final:</label>
-                <!-- DatePicker para selecionar a Data Final -->
-                <VueDatePicker
-                    class="drop"
-                    v-model="relatorio.data_final"
-                    showIcon
-                    :showOnFocus="false"
-                    :format="formatDateToString"
-                    locale="pt-BR"
-                    auto-apply
-                    :enable-time-picker="false"
-                    placeholder="Selecione uma data final"
-                    teleport="body"
-                    ref="datepicker2"
-                    @open="handleDatepickerOpen"
-                />
-            </div>
-
-            <!-- Botão de filtro -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
-            </div>
-
-            <!-- Botão para exportar dados em CSV -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
-            </div>
-
-            <!-- Botão para exportar dados em JSON -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
-            </div>
-        </div>
-
-        <!-- DataTable que exibe o relatório com base nos filtros -->
-        <DataTable
-            v-model:filters="filters"
-            :value="retiradas"
-            stripedRows
-            removableSort
-            showGridlines
-            paginator
-            :rows="10"
-            :rowsPerPageOptions="[5, 10, 20, 50]"
-            rowHover
-            :globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-            tableStyle="max-width: 100%;"
-            ref="dt"
-            class="mt-6"
-            :sortField="'ProdutoSKU'"
-            :sortOrder="1"
-        >
-            <!-- 
-    A tabela exibe os dados contidos na variável 'retiradas', que provavelmente são registros de algum tipo de transação ou retirada de itens. Cada linha da tabela corresponde a um item dessa lista.
-
-    - **v-model:filters="filters"**: A tabela possui um campo de filtro global vinculado ao modelo `filters`. Isso permite que o usuário insira critérios de pesquisa, e a variável `filters` será atualizada automaticamente com base nas entradas do filtro. A tabela irá aplicar esses filtros para exibir apenas os dados relevantes.
-
-    - **:value="retiradas"**: A propriedade `value` recebe os dados a serem exibidos. A variável `retiradas` contém os dados que serão apresentados na tabela. Cada elemento de `retiradas` será uma linha na tabela.
-
-    - **stripedRows**: Ativa o estilo de linhas alternadas (listradas), onde as linhas ímpares e pares têm cores de fundo diferentes. Esse estilo facilita a leitura dos dados, permitindo que o usuário acompanhe as linhas mais facilmente.
-
-    - **removableSort**: Permite que o usuário remova a ordenação clicando novamente no cabeçalho de uma coluna. Isso oferece flexibilidade adicional ao usuário que quer alternar entre diferentes ordens de visualização dos dados.
-
-    - **showGridlines**: Exibe as linhas de grade, ou seja, as divisórias entre as células da tabela. Isso melhora a legibilidade, especialmente quando há muitas colunas de dados.
-
-    - **paginator**: Habilita a paginação da tabela. Os dados serão divididos em várias páginas, e o usuário pode navegar entre elas. Isso melhora a performance e facilita a navegação em grandes conjuntos de dados.
-
-    - **:rows="10"**: Define o número padrão de linhas que serão exibidas por página. Neste caso, a tabela exibirá 10 itens por página, mas o usuário pode alterar isso.
-
-    - **:rowsPerPageOptions="[5, 10, 20, 50]"**: Proporciona ao usuário a opção de selecionar quantos itens por página ele deseja ver. As opções disponíveis são 5, 10, 20 ou 50 itens por página.
-
-    - **rowHover**: Aplica um estilo de destaque nas linhas da tabela quando o mouse passa sobre elas. Esse efeito melhora a experiência do usuário ao navegar pela tabela, tornando mais fácil identificar qual linha está sendo selecionada.
-
-    - **:globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"**: Define os campos pelos quais a filtragem global será feita. Quando o usuário insere um critério de pesquisa, ele será aplicado a todos esses campos. O filtro buscará dentro dos campos de 'Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', e 'ProdutoSKU'.
-
-    - **tableStyle="min-width: 50rem; table-layout: fixed;"**: Define o estilo da tabela. O valor `min-width: 50rem;` garante que a tabela tenha um tamanho mínimo de 50rem de largura. O `table-layout: fixed;` assegura que a largura das colunas seja fixa, independentemente do conteúdo da célula. Esse estilo ajuda a controlar a aparência da tabela, especialmente se ela contiver colunas com conteúdos longos ou variáveis.
-
-    - **ref="dt"**: A tabela é associada a uma referência chamada `dt`, que permite acessá-la diretamente no código JavaScript. Isso é útil para interações programáticas com a tabela, como manipulação dos filtros, ordenação ou paginação através do código.
-
-    - **class="mt-6"**: A classe CSS `mt-6` é adicionada à tabela, provavelmente para definir uma margem superior. A margem de `mt-6` pode ser uma convenção do seu framework CSS (provavelmente Tailwind CSS), que aplica um espaçamento específico.
-
-    - **:sortField="'ProdutoSKU'"**: Define a coluna 'ProdutoSKU' como o campo pelo qual a tabela será inicialmente ordenada. Isso significa que, ao carregar a tabela, ela será ordenada pela coluna 'ProdutoSKU'.
-
-    - **:sortOrder="1"**: Define que a ordenação será feita em ordem crescente (valor `1`), ou seja, os dados serão ordenados do menor para o maior valor na coluna 'ProdutoSKU'. Se fosse `-1`, a ordenação seria em ordem decrescente.
-
-    - **:tableStyle="{ width: '100%' }"**: Aplica um estilo adicional que faz a tabela ocupar 100% da largura disponível do contêiner pai. Isso torna a tabela responsiva e adaptável a diferentes tamanhos de tela, preenchendo toda a largura disponível.
-
--->
-            <!-- Cabeçalho da tabela, com contador de registros filtrados -->
-            <template #header>
-                <div class="flex justify-content-between align-items-center">
-                    <div>
-                        <span>Total de registros: {{ filteredCount }}</span>
-                        <!-- Exibe o total de registros filtrados -->
+       <div class="form">
+            <!-- Grid de layout -->
+            <div class="grid mt-3 mx-1 px-1">
+                <!-- Título do card -->
+                <h5 class="mt-3 mb-5 ml-4 text-2xl">Retiradas Realizadas<hr /></h5>
+                
+                <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
+                <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
+                    <!-- Filtro DM (Departamento ou Manager) -->
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="dm">DM:</label>
+                        <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
+                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1"></Dropdown>
                     </div>
-                    <div>
-                        <IconField iconPosition="left">
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
-                            <!-- Campo de busca global -->
-                        </IconField>
+                    <!-- Filtro Centro de Custo -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <label for="perfil">Centro de Custo:</label>
+                        <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
+                    </div>
+                    <!-- Filtro Setor -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <label for="perfil">Setor:</label>
+                        <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
+                    </div>
+                    <!-- Filtro Planta -->
+                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="planta">Planta:</label>
+                        <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
+                    </div>
+                    <!-- Filtro Funcionário -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <label for="perfil">Funcionário:</label>
+                        <!-- Dropdown para selecionar Funcionário -->
+                        <Dropdown class="drop"
+                        v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Todos"
+                        ref="dropdown5" />
+                    </div>
+                    <!-- Filtro Data Inicial -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                        <label for="perfil">Data Inicial:</label>
+                        <!-- DatePicker para selecionar a Data Inicial -->
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="formatDateToString"
+                            locale="pt-BR"
+                            auto-apply
+                            :enable-time-picker="false"
+                            placeholder="Selecione uma data inicial"
+                            teleport="body"
+                            ref="datepicker1"
+                            @open="handleDatepickerOpen"
+                        />
+                    </div>
+                    <!-- Filtro Data Final -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                        <label for="perfil">Data Final:</label>
+                        <!-- DatePicker para selecionar a Data Final -->
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="formatDateToString"
+                            locale="pt-BR"
+                            auto-apply
+                            :enable-time-picker="false"
+                            placeholder="Selecione uma data final"
+                            teleport="body"
+                            ref="datepicker2"
+                            @open="handleDatepickerOpen"
+                        />
+                    </div>
+                    <!-- Botão de filtro -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                    </div>
+                    <!-- Botão para exportar dados em CSV -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                        <Button class="exportar" icon="pi pi-file" label="Exportar CSV" @click="exportCSV"></Button>
+                    </div>
+                    <!-- Botão para exportar dados em JSON -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                        <Button class="exportar" icon="pi pi-file" label="Exportar JSON" @click="exportJSON"></Button>
                     </div>
                 </div>
-            </template>
-
-            <!-- Mensagem a ser exibida quando não houver dados -->
-            <template #empty> {{ emptyMessage }} </template>
-
-            <!-- Colunas da tabela -->
-            <Column field="Identificacao" class="table-cell" sortable header="DM">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
-                </template> -->
-            </Column>
-
-            <Column field="Dia" sortable class="table-cell"  header="Data">
-                <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ getDateFromString(data.Dia) }}</span>
-                    <!-- Exibe a data formatada -->
-                </template>
-            </Column>
-
-            <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
-                <template #body="{ data }">
-                    {{ getTimeFromString(data.Dia) }}
-                    <!-- Exibe a hora formatada -->
-                </template>
-            </Column>
-
-            <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  header="Matricula">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
-                </template> -->
-            </Column>
-
-            <Column field="Nome" class="table-cell"  sortable header="Nome">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.Nome">{{ data.Nome }}</span>
-                </template> -->
-            </Column>
-
-            <Column field="Email" sortable class="table-cell"  header="E-mail">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.Email">{{ data.Email }}</span>
-                </template> -->
-            </Column>
-
-            <Column field="ProdutoNome" sortable class="table-cell" header="Item">
-                <template #body="{ data }">
-                    <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
-                </template>
-            </Column>
-
-            <Column field="Quantidade"  sortable class="text-center table-cell">
-                <template #header>
-                    <span v-tooltip="'Quantidade'">Quant.</span>
-                    <!-- Tooltip para a coluna de quantidade mínima -->
-                </template></Column>
-
-            <Column field="ProdutoSKU" class="table-cell"  sortable header="CA">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
-                </template> -->
-            </Column>
-        </DataTable>
-
-        <!-- Cartão exibido quando a variável 'show' for falsa -->
-        <Card v-if="!show">
-            <template #title>{{ selectedItem.dm }}</template>
-            <template #content>
-                <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
-                <!-- Botão para voltar -->
-            </template>
-        </Card>
+                <!-- DataTable que exibe o relatório com base nos filtros -->
+                <div class="datatable-wrapper">
+                    <DataTable
+                        v-model:filters="filters"
+                        :value="retiradas"
+                        stripedRows
+                        removableSort
+                        showGridlines
+                        paginator
+                        :rows="10"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        rowHover
+                        :globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
+                        tableStyle="max-width: 100%; table-layout: fixed;"
+                        ref="dt"
+                        class="mt-6"
+                        :sortField="'ProdutoSKU'"
+                        :sortOrder="1"
+                    >
+                        <!--
+                        A tabela exibe os dados contidos na variável 'retiradas', que provavelmente são registros de algum tipo de transação ou retirada de itens. Cada linha da tabela corresponde a um item dessa lista.
+                        - **v-model:filters="filters"**: A tabela possui um campo de filtro global vinculado ao modelo `filters`. Isso permite que o usuário insira critérios de pesquisa, e a variável `filters` será atualizada automaticamente com base nas entradas do filtro. A tabela irá aplicar esses filtros para exibir apenas os dados relevantes.
+                        - **:value="retiradas"**: A propriedade `value` recebe os dados a serem exibidos. A variável `retiradas` contém os dados que serão apresentados na tabela. Cada elemento de `retiradas` será uma linha na tabela.
+                        - **stripedRows**: Ativa o estilo de linhas alternadas (listradas), onde as linhas ímpares e pares têm cores de fundo diferentes. Esse estilo facilita a leitura dos dados, permitindo que o usuário acompanhe as linhas mais facilmente.
+                        - **removableSort**: Permite que o usuário remova a ordenação clicando novamente no cabeçalho de uma coluna. Isso oferece flexibilidade adicional ao usuário que quer alternar entre diferentes ordens de visualização dos dados.
+                        - **showGridlines**: Exibe as linhas de grade, ou seja, as divisórias entre as células da tabela. Isso melhora a legibilidade, especialmente quando há muitas colunas de dados.
+                        - **paginator**: Habilita a paginação da tabela. Os dados serão divididos em várias páginas, e o usuário pode navegar entre elas. Isso melhora a performance e facilita a navegação em grandes conjuntos de dados.
+                        - **:rows="10"**: Define o número padrão de linhas que serão exibidas por página. Neste caso, a tabela exibirá 10 itens por página, mas o usuário pode alterar isso.
+                        - **:rowsPerPageOptions="[5, 10, 20, 50]"**: Proporciona ao usuário a opção de selecionar quantos itens por página ele deseja ver. As opções disponíveis são 5, 10, 20 ou 50 itens por página.
+                        - **rowHover**: Aplica um estilo de destaque nas linhas da tabela quando o mouse passa sobre elas. Esse efeito melhora a experiência do usuário ao navegar pela tabela, tornando mais fácil identificar qual linha está sendo selecionada.
+                        - **:globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"**: Define os campos pelos quais a filtragem global será feita. Quando o usuário insere um critério de pesquisa, ele será aplicado a todos esses campos. O filtro buscará dentro dos campos de 'Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', e 'ProdutoSKU'.
+                        - **tableStyle="min-width: 50rem; table-layout: fixed;"**: Define o estilo da tabela. O valor `min-width: 50rem;` garante que a tabela tenha um tamanho mínimo de 50rem de largura. O `table-layout: fixed;` assegura que a largura das colunas seja fixa, independentemente do conteúdo da célula. Esse estilo ajuda a controlar a aparência da tabela, especialmente se ela contiver colunas com conteúdos longos ou variáveis.
+                        - **ref="dt"**: A tabela é associada a uma referência chamada `dt`, que permite acessá-la diretamente no código JavaScript. Isso é útil para interações programáticas com a tabela, como manipulação dos filtros, ordenação ou paginação através do código.
+                        - **class="mt-6"**: A classe CSS `mt-6` é adicionada à tabela, provavelmente para definir uma margem superior. A margem de `mt-6` pode ser uma convenção do seu framework CSS (provavelmente Tailwind CSS), que aplica um espaçamento específico.
+                        - **:sortField="'ProdutoSKU'"**: Define a coluna 'ProdutoSKU' como o campo pelo qual a tabela será inicialmente ordenada. Isso significa que, ao carregar a tabela, ela será ordenada pela coluna 'ProdutoSKU'.
+                        - **:sortOrder="1"**: Define que a ordenação será feita em ordem crescente (valor `1`), ou seja, os dados serão ordenados do menor para o maior valor na coluna 'ProdutoSKU'. Se fosse `-1`, a ordenação seria em ordem decrescente.
+                        - **:tableStyle="{ width: '100%' }"**: Aplica um estilo adicional que faz a tabela ocupar 100% da largura disponível do contêiner pai. Isso torna a tabela responsiva e adaptável a diferentes tamanhos de tela, preenchendo toda a largura disponível.
+                    -->
+                        <!-- Cabeçalho da tabela, com contador de registros filtrados -->
+                        <template #header>
+                            <div class="flex justify-content-between align-items-center">
+                                <div>
+                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <!-- Exibe o total de registros filtrados -->
+                                </div>
+                                <div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        <!-- Campo de busca global -->
+                                    </IconField>
+                                </div>
+                            </div>
+                        </template>
+                        <!-- Mensagem a ser exibida quando não houver dados -->
+                        <template #empty> {{ emptyMessage }} </template>
+                        <!-- Colunas da tabela -->
+                        <Column field="Identificacao" class="table-cell" sortable header="DM">
+                            <!-- <template #body="{ data }">
+                                <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
+                            </template> -->
+                        </Column>
+                        <Column field="Dia" sortable class="table-cell"  header="Data">
+                            <template #body="{ data }">
+                                <span v-tooltip="data.Dia">{{ getDateFromString(data.Dia) }}</span>
+                                <!-- Exibe a data formatada -->
+                            </template>
+                        </Column>
+                        <Column field="Hora" sortable class="table-cell" style="width: 7%" header="Hora">
+                            <template #body="{ data }">
+                                {{ getTimeFromString(data.Dia) }}
+                                <!-- Exibe a hora formatada -->
+                            </template>
+                        </Column>
+                        <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  header="Matricula">
+                            <!-- <template #body="{ data }">
+                                <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
+                            </template> -->
+                        </Column>
+                        <Column field="Nome" class="table-cell"  sortable header="Nome">
+                            <!-- <template #body="{ data }">
+                                <span v-tooltip="data.Nome">{{ data.Nome }}</span>
+                            </template> -->
+                        </Column>
+                        <Column field="Email" sortable class="table-cell"  header="E-mail">
+                            <!-- <template #body="{ data }">
+                                <span v-tooltip="data.Email">{{ data.Email }}</span>
+                            </template> -->
+                        </Column>
+                        <Column field="ProdutoNome" sortable class="table-cell" header="Item">
+                            <template #body="{ data }">
+                                <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
+                            </template>
+                        </Column>
+                        <Column field="Quantidade"  sortable class="text-center table-cell">
+                            <template #header>
+                                <span v-tooltip="'Quantidade'">Quant.</span>
+                                <!-- Tooltip para a coluna de quantidade mínima -->
+                            </template></Column>
+                        <Column field="ProdutoSKU" class="table-cell"  sortable header="CA">
+                            <!-- <template #body="{ data }">
+                                <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
+                            </template> -->
+                        </Column>
+                    </DataTable>
+                </div>
+                <!-- Cartão exibido quando a variável 'show' for falsa -->
+                <Card v-if="!show">
+                    <template #title>{{ selectedItem.dm }}</template>
+                    <template #content>
+                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
+                        <!-- Botão para voltar -->
+                    </template>
+                </Card>
+            </div>
+        </div>
     </div>
 
     <!-- Spinner de carregamento, visível quando a variável 'loading' for verdadeira -->

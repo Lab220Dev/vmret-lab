@@ -62,7 +62,6 @@ const relatorio = ref({
 
 // Função para buscar os dados do relatório
 const buscar = async () => {
-
     try {
         loading.value = true; // Ativa o carregamento
         retiradas.value = await relatorioService.retiradaAvulsas(relatorio);
@@ -81,7 +80,7 @@ const buscar = async () => {
             emptyMessage.value = ''; // Limpa a mensagem de erro se houver dados
         }
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
         // Se ocorrer erro na requisição, exibe no console
         console.error('Erro ao buscar dados:', error);
     } finally {
@@ -138,11 +137,10 @@ const loadData = async () => {
         ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
         ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
-    }finally{
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
+    } finally {
         loading.value = false;
     }
-   
 };
 // Função chamada ao montar o componente
 onMounted(() => {
@@ -172,7 +170,7 @@ onMounted(() => {
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <!-- Dropdown para selecionar Planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2"  @change="filtroGenerico"/>
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Setor -->
@@ -186,7 +184,7 @@ onMounted(() => {
                     <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <!-- Dropdown para selecionar Centro de Custo -->
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4"  @change="filtroGenerico"/>
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Funcionário -->

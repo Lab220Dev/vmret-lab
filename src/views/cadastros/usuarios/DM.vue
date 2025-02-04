@@ -28,6 +28,9 @@ import {
 import { normalizeDateTime, prepareListData } from '@/helpers/HelperUtils.js';
 import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
 import dmService from '@/services/dmService';
+
+import ScrollTop from 'primevue/scrolltop';
+
 //Store e Variaveis Reativas
 const dataStore = useDataStore();
 const store = useAuthStore();
@@ -65,7 +68,7 @@ let DM = reactive({
 const nextValues = reactive({
     2018: { placa: 12 },
     2023: { dip: 2 },
-    'Locker-Padrao': { dip: 3 },
+    'Locker-Padrao': { dip: 2 },
     'Locker-Ker': { dip: 0 },
     2024: { placa: 101 }
 });
@@ -120,6 +123,7 @@ const showDialogProduto = ref(false);
 const active = ref(0);
 const showDialogDVM = ref(false);
 const showDialogDItem = ref(false);
+const showDialogControl = ref(false);
 const show = ref(false);
 const usarApi = ref(false);
 const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false });
@@ -237,6 +241,8 @@ const removeControladora = (index) => {
  */
 const cancelDelete = () => {
     showDialogDItem.value = false;
+    showDialogDVM.value = false;
+    showDialogControl.value = false;
     selectedItem.value = null;
 };
 function debounce(func, wait = 300) {
@@ -340,17 +346,13 @@ const fetchDMS = async (page = 1) => {
 };
 
 const adicionarDM = async () => {
-    //DIP obrigaório para lockers e 2023
-    if ((DM.tipo === 'Locker-Padrao' || DM.tipo === 'Locker-Ker' || DM.tipo === '2023') && (!DM.dip || DM.dip == null || DM.dip < 0)) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'DIP é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
-        return;
-    }
-    if ((DM.tipo === '2018') && (!DM.placa || DM.placa == null || DM.placa < 0)) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Placa é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
-        return;
-    }
-
     loading.value = true;
+    // const placaExists = Controladoras.value.some(controladora => controladora.dados.placa === DM.Placa);
+    // if (placaExists) {
+    //     toast.add({ severity: 'error', summary: 'Erro', detail: 'Placa já cadastrada', life: 3000 });
+    //     loading.value = false;
+    //     return;
+    // }
     try {
         const data = prepareDMData('adicionar', DM, selectedClient.value, Controladoras.value);
         await dmService.adicionarDM(data);
@@ -360,28 +362,21 @@ const adicionarDM = async () => {
         active.value = 0;
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar DM', life: 3000 });
+        toast.add({ severity: 'error', summary: 'Erro ao adicionar DM', detail: 'Verifique se todos os campos estão preenchidos e tente novamente.', life: 3000 });
         console.error('Erro ao adicionar DM:', error);
     } finally {
         loading.value = false; // Desativando loading
     }
 };
 const atualizarDM = async () => {
-   //DIP obrigaório para lockers e 2023
-    if ((DM.tipo === 'Locker-Padrao' || DM.tipo === 'Locker-Ker' || DM.tipo === '2023') && (!DM.dip || DM.dip == null || DM.dip < 0)) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'DIP é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
-        return;
-    }
-    if ((DM.tipo === '2018') && (!DM.placa || DM.placa == null || DM.placa < 0)) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Placa é um campo obrigatório e deve ser maior ou igual a 0', life: 3000 });
-        return;
-    }
+    
     dataStore.invalidateDMCache();
     loading.value = true;
     const preparedControladoras = Controladoras.value.map((controladora) => ({
         ...controladora,
         ID: controladora.ID || null
     }));
+
     const data = prepareDMData('atualizar', DM, selectedClient, preparedControladoras);
     try {
         await dmService.atualizarDM(data);
@@ -396,25 +391,36 @@ const atualizarDM = async () => {
         loading.value = false;
     }
 };
+/**
+ * Função chamada quando o usuário deseja excluir uma DM.
+ * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
+ */
 const deleteDM = async (item) => {
-    const data = prepareDMData('deletar', item);
-    loading.value = true;
-    try {
-        dialogMessage.value = `Você tem certeza que deseja excluir a DM ${DM.Identificacao}?`;
+        dialogMessage.value = `Você tem certeza que deseja excluir a DM: ${item.Identificacao}?`;
         showDialogDVM.value = true;
-        await dmService.deletarDM(data);
-        dataStore.invalidateDMCache();
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'DM Deletada', life: 3000 });
-        await fetchDMS();
-    } catch (error) {
-        if (error.response && (error.response.status === 500 || error.response.status === 401)) {
-            toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar a DM.', life: 3000 });
-        }
-    } finally {
-        loading.value = false; // Desativando loading
-    }
-    active.value = 0;
+        selectedItem.value = item;
 };
+
+const confirmdeleteDM = async () => {
+    if (!selectedItem.value) return;
+    console.log(selectedItem.value);
+    const data = prepareDMData('deletar', selectedItem.value);
+    try {
+        showDialogDVM.value = false;
+        loading.value = true;  
+        await dmService.deletarDM(data);
+        fetchDMS(); // Atualiza a lista de DMs após exclusão
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM excluída com sucesso', life: 3000 })
+       // Fecha o diálogo de confirmação
+    } catch (error) {
+        console.error('Erro ao excluir DM:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir DM', life: 3000 });
+    } finally {
+        loading.value = false; // Desativa o loading
+        selectedItem.value = null; // Reseta o item selecionado
+    }
+};
+
 /**
  * Função para mapear as controladoras do DM.
  * Preenche as informações relacionadas às controladoras e ajusta a contagem inicial de valores.
@@ -499,28 +505,26 @@ const deleteItem = async (item) => {
     showDialogDItem.value = true;
     selectedItem.value = item;
 };
+
 /**
  * Função chamada para confirmar a exclusão do item.
  * Realiza a requisição para excluir o item e atualiza a lista de itens.
  */
-const confirmDelete = async () => {
+const confirmDeleteItem = async () => {
     if (!selectedItem.value) return;
     console.log(selectedItem.value);
-    loading.value = true;
-
     try {
+        showDialogDItem.value = false;
+        loading.value = true;
         const data = prepareItemDMData('deletar', DM, selectedItem);
         await dmService.deletarItem(data);
-        // Atualiza a lista de itens após exclusão
-        fetchItemDM();
-
+        fetchItemDM();// Atualiza a lista de itens após exclusão
         toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item excluído com sucesso', life: 3000 });
     } catch (error) {
         console.error('Erro ao excluir item:', error);
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir item', life: 3000 });
     } finally {
         loading.value = false;
-        showDialogDItem.value = false;
         selectedItem.value = null;
     }
 };
@@ -741,195 +745,186 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <panel header="Opções de DM" class="mt-4">
-                            <div class="mt-5 mx-0 p-fluid grid">
-                                <label for="fim"></label>
-                                <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
-                                    <div class="checkbox-items m-2 flex align-items-end">
-                                        <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
-                                        <label for="Voucher" class="ml-2"> Voucher </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
-                                        <label for="cracha" class="ml-2"> Crachá </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
-                                        <label for="Biometria" class="ml-2"> Biometria </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
-                                        <label for="Facial" class="ml-2"> Rec. Facial </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
-                                        <label for="Senha" class="ml-2"> Senha </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <Button class="mt-7" icon="pi pi-plus" label="Adicionar Controladora" @click="addControladora" />
-                        </panel>
-
-                        <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
-                            <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
-                                <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
-                            </div>
-                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="userapi">UserID API:</label>
-                                <InputText class="my-2" id="userapi" v-model="DM.UserID" />
-                            </div>
-                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="senhaapi">Senha API:</label>
-                                <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
-                            </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="clienteAPI">IdCliente API:</label>
-                                <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
-                            </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="urlapi">URL:</label>
-                                <InputText class="my-2" id="urlapi" v-model="DM.URL" />
-                            </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-6">
-                                <label for="codigo">Senha Chave:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
-                            </div>
-                        </div>
-                        <div>
-                            <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
-                                <div class="flex justify-content-between flex-wrap">
-                                    <h5>Controladora {{ index + 1 }}</h5>
-
-                                    <!-- Botão de Remoção -->
-                                    <Button icon="pi pi-trash" label="Remover" class="p-button-danger" @click="removeControladora(index)" />
-                                </div>
-
-                                <div class="field mt-3 col-12">
-                                    <label class="mr-3">Modelo: </label>
-                                    <Dropdown
-                                        class=""
-                                        style="width: 250px"
-                                        v-model="controladora.tipo"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        :options="tipoControladoras"
-                                        placeholder="Selecione o tipo de controladora"
-                                        @change="updateTipoControladora(index, controladora.tipo)"
-                                    />
-                                </div>
-
-                                <!<!-- Controladora 2018 -->
-                                <div class="" v-if="controladora.tipo === '2018'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">Placa: </label>
-                                        <InputText class="" style="width: 250px" v-model="controladora.dados.placa" />
-                                    </div>
-
-                                    <fieldset class="field card mt-4">
-                                        <legend>Molas</legend>
-
-                                        <div class="checkbox-group mt-3" style="text-align: center">
-                                            <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
-                                                <Checkbox v-model="controladora.dados.molas" :value="i" />
-                                                <label>{{ i }}</label>
-                                            </div>
+                        
+                            <panel header="Opções de DM" class="mt-4">
+                                <div class="mt-5 mx-0 p-fluid grid">
+                                    <label for="fim"></label>
+                                    <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
+                                        <div class="checkbox-items m-2 flex align-items-end">
+                                            <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
+                                            <label for="Voucher" class="ml-2"> Voucher </label>
                                         </div>
-
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
+                                        <div class="checkbox-items m-2 flex align-items-center">
+                                            <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
+                                            <label for="cracha" class="ml-2"> Crachá </label>
                                         </div>
-                                    </fieldset>
-                                </div>
-
-                                <!-- Controladora 2023 -->
-                                <div v-if="controladora.tipo === '2023'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">DIP: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                        <div class="checkbox-items m-2 flex align-items-center">
+                                            <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
+                                            <label for="Biometria" class="ml-2"> Biometria </label>
+                                        </div>
+                                        <div class="checkbox-items m-2 flex align-items-center">
+                                            <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
+                                            <label for="Facial" class="ml-2"> Rec. Facial </label>
+                                        </div>
+                                        <div class="checkbox-items m-2 flex align-items-center">
+                                            <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
+                                            <label for="Senha" class="ml-2"> Senha </label>
+                                        </div>
                                     </div>
-                                    <div class="card mt-5">
-                                        <div class="field mt-3">
-                                            <h4>Andar:</h4>
-                                            <div class="checkbox-group">
-                                                <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
-                                                    <Checkbox v-model="controladora.dados.andar" :value="i" />
+                                </div>
+                                <Button class="mt-7" icon="pi pi-plus" label="Adicionar Controladora" @click="addControladora" />
+                            </panel>
+                            
+                            <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
+                                <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
+                                    <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
+                                    <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
+                                </div>
+                                <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
+                                    <label for="userapi">UserID API:</label>
+                                    <InputText class="my-2" id="userapi" v-model="DM.UserID" />
+                                </div>
+                                <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
+                                    <label for="senhaapi">Senha API:</label>
+                                    <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
+                                </div>
+                                <div class="full lg:col-6 md:col-12 sm:col-12">
+                                    <label for="clienteAPI">IdCliente API:</label>
+                                    <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
+                                </div>
+                                <div class="full lg:col-6 md:col-12 sm:col-12">
+                                    <label for="urlapi">URL:</label>
+                                    <InputText class="my-2" id="urlapi" v-model="DM.URL" />
+                                </div>
+                                <div class="full lg:col-6 md:col-12 sm:col-6">
+                                    <label for="codigo">Senha Chave:</label>
+                                    <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
+                                    <div class="flex justify-content-between flex-wrap">
+                                        <h5>Controladora {{ index + 1 }}</h5>
+                                        <!-- Botão de Remoção -->
+                                        <Button icon="pi pi-trash" label="Remover" class="p-button-danger" @click="removeControladora(index)" />
+                                    </div>
+                                    <div class="field mt-3 col-12">
+                                        <label class="mr-3">Modelo: </label>
+                                        <Dropdown
+                                            class=""
+                                            style="width: 250px"
+                                            v-model="controladora.tipo"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            :options="tipoControladoras"
+                                            placeholder="Selecione o tipo de controladora"
+                                            @change="updateTipoControladora(index, controladora.tipo)"
+                                        />
+                                    </div>
+                                    <!<!-- Controladora 2018 -->
+                                    <div class="" v-if="controladora.tipo === '2018'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-5 p-0">Placa: </label>
+                                            <InputNumber :allowEmpty="false" class="" style="width: 250px" v-model="controladora.dados.placa" />
+                                        </div>
+                                        <fieldset class="field card mt-4">
+                                            <legend>Molas</legend>
+                                            <div class="checkbox-group mt-3" style="text-align: center">
+                                                <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.molas" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <!-- Controladora 2023 -->
+                                    <div v-if="controladora.tipo === '2023'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-6 p-0">DIP: </label>
+                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.dip" />
                                         </div>
-                                        <div class="field mt-6">
+                                        <div class="card mt-5">
+                                            <div class="field mt-3">
+                                                <h4>Andar:</h4>
+                                                <div class="checkbox-group">
+                                                    <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
+                                                        <Checkbox v-model="controladora.dados.andar" :value="i" />
+                                                        <label>{{ i }}</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="field mt-6">
+                                                <h4>Posição</h4>
+                                                <div class="checkbox-group">
+                                                    <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
+                                                        <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                        <label>{{ i }}</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Controladora 2024 -->
+                                    <div v-if="controladora.tipo === '2024'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-5 p-0">Placa: </label>
+                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.placa" />
+                                        </div>
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-5 p-0">Motor: </label>
+                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.motor" />
+                                        </div>
+                                    </div>
+                                    <!-- Controladora Locker -->
+                                    <div v-if="controladora.tipo === 'Locker-Padrao'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-6 p-0">Dip: </label>
+                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.dip" />
+                                        </div>
+                                        <div class="field card">
                                             <h4>Posição</h4>
                                             <div class="checkbox-group">
-                                                <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
+                                                <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
                                                     <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Controladora 2024 -->
-                                <div v-if="controladora.tipo === '2024'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">Placa: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.placa" />
-                                    </div>
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">Motor: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.motor" />
-                                    </div>
-                                </div>
-
-                                <!-- Controladora Locker -->
-                                <div v-if="controladora.tipo === 'Locker-Padrao'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">Dip: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
-                                    </div>
-                                    <div class="field card">
-                                        <h4>Posição</h4>
-                                        <div class="checkbox-group">
-                                            <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
-                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                <label>{{ i }}</label>
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
                                             </div>
                                         </div>
-
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
+                                    </div>
+                                    <div v-if="controladora.tipo === 'Locker-Ker'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-6 p-0">Dip: </label>
+                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.dip" />
                                         </div>
-                                    </div>
-                                </div>
-                                <div v-if="controladora.tipo === 'Locker-Ker'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">Dip: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
-                                    </div>
-                                    <div class="field card">
-                                        <h4>Posição</h4>
-                                        <div class="checkbox-group">
-                                            <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
-                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                <label>{{ i }}</label>
+                                        <div class="field card">
+                                            <h4>Posição</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
+                                            </div>
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
                                             </div>
                                         </div>
-
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
-                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
+                                </div></div>
+                        
 
                         <div class="mt-5 mx-0 p-fluid grid">
                             <Button v-if="!visible" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
@@ -1125,15 +1120,24 @@ onMounted(async () => {
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
-            <Button label="OK" icon="pi pi-check" @click="confirmDelete" />
+            <Button label="Sim" icon="pi pi-check" @click="confirmDeleteItem" />
         </template>
     </Dialog>
     <Dialog header="Deletar DM" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
-            <Button label="OK" icon="pi pi-check" @click="showDialog = false" />
+            <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
+            <Button label="Sim" icon="pi pi-check" @click="confirmdeleteDM" />
         </template>
     </Dialog>
+    <Dialog header="Deletar Controladora" :visible.sync="showDialogControl" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+        <p>{{ dialogMessage }}</p>
+        <template #footer>
+            <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
+            <Button label="Sim" icon="pi pi-check" @click="confirmdeleteControl" />
+        </template>
+    </Dialog>
+    <ScrollTop />
 </template>
 
 <style scoped>
