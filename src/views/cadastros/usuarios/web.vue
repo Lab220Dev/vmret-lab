@@ -7,10 +7,12 @@ import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de cor
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
 import { FormatarListaCliente } from '@/helpers/DMHelper.js';
-import {prepareListData} from '@/helpers/HelperUtils.js';
+import { prepareListData } from '@/helpers/HelperUtils.js';
 import usuarioService from '@/services/usuarioService';
 import plantaService from '@/services/plantaService';
-import {resetUsuario} from '@/helpers/formHelper.js'
+import { resetUsuario } from '@/helpers/formHelper.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore(); // Instância do store de dados.
@@ -41,16 +43,16 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'nome', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 const ListaUsuario = ref([]); // Lista de usuários.
 
-const dropdownItems = ref([
+const dropdownItems = computed(() => [
     // Opções de roles para o usuário.
-    { label: 'Gestor', value: 'Gestor' },
-    { label: 'Master', value: 'Master' },
-    { label: 'Operador', value: 'Operador' },
-    { label: 'Liberação Avulsa', value: 'Avulso' }
+    { label: t('manager'), value: 'Gestor' },
+    { label: t('master'), value: 'Master' },
+    { label: t('operator'), value: 'Operador' },
+    { label: t('one_time_release'), value: 'Avulso' }
 ]);
 
 // Filtros globais para a tabela de usuários.
@@ -78,7 +80,7 @@ const validateEmail = () => {
     const email = usuario.email;
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Padrão de validação de e-mail.
     if (!email || !emailPattern.test(email)) {
-        errors.value.email = 'E-mail inválido'; // Se o e-mail não for válido, exibe erro.
+        errors.value.email = t('invalid_email'); // Se o e-mail não for válido, exibe erro.
     } else {
         errors.value.email = null; // Caso válido, limpa o erro.
     }
@@ -90,7 +92,7 @@ const validateEmail = () => {
  */
 const validateSenha = () => {
     if (senha.value !== usuario.senha) {
-        errors.value.senha = 'A senha NÃO é a mesma'; // Exibe erro se as senhas não coincidirem.
+        errors.value.senha = t('invalid_password'); // Exibe erro se as senhas não coincidirem.
     } else {
         errors.value.senha = null; // Caso as senhas coincidam, limpa o erro.
     }
@@ -128,7 +130,6 @@ const onPageChange = async (event) => {
     await fetchUsuarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 
-
 /**
  * Função que abre o diálogo de exclusão do usuário.
  */
@@ -148,12 +149,12 @@ const deleteUsuario = async (item) => {
         const response = await usuarioService.deletarUsuario(data);
         if (response.status === 200) {
             deleteUsuarioDialog.value = false; // Fecha o diálogo se a exclusão for bem-sucedida.
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB deletado', life: 3000 }); // Exibe uma notificação de sucesso.
+            toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('delete_web_user_sucess'), life: 3000 }); // Exibe uma notificação de sucesso.
             fetchUsuarios(); // Recarrega a lista de usuários.
         }
     } catch (error) {
         console.error('Erro ao deletar os usuários:', error); // Log do erro de exclusão.
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao excluir o usuário', life: 3000 }); // Notificação de erro.
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('delete_web_user_fail'), life: 3000 }); // Notificação de erro.
         loading.value = false;
     } finally {
         loading.value = false; // Garantia de que o carregamento será desativado após a tentativa.
@@ -200,14 +201,14 @@ const saveUsuario = async () => {
     }
     try {
         const response = await usuarioService.adicionarUsuario(data);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB criado', life: 3000 }); // Exibe uma notificação de sucesso.
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('add_web_user_sucess'), life: 3000 }); // Exibe uma notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
         active.value = 0; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao adicionar Usuario:', error); // Log do erro de adição.
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao criar o usuário, verifique os dados e tente novamente', life: 3000 }); // Notificação de erro.
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('add_web_user_fail'), life: 3000 }); // Notificação de erro.
     } finally {
         loading.value = false; // Desativa o carregamento.
     }
@@ -229,13 +230,13 @@ const atualizarUsuario = async () => {
     }
     try {
         const response = await usuarioService.atualizarUsuario(data);
-        toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario WEB atualizado', life: 3000 }); // Notificação de sucesso.
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('update_web_user_sucess'), life: 3000 }); // Notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
         active.value = 0; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error); // Log de erro.
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao atualizar o usuário', life: 3000 }); // Notificação de erro.
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('update_web_user_fail'), life: 3000 }); // Notificação de erro.
     } finally {
         loading.value = false; // Desativa o carregamento após a operação.
     }
@@ -266,16 +267,16 @@ const fetchIdPlanta = async () => {
 /**
  * Função para buscar a lista de usuários.
  */
-const fetchUsuarios = async (page =1) => {
+const fetchUsuarios = async (page = 1) => {
     loading.value = true; // Ativa o carregamento ao buscar usuários.
     const params = {
-            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
-            rows: lazyParams.value.rows, // Número de registros por página
-            sortField: lazyParams.value.sortField, // Campo para ordenação
-            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
-        };
-        const data = prepareListData(params);
+        first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+        rows: lazyParams.value.rows, // Número de registros por página
+        sortField: lazyParams.value.sortField, // Campo para ordenação
+        sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+        filters: lazyParams.value.filters // Filtros aplicados
+    };
+    const data = prepareListData(params);
     if (store.userRole === 'Administrador') {
         isAdmin.value = true; // Marca que o usuário é administrador.
         fetchCliente(); // Chama a função para buscar os clientes.
@@ -287,6 +288,7 @@ const fetchUsuarios = async (page =1) => {
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao carregar usuários:', error); // Log de erro.
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_user_list'), life: 3000 }); // Notificação de erro.
     } finally {
         loading.value = false; // Desativa o carregamento.
     }
@@ -315,6 +317,7 @@ const fetchCliente = async () => {
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao listar Clientes:', error); // Log de erro.
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_client_list'), life: 3000 }); // Notificação de erro.
     } finally {
         loading.value = false; // Desativa o carregamento.
     }
@@ -359,7 +362,7 @@ const formatDate = (value) => {
 watch(active, (newIndex, oldIndex) => {
     if (newIndex !== oldIndex && newIndex === 0) {
         // Se mudar para a aba 0 (listagem de usuários).
-        senha.value=''; // Reseta a senha.
+        senha.value = ''; // Reseta a senha.
         resetForm(); // Reseta o formulário.
         fetchUsuarios(); // Recarrega a lista de usuários.
         visible.value = false; // Fecha o formulário de edição.
@@ -373,6 +376,7 @@ const loadData = async () => {
     try {
         plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Tenta obter as plantas do store ou via API.
     } catch (error) {
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Log de erro ao carregar dados.
     }
 };
@@ -412,7 +416,7 @@ const resetForm = () => {
             <div class="card">
                 <TabView v-model:activeIndex="active">
                     <!-- Componente de abas (TabView), controla qual aba está ativa -->
-                    <TabPanel header="Listar Usuário Web">
+                    <TabPanel :header="$t('list_web_users')">
                         <!-- Aba para listagem de usuários -->
                         <div class="">
                             <DataTable
@@ -435,8 +439,8 @@ const resetForm = () => {
                                 @filter="onFilterChange($event)"
                                 @page="onPageChange($event)"
                                 @sort="onSortChange($event)"
-                                :sortOrder="lazyParams.value?.sortOrder||1"
-                                :sortField="lazyParams.value?.sortField ||'nome'"
+                                :sortOrder="lazyParams.value?.sortOrder || 1"
+                                :sortField="lazyParams.value?.sortField || 'nome'"
                             >
                                 <!-- A tabela exibe os dados provenientes de 'ListaUsuario' -->
                                 <!-- Aplica um estilo de linhas alternadas (listradas) para melhorar a legibilidade -->
@@ -454,59 +458,59 @@ const resetForm = () => {
                                     <!-- Cabeçalho da tabela com total de registros e campo de busca -->
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>Total de registros: {{ filteredCount }}</span>
+                                            <span>{{ $t('total_records') }}:{{ filteredCount }}</span>
                                             <!-- Exibe a quantidade de registros filtrados -->
                                         </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
                                             </InputIcon>
-                                            <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
+                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" />
                                             <!-- Campo de busca global para filtrar os usuários -->
                                         </IconField>
                                     </div>
                                 </template>
 
-                                <template #empty> Nenhum usuário adicionado. </template>
+                                <template #empty> {{ t('empty_user') }} </template>
                                 <!-- Mensagem exibida quando não houver usuários na tabela -->
 
                                 <!-- Definição das colunas da tabela -->
-                                <Column field="nome" sortable style="width: 20%" class="table-cell" header="Nome">
+                                <Column field="nome" sortable style="width: 20%" class="table-cell" :header="t('name')">
                                     <!-- Coluna para exibir o nome do usuário -->
                                     <template #body="{ data }">
                                         <span v-tooltip="data.nome">{{ data.nome }}</span>
                                         <!-- Exibe o nome do usuário e aplica tooltip -->
                                     </template>
                                 </Column>
-                                <Column field="email" sortable class="table-cell" style="width: 25%" header="E-mail">
+                                <Column field="email" sortable class="table-cell" style="width: 25%" :header="t('email')">
                                     <!-- Coluna para exibir o e-mail do usuário -->
                                     <template #body="{ data }">
                                         <span v-tooltip="data.email">{{ data.email }}</span>
                                         <!-- Exibe o e-mail do usuário e aplica tooltip -->
                                     </template>
                                 </Column>
-                                <Column v-if="isAdmin" field="nome_cliente" sortable class="table-cell" style="width: 15%" header="Cliente">
+                                <Column v-if="isAdmin" field="nome_cliente" sortable class="table-cell" style="width: 15%" :header="t('client')">
                                     <!-- Coluna para exibir o nome do cliente, visível apenas se o usuário for admin -->
                                     <template #body="{ data }">
                                         <span v-tooltip="data.nome_cliente">{{ data.nome_cliente }}</span>
                                         <!-- Exibe o nome do cliente e aplica tooltip -->
                                     </template>
                                 </Column>
-                                <Column field="role" sortable class="table-cell" style="width: 15%" header="Role">
+                                <Column field="role" sortable class="table-cell" style="width: 15%" :header="t('role')">
                                     <!-- Coluna para exibir o papel (role) do usuário -->
                                     <template #body="{ data }">
                                         <span v-tooltip="data.role">{{ data.role }}</span>
                                         <!-- Exibe o papel do usuário e aplica tooltip -->
                                     </template>
                                 </Column>
-                                <Column field="ativo" sortable style="width: 9%; text-align: center" header="Ativo">
+                                <Column field="ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
                                     <!-- Coluna para exibir se o usuário está ativo -->
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                                         <!-- Exibe um ícone de status dependendo se o usuário está ativo ou não -->
                                     </template>
                                 </Column>
-                                <Column field="last_login" sortable class="table-cell" style="width: 17%" header="Último Login">
+                                <Column field="last_login" sortable class="table-cell" style="width: 17%" :header="t('last_login')">
                                     <!-- Coluna para exibir a data do último login -->
                                     <template #body="{ data }">
                                         {{ formatDate(new Date(data.last_login)) }}
@@ -524,31 +528,31 @@ const resetForm = () => {
                         </div>
                     </TabPanel>
 
-                    <TabPanel :header="visible ? 'Editar Usuário Web' : 'Adicionar Usuário Web'">
+                    <TabPanel :header="visible ? t('edit_user') : t('add_user')'">
                         <!-- Aba para edição ou criação de usuário -->
                         <div class="mt-3 mx-0 p-fluid grid">
                             <!-- Formulário de edição ou adição -->
                             <div class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
-                                <label for="name">Nome:</label>
+                                <label for="name">{{ t('name') }}:</label>
                                 <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                                 <!-- Campo para nome do usuário -->
                             </div>
                             <div class="full xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label for="email">E-mail:</label>
+                                <label for="email">{{ t('email') }}:</label>
                                 <InputText class="my-2" v-model="usuario.email" id="email" :invalid="!!errors.email" @blur="validateEmail" />
                                 <!-- Campo para e-mail do usuário, com validação -->
                                 <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 <!-- Exibe mensagem de erro se o e-mail for inválido -->
                             </div>
                             <div class="full xl:col-3 lg:col-3 md:col-3 sm:col-12">
-                                <label for="senha">Senha:</label>
+                                <label for="senha">{{ t('password') }}:</label>
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <!-- Campo para senha do usuário -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                                 <!-- Exibe mensagem de erro se a senha for inválida -->
                             </div>
                             <div class="full xl:col-3 lg:col-3 md:col-3 sm:col-12">
-                                <label for="senha" class="text-nowrap">Confirme a Senha:</label>
+                                <label for="senha" class="text-nowrap">{{ t('confirm_password') }}:</label>
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <!-- Campo para confirmação de senha -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
@@ -556,57 +560,57 @@ const resetForm = () => {
                             </div>
 
                             <div v-if="isAdmin" class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
-                                <label for="perfil">Cliente:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
+                                <label for="perfil">{{ t('client') }}:</label>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Dropdown>
                                 <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
 
                             <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">Usuario Ativo?</label>
+                                <label class="mt-0 text-nowrap" for="switch2">{{ t('active_user') }}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
-                                    <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
+                                    <span class="ml-2">{{ usuario.ativo ? $t('yes') : $t('no') }}</span>
                                     <!-- Switch para ativar/desativar o usuário -->
                                 </div>
                             </div>
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">Perfil:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.role" :options="dropdownItems" optionLabel="label" optionValue="value" placeholder="Escolha um"></Dropdown>
+                                <label for="perfil">{{ t('profile') }}:</label>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.role" :options="dropdownItems" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')"></Dropdown>
                                 <!-- Dropdown para selecionar o perfil do usuário -->
                             </div>
 
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="planta">Planta:</label>
-                                <Dropdown class="my-2" id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos"></Dropdown>
+                                <label for="planta">{{ t('factory') }}:</label>
+                                <Dropdown class="my-2" id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"></Dropdown>
                                 <!-- Dropdown para selecionar a planta -->
                             </div>
 
                             <div class="flex align-items-center justify-content-end field col-12 mt-7">
                                 <!-- Botões de ação -->
-                                <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm()" />
+                                <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm()" />
                                 <!-- Botão de salvar se o formulário estiver visível (edição) -->
-                                <Button style="width: 30%" class="buttons flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
+                                <Button style="width: 30%" class="buttons flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <!-- Botão de voltar -->
-                                <Button v-if="!visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" />
+                                <Button v-if="!visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" />
                                 <!-- Botão de salvar se o formulário não estiver visível (adicionar) -->
                             </div>
                         </div>
                     </TabPanel>
                 </TabView>
-                <Dialog header="Deletar Usuario" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                <Dialog :header="$t('delete_web_user')" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                     <!-- Diálogo para confirmar a exclusão do usuário -->
                     <div class="confirmation-content">
                         <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                         <span class="">
-                            Você tem certeza que deseja deletar o Usuario <b>{{ item.id_cliente }}</b> - <b>{{ item.nome }}</b> ?</span
-                        >
+                            {{ t('confirm_delete_user', { id: item.id_cliente, name: item.nome }) }}
+                        </span>
                         <!-- Exibe confirmação para deletar o usuário selecionado -->
                     </div>
                     <template #footer>
                         <!-- Botões de confirmação ou cancelamento -->
-                        <Button label="Não" icon="pi pi-times" @click="deleteUsuarioDialog = false" class="p-button-text" />
+                        <Button :label="$t('no')" icon="pi pi-times" @click="deleteUsuarioDialog = false" class="p-button-text" />
                         <!-- Botão para cancelar a exclusão -->
-                        <Button label="Sim" icon="pi pi-check" @click="deleteUsuario(item)" class="p-button-text" />
+                        <Button :label="$t('yes')" icon="pi pi-check" @click="deleteUsuario(item)" class="p-button-text" />
                         <!-- Botão para confirmar a exclusão -->
                     </template>
                 </Dialog>
