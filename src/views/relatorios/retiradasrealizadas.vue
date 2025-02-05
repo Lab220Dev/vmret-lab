@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString,getDateFromString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString, getDateFromString, isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 
 const showDialog = ref(false); // Controla a visibilidade do dialog de erro
 const dialogMessage = ref(''); // Armazena a mensagem de erro que será exibida no dialog
@@ -155,6 +155,9 @@ const loadData = async () => {
         loading.value = false;
     }
 };
+
+const isMobile = isMobileDevice();
+
 // Ao montar o componente, carrega todas as informações necessárias
 onMounted(() => {
     loadData();
@@ -164,12 +167,15 @@ onMounted(() => {
 <template>
     <!-- Card principal para exibição do relatório -->
     <div class="card vh">
-       <div class="form">
+        <div class="form">
+            <div class="text-center">
+                <h5 class="mt-3 mb-5 text-2xl">
+                    Retiradas Realizadas
+                    <hr />
+                </h5>
+            </div>
             <!-- Grid de layout -->
             <div class="grid mt-3 mx-1 px-1">
-                <!-- Título do card -->
-                <h5 class="mt-3 mb-5 ml-4 text-2xl">Retiradas Realizadas<hr /></h5>
-                
                 <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- Filtro DM (Departamento ou Manager) -->
@@ -200,12 +206,7 @@ onMounted(() => {
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Funcionário:</label>
                         <!-- Dropdown para selecionar Funcionário -->
-                        <Dropdown class="drop"
-                        v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Todos"
-                        ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
                     <!-- Filtro Data Inicial -->
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
@@ -317,12 +318,12 @@ onMounted(() => {
                         <!-- Mensagem a ser exibida quando não houver dados -->
                         <template #empty> {{ emptyMessage }} </template>
                         <!-- Colunas da tabela -->
-                        <Column field="Identificacao" class="table-cell" sortable header="DM">
+                        <Column field="Identificacao" v-if="!isMobile" class="table-cell" sortable header="DM">
                             <!-- <template #body="{ data }">
                                 <span v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
                             </template> -->
                         </Column>
-                        <Column field="Dia" sortable class="table-cell"  header="Data">
+                        <Column field="Dia" sortable class="table-cell" header="Data">
                             <template #body="{ data }">
                                 <span v-tooltip="data.Dia">{{ getDateFromString(data.Dia) }}</span>
                                 <!-- Exibe a data formatada -->
@@ -334,17 +335,17 @@ onMounted(() => {
                                 <!-- Exibe a hora formatada -->
                             </template>
                         </Column>
-                        <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  header="Matricula">
+                        <Column field="Matricula" style="width: 15%" sortable class="table-cell" header="Matricula">
                             <!-- <template #body="{ data }">
                                 <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
                             </template> -->
                         </Column>
-                        <Column field="Nome" class="table-cell"  sortable header="Nome">
+                        <Column field="Nome" class="table-cell" sortable header="Nome">
                             <!-- <template #body="{ data }">
                                 <span v-tooltip="data.Nome">{{ data.Nome }}</span>
                             </template> -->
                         </Column>
-                        <Column field="Email" sortable class="table-cell"  header="E-mail">
+                        <Column field="Email" v-if="!isMobile" sortable class="table-cell" header="E-mail">
                             <!-- <template #body="{ data }">
                                 <span v-tooltip="data.Email">{{ data.Email }}</span>
                             </template> -->
@@ -354,12 +355,13 @@ onMounted(() => {
                                 <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
                             </template>
                         </Column>
-                        <Column field="Quantidade"  sortable class="text-center table-cell">
+                        <Column field="Quantidade" v-if="!isMobile" sortable class="text-center table-cell">
                             <template #header>
                                 <span v-tooltip="'Quantidade'">Quant.</span>
                                 <!-- Tooltip para a coluna de quantidade mínima -->
-                            </template></Column>
-                        <Column field="ProdutoSKU" class="table-cell"  sortable header="CA">
+                            </template></Column
+                        >
+                        <Column field="ProdutoSKU" v-if="!isMobile" class="table-cell" sortable header="CA">
                             <!-- <template #body="{ data }">
                                 <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
                             </template> -->

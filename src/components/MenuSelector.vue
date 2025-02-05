@@ -102,7 +102,7 @@ const menus = { //'menus' cria a estrutura conforme o identificador do perfil
                 { name: 'Funcionários' },
                 {
                     name: 'Usuários',
-                    subsubmenus: [{ name: 'Usuário WEB' }, { name: 'Usuários DMs' }, { name: 'Liberação Avulsa' }]
+                    subsubmenus: [{ name: 'Usuários WEB' }, { name: 'Usuários DMs' }, { name: 'Liberação Avulsa' }]
                 },
                 { name: 'Centros de Custo' },
                 { name: 'Setor/Diretoria' },
@@ -121,7 +121,7 @@ const menus = { //'menus' cria a estrutura conforme o identificador do perfil
         },
         {
             name: 'Configurações',
-            submenus: [{ name: 'Lista de DM' }, { name: 'Liberação Avulsa' }, { name: 'Gerenciamento de Serviços' }, { name: 'Cadastro de Video' }, { name: 'Termo de compromisso' }]
+            submenus: [{ name: 'Lista de DM' }, { name: 'Liberação Avulsa' }, { name: 'Cadastro de Serviços' }, { name: 'Gerenciamento de Vídeos' }, { name: 'Termo de compromisso - Ficha Retirada' }]
         }
     ],
     3: [

@@ -681,3 +681,8 @@ export const prepareListData =(params)=>{
     }
     return store.userRole === 'Administrador' ? { ...params} : { ...baseData , ...params}
 }
+
+export function isMobileDevice() {
+  console.log(navigator.userAgent);
+  return /Mobi|Android/i.test(navigator.userAgent);
+}

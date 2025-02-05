@@ -76,7 +76,10 @@ const chartOptions = {
                     <!-- Exibe 5 linhas por página, com a opção de ordenação removível nas colunas -->
                     <!-- Aplica um estilo com largura mínima de 20rem e layout fixo para garantir que as colunas tenham larguras constantes -->
                     <!-- Quando a tela for pequena, a tabela ficará rolável horizontalmente (layout responsivo) -->
-                    <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%"></Column>
+                    <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%">
+                        <template #body="{ data }">
+                            <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span>
+                        </template></Column>
                     <Column field="quantidade" header="Quant." class="table-cell" sortable style="width: 8%"></Column>
 
                     <Column field="nome" header="Item" sortable style="width: 30%">
@@ -134,5 +137,17 @@ const chartOptions = {
 .v-tooltip {
     max-width: 400px;
     white-space: normal;
+}
+
+/* .table-cell: Estilo para as células da tabela */
+.table-cell {
+    /* Garante que o conteúdo da célula não ultrapasse os limites da célula */
+    overflow: hidden;
+
+    /* Impede que o conteúdo quebre a linha */
+    white-space: nowrap;
+
+    /* Exibe uma reticência "..." se o conteúdo for muito longo para caber na célula */
+    text-overflow: ellipsis;
 }
 </style>
