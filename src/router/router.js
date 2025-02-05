@@ -280,7 +280,7 @@ const router = createRouter({
                 },
                 {
                     path: '/cadastros/Video',
-                    name: 'Gerenciador de Videos',
+                    name: 'Gerenciamento de Videos',
                     component: () => import('@/views/cadastros/GerenciadorVideo.vue')
                 }
             ]

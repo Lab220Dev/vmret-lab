@@ -28,11 +28,11 @@
             :tableStyle="{ width: '100%' }"
             >
                 <template #empty>Não há serviços cadastrados.</template>
-                <Column field="name" style="width: 75%" header="Serviço"></Column>
+                <Column field="name" style="width: 85%" header="Serviço"></Column>
                 <Column header="Ação">
                     <template #body="slotProps">
-                        <Button label="Configurar" class="mr-2 configuracao-monitoramento" icon="pi pi-cog" @click="editService(slotProps.data)" />
-                        <Button label="Remover" class="p-button-danger" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
+                        <Button label="Configurar" class="mr-2 configuracao-monitoramento w-full"  icon="pi pi-cog" @click="editService(slotProps.data)" />
+                        <Button label="Remover" class="p-button-danger w-full" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
@@ -48,7 +48,7 @@
                     </span>
                 </div>
                 <template #footer>
-                    <Button label="Não" icon="pi pi-times" @click="deleteServiceDialog = false" class="p-button-text" />
+                    <Button label="Não" icon="pi pi-times" @click="deleteServiceDialog = false" class="p-button-text"/>
                     <Button label="Sim" icon="pi pi-check" @click="removeService(selectedService)" class="p-button-danger" />
                 </template>
             </Dialog>

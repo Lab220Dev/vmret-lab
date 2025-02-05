@@ -8,7 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o compo
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
-import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';
+import { GerarPdfRetirada } from '@/helpers/RelatorioHelper.js';
 
 const showDialog = ref(false); // Controla a exibição de um diálogo
 const dialogMessage = ref(''); // Mensagem exibida no diálogo
@@ -32,7 +32,6 @@ const relatorio = ref({
     data_final: new Date() // Data final (data atual)
 });
 
-
 /**
  * Função para filtrar a lista de funcionários com base na planta selecionada.
  */
@@ -52,16 +51,16 @@ const filterFuncionarios = () => {
  * Função para gerar o PDF do relatório.
  * Caso o funcionário não tenha sido selecionado, exibe um alerta.
  */
-const generatePDF = async  () =>{
+const generatePDF = async () => {
     try {
-     loading.value = true;
-    await GerarPdfRetirada(selectedItem,relatorio);
+        loading.value = true;
+        await GerarPdfRetirada(selectedItem, relatorio);
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
-    }finally{
+    } finally {
         loading.value = false;
     }
-}
+};
 
 /**
  * Função para fechar todos os dropdowns abertos.
@@ -84,7 +83,7 @@ const loadData = async () => {
     try {
         plantas.value = dataStore.plantas || (await dataStore.fetchPlantas());
         ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value; 
+        ListaFuncionarios.value = ListaFuncionariosOriginal.value;
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
     } finally {
@@ -100,11 +99,16 @@ onMounted(() => {
 <template>
     <!-- Card principal que contém o formulário de filtros e informações -->
     <div class="card">
-        
+        <div class="form">
+            <!-- Título da página "Fichas de Retiradas" -->
+            <div class="text-center">
+                <h5 class="my-6 ml-2 text-2xl">
+                    Fichas de Retiradas
+                    <hr />
+                </h5>
+            </div>
             <!-- Grid do formulário, com margens e espaçamento definidos -->
-            <div class="">
-                <!-- Título da página "Fichas de Retiradas" -->
-                <h5 class="my-6 ml-2 text-2xl">Fichas de Retiradas</h5>
+            <div class="grid mt-3 mx-1 px-1">
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
@@ -116,9 +120,8 @@ onMounted(() => {
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">Funcionário:</label>
                         <!-- Componente Dropdown para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" @change="selecionaFuncionario"/>
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" @change="selecionaFuncionario" />
                     </div>
-
                     <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <label for="perfil">Data Inicial:</label>
@@ -160,7 +163,7 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-    
+        </div>
     </div>
     <!-- Exibe um spinner de carregamento se "loading" for verdadeiro -->
     <LoadingSpinner v-if="loading" />
