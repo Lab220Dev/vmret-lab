@@ -43,7 +43,7 @@
                 <div class="confirmation-content text-justify">
                     <i class="" style="font-size: 2rem"></i>
                     <span>
-                        {{ $t('dialog.delete_service_confirm', { name: selectedService?.name }) }}
+                        {{ $t('delete_service_confirm', { name: selectedService?.name }) }}
                     </span>
                 </div>
                 <template #footer>

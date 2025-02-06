@@ -1,4 +1,3 @@
-
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -6,9 +5,11 @@ import { useAuthStore } from '@/store/authStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { FilterMatchMode } from 'primevue/api';
 import plantaService from '@/services/plantaService.js';
-import { resetPlantaForm,applyGlobalFilter} from '@/helpers/formHelper';
+import { resetPlantaForm, applyGlobalFilter } from '@/helpers/formHelper';
 import { useDataStore } from '@/store/dataStore.js';
-import { isMobEnabled,prepareListData } from '@/helpers/HelperUtils.js'
+import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
@@ -21,7 +22,7 @@ const visible = ref(false);
 const integracao = ref(false);
 const deletePlantaDialog = ref(false);
 const loading = ref(false);
-const Mob = ref(false)
+const Mob = ref(false);
 const filteredCount = ref(0);
 
 let planta = reactive({
@@ -29,7 +30,7 @@ let planta = reactive({
     id_planta: '',
     userId: '',
     senha: '',
-    codigo:'',
+    codigo: '',
     urlapi: '',
     clienteid: ''
 });
@@ -38,7 +39,7 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'id_planta', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 const onRowSelect = (event) => {
     planta = event.data;
@@ -68,94 +69,86 @@ const onPageChange = async (event) => {
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
     await loadPlanta(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
-const loadPlanta = async (page =1) => {
-  loading.value = true;
-  try {
-    const params = {
+const loadPlanta = async (page = 1) => {
+    loading.value = true;
+    try {
+        const params = {
             first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
             rows: lazyParams.value.rows, // Número de registros por página
             sortField: lazyParams.value.sortField, // Campo para ordenação
             sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
+            filters: lazyParams.value.filters // Filtros aplicados
         };
-    const data = prepareListData(params);
-    // const response = await plantaService.listarPlantas(store.userIdCliente, store.token);
-    const response = await plantaService.listarPlantasPaginado(data);
-    ListaPlanta.value = response.data.plantas;
-    filteredCount.value = response.data.totalRecords;
-  } catch (error) {
-    console.error('Erro ao listar plantas:', error);
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao listar plantas.', life: 3000 });
-  } finally {
-    loading.value = false;
-  }
+        const data = prepareListData(params);
+        // const response = await plantaService.listarPlantas(store.userIdCliente, store.token);
+        const response = await plantaService.listarPlantasPaginado(data);
+        ListaPlanta.value = response.data.plantas;
+        filteredCount.value = response.data.totalRecords;
+    } catch (error) {
+        console.error('Erro ao listar plantas:', error);
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('factory_listing_error'), life: 3000 });
+    } finally {
+        loading.value = false;
+    }
 };
 
 watch(
-  () => filters.value.global.value,
-  () => {
-    filteredCount.value = applyGlobalFilter(ListaPlanta.value, filters.value.global.value).length;
-  },
-  { immediate: true }
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = applyGlobalFilter(ListaPlanta.value, filters.value.global.value).length;
+    },
+    { immediate: true }
 );
 
 const adicionarPlanta = async () => {
-  loading.value = true;
-  try {
-    await plantaService.adicionarPlanta(
-      { id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta },
-      store.token
-    );
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta adicionada com sucesso!', life: 3000 });
-    loadPlanta();
-    active.value = 0;
-    resetPlantaForm(planta);
-  } catch (error) {
-    console.error('Erro ao adicionar planta:', error);
-    toast.add({ severity: 'error', summary: 'Erro ao adicionar planta', detail: 'Verifique os dados e tente novamente.', life: 3000 });
-    
-  } finally {
-    loading.value = false;
-  }
+    loading.value = true;
+    try {
+        await plantaService.adicionarPlanta({ id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta }, store.token);
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('factory_add_sucess'), life: 3000 });
+        loadPlanta();
+        active.value = 0;
+        resetPlantaForm(planta);
+    } catch (error) {
+        console.error('Erro ao adicionar planta:', error);
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('factory_add_fail'), life: 3000 });
+    } finally {
+        loading.value = false;
+    }
 };
 
 const deletePlanta = async () => {
-    let data = { id_planta: planta.id_planta }
-  loading.value = true;
-  try {
+    let data = { id_planta: planta.id_planta };
+    loading.value = true;
+    try {
         await plantaService.deletarPlanta(data);
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta deletada com sucesso!', life: 3000 });
-    dataStore.invalidatePlantasCache();
-    deletePlantaDialog.value = false;
-    loadPlanta();
-    active.value = 0;
-    //resetPlantaForm(planta);
-  } catch (error) {
-    console.error('Erro ao deletar planta:', error);
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar planta.', life: 3000 });
-  } finally {
-    loading.value = false;
-  }
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('factory_delete_sucess'), life: 3000 });
+        dataStore.invalidatePlantasCache();
+        deletePlantaDialog.value = false;
+        loadPlanta();
+        active.value = 0;
+        //resetPlantaForm(planta);
+    } catch (error) {
+        console.error('Erro ao deletar planta:', error);
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('factory_delete_error'), life: 3000 });
+    } finally {
+        loading.value = false;
+    }
 };
 
-
 const atualizarPlanta = async () => {
-  loading.value = true;
-  try {
-    await plantaService.atualizarPlanta(
-      { id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta },
-      store.token
-    );
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Planta atualizada com sucesso!', life: 3000 });
-    loadPlanta();
-    active.value = 0;
-    resetPlantaForm(planta);
-  } catch (error) {
-    console.error('Erro ao atualizar planta:', error);
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar planta.', life: 3000 });
-  } finally {
-    loading.value = false;
-  }
+    loading.value = true;
+    try {
+        await plantaService.atualizarPlanta({ id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta }, store.token);
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('factory_update_sucess'), life: 3000 });
+        loadPlanta();
+        active.value = 0;
+        resetPlantaForm(planta);
+    } catch (error) {
+        console.error('Erro ao atualizar planta:', error);
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('factory_update_fail'), life: 3000 });
+    } finally {
+        loading.value = false;
+    }
 };
 
 watch(active, (newIndex, oldIndex) => {
@@ -167,7 +160,6 @@ watch(active, (newIndex, oldIndex) => {
 
 const resetForm = () => resetPlantaForm(planta);
 
-
 onMounted(() => {
     loadPlanta();
     Mob.value = isMobEnabled();
@@ -177,7 +169,7 @@ onMounted(() => {
 <template>
     <div class="card vh">
         <TabView v-model:activeIndex="active">
-            <TabPanel header="Listar Plantas">
+            <TabPanel :header="$t('list_factories')">
                 <div class="col-12">
                     <DataTable
                         v-model:filters="filters"
@@ -192,8 +184,8 @@ onMounted(() => {
                         removableSort
                         stripedRows
                         :globalFilterFields="['id_planta', 'nome']"
-                        :sortField="lazyParams.value?.sortField ||'id_planta'"
-                        :sortOrder="lazyParams.value?.sortOrder||1"
+                        :sortField="lazyParams.value?.sortField || 'id_planta'"
+                        :sortOrder="lazyParams.value?.sortOrder || 1"
                         dataKey="id"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
@@ -204,82 +196,89 @@ onMounted(() => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <span>{{ $t('total_records') }}: {{ filteredCount }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
                                     </IconField>
                                 </div>
                             </div>
                         </template>
 
-                        <template #empty> Nenhuma planta adicionada. </template>
-                        <Column field="id_planta" sortable header="Código"></Column>
-                        <Column field="nome" sortable header="Planta (Nome)"></Column>
+                        <template #empty>{{ t('factory_empty') }} </template>
+                        <Column field="id_planta" sortable :header="t('code')"></Column>
+                        <Column field="nome" sortable :header="t('factory_name')"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel :header="visible ? 'Editar Planta' : 'Adicionar Planta'">
+            <TabPanel :header="visible ? t('edit_factory') : t('add_factory')">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_planta">Código:</label>
+                                        <label for="id_planta">{{ t('code') }}:</label>
                                         <InputText class="my-2" id="id_planta" v-model="planta.codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="nome">Planta (Nome):</label>
+                                        <label for="nome">{{ t('factory_name') }}:</label>
                                         <InputText class="my-2" id="nome" v-model="planta.nome" required />
                                     </div>
                                     <InputSwitch class="grid mt-3 ml-3" v-model="integracao" inputId="switch1" />
-                                    <label class="mt-3 ml-4" for="switch1">Tem integração?</label>
+                                    <label class="mt-3 ml-4" for="switch1">{{ t('is_integrated') }}</label>
 
                                     <div v-if="integracao" class="card mt-8">
                                         <div v-if="integracao" class="my-3 grid">
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="userid">UserID:</label>
+                                                <label for="userid">{{ t('userid') }}:</label>
                                                 <InputText class="my-2" id="userid" v-model="planta.userid" required />
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="senha">Senha:</label>
+                                                <label for="senha">{{ t('password') }}:</label>
                                                 <InputText class="my-2" id="senha" v-model="planta.senha" required />
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="urlapi">URL:</label>
+                                                <label for="urlapi">{{ t('url') }}:</label>
                                                 <InputText class="my-2" id="urlapi" v-model="planta.urlapi" required />
                                             </div>
                                             <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="idcliente">ID Cliente:</label>
+                                                <label for="idcliente">{{ t('client_id') }}:</label>
                                                 <InputText class="my-2" id="idcliente" v-model="planta.clientid" required />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="atualizarPlanta" :disabled="Mob"/>
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deletePlantaDialog = true" :disabled="Mob"/>
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarPlanta" :disabled="Mob"/>
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="atualizarPlanta" :disabled="Mob" />
+                                    <Button
+                                        v-if="visible"
+                                        style="width: 15%"
+                                        class="flex align-items-center justify-content-center m-2 mr-0"
+                                        :label="$t('delete')"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        @click="deletePlantaDialog = true"
+                                        :disabled="Mob"
+                                    />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarPlanta" :disabled="Mob" />
                                 </div>
                             </form>
                         </div>
 
-                        <Dialog header="Deletar Planta" v-model:visible="deletePlantaDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                        <Dialog :header="$t('factory_dialog')" v-model:visible="deletePlantaDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                <span class="">
-                                    Você tem certeza que deseja deletar essa planta? <b>{{ planta.id_planta }}</b> - <b>{{ planta.nome }}</b> ?</span
-                                >
+                                <span class=""> {{ t('factory_dialog_text', { id: planta.id_planta, nome: planta.nome }) }}</span>
                             </div>
 
                             <template #footer>
-                                <Button label="Não" icon="pi pi-times" @click="deletePlantaDialog = false" class="p-button-text" />
-                                <Button label="Sim" icon="pi pi-check" @click="deletePlanta" class="p-button-text" />
+                                <Button :label="$t('no')" icon="pi pi-times" @click="deletePlantaDialog = false" class="p-button-text" />
+                                <Button :label="$t('yes')" icon="pi pi-check" @click="deletePlanta" class="p-button-text" />
                             </template>
                         </Dialog>
                     </div>

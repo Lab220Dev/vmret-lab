@@ -461,16 +461,16 @@ const debouncedFilterChange = debounce(() => {
                                     </Dialog>
 
                                     <!-- dialogo deletar setor-->
-                                    <Dialog header="Deletar setor?" v-model:visible="deleteSetorDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                                    <Dialog :header="$t('sector_delete_dialog')" v-model:visible="deleteSetorDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                                         <div class="confirmation-content">
                                             <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                            <span
-                                                >Você tem certeza que deseja deletar o setor <b>{{ setor.codigo }}</b> - <b>{{ setor.nome }}</b> ?</span
-                                            >
+                                            <span>
+                                                {{ t('sector_delete_dialog_confirm', { codigo: setor.codigo, nome: setor.nome }) }}
+                                            </span>
                                         </div>
                                         <template #footer>
-                                            <Button label="Não" icon="pi pi-times" @click="deleteSetorDialog = false" class="p-button-text" />
-                                            <Button label="Sim" icon="pi pi-check" @click="deleteSetor" class="p-button-text" />
+                                            <Button :label="$t('no')" icon="pi pi-times" @click="deleteSetorDialog = false" class="p-button-text" />
+                                            <Button :label="$t('yes')" icon="pi pi-check" @click="deleteSetor" class="p-button-text" />
                                         </template>
                                     </Dialog>
                                 </div>

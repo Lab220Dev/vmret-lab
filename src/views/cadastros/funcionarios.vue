@@ -1,6 +1,6 @@
 <script setup>
 // Importando funções e objetos do Vue.js para usar no componente
-import { reactive, ref, onMounted, watch } from 'vue';
+import { reactive, ref, onMounted, watch , computed} from 'vue';
 // Importando a função 'useToast' para exibir notificações de sucesso ou erro
 import { useToast } from 'primevue/usetoast';
 // Importando o estilo do componente de data picker
@@ -775,19 +775,19 @@ const hideDialog = () => {
                                     :placeholder="$t('select_center_cost')" ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="planta">Planta:</label>
+                                    <label for="planta">{{t('factory')}}:</label>
                                     <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas" 
                                     optionLabel="label" optionValue="value"
                                     :placeholder="$t('select_factory')" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="setor">Setor/Diretoria:</label>
+                                    <label for="setor">{{t('sector')}}:</label>
                                     <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" 
                                     optionLabel="label" optionValue="value" :placeholder="$t('select_sector')"
                                      @change="setorChange" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label class="ajustetexto" for="funcao">Função/Nível Hierárquico:</label>
+                                    <label class="ajustetexto" for="funcao">{{t('function')}}:</label>
                                     <Dropdown class="my-2" v-model="funcionario.id_funcao" 
                                     :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value"
                                      :placeholder="$t('select_function')" ref="dropdown4" />
@@ -988,7 +988,7 @@ const hideDialog = () => {
 
             <div class="flex justify-content-end gap-2">
                 <Button type="button" :label="$t('cancel')" severity="secondary" @click="visible = false"></Button>
-                <Button type="button" :label="$t('add')"" @click="SalvarProduto"></Button>
+                <Button type="button" :label="$t('add')" @click="SalvarProduto"></Button>
             </div>
         </Dialog>
         <Dialog v-model:visible="deleteProductDialog" :draggable="false" 

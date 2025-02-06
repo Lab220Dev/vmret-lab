@@ -90,7 +90,7 @@ const handleDatepickerOpen = () => {
         <h5 class="my-6 ml-2 text-2xl">{{t('status_dm')}}</h5>
         <div class="flex mt-3 flex-row gap-3 mb-5">
             <!-- Dropdown para selecionar DM -->
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
             <!-- DatePicker para selecionar a data -->
             <VueDatePicker
                 class="drop w-full md:w-14rem"
@@ -101,7 +101,7 @@ const handleDatepickerOpen = () => {
                 locale="pt-BR"
                 auto-apply
                 :enable-time-picker="false"
-                placeholder="Selecione uma data"
+                :placeholder="$t('select_date')"
                 teleport="body"
                 @update:modelValue="KeepAlive"
                 @open="handleDatepickerOpen"

@@ -3,7 +3,7 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente de d
 import { FilterMatchMode } from 'primevue/api'; // Importa o modo de correspondência para filtros no PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa o hook do PrimeVue para mostrar notificações
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do componente de data picker
-import { ref, onMounted, watch } from 'vue'; // Importa funções do Vue para reatividade e manipulação de ciclo de vida
+import { ref, onMounted, watch, computed } from 'vue'; // Importa funções do Vue para reatividade e manipulação de ciclo de vida
 import axios from '@/axios.js'; // Importa a configuração do Axios para fazer requisições HTTP
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados de usuário
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados para acessar listas e informações
@@ -201,24 +201,24 @@ onMounted(() => {
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="id_dm">{{t('dm')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" placeholder="Todos"></Dropdown>
+                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" :placeholder="$t('all')" ></Dropdown>
                     </div>
 
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown3" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value":placeholder="$t('all')"  ref="dropdown4" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown2" @change="filtroGenerico" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('employee')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown5" />
                     </div>
                     <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">{{t('initial_date')}}:</label>
@@ -231,7 +231,7 @@ onMounted(() => {
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
-                            placeholder="Selecione uma data inicial"
+                            :placeholder="$t('initial_date_placeholder')"
                             teleport="body"
                             ref="datepicker1"
                             @open="handleDatepickerOpen"
@@ -248,7 +248,7 @@ onMounted(() => {
                             locale="pt-BR"
                             auto-apply
                             :enable-time-picker="false"
-                            placeholder="Selecione uma data final"
+                            :placeholder="$t('end_date_placeholder')"
                             teleport="body"
                             ref="datepicker2"
                             @open="handleDatepickerOpen"

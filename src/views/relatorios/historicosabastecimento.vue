@@ -226,32 +226,32 @@ onMounted(() => {
                     <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">{{t('dm')}}:</label>
                         <!-- Componente Dropdown para escolher o DM -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
                     </div>
                     <!-- Filtro de Planta -->
                     <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para escolher a planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
                     </div>
                     <!-- Filtro de Setor -->
                     <div class="field lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
                         <!-- Componente Dropdown para escolher o setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
                     <div class="field lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Componente Dropdown para escolher o centro de custo -->
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" />
+                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" />
                     </div>
 
                     <!-- Filtro de Operador -->
                     <div class="field lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('operator')}}:</label>
                         <!-- Componente Dropdown para escolher o operador -->
-                        <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
                     </div>
                     <!-- Filtro de Data Inicial -->
                     <div class="field lg:col-4 md:col-6 sm:col-6">
@@ -268,7 +268,7 @@ onMounted(() => {
                             :enable-time-picker="false"
                             @open="handleDatepickerOpen"
                             teleport="body"
-                            placeholder="Selecione uma data inicial"
+                            :placeholder="$t('initial_date_placeholder')"
                         />
                     </div>
                     <!-- Filtro de Data Final -->
@@ -286,7 +286,7 @@ onMounted(() => {
                             :enable-time-picker="false"
                             @open="handleDatepickerOpen"
                             teleport="body"
-                            placeholder="Selecione uma data final"
+                            :placeholder="$t('end_date_placeholder')"
                         />
                     </div>
                     <!-- Botão para filtrar os dados -->

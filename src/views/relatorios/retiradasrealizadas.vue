@@ -228,7 +228,7 @@ onMounted(() => {
                     locale="pt-BR"
                     auto-apply
                     :enable-time-picker="false"
-                    placeholder="Selecione uma data inicial"
+                    :placeholder="$t('initial_date_placeholder')"
                     teleport="body"
                     ref="datepicker1"
                     @open="handleDatepickerOpen"
@@ -248,7 +248,7 @@ onMounted(() => {
                     locale="pt-BR"
                     auto-apply
                     :enable-time-picker="false"
-                    placeholder="Selecione uma data final"
+                    :placeholder="$t('end_date_placeholder')"
                     teleport="body"
                     ref="datepicker2"
                     @open="handleDatepickerOpen"

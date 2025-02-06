@@ -650,7 +650,7 @@ onMounted(async () => {
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">
                                         <div class="flex justify-content-start">
-                                            <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                                            <span>{{$t('total_records',{count:filteredCount})}}</span>
                                         </div>
                                         <div>
                                             <IconField iconPosition="left">
@@ -958,7 +958,7 @@ onMounted(async () => {
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>{{$t('total_records')}}: {{ ListaItens.length }}</span>
+                                            <span>{{$t('total_records',{count:ListaItens.length})}}</span>
                                         </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'; // Importa funções do Vue para reatividade e manipulação do ciclo de vida
+import { ref, onMounted, watch ,computed} from 'vue'; // Importa funções do Vue para reatividade e manipulação do ciclo de vida
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados do usuário autenticado
 import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
@@ -123,7 +123,7 @@ onMounted(() => {
         <!-- Dropdown para seleção de DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">{{$t('dispenser_machine')}}:</label>
-            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
+            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <!-- Tabela de Estoque -->

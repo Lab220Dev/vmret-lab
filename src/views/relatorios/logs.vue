@@ -23,12 +23,12 @@ const dropdown3 = ref(null); // Referência para o terceiro dropdown (usado para
 const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dropdowns de seleção
 const historico = ref([]); // Lista reativa que armazenará os dados do histórico de logs
 const dms = ref([todosOption]); // Lista reativa que armazenará os DMs (Data Migrations) disponíveis
-const operacao = ref([
+const operacao = computed(() => [
     // Lista de opções para filtro de operações
-    { label: 'Todos', value: null },
-    { label: 'Insert', value: 'INSERT' },
-    { label: 'Update', value: 'UPDATE' },
-    { label: 'Delete', value: 'DELETE' }
+    { label: t('all'), value: null },
+    { label: t('insert'), value: 'INSERT' },
+    { label: t('update'), value: 'UPDATE' },
+    { label: t('delete'), value: 'DELETE' }
 ]);
 
 const filters = ref({
@@ -196,11 +196,13 @@ onMounted(() => {
                 <!-- Campos para filtros -->
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">{{t('user')}}:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario"
+                     optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">{{t('operation')}}:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" placeholder="Todos" />
+                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" 
+                    optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{t('initial_date')}}:</label>
@@ -215,7 +217,7 @@ onMounted(() => {
                         @open="handleDatepickerOpen"
                         :enable-time-picker="false"
                         teleport="body"
-                        placeholder="Selecione uma data inicial"
+                        :placeholder="$t('initial_date_placeholder')"
                     />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
@@ -231,7 +233,7 @@ onMounted(() => {
                         @open="handleDatepickerOpen"
                         :enable-time-picker="false"
                         teleport="body"
-                        placeholder="Selecione uma data final"
+                        :placeholder="$t('end_date_placeholder')"
                     />
                 </div>
                 <div class="field lg:col-12 md:col-12 sm:col-12">
