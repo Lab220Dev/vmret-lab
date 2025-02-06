@@ -1,6 +1,8 @@
 <script setup>
 import { useToast } from 'primevue/usetoast';// Função para exibir notificações
 import { reactive, ref } from 'vue';//ref para reatividade,
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const toast = useToast();// Função para exibir notificações
 
 /**

@@ -8,7 +8,9 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o compo
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
-import { GerarPdfRetirada } from '@/helpers/RelatorioHelper.js';
+import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const showDialog = ref(false); // Controla a exibição de um diálogo
 const dialogMessage = ref(''); // Mensagem exibida no diálogo
@@ -108,23 +110,25 @@ onMounted(() => {
                 </h5>
             </div>
             <!-- Grid do formulário, com margens e espaçamento definidos -->
-            <div class="grid mt-3 mx-1 px-1">
+            <div class="">
+                <!-- Título da página "Fichas de Retiradas" -->
+                <h5 class="my-6 ml-2 text-2xl">{{t('fichas_de_retiradas')}}</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="planta">Planta:</label>
+                        <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para selecionar a planta, com lista de opções fornecida por 'plantas' -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" @change="filterFuncionarios" />
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" @change="filterFuncionarios" />
                     </div>
                     <!-- Campo de seleção para Funcionário -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
-                        <label for="perfil">Funcionário:</label>
+                        <label for="perfil">{{t('employee')}}:</label>
                         <!-- Componente Dropdown para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" placeholder="Todos" @change="selecionaFuncionario" />
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" :placeholder="$t('all')" @change="selecionaFuncionario"/>
                     </div>
                     <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <label for="perfil">Data Inicial:</label>
+                        <label for="perfil">{{t('initial_date')}}</label>
                         <!-- Componente VueDatePicker para selecionar a data inicial, com o formato de data "dd/MM/yyyy" -->
                         <VueDatePicker
                             class="drop"
@@ -137,12 +141,12 @@ onMounted(() => {
                             :enable-time-picker="false"
                             @open="handleDatepickerOpen"
                             teleport="body"
-                            placeholder="Selecione uma data"
+                            :placeholder="$t('initial_date_placeholder')" 
                         />
                     </div>
                     <!-- Campo de seleção para Data Final -->
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <label for="perfil">Data Final:</label>
+                        <label for="perfil">{{t('end_date')}}</label>
                         <VueDatePicker
                             class="datepicker"
                             v-model="relatorio.data_final"
@@ -153,13 +157,13 @@ onMounted(() => {
                             auto-apply
                             :enable-time-picker="false"
                             teleport="body"
-                            placeholder="Selecione uma data"
+                            :placeholder="$t('end_date_placeholder')"
                             @open="handleDatepickerOpen"
                         />
                     </div>
                     <!-- Botão para gerar a ficha -->
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <Button class="filtrar" type="button" label="Gerar Ficha" icon="pi pi-download" severity="info" @click="generatePDF" />
+                        <Button class="filtrar" type="button" :label="$t('generate_pdf')" icon="pi pi-download" severity="info" @click="generatePDF" />
                     </div>
                 </div>
             </div>

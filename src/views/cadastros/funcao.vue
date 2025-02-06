@@ -7,7 +7,9 @@ import { FilterMatchMode } from 'primevue/api'; // Importa filtros do PrimeVue p
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import funcaoService from '@/services/funcaoService'; // Importa os serviços para manipulação das funções
 import { resetFuncaoForm } from '@/helpers/formHelper'; // Importa a função para resetar o formulário
-import {isMobEnabled,prepareListData } from '@/helpers/HelperUtils.js';
+import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const dataStore = useDataStore(); // Cria uma instância do store de dados
 const Mob = ref(false);
 // Variáveis reativas
@@ -29,7 +31,7 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'Codigo', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 // Contador de resultados filtrados
 const filteredCount = ref(0);
@@ -72,17 +74,17 @@ const submitForm = async () => {
         if (visible.value) {
             // Se o formulário está no modo de edição, atualiza a função
             await funcaoService.atualizarFuncao(funcao);
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função atualizada', life: 3000 });
+            toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('function_update_sucess'), life: 3000 });
         } else {
             // Se o formulário está no modo de adição, adiciona a função
             await funcaoService.adicionarFuncao(funcao);
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função adicionada', life: 3000 });
+            toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('function_add_sucess'), life: 3000 });
         }
         loadFuncoes(); // Recarrega a lista de funções após a operação
         active.value = 0; // Volta para a aba de listagem
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar função', life: 3000 }); // Mensagem de erro se a operação falhar
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('function_default_fail'), life: 3000 }); // Mensagem de erro se a operação falhar
     } finally {
         loading.value = false; // Desativa o estado de carregamento
     }
@@ -91,7 +93,7 @@ const submitForm = async () => {
 /**
  * Função para carregar a lista de funções
  */
-const loadFuncoes = async (page=1) => {
+const loadFuncoes = async (page = 1) => {
     loading.value = true; // Ativa o estado de carregamento
     try {
         const params = {
@@ -99,12 +101,12 @@ const loadFuncoes = async (page=1) => {
             rows: lazyParams.value.rows, // Número de registros por página
             sortField: lazyParams.value.sortField, // Campo para ordenação
             sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
+            filters: lazyParams.value.filters // Filtros aplicados
         };
         const data = prepareListData(params);
         // ListaFuncao.value = await funcaoService.listarFuncoes(); // Carrega as funções através do serviço
         const result = await funcaoService.listarFuncoesPaginadas(data); // Carrega as funções através do serviço
-        ListaFuncao.value = result.funcoes
+        ListaFuncao.value = result.funcoes;
         filteredCount.value = result.totalRecords; // Atualiza o contador de resultados filtrados
     } catch (error) {
         console.error(error.message); // Registra o erro no console
@@ -134,13 +136,13 @@ const deleteFuncao = async () => {
     loading.value = true; // Ativa o estado de carregamento
     try {
         await funcaoService.deletarFuncao(funcao.id_funcao); // Chama o serviço para excluir a função
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Função deletada', life: 3000 }); // Mensagem de sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('function_delete_sucess'), life: 3000 }); // Mensagem de sucesso
         loadFuncoes(); // Recarrega a lista de funções
         deleteFuncaoDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar função', life: 3000 }); // Mensagem de erro se a exclusão falhar
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('function_delete_fail'), life: 3000 }); // Mensagem de erro se a exclusão falhar
     } finally {
         loading.value = false; // Desativa o estado de carregamento
     }
@@ -166,6 +168,7 @@ const loadData = async () => {
     try {
         centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega os centros de custo do store ou faz a chamada ao serviço
     } catch (error) {
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Registra o erro no console
     }
 };
@@ -181,7 +184,7 @@ const debouncedFilterChange = debounce(() => {
 }, 300);
 // Chama a função de carregamento de dados ao montar o componente
 onMounted(() => {
-    Mob.value= isMobEnabled();
+    Mob.value = isMobEnabled();
     loadFuncoes(); // Carrega a lista de funções
     loadData(); // Carrega os dados dos centros de custo
 });
@@ -191,7 +194,7 @@ onMounted(() => {
     <div class="card vh">
         <!-- Componente TabView para alternar entre as abas de listagem e edição/adicionar -->
         <TabView v-model:activeIndex="active">
-            <TabPanel header="Listar Funções">
+            <TabPanel :header="$t('list_functions')">
                 <div class="col-12">
                     <!-- Componente DataTable para exibição das funções -->
                     <DataTable
@@ -209,8 +212,8 @@ onMounted(() => {
                         dataKey="id"
                         :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo']"
                         :metaKeySelection="false"
-                        :sortOrder="lazyParams.value?.sortOrder||1"
-                        :sortField="lazyParams.value?.sortField ||'id_funcao'"
+                        :sortOrder="lazyParams.value?.sortOrder || 1"
+                        :sortField="lazyParams.value?.sortField || 'id_funcao'"
                         @rowSelect="onRowSelect"
                         @filter="onFilterChange($event)"
                         @page="onPageChange($event)"
@@ -232,26 +235,26 @@ onMounted(() => {
                         <template #header>
                             <!-- Cabeçalho da tabela com filtro global e contador de registros -->
                             <div class="flex justify-content-between align-items-center mt-4">
-                                <span>Total de registros: {{ filteredCount }}</span>
+                                <span>{{ $t('total_records') }}: {{ filteredCount }}</span>
 
                                 <IconField iconPosition="left">
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
                                 </IconField>
                             </div>
                         </template>
 
-                        <template #empty> Nenhuma função adicionada </template>
-                        <Column field="id_funcao" sortable header="Código"></Column>
-                        <Column field="nome" sortable header="Função (Nome)"></Column>
-                        <Column field="id_centro_custo" sortable header="Centro de Custo (Nome)"></Column>
+                        <template #empty> {{ t('function_empty') }} </template>
+                        <Column field="id_funcao" sortable :header="t('code')"></Column>
+                        <Column field="nome" sortable :header="t('function_name')"></Column>
+                        <Column field="id_centro_custo" sortable :header="t('cost_center_name')"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
             <!-- Aba para adicionar ou editar função -->
-            <TabPanel :header="visible ? 'Editar Função' : 'Adicionar Função'" v-model:activeIndex="active">
+            <TabPanel :header="visible ? t('edit_function') : t('add_function')" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">
@@ -259,26 +262,35 @@ onMounted(() => {
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <!-- Campo para código da função -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_funcao">Código da Função:</label>
+                                        <label for="id_funcao">{{ t('function_code') }}:</label>
                                         <InputText class="my-2" id="id_funcao" v-model="funcao.codigo" required />
                                     </div>
                                     <!-- Campo para nome da função -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="nome">Função (Nome):</label>
+                                        <label for="nome">{{ t('function_name') }}:</label>
                                         <InputText class="my-2" id="nome" v-model="funcao.nome" required />
                                     </div>
                                     <!-- Campo para selecionar o centro de custo -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="perfil">Centro de Custo:</label>
-                                        <Dropdown class="my-2" v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" />
+                                        <label for="perfil">{{ t('cost_center') }}:</label>
+                                        <Dropdown class="my-2" v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                                     </div>
                                 </div>
 
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- Botões de ação para salvar ou excluir função -->
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteFuncaoDialog = true" :disabled="Mob"/>
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob"/>
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
+                                    <Button
+                                        v-if="visible"
+                                        style="width: 15%"
+                                        class="flex align-items-center justify-content-center m-2 mr-0"
+                                        :label="$t('delete')"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        @click="deleteFuncaoDialog = true"
+                                        :disabled="Mob"
+                                    />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
                                 </div>
                             </form>
                         </div>
@@ -288,13 +300,13 @@ onMounted(() => {
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                                 <span class="">
-                                    Você tem certeza que deseja deletar essa função? <b>{{ funcao.id_funcao }}</b> - <b>{{ funcao.nome }}</b> ?</span
-                                >
+                                    {{ t('function_dialog_confirm', { id: funcao.id_funcao, nome: funcao.nome }) }}
+                                </span>
                             </div>
 
                             <template #footer>
-                                <Button label="Não" icon="pi pi-times" @click="deleteFuncaoDialog = false" class="p-button-text" />
-                                <Button label="Sim" icon="pi pi-check" @click="deleteFuncao" class="p-button-text" />
+                                <Button :label="$t('no')" icon="pi pi-times" @click="deleteFuncaoDialog = false" class="p-button-text" />
+                                <Button :label="$t('yes')" icon="pi pi-check" @click="deleteFuncao" class="p-button-text" />
                             </template>
                         </Dialog>
                     </div>

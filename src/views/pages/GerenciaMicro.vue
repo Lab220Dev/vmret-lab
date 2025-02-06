@@ -1,22 +1,22 @@
 <template>
     <div class="card">
-        <h5 class="mt-6 ml-2 text-2xl">Cadastro de Serviços</h5>
+        <h5 class="mt-6 ml-2 text-2xl">{{t('cadastro_de_servicos')}}</h5>
         <hr />
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
-            <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" placeholder="Selecione um cliente" optionLabel="name" @change="onClientSelected" />
+            <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients":placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
         </div>
 
         <div v-if="selectedClient?.id" class="mt-8 card services-edit">
             <div class="flex mt-4 justify-content-between align-items-center">
                 <h5 class="mt-3 no-break">
-                    Serviços atribuídos:
+                    {{t('assigned_services')}}:
                     <span v-if="isAdmin">{{ selectedClient.name }}</span>
                 </h5>
                 <div class="add-service flex align-items-center">
-                    <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" placeholder="Adicionar Serviço" />
-                    <Button class="ml-3" label="Inserir" @click="addService" />
+                    <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" :placeholder="$t('add_service')" />
+                    <Button class="ml-3" :label="t('insert')" @click="addService" />
                 </div>
             </div>
 
@@ -27,60 +27,59 @@
             showGridlines
             :tableStyle="{ width: '100%' }"
             >
-                <template #empty>Não há serviços cadastrados.</template>
-                <Column field="name" style="width: 85%" header="Serviço"></Column>
-                <Column header="Ação">
+                <template #empty>{{t('no_added_services')}}</template>
+                <Column field="name" style="width: 75%" :header="t('service')"></Column>
+                <Column :header="t('action')">
                     <template #body="slotProps">
-                        <Button label="Configurar" class="mr-2 configuracao-monitoramento w-full"  icon="pi pi-cog" @click="editService(slotProps.data)" />
-                        <Button label="Remover" class="p-button-danger w-full" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
+                        <Button :label="$t('setting')" class="mr-2 configuracao-monitoramento" icon="pi pi-cog" @click="editService(slotProps.data)" />
+                        <Button :label="$t('remove')" class="p-button-danger" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>
 
 
             <!-- Caixa de diálogo para confirmação de deleção -->
-            <Dialog header="Deletar Serviço" v-model:visible="deleteServiceDialog" style="width: 400px" :modal="true" :closable="true" :draggable="false">
+            <Dialog :header="t('delete_service')" v-model:visible="deleteServiceDialog" style="width: 400px" :modal="true" :closable="true" :draggable="false">
                 <div class="confirmation-content text-justify">
                     <i class="" style="font-size: 2rem"></i>
                     <span>
-                        Você tem certeza que deseja deletar o serviço <b>{{ selectedService?.name }}</b
-                        >?
+                        {{ $t('delete_service_confirm', { name: selectedService?.name }) }}
                     </span>
                 </div>
                 <template #footer>
-                    <Button label="Não" icon="pi pi-times" @click="deleteServiceDialog = false" class="p-button-text"/>
-                    <Button label="Sim" icon="pi pi-check" @click="removeService(selectedService)" class="p-button-danger" />
+                    <Button :label="t('no')" icon="pi pi-times" @click="deleteServiceDialog = false" class="p-button-text" />
+                    <Button :label="t('yes')" icon="pi pi-check" @click="removeService(selectedService)" class="p-button-danger" />
                 </template>
             </Dialog>
 
-            <Fieldset legend="Configurações" v-if="showConfig" class="configuracao-monitoramento card mt-8 p-8 mx-8">
+            <Fieldset :legend="t('settings')" v-if="showConfig" class="configuracao-monitoramento card mt-8 p-8 mx-8">
                 <!---->
                 <h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
 
                 <div class="flex flex-column col-12 mt-6 ml-3">
                     <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">Frequência de Notificação:</label>
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">{{t('notification_frequency')}}:</label>
                         <Dropdown style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
                     </div>
 
                     <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">Horário de Notificação:</label>
-                        <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker placeholder="Selecione o horário" />
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">{{t('notification_time')}}:</label>
+                        <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker :placeholder="$t('frequency_placeholder')"  />
                     </div>
 
                     <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationMethods">Métodos de Notificação:</label>
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationMethods">{{t('notification_method')}}:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
                     </div>
 
                     <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">Destinatários:</label>
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{t('recipient')}}:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
                     </div>
                 <div class="flex justify-content-end flex-wrap mt-8">
-            <Button class="flex align-items-center justify-content-center" v-if="novo" label="Adicionar Serviço" @click="addServiceWithConfig" />
+            <Button class="flex align-items-center justify-content-center" v-if="novo" :label="$t('add_service')" @click="addServiceWithConfig" />
 
-            <Button class="flex align-items-center justify-content-center" v-else label="Atualizar Serviços" @click="updateServiceConfig" />
+            <Button class="flex align-items-center justify-content-center" v-else :label="$t('update_services')" @click="updateServiceConfig" />
         </div></div>
             </Fieldset>
         </div>
@@ -95,7 +94,7 @@
  */
 
 // Importa funções reativas do Vue, como `ref` e `onMounted`.
-import { ref, onMounted,nextTick } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
+import { ref, onMounted,nextTick,computed } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
 
 // Importa a função de toast do PrimeVue, usada para exibir mensagens ao usuário.
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
@@ -114,7 +113,8 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 /**
  * Função chamada quando o usuário tenta abrir o diálogo de remoção de serviço.
  * @param {Object} service - O serviço a ser removido.
@@ -124,8 +124,8 @@ const openDeleteDialog = (service) => {
     if (!service || !service.id) {
         toast.add({
             severity: 'error', // Tipo de notificação: erro.
-            summary: 'Erro', // Título da notificação.
-            detail: 'Serviço não encontrado.', // Mensagem de erro detalhada.
+            summary: t('title_error'), // Título da notificação.
+            detail: t('erro_service'), // Mensagem de erro detalhada.
             life: 3000 // Tempo de duração da notificação (3000ms).
         });
         return; // Retorna caso o serviço não seja encontrado.
@@ -143,9 +143,9 @@ const deleteServiceDialog = ref(false); // Variável booleana para controlar a e
 
 const toast = useToast(); // Instância do sistema de notificações do PrimeVue.
 const availableClients = ref([]); // Lista de clientes disponíveis.
-const availableServices = ref([ // Lista de serviços disponíveis, pré-definida.
-    { id: 1, name: 'Monitoramento de Status DM' },
-    { id: 2, name: 'Monitoramento de Estoque' }
+const availableServices = computed(() => [ // Lista de serviços disponíveis, pré-definida.
+    { id: 1, name: t('status_monitoring_dm') },
+    { id: 2, name: t('supply_monitoring') }
 ]);
 const selectedClient = ref(null); // Cliente selecionado.
 const availableRecipients = ref([]); // Destinatários disponíveis.
@@ -154,16 +154,16 @@ const newService = ref(null); // Novo serviço a ser adicionado.
 const selectedService = ref(null); // Serviço atualmente selecionado.
 const serviceConfigs = ref({}); // Configurações dos serviços selecionados.
 const novo = ref(true); // Flag para indicar se o serviço é novo.
-const frequencies = ref([ // Frequências de notificação disponíveis.
-    { label: 'A cada 5 minutos', value: '5m' },
-    { label: 'A cada 30 minutos', value: '30m' },
-    { label: 'A cada 1 hora', value: '1h' },
-    { label: '1x ao dia', value: '1x-dia' }
+const frequencies = computed(() => [ // Frequências de notificação disponíveis.
+    { label: t('every_5m'), value: '5m' },
+    { label: t('every_30m'), value: '30m' },
+    { label: t('every_1h'), value: '1h' },
+    { label: t('once_a_day'), value: '1x-dia' }
 ]);
 
-const notificationMethods = ref([ // Métodos de notificação disponíveis.
-    { label: 'E-mail', value: 'email' },
-    { label: 'Notificação', value: 'notif' }
+const notificationMethods = computed(() => [ // Métodos de notificação disponíveis.
+    { label: t('email'), value: 'email' },
+    { label: t('notification'), value: 'notif' }
 ]);
 
 const showConfig = ref(false); // Flag para mostrar as configurações do serviço.
@@ -197,6 +197,12 @@ const fetchClientes = async () => {
             servicos: cliente.servicos // Lista de serviços do cliente.
         }));
     } catch (error) {
+        toast.add({
+            severity: 'error', // Tipo de notificação: erro.
+            summary: t('title_error'), // Título da notificação.
+            detail: t('load_client_list'), // Mensagem de erro detalhada.
+            life: 3000 // Tempo de duração da notificação (3000ms).
+        });
         console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
     }finally{
         loading.value = false; // Desativa o estado de carregamento após a requisição.
@@ -268,6 +274,12 @@ const fetchServicos = async () => {
             clientServices.value = []; // Limpa os serviços.
         }
     } catch (error) {
+        toast.add({
+            severity: 'error', // Tipo de notificação: erro.
+            summary: t('title_error'), // Título da notificação.
+            detail: t('erro_fetch_service'), // Mensagem de erro detalhada.
+            life: 3000 // Tempo de duração da notificação (3000ms).
+        });
         console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
     }finally{
         loading.value = false; // Desativa o estado de carregamento após a requisição.
@@ -290,6 +302,12 @@ const fetchRecipients = async (idCliente) => {
             name: funcionario.nome // Nome do funcionário.
         }));
     } catch (error) {
+        toast.add({
+            severity: 'error', // Tipo de notificação: erro.
+            summary: t('title_error'), // Título da notificação.
+            detail: t('erro_fetch_recipeient'), // Mensagem de erro detalhada.
+            life: 3000 // Tempo de duração da notificação (3000ms).
+        });
         console.error('Erro ao carregar destinatários:', error); // Loga qualquer erro ocorrido.
     }
 };
@@ -371,8 +389,8 @@ const addServiceWithConfig = async () => {
             // Exibe um erro se houver campos obrigatórios não preenchidos.
             toast.add({
                 severity: 'error',
-                summary: 'Campos obrigatórios não preenchidos',
-                detail: 'Por favor, preencha todos os campos de Configurações antes de adicionar o serviço.',
+                summary: t('required_fields'),
+                detail: t('fill_all_settings'),
                 life: 3000
             });
             return; // Retorna sem adicionar o serviço se os campos não estiverem preenchidos.
@@ -410,10 +428,10 @@ const addServiceWithConfig = async () => {
         await clientesService.adicionarServico(data);
 
         // Exibe uma notificação de sucesso.
-        toast.add({ severity: 'success', summary: 'Serviços adicionados com sucesso!', life: 3000 });
+        toast.add({ severity: 'success', summary: t('services_add'), life: 3000 });
     } catch (error) {
         console.error('Erro ao adicionar os serviços:', error); // Loga o erro ocorrido.
-        toast.add({ severity: 'error', summary: 'Erro ao adicionar os serviços', life: 3000 }); // Exibe um erro ao usuário.
+        toast.add({ severity: 'error', summary: t('erro_add_service'), life: 3000 }); // Exibe um erro ao usuário.
     }
 };
 
@@ -425,8 +443,8 @@ const addService = () => {
         // Verifica se um serviço foi selecionado antes de adicionar.
         toast.add({
             severity: 'error', // Tipo de notificação: erro.
-            summary: 'Nenhum serviço selecionado', // Título da notificação.
-            detail: 'Por favor, selecione um serviço.', // Mensagem de erro detalhada.
+            summary: t('no_service_added'), // Título da notificação.
+            detail: t('no_service_added_detail'), // Mensagem de erro detalhada.
             life: 3000 // Duração da notificação.
         });
         return; // Retorna sem adicionar se nenhum serviço for selecionado.
@@ -449,8 +467,8 @@ const addService = () => {
         // Exibe um aviso se o serviço já estiver na lista.
         toast.add({
             severity: 'warn',
-            summary: 'Serviço duplicado',
-            detail: 'Este serviço já foi adicionado.',
+            summary: t('duplciated_service'),
+            detail: t('duplicated_service_detail'),
             life: 3000
         });
     }
@@ -489,8 +507,8 @@ const removeService = async (service) => {
         
         toast.add({
                 severity: 'success',
-                summary: 'Serviço removido',
-                detail: `O serviço ${service.name} foi removido com sucesso.`,
+                summary: t('remove_service'),
+                detail: t('remove_service_details',{name:service.name}),
                 life: 3000
             });
         
@@ -499,8 +517,8 @@ const removeService = async (service) => {
         console.error('Erro ao remover serviço:', error);
         toast.add({
             severity: 'error',
-            summary: 'Erro ao remover o serviço',
-            detail: error.message || 'Ocorreu um erro ao tentar remover o serviço. Tente novamente.',
+            summary: t('remove_service_error'),
+            detail: error.message || t('remove_service_error_default'),
             life: 3000
         });
     }
@@ -543,11 +561,11 @@ const updateServiceConfig = async () => {
         await axios.post('/admin/cliente/atualizarServico', data);
 
         // Exibe notificação de sucesso.
-        toast.add({ severity: 'success', summary: 'Serviço atualizado com sucesso!', life: 3000 });
+        toast.add({ severity: 'success', summary: t('update_service'), life: 3000 });
     } catch (error) {
         // Exibe erro caso a atualização falhe.
         console.error('Erro ao atualizar os serviços:', error);
-        toast.add({ severity: 'error', summary: 'Erro ao atualizar os serviços', life: 3000 });
+        toast.add({ severity: 'error', summary: t('update_service_error'), life: 3000 });
     }
 };
 

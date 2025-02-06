@@ -3,10 +3,11 @@
    * Importa funções necessárias do Vue e outras dependências.
    * @module
    */
-  import { ref, onBeforeMount, watch } from 'vue'; // 'ref' para reatividade, 'onBeforeMount' para execução antes da montagem do componente, 'watch' para observar mudanças em dados reativos
+  import { ref, onBeforeMount, watch,computed  } from 'vue'; // 'ref' para reatividade, 'onBeforeMount' para execução antes da montagem do componente, 'watch' para observar mudanças em dados reativos
   import { useRoute } from 'vue-router'; // Função para acessar as informações da rota atual
   import { useLayout } from '@/layout/composables/layout'; // Função personalizada para obter as configurações e o estado do layout
-
+  import { useI18n } from 'vue-i18n';
+  import i18n from '@/i18n'; 
   /**
    * Obtém a rota atual da aplicação.
    * @constant {RouteLocationNormalized} route - Objeto da rota atual da aplicação.
@@ -21,7 +22,7 @@
    * @function onMenuToggle - Função para alternar a visibilidade do menu.
    */
   const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
-
+  const { t } = useI18n();
   /**
    * Definição das propriedades do componente.
    * @typedef {Object} Props
@@ -48,7 +49,28 @@
       default: null // Valor padrão de 'parentItemKey' é null
     }
   });
+  const normalizeLabel = (label) => {
+  return label
+    .normalize("NFD") // Decompõe caracteres acentuados (ex: "é" -> "e´")
+    .replace(/[\u0300-\u036f]/g, "") // Remove marcas diacríticas (acentos)
+    .replace(/ç/g, "c") // Substitui "ç" por "c"
+    .toLowerCase() // Converte para minúsculas
+    .replace(/\s+/g, '_') // Substitui espaços por "_"
+    .replace(/\//g, '_'); // Substitui barras "/" por "_"
+}
+const translateMenuItem = (menuItem) => {
+  if (!menuItem || !menuItem.label) return menuItem;
 
+  const key = normalizeLabel(menuItem.label); 
+  const hasTranslation = i18n.global.te(key); // Verifica se a chave existe
+
+  return {
+    ...menuItem,
+    label: hasTranslation ? t(key) : menuItem.label, // Apenas traduz se existir
+    items: menuItem.items ? menuItem.items.map(translateMenuItem) : undefined
+  };
+}
+const translatedItem = computed(() => translateMenuItem(props.item));
   /**
    * Variáveis reativas para controle de estado.
    * @constant {Ref<string>} abletext - Classe para itens de menu habilitados.
@@ -149,42 +171,42 @@
   <!-- Item de menu, com classes dinâmicas dependendo se é raiz e se está ativo -->
   <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
     <!-- Exibe o texto do item de menu se for um item de nível raiz e visível -->
-    <div v-if="root && item.visible !== false" :class="{'layout-menuitem-root-text': item.class}">
-      {{ item.label }}
+    <div v-if="root && translatedItem.visible !== false" :class="{'layout-menuitem-root-text': translatedItem.class}">
+      {{ translatedItem.label }}
     </div>
 
     <!-- Link do item de menu, que pode ser um href ou um router-link -->
     <a 
-      v-if="(!item.to || item.items) && item.visible !== false"
-      :href="item.url" 
-      @click="itemClick($event, item, index)" 
-      :class="item.class" 
-      :target="item.target" 
+      v-if="(!translatedItem.to || translatedItem.items) && item.visible !== false"
+      :href="translatedItem.url" 
+      @click="itemClick($event, translatedItem, index)" 
+      :class="translatedItem.class" 
+      :target="translatedItem.target" 
       tabindex="0"
     >
-      <i :class="item.icon" class="layout-menuitem-icon"></i>
-      <span :class="[item.disabled ? disabledtext : abletext]">{{ item.label }}</span>
-      <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+      <i :class="translatedItem.icon" class="layout-menuitem-icon"></i>
+      <span :class="[translatedItem.disabled ? disabledtext : abletext]">{{ translatedItem.label }}</span>
+      <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="translatedItem.items"></i>
     </a>
 
     <!-- Router Link para navegação de rota -->
     <router-link 
-      v-if="item.to && !item.items && item.visible !== false"
-      @click="itemClick($event, item, index)" 
-      :class="[item.class, { 'active-route': checkActiveRoute(item) }]" 
+      v-if="translatedItem.to && !translatedItem.items && translatedItem.visible !== false"
+      @click="itemClick($event, translatedItem, index)" 
+      :class="[translatedItem.class, { 'active-route': checkActiveRoute(translatedItem) }]" 
       tabindex="0" 
-      :to="item.to"
+      :to="translatedItem.to"
     >
-      <i :class="item.icon" class="layout-menuitem-icon"></i>
-      <span class="layout-menuitem-text">{{ item.label }}</span>
-      <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+      <i :class="translatedItem.icon" class="layout-menuitem-icon"></i>
+      <span class="layout-menuitem-text">{{ translatedItem.label }}</span>
+      <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="translatedItem.items"></i>
     </router-link>
 
     <!-- Submenu com animação de transição -->
-    <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
+    <Transition v-if="translatedItem.items && translatedItem.visible !== false" name="layout-submenu">
       <ul v-show="root ? true : isActiveMenu" class="layout-submenu">
         <app-menu-item 
-          v-for="(child, i) in item.items" 
+          v-for="(child, i) in translatedItem.items" 
           :key="child" 
           :index="i" 
           :item="child" 

@@ -1,19 +1,21 @@
 <script setup>
 // Importação de funções e hooks do Vue.js
-import { reactive, ref, onMounted, watch } from 'vue';
+import { reactive, ref, onMounted, watch, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from 'primevue/api';
 import cdcService from '@/services/cdcService';
 import { resetCDCForm } from '@/helpers/formHelper';
-import {isMobEnabled,prepareListData} from '@/helpers/HelperUtils.js';
+import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Definição de variáveis reativas e referências
 const active = ref(0); // Estado para o índice da aba ativa
 const toast = useToast(); // Hook para usar a funcionalidade de toast
 const centroCusto = ref([]); // Lista dos centros de custo
 const visible = ref(false); // Controle de visibilidade para o formulário de edição/adição
 const deleteCentroDialog = ref(false); // Controle de visibilidade do diálogo de confirmação de exclusão
-const Mob = ref(false); 
- 
+const Mob = ref(false);
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global, que verifica se o texto contém o valor
 });
@@ -22,7 +24,7 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'Codigo', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 const filteredCount = ref(0); // Contador de itens filtrados
 
@@ -71,20 +73,20 @@ const onPageChange = async (event) => {
  */
 const loadCentroCusto = async (page = 1) => {
     const params = {
-            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
-            rows: lazyParams.value.rows, // Número de registros por página
-            sortField: lazyParams.value.sortField, // Campo para ordenação
-            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
-        };
-        const data = prepareListData(params);
+        first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+        rows: lazyParams.value.rows, // Número de registros por página
+        sortField: lazyParams.value.sortField, // Campo para ordenação
+        sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+        filters: lazyParams.value.filters // Filtros aplicados
+    };
+    const data = prepareListData(params);
     try {
         const result = await cdcService.listarCentrosDeCustoPaginada(data); // Chama o serviço para listar os centros de custo
         centroCusto.value = result.centrosCusto; // Atualiza a lista de centros de custo
-        filteredCount.value =  result.totalRecords; // Atualiza o contador de registros filtrados
+        filteredCount.value = result.totalRecords; // Atualiza o contador de registros filtrados
     } catch (error) {
         console.error(error.message); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar os centros de custo' }); // Exibe mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_cost_center_error') }); // Exibe mensagem de erro
     }
 };
 
@@ -103,17 +105,17 @@ const submitForm = async () => {
         if (visible.value) {
             // Se o formulário estiver no modo de edição, chama a função de atualizar
             await cdcService.atualizarCentro(cdc); // Atualiza o centro de custo no backend
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro atualizado!', life: 3000  }); // Exibe mensagem de sucesso
+            toast.add({ severity: 'success', summary: t('title_sucess'), detail: 'Centro atualizado!', life: 3000 }); // Exibe mensagem de sucesso
         } else {
             // Se o formulário estiver no modo de adicionar, chama a função de adicionar
             await cdcService.adicionarCentro(cdc); // Adiciona o centro de custo no backend
-            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro adicionado!', life: 3000 }); // Exibe mensagem de sucesso
+            toast.add({ severity: 'success', summary: t('title_sucess'), detail: 'Centro adicionado!', life: 3000 }); // Exibe mensagem de sucesso
         }
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: error.message, life: 3000 }); // Exibe mensagem de erro caso falhe
+        toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('cost_center_update_error_default'), life: 3000 }); // Exibe mensagem de erro caso falhe
     }
 };
 
@@ -130,13 +132,13 @@ const submitForm = async () => {
 const deleteCentro = async () => {
     try {
         await cdcService.deletarCentro(cdc); // Chama o serviço para deletar o centro de custo
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Centro deletado!', life: 3000 }); // Exibe mensagem de sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('cost_center_deleted_sucess'), life: 3000 }); // Exibe mensagem de sucesso
         deleteCentroDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar o centro de custo', life: 3000 }); // Exibe mensagem de erro caso falhe
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('cost_center_delted_error'), life: 3000 }); // Exibe mensagem de erro caso falhe
     }
 };
 
@@ -191,7 +193,7 @@ onMounted(() => {
             <!-- Componente TabView para controlar abas de listagem e edição -->
 
             <!-- Aba de Listagem de Centros de Custo -->
-            <TabPanel header="Listar Centros de Custo">
+            <TabPanel :header="$t('list_cost_center')">
                 <div class="col-12">
                     <DataTable
                         v-model:filters="filters"
@@ -206,8 +208,8 @@ onMounted(() => {
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         :rows="lazyParams.value?.rows || 10"
                         dataKey="id"
-                        :sortOrder="lazyParams.value?.sortOrder||1"
-                        :sortField="lazyParams.value?.sortField ||'Codigo'"
+                        :sortOrder="lazyParams.value?.sortOrder || 1"
+                        :sortField="lazyParams.value?.sortField || 'Codigo'"
                         @filter="onFilterChange($event)"
                         @page="onPageChange($event)"
                         @sort="onSortChange($event)"
@@ -231,25 +233,25 @@ onMounted(() => {
                             <!-- Cabeçalho da tabela -->
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <span>{{ $t('total_records') }}:{{ filteredCount }}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> Nenhum centro de custo adicionado. </template>
+                        <template #empty> {{ t('empty_cost_center') }} </template>
                         <!-- Mensagem exibida quando a tabela está vazia -->
-                        <Column field="Codigo" sortable header="Código"></Column>
-                        <Column field="Nome" sortable header="Centro de Custo (Nome)"></Column>
+                        <Column field="Codigo" sortable :header="t('code')"></Column>
+                        <Column field="Nome" sortable :header="t('cost_center_name')"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
             <!-- Aba de Edição ou Adição de Centro de Custo -->
-            <TabPanel :header="visible ? 'Editar Centro de Custo' : 'Adicionar Centro de Custo'" v-model:activeIndex="active">
+            <TabPanel :header="visible ? t('edit_cost_center') : t('add_cost_center')" v-model:activeIndex="active">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">
@@ -258,19 +260,28 @@ onMounted(() => {
                                     <!-- Formulário para adicionar ou editar um centro de custo -->
 
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_centro_custo">Código:</label>
+                                        <label for="id_centro_custo">{{ t('code') }}:</label>
                                         <InputNumber class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="nome">Centro de Custo (Nome):</label>
+                                        <label for="nome">{{ t('cost_center_name') }}:</label>
                                         <InputText class="my-2" id="nome" v-model="cdc.Nome" required />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <!-- Botões de Ação -->
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob"/>
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteCentroDialog = true" :disabled="Mob"/>
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob"/>
+                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
+                                    <Button
+                                        v-if="visible"
+                                        style="width: 15%"
+                                        class="flex align-items-center justify-content-center m-2 mr-0"
+                                        :label="$t('delete')"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        @click="deleteCentroDialog = true"
+                                        :disabled="Mob"
+                                    />
+                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
                                 </div>
                                 <!-- </div> -->
                             </form>
@@ -278,17 +289,15 @@ onMounted(() => {
 
                         <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
 
-                        <Dialog header="Deletar Centro de Custo" v-model:visible="deleteCentroDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                        <Dialog :header="$t('delete_cost_center')" v-model:visible="deleteCentroDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                             <div class="confirmation-content">
                                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                <span class="">
-                                    Você tem certeza que deseja deletar o centro de custo <b>{{ cdc.Codigo }}</b> - <b>{{ cdc.Nome }}</b> ?</span
-                                >
+                                <span class=""> {{ t('delete_cost_center_confirm', { codigo: cdc.Codigo, nome: cdc.Nome }) }}</span>
                             </div>
 
                             <template #footer>
-                                <Button label="Não" icon="pi pi-times" @click="deleteCentroDialog = false" class="p-button-text" />
-                                <Button label="Sim" icon="pi pi-check" @click="deleteCentro" class="p-button-text" />
+                                <Button :label="$t('no')" icon="pi pi-times" @click="deleteCentroDialog = false" class="p-button-text" />
+                                <Button :label="$t('yes')" icon="pi pi-check" @click="deleteCentro" class="p-button-text" />
                             </template>
                         </Dialog>
                     </div>

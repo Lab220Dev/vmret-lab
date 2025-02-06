@@ -10,28 +10,28 @@
     <!-- Encapsula a tabela dentro de um card -->
 
     <!-- Coluna 'cliente' para exibir o nome do cliente -->
-    <Column field="cliente" header="Cliente"></Column>
+    <Column field="cliente" :header="t('client')"></Column>
     
     <!-- Coluna 'tipo' para exibir o tipo da notificação -->
-    <Column field="tipo" header="Tipo"></Column>
+    <Column field="tipo" :header="t('type')"></Column>
     
     <!-- Coluna 'date' para exibir a data da notificação -->
-    <Column field="date" header="Data"></Column>
+    <Column field="date" :header="t('date')"></Column>
     
     <!-- Coluna 'status' para exibir o status da notificação -->
-    <Column field="status" header="Status"></Column>
+    <Column field="status" :header="t('status')"></Column>
 
     <!-- Template personalizado para exibição quando não há dados -->
     <template #empty>
       <!-- Mensagem de 'vazio' quando não há notificações disponíveis -->
-      <p class="text-center">Sem notificações disponíveis</p>
+      <p class="text-center">{{$t('no_notifications')}}</p>
     </template>
   </DataTable>
 </template>
 
 <script setup>
 import { computed } from 'vue';  // Importa a função 'computed' do Vue para definir uma propriedade computada
-
+import { useI18n } from 'vue-i18n';
 /**
  * Define as propriedades que o componente espera receber.
  * 
@@ -44,7 +44,7 @@ import { computed } from 'vue';  // Importa a função 'computed' do Vue para de
       default: () => []  // Se não for fornecido, o valor padrão será um array vazio
   }
 });
-
+const { t } = useI18n();
 /**
  * Computed property para garantir que 'listanoti' seja um array válido.
  * Verifica se a propriedade 'listanoti' é um array e, se não for, retorna um array vazio.

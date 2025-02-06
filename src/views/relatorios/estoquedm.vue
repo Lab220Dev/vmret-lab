@@ -1,13 +1,11 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'; // Importa funções do Vue para reatividade e manipulação do ciclo de vida
-
-import axios from '@/axios.js'; // Importa a instância do Axios configurada para fazer requisições HTTP
+import { ref, onMounted, watch ,computed} from 'vue'; // Importa funções do Vue para reatividade e manipulação do ciclo de vida
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados do usuário autenticado
 import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
-
 import estoqueService from '@/services/estoqueService';
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Declara as variáveis reativas
 const loading = ref(false); // Variável para controlar o estado de carregamento
 const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
@@ -16,7 +14,7 @@ const dropdown1 = ref(null); // Referência para o dropdown de DM
 const EstoqueDM = ref([]); // Lista de itens de estoque filtrados
 const dms = ref([todosOption]); // Lista de DM com a opção de "Todos"
 const store = useAuthStore(); // Instancia o store de autenticação
-const emptyMessage = ref(''); // Mensagem a ser exibida quando não houver dados
+const emptyMessage = computed(() => t('no_search_made')); // Mensagem a ser exibida quando não houver dados
 
 // Filtros para a DataTable
 const filters = ref({
@@ -80,6 +78,15 @@ const relatorioDM = async () => {
         loading.value = false; // Desativa o estado de carregamento
     }
 };
+const getTooltipText = (data) => {
+    if (data.modelo === '2018') {
+        return t('placa_mola');
+    } else if (data.modelo === '2023') {
+        return t('andar_posicao');
+    } else {
+        return t('placa_motor');
+    }
+};
 
 /**
  * Observa o filtro global e atualiza o contador de registros filtrados.
@@ -110,13 +117,13 @@ onMounted(() => {
 <template>
     <div class="card vh">
         <!-- Contêiner principal da tela -->
-        <h5 class="my-6 ml-2 text-2xl">Estoque da DM</h5>
+        <h5 class="my-6 ml-2 text-2xl">{{$t('dm_inventory')}}</h5>
         <!-- Título da página -->
 
         <!-- Dropdown para seleção de DM -->
         <div class="my-2">
-            <label for="dm" class="ml-2">DM:</label>
-            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" @change="relatorioDM()" />
+            <label for="dm" class="ml-2">{{$t('dispenser_machine')}}:</label>
+            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <!-- Tabela de Estoque -->
@@ -149,7 +156,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>Total de registros: {{ filteredCount }}</span>
+                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
                         <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
@@ -159,7 +166,7 @@ onMounted(() => {
                                 <i class="pi pi-search" />
                                 <!-- Ícone de pesquisa -->
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                             <!-- Campo de pesquisa -->
                         </IconField>
                     </div>
@@ -167,10 +174,10 @@ onMounted(() => {
             </template>
 
             <!-- Mensagem a ser exibida quando não houver dados -->
-            <template #empty> {{ emptyMessage }} </template>
+            <template #empty>  {{ $t('empty_message') }}</template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="sku" class="table-cell" style="width: 10%;" sortable header="SKU">
+            <Column field="sku" class="table-cell" style="width: 10%;" sortable :header="t('SKU')">
             
                 <template #body="{ data }">
                     <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span>
@@ -178,33 +185,33 @@ onMounted(() => {
                 </template>
             
             </Column>
-            <Column field="nome" sortable header="Produto">
+            <Column field="nome" sortable :header="t('product')">
                 <template #body="{ data }">
                     <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
                     <!-- Exibe o nome do produto com tooltip -->
                 </template>
             </Column>
-            <Column field="Posicao" sortable style="text-align: center" header="Posição">
+            <Column field="Posicao" sortable style="text-align: center" :header="t('position')">
                 <template #body="{ data }">
-                    <span v-tooltip="data.modelo === '2018' ? 'Placa / Mola ' : data.modelo === '2023' ? ' Andar / Posição' : 'Placa / Motor'">
+                    <span v-tooltip="getTooltipText(data)">
                         {{ data.Posicao }}
                     </span>
                     <!-- Exibe a posição do produto com tooltip condicional -->
                 </template>
             </Column>
-            <Column field="quantidade" sortable style="text-align: center">
+            <Column :field="t('quantity')" sortable style="text-align: center">
                 <template #header>
-                    <span v-tooltip="'Quantidade Atual'">Quant. Atual</span>
+                    <span v-tooltip="$t('current_quantity')">{{t('current_quantity_short')}}</span>
                     <!-- Tooltip para a coluna de quantidade -->
                 </template>
             </Column>
             <Column field="quantidademinima" sortable style="text-align: center">
                 <template #header>
-                    <span v-tooltip="'Quantidade Mínima'">Quant. Mín.</span>
+                    <span v-tooltip="$t('minimal_quantity')">{{t('minimal_quantity')}}</span>
                     <!-- Tooltip para a coluna de quantidade mínima -->
                 </template>
             </Column>
-            <Column field="capacidade" sortable  style=" width: 20%;text-align: center " header="Capacidade"></Column>
+            <Column field="capacidade" sortable  style=" width: 20%;text-align: center " :header="t('capacity')"></Column>
             <!-- Coluna para capacidade -->
         </DataTable>
 
