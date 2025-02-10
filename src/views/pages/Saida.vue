@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'; // Importa funções do Vue para reatividade, ciclo de vida e manipulação de DOM.
+import { ref, onMounted, nextTick, computed } from 'vue'; // Importa funções do Vue para reatividade, ciclo de vida e manipulação de DOM.
 import { useToast } from 'primevue/usetoast'; // Importa o hook para exibir notificações de toast.
 import { marked } from 'marked'; // Importa a biblioteca 'marked' para converter markdown em HTML.
 import axios from '@/axios.js'; // Importa a instância do axios configurada para fazer requisições HTTP.
 import { useAuthStore } from '@/store/authStore'; // Importa a store de autenticação para gerenciar o estado do usuário.
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa um componente de carregamento.
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const toast = useToast(); // Inicializa o toast para exibir notificações.
 const store = useAuthStore(); // Inicializa a store de autenticação.
 const loading = ref(false); // Define uma referência reativa para controlar o estado de carregamento.
@@ -45,40 +46,22 @@ onMounted(() => {
     //fetchApiKey(); // A função de recuperação da chave da API pode ser chamada aqui, caso necessário.
 });
 
-const passo1 = [
+const passo1 = computed(() => [
     {
-        name: 'Login',
-        description: marked(`
-**Exemplo de como realizar o login e obter o token.**
-O corpo da requisição deve incluir os campos:
-
-- **"email"**: E-mail utilizado para logar no sistema, pode ser encontrado na aba "Cadastros > Usuários > Usuário WEB".
-- **"senha"**: Senha utilizada para logar no sistema. 
-
-Todos os campos são obrigatórios. Se somente um ou nenhum campo for enviado, o sistema retornará 400
-Bad Request: "E-mail e senha são obrigatórios".
-        `), // Converte o markdown para HTML e adiciona à descrição do tópico.
+        name: t('login_title'),
+        description: marked(t('login_description')), // Converte o markdown para HTML e adiciona à descrição do tópico.
         requestBody: {
             email: 'seuemailaqui@exemplo.com.br', // Exemplo de e-mail para enviar na requisição.
             senha: 'insirasuasenha' // Exemplo de senha para enviar na requisição.
         },
         apiUrl: 'http://vmretnew.sgilab220.com.br/api/login' // URL da API para realizar o login.
     }
-];
+]);
 
-const passo2 = [
+const passo2 = computed(() => [
     {
-        name: 'Retiradas',
-        description: marked(`
-**Exemplo de como acessar o relatório de retiradas.**
-O corpo da requisição deve incluir opcionalmente os campos:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-- **id_funcionario**: Pode ser encontrado na aba "Lista de Funcionários".
-- **data_inicio** e **data_fim**: Período desejado para o relatório.
-
-Todos os campos são opcionais. Se nenhum campo for enviado, o sistema retornará um JSON com todos os dados disponíveis.
-        `), // Descrição do passo de retiradas convertida de markdown para HTML.
+        name: t('retiradas_title'),
+        description: marked(t('retiradas_description')), // Descrição do passo de retiradas convertida de markdown para HTML.
         requestBody: {
             id_dm: '1234', // Exemplo de ID de DM (Máquina/Dispositivo).
             id_funcionario: '5678', // Exemplo de ID de Funcionário.
@@ -88,16 +71,8 @@ Todos os campos são opcionais. Se nenhum campo for enviado, o sistema retornar�
         apiUrl: 'http://vmretnew.sgilab220.com.br/api/relatorioRetiRe/relatorio' // URL da API para consultar o relatório de retiradas.
     },
     {
-        name: 'Status',
-        description: marked(`
-**Exemplo de como acessar o relatório de status.**
-O corpo da requisição pode opcionalmente incluir:
-
-- **id_dm**: Pode ser encontrado na aba "Lista de DM".
-- **data**: A data para o status específico.
-
-Ambos os campos são opcionais. Se nenhum for enviado, o sistema retornará o status atual de todas as máquinas.
-        `), // Descrição do passo de status convertida de markdown para HTML.
+        name:  t('status_title'),
+        description: marked(t('status_description')), // Descrição do passo de status convertida de markdown para HTML.
         requestBody: {
             id_dm: '1234', // Exemplo de ID de DM (Máquina/Dispositivo).
             data: '2023-01-15' // Exemplo de data para o status.
@@ -105,7 +80,7 @@ Ambos os campos são opcionais. Se nenhum for enviado, o sistema retornará o st
         apiUrl: 'http://vmretnew.sgilab220.com.br/api/SDM/relatorio' // URL da API para consultar o relatório de status.
     }
     // Outros tópicos e relatórios seguem a mesma estrutura.
-];
+]);
 
 function toggleApiKeyVisibility() {
     isApiKeyVisible.value = !isApiKeyVisible.value; // Alterna a visibilidade da chave da API (show/hide).
@@ -149,20 +124,18 @@ function selectTopic(topic) {
 
 <template>
     <div class="card vh">
-        <h2 class="my-7 text-center">Guia de Autenticação e Acesso à API</h2>
+        <h2 class="my-7 text-center">{{t('guide_title')}}</h2>
         <fieldset class="m-2">
             <p>
-                Este guia técnico fornece instruções detalhadas sobre como autenticar-se na API e obter um token de acesso. Você encontrará exemplos de requisições para endpoints críticos, como relatórios de retiradas, status e estoque, utilizando
-                linguagens como C#, Java e JavaScript. Cada exemplo inclui o formato do corpo da requisição e os cabeçalhos necessários para autenticação.
+                {{t('guide_description')}}
             </p>
         </fieldset>
 
         <Accordion class="mt-3">
             <!-- Passo 1 - Login -->
-            <AccordionTab header="Passo 1">
+            <AccordionTab :header="$t('step1_title')">
                 <p class="mt-3">
-                    Neste passo, é abordado o processo de autenticação na API para a obtenção de um token de acesso. A requisição deve ser realizada utilizando o método POST e incluir os campos obrigatórios de "email" e "senha". Um token de acesso
-                    válido é retornado na resposta, permitindo chamadas subsequentes a outros endpoints da API. Certifique-se de tratar possíveis erros.
+                   {{t('step1_description')}}
                 </p>
                 <ul class="mt-4">
                     <!-- Lista de tópicos do Passo 1 -->
@@ -264,11 +237,9 @@ Body:
             </AccordionTab>
 
             <!-- Passo 2 - Relatórios e outros tópicos -->
-            <AccordionTab header="Passo 2">
+            <AccordionTab :header="$t('step2_title')">
                 <p class="mt-3">
-                    Neste passo, é demonstrado como acessar diversos relatórios da API, incluindo retiradas, status, estoque e devolução. Dependendo do relatório, podem ser enviados campos obrigatórios ou opcionais. As requisições são realizadas por
-                    meio do método POST, utilizando o token de acesso obtido anteriormente. Cada exemplo apresenta uma estrutura de corpo de requisição e a URL do endpoint correspondente, permitindo a recuperação de informações específicas conforme
-                    necessário.
+                   {{$t('step2_description')}}
                 </p>
                 <ul class="mt-5">
                     <!-- Lista de tópicos do Passo 2 -->

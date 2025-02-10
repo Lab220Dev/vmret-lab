@@ -4,28 +4,12 @@
  */
 import { onMounted, shallowRef, defineAsyncComponent } from 'vue'; // Importação dos hooks do Vue.js
 import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação
-import { useToast } from 'primevue/usetoast'; // Importa o hook de notificações do PrimeVue
-
-// Instancia o toast para exibir notificações ao usuário
-const toast = useToast(); 
 
 // Acessa a store de autenticação para pegar dados do usuário (como o papel)
 const store = useAuthStore(); 
 
 // Ref reativa para controlar o componente da dashboard que será carregado dinamicamente
 const atual = shallowRef(null); 
-
-/**
- * Função para verificar a permissão do usuário com base no papel.
- * Caso o papel seja 'Master' ou 'Operador', o usuário terá permissão para ver os recalls.
- */
-const checkPermission = () => {
-    if (store.userRole === 'Master' || store.userRole === 'Operador') {
-        // Se o papel for 'Master' ou 'Operador', permite ver os recalls.
-        canViewLastRecalls.value = true; 
-    }
-};
-
 /**
  * Função para carregar a dashboard correspondente com base no papel do usuário.
  * A dashboard é carregada dinamicamente com o Vue's defineAsyncComponent.
@@ -64,20 +48,6 @@ const DashPorTipo = () => {
  * É utilizado para realizar a inicialização dos dados e verificar permissões.
  */
 onMounted(() => {
-    // Verifica se existe alguma mensagem global na store
-    if (store.getGlobalMessage) {
-        // Se houver uma mensagem, exibe um toast com a mensagem de acesso negado
-        toast.add({
-            severity: 'warn', // Tipo de severidade da mensagem (aviso)
-            summary: 'Acesso Negado', // Título do toast
-            detail: store.getGlobalMessage, // Detalhe (mensagem de acesso negado)
-            life: 3000 // A mensagem será exibida por 3 segundos
-        });
-        
-        // Limpa a mensagem global após exibi-la
-        store.clearGlobalMessage();
-    }
-
     // Chama a função que decide qual dashboard carregar com base no papel do usuário
     DashPorTipo();
 });

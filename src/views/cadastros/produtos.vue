@@ -1,6 +1,6 @@
 <script setup>
 // Importando funções e objetos do Vue.js para usar no componente
-import { reactive, ref, onMounted, watch } from 'vue';
+import { reactive, ref, onMounted, watch,computed } from 'vue';
 // Importando a função 'useToast' para exibir notificações de sucesso ou erro
 import { useToast } from 'primevue/usetoast';
 // Importando o estilo do componente de data picker
@@ -24,7 +24,8 @@ import { resetProdutoForm } from '@/helpers/formHelper';
 // Importando funções auxiliares relacionadas ao produto
 import { enrichProdutoData } from '@/helpers/HelperProduto.js';
 import { isMobEnabled } from '@/helpers/HelperUtils.js'
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 /**
  * Filtros de pesquisa global aplicados na listagem de produtos.
  * @type {Object}
@@ -43,11 +44,11 @@ const active = ref(0); // Controle de qual aba está ativa
 const loading = ref(false); // Controle de carregamento de dados
 const mob = ref(false); // Controle da habilidade de manipular produtos baseado na integração com Mob
 let formatedPlantaOptions = ref([]); // Opções formatadas para as plantas
-const tipoProduto = ref([
+const tipoProduto = computed(() => [
     // Opções de tipos de produtos disponíveis
-    { label: 'EPI', value: 1 }, // Tipo de produto EPI
-    { label: 'Insumo', value: 2 }, // Tipo de produto Insumo
-    { label: 'Consumivel', value: 3 } // Tipo de produto Consumível
+    { label: t('product_type_epi'), value: 1 }, // Tipo de produto EPI
+    { label: t('product_type_supply'), value: 2 }, // Tipo de produto Insumo
+    { label: t('product_type_consumable'), value: 3 } // Tipo de produto Consumível
 ]);
 
 // Controle de paginação para exibição de produtos
@@ -161,7 +162,7 @@ const loadProdutos = async (page = 1) => {
         await loadImagens(ListaProdutos.value); // Carrega as imagens dos produtos
     } catch (error) {
         console.error('Erro ao carregar produtos:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar produtos.', life: 3000 }); // Exibe erro via toast
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_list_error'), life: 3000 }); // Exibe erro via toast
     } finally {
         loading.value = false; // Desativa o estado de carregamento
     }
@@ -218,6 +219,7 @@ const loadData = async () => {
     try {
         formatedPlantaOptions.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega as opções de plantas
     } catch (error) {
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Exibe erro no console
     }
 };
@@ -237,13 +239,13 @@ const saveProduto = async () => {
                 selectedInfoFile: selectedInfoFile.value
             }
         );
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto salvo com sucesso!', life: 3000 }); // Exibe sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_added_sucess'), life: 3000 }); // Exibe sucesso
         loadProdutos(); // Recarrega a lista de produtos
         resetForm(); // Reseta o formulário
         active.value = 0; // Volta para a aba inicial
     } catch (error) {
         console.error('Erro ao salvar produto:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar produto.', life: 3000 }); // Exibe erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_added_error'), life: 3000 }); // Exibe erro
     } finally {
         loading.value = false; // Desativa o carregamento
         dataStore.invalidatProdutoCache();
@@ -264,14 +266,14 @@ const deleteProduto = async () => {
     try {
         loading.value = true; // Ativa o carregamento
         await produtoService.deletarProduto(data, store.token); // Faz a requisição para deletar o produto
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto deletado com sucesso!', life: 3000 }); // Exibe sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_delete_sucess'), life: 3000 }); // Exibe sucesso
         loadProdutos(); // Recarrega a lista de produtos
         resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]); // Reseta o formulário
         deleteProdutoDialog.value = false; // Fecha o diálogo de exclusão
         active.value = 0; // Volta para a aba inicial
     } catch (error) {
         console.error('Erro ao deletar produto:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao deletar produto.', life: 3000 }); // Exibe erro
+        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('product_delete_error'), life: 3000 }); // Exibe erro
     } finally {
         loading.value = false; // Desativa o carregamento
         dataStore.invalidatProdutoCache();
@@ -293,13 +295,13 @@ const updateProduto = async () => {
                 selectedInfoFile: selectedInfoFile.value
             }
         );
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto atualizado com sucesso!', life: 3000 }); // Exibe sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_update_sucess'), life: 3000 }); // Exibe sucesso
         loadProdutos(); // Recarrega a lista de produtos
         resetForm(); // Reseta o formulário
         active.value = 0; // Volta para a aba inicial
     } catch (error) {
         console.error('Erro ao atualizar produto:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar produto.', life: 3000 }); // Exibe erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_update_error'), life: 3000 }); // Exibe erro
     } finally {
         loading.value = false; // Desativa o carregamento
         dataStore.invalidatProdutoCache();
@@ -380,7 +382,7 @@ onMounted(async () => {
     } catch (error) {
         // Exibe uma mensagem de erro caso algo dê errado durante o carregamento dos produtos ou dados
         console.error('Erro ao carregar dados no onMounted:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais.', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
     }
 });
 </script>
@@ -388,7 +390,7 @@ onMounted(async () => {
 <template>
     <div class="card vh">
         <TabView v-model:activeIndex="active">
-            <TabPanel header="Listar Produtos">
+            <TabPanel :header="$t('list_products')">
                 <div class="col-12">
                     <DataTable
                         v-model:filters="filters"
@@ -426,70 +428,70 @@ onMounted(async () => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>Total de registros: {{ totalRecords }}</span>
+                                    <span>{{$t('total_records')}}:{{  totalRecords  }}</span>
                                 </div>
 
                                 <IconField iconPosition="left">
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
                                 </IconField>
                             </div>
                         </template>
-                        <template #empty> Nenhum produto adicionado. </template>
+                        <template #empty> {{t('product_empty')}} </template>
                         <Column header="Imagem" class="col-3">
                             <template #body="slotProps">
                                 <div>
-                                    <img :src="slotProps.data.imagemUrl" alt="Imagem do Produto" class="w-6rem border-round" />
+                                    <img :src="slotProps.data.imagemUrl" :alt="$t('product_image_alt')" class="w-6rem border-round" />
                                 </div>
                             </template>
                         </Column>
-                        <Column field="codigo" sortable header="SKU" class="col-2"></Column>
-                        <Column field="nome" sortable header="Nome" class="col-7"></Column>
+                        <Column field="codigo" sortable :header="t('sku')" class="col-2"></Column>
+                        <Column field="nome" sortable :header="t('name')" class="col-7"></Column>
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel :header="visible ? 'Editar Produto' : 'Adicionar Produto'">
+            <TabPanel :header="visible ? t('edit_product') :  t('add_product')">
                 <div class="grid">
                     <div class="col-12">
                         <div class="my-6">
                             <!--form de cadastro de novo produto-->
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="codigo">SKU:</label>
+                                    <label for="codigo">{{t('sku')}}:</label>
                                     <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text"> </InputText>
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="nome">Nome:</label>
+                                    <label for="nome">{{t('name')}}:</label>
                                     <InputText class="my-2" v-model="produto.nome" id="nome" type="text"></InputText>
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="nome">Descrição:</label>
+                                    <label for="nome">{{t('description')}}:</label>
                                     <Textarea v-model="produto.descricao" class="my-2 overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="codigo">Especificação:</label>
+                                    <label for="codigo">{{t('specification')}}:</label>
                                     <Textarea v-model="produto.especificacoes" class="my-2 overflow-scroll" rows="5" cols="30" />
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="tipo">Tipo:</label>
-                                    <Dropdown class="my-2" v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" placeholder="Selecione um tipo" />
+                                    <label for="tipo">{{t('type')}}:</label>
+                                    <Dropdown class="my-2" v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" :placeholder="t('select_type')" />
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="tipo">Planta:</label>
-                                    <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" placeholder="Selecione uma planta" />
+                                    <label for="tipo">{{t('factory')}}:</label>
+                                    <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" :placeholder="t('select_factory')" />
                                 </div>
                                 <div class="full med lg:col-4 md:col-4 sm:col-4">
-                                    <label for="UndMedida">Unidade de Medida:</label>
+                                    <label for="UndMedida">{{t('unit_measurement')}}:</label>
                                     <InputText class="my-2" v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
                                 </div>
                                 <div class="full lg:col-4 md:col-4 sm:col-4">
-                                    <label for="vldDias">Validade:</label>
-                                    <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias" suffix=" dias" />
+                                    <label for="vldDias">{{t('shelf_life')}}:</label>
+                                    <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias" :suffix="$t('product_shelflife_suffix')" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 sm:col-4">
-                                    <label for="qntMin">Quantidade Mínima:</label>
+                                    <label for="qntMin">{{t('minimum_quantity')}}:</label>
                                     <InputNumber class="my-2" v-model="produto.quantidademinima" inputId="qntMin" />
                                 </div>
                             </div>
@@ -498,15 +500,15 @@ onMounted(async () => {
                             <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
                                 <!-- Grid de Upload de Imagens -->
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Imagem<br />Principal:</h4>
+                                    <h4 class="titulo">{{t('image')}}<br />{{t('image_type_Main')}}:</h4>
                                     <ImageUpload ref="imageUploader" @fileSelected="(file) => handleFileSelected(file, 'principal')" @clearImage="handleClearImage" :externalImages="imagePrinc" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Imagem<br />Secundária:</h4>
+                                    <h4 class="titulo">{{t('image')}}<br /> {{t('image_type_secondary')}} :</h4>
                                     <ImageUpload ref="imageUploader2" @fileSelected="(file) => handleFileSelected(file, 'secundaria')" @clearImage="handleClearImage" :externalImages="imageSec" />
                                 </div>
                                 <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">Informações<br />Adicionais:</h4>
+                                    <h4 class="titulo">{{t('infos')}}<br /> {{ t('image_type_additional') }} :</h4>
                                     <ImageUpload ref="imageUploader3" @fileSelected="(file) => handleFileSelected(file, 'info')" @clearImage="handleClearImage" :externalImages="imageInfo" />
                                 </div>
                             </div>
@@ -529,8 +531,8 @@ onMounted(async () => {
                     </div>
 
                     <template #footer>
-                        <Button label="Não" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
-                        <Button label="Sim" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
+                        <Button :label="$t('no')" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
+                        <Button :label="$t('yes')" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
                     </template>
                 </Dialog>
             </TabPanel>

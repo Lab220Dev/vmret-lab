@@ -3,7 +3,8 @@ import { defineProps } from 'vue'; // defineProps para declarar propriedades
 import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
 import { format } from 'date-fns'; // Função para formatar a data
 const toast = useToast(); // Função para exibir notificações 
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Defina os props
 /**
  * @typedef {Object} most
@@ -42,7 +43,7 @@ const formatDateTime = (date) => {
   <!-- Cabeçalho da tabela -->
   <div class="header " style="display: flex">
     <div class="title mb-0" style="display: flex; align-items: center">
-      <h5 style="margin-right: 5px">Últimas retiradas</h5>
+      <h5 style="margin-right: 5px">{{ $t('latest_withdrawals') }}</h5>
     </div>
     
     <!-- Ícone com tooltip explicativo -->
@@ -63,24 +64,24 @@ const formatDateTime = (date) => {
      <!-- Faz com que a tabela tenha um layout responsivo, com rolagem horizontal em telas menores -->
     
     <!-- Coluna de identificação da máquina -->
-    <Column field="Identificacao" header="Máquina" sortable style="width: 20%">
+    <Column field="Identificacao" :header="t('machine')" sortable style="width: 20%">
       <template #body="{ data }">
         <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
       </template>
     </Column>
     
     <!-- Coluna de SKU do produto -->
-    <Column field="ProdutoSKU" header="SKU" sortable style="width: 15%"></Column>
+    <Column field="ProdutoSKU" :header="t('SKU')" sortable style="width: 15%"></Column>
     
     <!-- Coluna de descrição do produto -->
-    <Column field="ProdutoDescricao" header="Descrição" sortable style="width: 35%">
+    <Column field="ProdutoDescricao" :header="t('description')" sortable style="width: 35%">
       <template #body="{ data }">
         <span class="tooltip-target" v-tooltip="data.ProdutoDescricao">{{ data.ProdutoDescricao }}</span>
       </template>
     </Column>
     
     <!-- Coluna de data e hora da retirada -->
-    <Column field="Dia" header="Data e Hora" sortable style="width: 30%">
+    <Column field="Dia" :header="t('date_time')" sortable style="width: 30%">
       <template #body="slotProps">
         {{ formatDateTime(slotProps.data.Dia) }} <!-- Exibe a data formatada -->
       </template>
@@ -88,7 +89,7 @@ const formatDateTime = (date) => {
 
     <!-- Mensagem exibida quando não há dados na tabela -->
     <template #empty>
-      <div class="empty-message" style="text-align: center; padding: 20px; color: gray">Nenhuma retirada foi realizada até o momento.</div>
+      <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{ $t('sem_retirada') }}</div>
     </template>
   </DataTable>
 </template>

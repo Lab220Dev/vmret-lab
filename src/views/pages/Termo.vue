@@ -4,7 +4,7 @@
 
         <!-- Título da seção, explicando o conteúdo da página -->
         <div>
-          <h5 class="my-4 text-2xl">Termo de compromisso - Ficha Retirada</h5>
+          <h5 class="my-4 text-2xl">{{t('termo_title')}}</h5>
           <!-- Editor de texto, vinculado ao modelo de dados "content" -->
           <Editor v-model="content"></Editor>
         </div>
@@ -13,7 +13,7 @@
         <LoadingSpinner v-if="loading" />
 
         <!-- Botão para salvar o conteúdo do editor -->
-        <Button class="mt-3 justify-content-end flex" style="width: 20%; " type="button" label="Salvar Texto" icon="pi pi-pencil" severity="info" @click="SalvarTexto" />
+        <Button class="mt-3 justify-content-end flex" style="width: 20%; " type="button" :label="$t('save_text')" icon="pi pi-pencil" severity="info" @click="SalvarTexto" />
     </div>
 </template>
 
@@ -28,7 +28,8 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import Editor from '@/components/Editor.vue'; // Importa o componente de Editor (provavelmente um editor de texto rico)
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento para indicar ao usuário que o conteúdo está sendo carregado
 import termoService from '@/Services/termoService.js';
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Declaração de variáveis reativas com Vue.js usando 'ref' para controle de estado no componente
 /**
  * @type {import('vue').Ref<string>} 
@@ -74,14 +75,14 @@ const SalvarTexto = async () => {
     try {
         // Envia os dados ao servidor usando uma requisição POST
         await termoService.salvaTermo(data);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Texto adicionado com sucesso', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('termo_added_detail'), life: 3000 });
         // Se a requisição for bem-sucedida, o servidor salvará o conteúdo do editor
         // Não há necessidade de ação adicional após salvar com sucesso
     } catch (error) {
         // Caso ocorra algum erro durante a requisição, este bloco será executado
         console.error('Erro ao salvar texto:', error); // Loga o erro ocorrido ao tentar salvar o conteúdo
 
-        toast.add({ severity: 'error', summary: 'Falha', detail: error.message, life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('termo_added_error_default'), life: 3000 });
     } finally {
         // Independente de sucesso ou falha, o indicador de carregamento é desativado
         loading.value = false;

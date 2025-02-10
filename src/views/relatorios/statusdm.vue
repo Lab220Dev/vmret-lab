@@ -1,24 +1,22 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'; // Importando hooks do Vue
+import { onMounted, ref, watch,computed } from 'vue'; // Importando hooks do Vue
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importando o componente de data
 import '@vuepic/vue-datepicker/dist/main.css'; // Importando o CSS do componente de data
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importando o componente de Loading Spinner
-import axios from '@/axios.js'; // Importando a instância axios configurada
-import { useAuthStore } from '@/store/authStore.js'; // Importando o store de autenticação
 import { FilterMatchMode } from 'primevue/api'; // Importando a constante de filtros do PrimeVue
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import { getTimeFromString, getDateFromString } from '@/helpers/HelperUtils.js';
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Declarando variáveis reativas
 const filteredCount = ref(0); // Contador de itens filtrados
 const dataStore = useDataStore(); // Cria uma instância do store de dados
-const store = useAuthStore(); // Acesso ao store de autenticação
 const relatorio = ref({
     id_dm: '', // ID da DM
     dia: new Date() // Data selecionada (inicia com a data atual)
 });
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem padrão caso não haja dados
+const emptyMessage = computed(() => t('no_search_made'));// Mensagem padrão caso não haja dados
 const todosOption = { label: 'Todos', value: null }; // Opção para "Todos"
 const loading = ref(false); // Estado de carregamento (true ou false)
 const dms = ref([todosOption]); // Lista de DMs, começando com a opção 'Todos'
@@ -45,7 +43,7 @@ const KeepAlive = async () => {
 
         // Caso não haja registros, exibe uma mensagem de erro
         if (StatusDM.value.length === 0) {
-            emptyMessage.value = 'Nenhum dado encontrado. Por favor, verifique sua consulta.';
+            emptyMessage.value = t('no_data_found');
         }
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error); // Caso ocorra erro, imprime a mensagem no console
@@ -87,133 +85,122 @@ const handleDatepickerOpen = () => {
 
 <template>
     <div class="card vh">
-        <div class="form">
-            <div class="text-center">
-                <h5 class="mt-3 mb-5 text-2xl">
-                    Status DM
-                    <hr />
-                </h5>
-            </div>
-            <div class="grid mt-3 mx-1 px-1">
-                <div class="p-0 m-0 p-fluid formgrid grid col-12">
-                    <!-- Dropdown para selecionar DM -->
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Selecione uma DM" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
-                    </div>
-                    <!-- DatePicker para selecionar a data -->
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <VueDatePicker
-                            class="drop w-full md:w-14rem"
-                            v-model="relatorio.dia"
-                            showIcon
-                            :showOnFocus="false"
-                            :format="formatDate"
-                            locale="pt-BR"
-                            auto-apply
-                            :enable-time-picker="false"
-                            placeholder="Selecione uma data"
-                            teleport="body"
-                            @update:modelValue="KeepAlive"
-                            @open="handleDatepickerOpen"
-                        />
-                    </div>
-                </div>
-                <!-- Tabela de Status DM -->
-                <div class="datatable-wrapper">
-                    <DataTable
-                        class="mt-3"
-                        v-model:filters="filters"
-                        :value="StatusDM"
-                        stripedRows
-                        showGridlines
-                        removableSort
-                        paginator
-                        :rows="10"
-                        dataKey="DM"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :globalFilterFields="['Identificacao', 'status', 'dataHora']"
-                        selectionMode="single"
-                        :metaKeySelection="false"
-                        tableStyle="max-width: 100%; table-layout: fixed;"
-                        :sortOrder="1"
-                        :sortField="'Identificacao'"
-                    >
-                        <!--
-                        A tabela exibe os dados da variável 'StatusDM', que provavelmente representa o status de determinados processos ou eventos (como "DM" - Data Management ou algo similar).
-                    
-                        - **class="mt-3"**: Aplica uma margem superior de tamanho 3 (geralmente definida pelo framework CSS, como Tailwind CSS), ajudando a separar a tabela de outros elementos ao seu redor.
-                    
-                        - **v-model:filters="filters"**: A tabela é vinculada a um modelo `filters`, que mantém os critérios de filtro aplicados. Esse modelo se atualiza automaticamente conforme o usuário modifica os filtros. Ao usar `v-model`, a variável `filters` é uma referência bidirecional, permitindo filtrar os dados com base no que o usuário digita ou escolhe.
-                    
-                        - **:value="StatusDM"**: A tabela recebe os dados de `StatusDM`, que é a variável que contém os registros que serão exibidos na tabela. Cada item dentro de `StatusDM` será uma linha na tabela.
-                    
-                        - **stripedRows**: Ativa o estilo de "linhas alternadas" (listradas), onde as linhas ímpares e pares possuem cores de fundo diferentes. Isso facilita a leitura, especialmente quando os dados são densos.
-                    
-                        - **showGridlines**: Exibe as linhas de grade (divisórias entre as células da tabela). Isso torna a visualização dos dados mais clara e organizada.
-                    
-                        - **removableSort**: Permite que o usuário remova a ordenação de uma coluna. Ao clicar novamente no cabeçalho de uma coluna que está ordenada, a ordenação é revertida.
-                    
-                        - **paginator**: Habilita a paginação, ou seja, os dados são divididos em páginas. Isso melhora a experiência do usuário ao navegar por grandes volumes de dados.
-                    
-                        - **:rows="10"**: Define que serão exibidos 10 itens por página. Isso limita o número de registros visíveis por vez, evitando que todos os registros sejam carregados de uma vez.
-                    
-                        - **dataKey="DM"**: Especifica que a chave única para cada linha de dados é o valor da coluna `DM`. Isso ajuda o componente a gerenciar e identificar de forma única cada linha, o que é útil para ações como ordenação, seleção e paginação.
-                    
-                        - **:rowsPerPageOptions="[5, 10, 20, 50]"**: O usuário pode escolher o número de registros por página. As opções disponíveis são 5, 10, 20 ou 50 itens por página, proporcionando flexibilidade.
-                    
-                        - **:globalFilterFields="['Identificacao', 'status', 'dataHora']"**: Define os campos que serão usados no filtro global. Isso significa que, ao digitar um valor no filtro, a tabela irá procurar esse valor nos campos `Identificacao`, `status`, e `dataHora`.
-                    
-                        - **selectionMode="single"**: Define que a tabela permite selecionar apenas uma linha por vez. Ao clicar em uma linha, ela será selecionada, e o usuário não poderá selecionar outras até desmarcar a seleção.
-                    
-                        - **:metaKeySelection="false"**: Desativa a funcionalidade de selecionar múltiplas linhas utilizando a tecla Meta (geralmente "Command" no macOS ou "Ctrl" no Windows). Isso garante que a seleção seja exclusiva e única para cada vez.
-                    
-                        - **tableStyle="min-width: 50rem; table-layout: fixed;"**: Define o estilo da tabela. A tabela terá uma largura mínima de 50rem e o layout das colunas será fixo. Isso significa que as colunas não vão ajustar seu tamanho automaticamente conforme o conteúdo, garantindo um layout consistente.
-                    
-                        - **:sortOrder="1"**: Define a ordenação dos dados pela coluna especificada em `:sortField`. O valor `1` indica que a ordenação será feita em ordem crescente (do menor para o maior valor da coluna).
-                    
-                        - **:sortField="'Identificacao'"**: Define que a tabela será ordenada inicialmente pela coluna `Identificacao`. Isso determina qual campo será utilizado para a ordenação ao carregar a tabela.
-                    
-                    -->
-                        <!-- Cabeçalho da Tabela -->
-                        <template #header>
-                            <div class="flex justify-content-between align-items-center">
-                                <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ filteredCount }}</span>
-                                    <!-- Exibe o número total de registros -->
-                                </div>
-                                <div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                                        <!-- Campo de busca global -->
-                                    </IconField>
-                                </div>
-                            </div>
-                        </template>
-                        <!-- Mensagem quando a tabela estiver vazia -->
-                        <template #empty> {{ emptyMessage }} </template>
-                        <!-- Definição das colunas da tabela -->
-                        <Column field="Identificacao" style="width: 20%" sortable header="DM"></Column>
-                        <Column field="status" sortable header="Status"></Column>
-                        <Column field="dataHora" style="width: 20%; text-align: center" sortable header="Data">
-                            <template #body="{ data }">
-                                <span v-tooltip="data.dataHora">{{ getDateFromString(data.dataHora) }}</span>
-                                <!-- Exibe a data formatada -->
-                            </template>
-                        </Column>
-                        <Column field="Hora" style="width: 15%; text-align: center" sortable header="Hora">
-                            <template #body="{ data }">
-                                {{ getTimeFromString(data.dataHora) }}
-                            </template>
-                        </Column>
-                    </DataTable>
-                </div>
-                <!-- Spinner de carregamento -->
-                <LoadingSpinner v-if="loading" />
-            </div>
+        <!-- Cabeçalho com título -->
+        <h5 class="my-6 ml-2 text-2xl">{{t('status_dm')}}</h5>
+        <div class="flex mt-3 flex-row gap-3 mb-5">
+            <!-- Dropdown para selecionar DM -->
+            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
+            <!-- DatePicker para selecionar a data -->
+            <VueDatePicker
+                class="drop w-full md:w-14rem"
+                v-model="relatorio.dia"
+                showIcon
+                :showOnFocus="false"
+                :format="formatDate"
+                locale="pt-BR"
+                auto-apply
+                :enable-time-picker="false"
+                :placeholder="$t('select_date')"
+                teleport="body"
+                @update:modelValue="KeepAlive"
+                @open="handleDatepickerOpen"
+            />
         </div>
+        <!-- Tabela de Status DM -->
+        <DataTable
+            class="mt-3"
+            v-model:filters="filters"
+            :value="StatusDM"
+            stripedRows
+            showGridlines
+            removableSort
+            paginator
+            :rows="10"
+            dataKey="DM"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            :globalFilterFields="['Identificacao', 'status', 'dataHora']"
+            selectionMode="single"
+            :metaKeySelection="false"
+            tableStyle="max-width: 100%; table-layout: fixed;"
+            :sortOrder="1"
+            :sortField="'Identificacao'"
+        >
+            <!-- 
+    A tabela exibe os dados da variável 'StatusDM', que provavelmente representa o status de determinados processos ou eventos (como "DM" - Data Management ou algo similar).
+    
+    - **class="mt-3"**: Aplica uma margem superior de tamanho 3 (geralmente definida pelo framework CSS, como Tailwind CSS), ajudando a separar a tabela de outros elementos ao seu redor.
+
+    - **v-model:filters="filters"**: A tabela é vinculada a um modelo `filters`, que mantém os critérios de filtro aplicados. Esse modelo se atualiza automaticamente conforme o usuário modifica os filtros. Ao usar `v-model`, a variável `filters` é uma referência bidirecional, permitindo filtrar os dados com base no que o usuário digita ou escolhe.
+
+    - **:value="StatusDM"**: A tabela recebe os dados de `StatusDM`, que é a variável que contém os registros que serão exibidos na tabela. Cada item dentro de `StatusDM` será uma linha na tabela.
+
+    - **stripedRows**: Ativa o estilo de "linhas alternadas" (listradas), onde as linhas ímpares e pares possuem cores de fundo diferentes. Isso facilita a leitura, especialmente quando os dados são densos.
+
+    - **showGridlines**: Exibe as linhas de grade (divisórias entre as células da tabela). Isso torna a visualização dos dados mais clara e organizada.
+
+    - **removableSort**: Permite que o usuário remova a ordenação de uma coluna. Ao clicar novamente no cabeçalho de uma coluna que está ordenada, a ordenação é revertida.
+
+    - **paginator**: Habilita a paginação, ou seja, os dados são divididos em páginas. Isso melhora a experiência do usuário ao navegar por grandes volumes de dados.
+
+    - **:rows="10"**: Define que serão exibidos 10 itens por página. Isso limita o número de registros visíveis por vez, evitando que todos os registros sejam carregados de uma vez.
+
+    - **dataKey="DM"**: Especifica que a chave única para cada linha de dados é o valor da coluna `DM`. Isso ajuda o componente a gerenciar e identificar de forma única cada linha, o que é útil para ações como ordenação, seleção e paginação.
+
+    - **:rowsPerPageOptions="[5, 10, 20, 50]"**: O usuário pode escolher o número de registros por página. As opções disponíveis são 5, 10, 20 ou 50 itens por página, proporcionando flexibilidade.
+
+    - **:globalFilterFields="['Identificacao', 'status', 'dataHora']"**: Define os campos que serão usados no filtro global. Isso significa que, ao digitar um valor no filtro, a tabela irá procurar esse valor nos campos `Identificacao`, `status`, e `dataHora`.
+
+    - **selectionMode="single"**: Define que a tabela permite selecionar apenas uma linha por vez. Ao clicar em uma linha, ela será selecionada, e o usuário não poderá selecionar outras até desmarcar a seleção.
+
+    - **:metaKeySelection="false"**: Desativa a funcionalidade de selecionar múltiplas linhas utilizando a tecla Meta (geralmente "Command" no macOS ou "Ctrl" no Windows). Isso garante que a seleção seja exclusiva e única para cada vez.
+
+    - **tableStyle="min-width: 50rem; table-layout: fixed;"**: Define o estilo da tabela. A tabela terá uma largura mínima de 50rem e o layout das colunas será fixo. Isso significa que as colunas não vão ajustar seu tamanho automaticamente conforme o conteúdo, garantindo um layout consistente.
+
+    - **:sortOrder="1"**: Define a ordenação dos dados pela coluna especificada em `:sortField`. O valor `1` indica que a ordenação será feita em ordem crescente (do menor para o maior valor da coluna).
+
+    - **:sortField="'Identificacao'"**: Define que a tabela será ordenada inicialmente pela coluna `Identificacao`. Isso determina qual campo será utilizado para a ordenação ao carregar a tabela.
+
+-->
+
+            <!-- Cabeçalho da Tabela -->
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div class="flex justify-content-start">
+                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                        <!-- Exibe o número total de registros -->
+                    </div>
+                    <div>
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value":placeholder="t('search')" />
+                            <!-- Campo de busca global -->
+                        </IconField>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Mensagem quando a tabela estiver vazia -->
+            <template #empty> {{ emptyMessage }} </template>
+
+            <!-- Definição das colunas da tabela -->
+            <Column field="Identificacao" style="width: 20%;" sortable :header="t('dm')"></Column>
+            <Column field="status" sortable :header="t('status')"></Column>
+            <Column field="dataHora" style="width: 20%; text-align: center" sortable :header="t('date')">
+                <template #body="{ data }">
+                    <span v-tooltip="data.dataHora">{{ getDateFromString(data.dataHora) }}</span>
+                    <!-- Exibe a data formatada -->
+                </template>
+            </Column>
+            <Column field="Hora" style="width: 15%; text-align: center" sortable :header="t('time')">
+                <template #body="{ data }">
+                    {{ getTimeFromString(data.dataHora) }}
+                </template>
+            </Column>
+        </DataTable>
+        <!-- Spinner de carregamento -->
+        <LoadingSpinner v-if="loading" />
     </div>
 </template>
 

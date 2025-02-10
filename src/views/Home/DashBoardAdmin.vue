@@ -2,7 +2,7 @@
     <div class="grid grid-cols-12">
         <!-- Resumo -->
         <div class="col-12">
-            <h5>Resumo</h5>
+            <h5>{{$t('summary')}}</h5>
             <SumarioAdmin :dados="dados" />
         </div>
 
@@ -14,7 +14,7 @@
 
         <!-- Tabela de Notificações -->
         <div class="col-12">
-            <h5>Notificações</h5>
+            <h5>{{$t('sent_notifications')}}</h5>
             <Notificacoes :listanoti="formattedListanoti" />
         </div>
     </div>
@@ -29,12 +29,13 @@ import Notificacoes from '@/components/TabelaNotificacoes.vue';
 import { useToast } from 'primevue/usetoast';
 import Spinner from '@/components/LoadingSpinner.vue'
 import dashboardService from '@/services/dashboardService';
+import { useI18n } from 'vue-i18n';
 const dados = ref({});
 const lista = ref([]);
 const notifcacoes = ref([]);
 const loading = ref(false);
 const toast = useToast();
-
+const { t } = useI18n();
 const fetchData = async () => {
     loading.value = true;
      try {

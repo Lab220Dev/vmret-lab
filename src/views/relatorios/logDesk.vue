@@ -13,10 +13,12 @@ import usuarioDMService from '@/services/usuarioDMService';
 import funcionarioService from '@/Services/funcionarioService.js';
 
 import relatorioService  from '@/Services/relatorioService'; // Serviço para buscar logs de desktop
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Contadores e mensagens reativas
 const filteredCount = ref(0); // Contador de registros filtrados
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem para exibição quando não houver resultados
+const emptyMessage = computed(() => t('no_search_made')); // Mensagem para exibição quando não houver resultados
 
 // Variáveis reativas para dados da store de autenticação e manipulação de dropdowns
 const store = useAuthStore(); // Store do Vuex com informações de autenticação
@@ -29,15 +31,6 @@ const todosOption = { label: 'Todos', value: null }; // Opção padrão para "To
 // Variáveis para armazenar os dados de DMs, operações e filtros
 const historico = ref([]); // Armazena os registros históricos
 const dms = ref([todosOption]); // Lista de DMs para o dropdown
-
-
-
-const operacao = ref([ // Lista de tipos de operação para o dropdown
-    { label: 'Todos', value: null },
-    { label: 'Insert', value: 'INSERT' },
-    { label: 'Update', value: 'UPDATE' },
-    { label: 'Delete', value: 'DELETE' },
-]);
 
 // Filtros globais para busca
 const filters = ref({
@@ -108,7 +101,7 @@ const fetchUsuarioDM = async () => {
         }));
     } catch (error) {
         console.error('Erro ao carregar lista de operadores:', error); // Log de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os operadores', life: 3000  }); // Mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('operator_list_error'), life: 3000  }); // Mensagem de erro
     }
 };
 // Função para buscar DMs disponíveis
@@ -122,7 +115,7 @@ const fetchDM = async () => {
         }))]; // Atualiza a lista de DMs
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error); // Log de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as DMs', life: 3000 }); // Mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_dm_list'), life: 3000 }); // Mensagem de erro
     }
 };
 
@@ -139,7 +132,7 @@ const fetchFuncionarios = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar funcionários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a lista de funcionários.', life: 3000 }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_employee_list'), life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -150,7 +143,7 @@ const buscar = async () => {
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
     } catch (error) {
         console.error('Erro ao buscar logs:', error); // Log de erro caso a requisição falhe
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível buscar os logs', life: 3000 }); // Mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('log_query_error'), life: 3000 }); // Mensagem de erro
     }
 };
 
@@ -184,13 +177,13 @@ onMounted(() => {
     <!-- Formulário de filtros para a busca dos logs -->
     <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-6 ml-2 text-2xl">Log de Máquina</h5>
+            <h5 class="my-6 ml-2 text-2xl">{{t('desk_log_title')}}</h5>
             <div class="grid mt-3 mx-1 p-1">
                 <!-- Filtros para DM, Operação, Usuário, Funcionário, e Data -->
                 <div class="field lg:col-2 md:col-6 sm:col-6">
-                    <label for="operador">DMs:</label>
+                    <label for="operador">{{t('dm')}}:</label>
                     <Dropdown class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter
-                         placeholder="Todos" ref="dropdown1" @change="handleDmChange" />
+                    :placeholder="$t('all')" ref="dropdown1" @change="handleDmChange" />
                 </div>
                 <!-- <div class="field lg:col-4 md:col-6 sm:col-6">
                     <label for="operacao">Operação:</label>
@@ -198,29 +191,29 @@ onMounted(() => {
                         optionValue="value" placeholder="Todos" />
                 </div> -->
                 <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="operador">Operador:</label>
+                    <label for="operador">{{t('operator')}}:</label>
                     <Dropdown class="drop" v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label"
-                        optionValue="value" placeholder="Todos" ref="dropdown2" />
+                        optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
                 </div>
                 <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="operador">Funcionario:</label>
+                    <label for="operador">{{t('employee')}}:</label>
                     <Dropdown class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
-                        optionValue="value" placeholder="Todos" ref="dropdown3" />
+                        optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                 </div>
                 <div class="field lg:col-2 md:col-6 sm:col-6">
-                    <label for="perfil">Data Inicial:</label>
+                    <label for="perfil">{{t('initial_date')}}:</label>
                     <VueDatePicker class="drop" v-model="relatorioDesk.data_inicio" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
-                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data inicial" />
+                        :enable-time-picker="false" teleport="body" :placeholder="$t('initial_date_placeholder')" />
                 </div>
                 <div class="field lg:col-2 md:col-6 sm:col-6">
-                    <label for="perfil">Data Final:</label>
+                    <label for="perfil">{{t('end_date')}}:</label>
                     <VueDatePicker class="drop" v-model="relatorioDesk.data_final" showIcon :showOnFocus="false"
                         :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
-                        :enable-time-picker="false" teleport="body" placeholder="Selecione uma data final" />
+                        :enable-time-picker="false" teleport="body" :placeholder="$t('end_date_placeholder')" />
                 </div>
                 <div class="field lg:col-12 md:col-12 sm:col-12">
-                    <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info"
+                    <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info"
                         @click="buscar" /> <!-- Botão para acionar a busca -->
                 </div>
             </div>
@@ -244,14 +237,14 @@ onMounted(() => {
         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                    <span>Total de registros: {{ filteredCount }}</span>
+                                    <span>{{$t('total_records')}}: {{ filteredCount }}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                        <InputText v-model="filters['global'].value"  :placeholder="t('search')" type="search" />
                                     </IconField>
                                 </div>
                             </div>
@@ -259,20 +252,20 @@ onMounted(() => {
                         <template #empty> {{ emptyMessage }} </template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="dataHora" sortable header="Data">
+            <Column field="dataHora" sortable :header="t('date')">
                 <template #body="{ data }">
                     <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
                 </template></Column
             >
-            <Column field="Hora" sortable header="Hora">
+            <Column field="Hora" sortable :header="t('time')">
                 <template #body="{ data }">
                     <span v-tooltip="data.Dia">{{ formatTime(new Date(data.Dia)) }}</span>
                 </template></Column
             >
-            <Column field="Operacao" sortable header="Operação"></Column>
-            <Column field="ID_Usuario" sortable header="Usuário"></Column>
-            <Column field="Log" sortable header="Resumo"></Column>
-            <Column field="Resultado" sortable header="Resultado"></Column>
+            <Column field="Operacao" sortable :header="t('operation')"></Column>
+            <Column field="ID_Usuario" sortable :header="t('user')"></Column>
+            <Column field="Log" sortable :header="t('summary')"></Column>
+            <Column field="Resultado" sortable :header="t('result')"></Column>
         </DataTable>
     </div>
 </template>

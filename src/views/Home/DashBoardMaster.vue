@@ -1,20 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import LastRecalls from '@/components/LastRecalls.vue';
 import MostRecalled from '@/components/MostRecalled.vue';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore';
 import dashboardService from '@/services/dashboardService';
-
-const store = useAuthStore();
+import { useI18n } from 'vue-i18n';
 const produtos = ref([]);
 const maisretirados = ref([]);
 const dadosDM = ref(null);
 const estoqueBaixo = ref([]); // Itens com estoque baixo
-
+const { t } = useI18n();
 const fetchData = async () => {
-    const data = { id_cliente: store.userIdCliente };
-
     try {
         const result = await dashboardService.fetchMasterData();
         produtos.value = result.produtos;
@@ -31,7 +26,7 @@ onMounted(() => {
 });
 
 // Configuração do gráfico "Keep Alive"
-const chartOptions = {
+const chartOptions = computed(() => ({
     responsive: true,
     scales: {
         y: {
@@ -41,7 +36,7 @@ const chartOptions = {
         x: {
             title: {
                 display: true,
-                text: 'Horário'
+                text: t('horario') 
             }
         }
     },
@@ -51,14 +46,14 @@ const chartOptions = {
             position: 'top'
         }
     }
-};
+}));
 </script>
 
 <template>
     <div class="grid grid-cols-12">
         <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
             <div class="card card-item">
-                <h5 class="my-3">Keep Alive</h5>
+                <h5 class="my-3">{{$t('keep_alive_monitor')}}</h5>
                 <Chart type="line" :data="dadosDM" :options="chartOptions" />
             </div>
 
@@ -69,27 +64,24 @@ const chartOptions = {
         <div class="col-12 xl:col-6 lg:col-6 md:col-12 sm:12">
             <div class="card card-item">
                 <div class="title" style="display: flex; align-items: center">
-                    <h5 style="margin-right: 5px">Itens com estoque baixo</h5>
+                    <h5 style="margin-right: 5px">{{ $t('low_inventory_items') }}</h5>
                 </div>
                 <DataTable :rows="5" tableStyle="min-width: 20rem; table-layout: fixed;" :value="estoqueBaixo" removableSort responsiveLayout="scroll" class="mt-3">
                     <!-- A tabela exibe os dados provenientes de 'estoqueBaixo' -->
                     <!-- Exibe 5 linhas por página, com a opção de ordenação removível nas colunas -->
                     <!-- Aplica um estilo com largura mínima de 20rem e layout fixo para garantir que as colunas tenham larguras constantes -->
                     <!-- Quando a tela for pequena, a tabela ficará rolável horizontalmente (layout responsivo) -->
-                    <Column field="sku" header="SKU" class="table-cell" sortable style="width: 10%">
-                        <template #body="{ data }">
-                            <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span>
-                        </template></Column>
-                    <Column field="quantidade" header="Quant." class="table-cell" sortable style="width: 8%"></Column>
+                    <Column field="sku" :header="t('SKU')" class="table-cell" sortable style="width: 10%"></Column>
+                    <Column field="quantidade" :header="t('quantity')" class="table-cell" sortable style="width: 8%"></Column>
 
-                    <Column field="nome" header="Item" sortable style="width: 30%">
+                    <Column field="nome" :header="t('item')" sortable style="width: 30%">
                         <template #body="{ data }">
                             <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
                         </template></Column
                     >
 
                     <template #empty>
-                        <div class="empty-message" style="text-align: center; padding: 20px; color: gray">Não há itens com o estoque baixo.</div>
+                        <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{$t('estoque_sem_itens')}}</div>
                     </template>
                 </DataTable>
             </div>

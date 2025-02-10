@@ -28,6 +28,8 @@ import {
 import { normalizeDateTime, prepareListData } from '@/helpers/HelperUtils.js';
 import { resetDMForm, resetProdutoSelecionado } from '@/helpers/formHelper.js';
 import dmService from '@/services/dmService';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 import ScrollTop from 'primevue/scrolltop';
 
@@ -182,7 +184,7 @@ const updateTipoControladora = (index, tipo) => {
         updateControladoraHelper(index, tipo, Controladoras.value, nextValues);
     } catch (error) {
         console.log('Erro ao atualizar o tipo da controladora:', error);
-        toast.add({ severity: 'warn', summary: 'Erro', detail: error.message, life: 3000 });
+        toast.add({ severity: 'warn', summary: t('title_error'), detail: error.message, life: 3000 });
         return;
     }
 };
@@ -223,7 +225,7 @@ const validarAndarSelecionado = () => {
     try {
         ValidarAndarHelper(produtoSelecionado);
     } catch (error) {
-        toast.add({ severity: 'warn', summary: 'Erro', detail: `${error.message}`, life: 3000 });
+        toast.add({ severity: 'warn', summary: t('title_error'), detail: error.message, life: 3000 });
         console.error('Erro ao validar o andar selecionado:', error);
     }
 };
@@ -338,7 +340,7 @@ const fetchDMS = async (page = 1) => {
         ListaDMS.value = response.data.dmsArray; // Atualiza a lista de DMs com a resposta
         totalRecords.value = response.data.totalRecords; // Atualiza o total de registros
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar DMs', life: 3000 }); // Exibe uma mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail:t('load_dm_list'), life: 3000 }); // Exibe uma mensagem de erro
         console.error('Erro ao carregar usuários:', error); // Loga o erro no console
     } finally {
         loading.value = false; // Desativa o loading após a requisição
@@ -357,12 +359,12 @@ const adicionarDM = async () => {
         const data = prepareDMData('adicionar', DM, selectedClient.value, Controladoras.value);
         await dmService.adicionarDM(data);
         dataStore.invalidateDMCache();
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM adicionada com sucesso', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_added_sucess'), life: 3000 });
         fetchDMS();
         active.value = 0;
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro ao adicionar DM', detail: 'Verifique se todos os campos estão preenchidos e tente novamente.', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('dm_added_error'), life: 3000 });
         console.error('Erro ao adicionar DM:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -380,12 +382,12 @@ const atualizarDM = async () => {
     const data = prepareDMData('atualizar', DM, selectedClient, preparedControladoras);
     try {
         await dmService.atualizarDM(data);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM atualizada com sucesso', life: 3000 });
+        toast.add({ severity: 'success', summary:  t('title_sucess'), detail:  t('dm_update_sucess'), life: 3000 });
         fetchDMS();
         active.value = 0;
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar DM', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'),  detail:  t('dm_update_error'), life: 3000 });
         console.error('Erro ao atualizar DM:', error);
     } finally {
         loading.value = false;
@@ -409,12 +411,13 @@ const confirmdeleteDM = async () => {
         showDialogDVM.value = false;
         loading.value = true;  
         await dmService.deletarDM(data);
-        fetchDMS(); // Atualiza a lista de DMs após exclusão
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'DM excluída com sucesso', life: 3000 })
-       // Fecha o diálogo de confirmação
+        dataStore.invalidateDMCache();
+        toast.add({ severity: 'success', summary: 'Successful', detail: t('dm_delete_sucess'), life: 3000 });
+        await fetchDMS();
     } catch (error) {
-        console.error('Erro ao excluir DM:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir DM', life: 3000 });
+        if (error.response && (error.response.status === 500 || error.response.status === 401)) {
+            toast.add({ severity: 'error', summary: 'Error', detail: t('dm_delete_error'), life: 3000 });
+        }
     } finally {
         loading.value = false; // Desativa o loading
         selectedItem.value = null; // Reseta o item selecionado
@@ -447,6 +450,15 @@ const ajustarContagemInicial = () => {
 const preencherOpcoesControladoras = () => {
     pocHelper(Controladoras.value, { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions });
 };
+const getTooltipText = (data) => {
+    if (data.modelo === '2018') {
+        return t('controller_2018');
+    } else if (data.modelo === '2023') {
+        return t('controller_2023');
+    } else {
+        return t('default_controller');
+    }
+};
 const configurarVisibilidade = () => {
     if (!admin()) {
         show.value = true;
@@ -469,12 +481,12 @@ const adicionarProduto = async () => {
     try {
         loading.value = true;
         await dmService.adicionarItem(data);
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Produto adicionado com sucesso', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'),detail: t('product_added_sucess'), life: 3000 });
         showDialogProduto.value = false;
         resetProdutoSelecionado(produtoSelecionado);
         fetchItemDM();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar produto, verifique os campos e tente novamente.', life: 3000 });
+        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('product_added_error'), life: 3000 });
         console.error('Erro ao carregar produtos:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -487,10 +499,12 @@ const atualizarProduto = async () => {
         loading.value = true;
         await dmService.atualizarProduto(data);
         showDialogProduto.value = false;
+        toast.add({ severity: 'success', summary: t('title_sucess'),detail: t('product_update_sucess'), life: 3000 });
         resetProdutoSelecionado(produtoSelecionado);
         fetchItemDM();
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
+        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('product_update_error'), life: 3000 });
     } finally {
         loading.value = false;
         isEditMode.value = false;
@@ -501,7 +515,7 @@ const atualizarProduto = async () => {
  * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
  */
 const deleteItem = async (item) => {
-    dialogMessage.value = `Você tem certeza que deseja excluir o item ${item.Nome_Produto}?`;
+    dialogMessage.value = t('confirm_delete_item', { product: item.Nome_Produto });
     showDialogDItem.value = true;
     selectedItem.value = item;
 };
@@ -518,11 +532,13 @@ const confirmDeleteItem = async () => {
         loading.value = true;
         const data = prepareItemDMData('deletar', DM, selectedItem);
         await dmService.deletarItem(data);
-        fetchItemDM();// Atualiza a lista de itens após exclusão
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item excluído com sucesso', life: 3000 });
+        // Atualiza a lista de itens após exclusão
+        fetchItemDM();
+
+        toast.add({ severity: 'success', summary:  t('title_sucess'), detail:  t('product_delete_sucess'), life: 3000 });
     } catch (error) {
         console.error('Erro ao excluir item:', error);
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir item', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_delete_error'), life: 3000 });
     } finally {
         loading.value = false;
         selectedItem.value = null;
@@ -535,7 +551,7 @@ const fetchCliente = async () => {
         const response = await dmService.listarClientes();
         ListaClientes.value = [todosOption, ...FormatarListaCliente(response.data)];
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar clientes', life: 3000 });
+        toast.add({ severity: 'error', summary:  t('title_error'), detail:  t('load_client_list'), life: 3000 });
         console.error('Erro ao carregar clientes:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -561,7 +577,7 @@ const fetchItemDM = async () => {
         const response = await dmService.fetchItemDM(data);
         ListaItens.value = response.data;
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar itens da DM', life: 3000 });
+        toast.add({ severity: 'error', summary:  t('title_error'), detail:  t('load_client_dm_iten_list'), life: 3000 });
         console.error('Erro ao carregar Itens:', error);
     } finally {
         loading.value = false;
@@ -583,7 +599,7 @@ const loadData = async () => {
                 return codigoA - codigoB; // Ordem crescente
             });
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar dados iniciais', life: 3000 });
+        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('load_initial_data'), life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);
     } finally {
         loading.value = false;
@@ -633,7 +649,7 @@ onMounted(async () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h4 class="my-6 ml-2">Dispenser Machines</h4>
+                <h4 class="my-6 ml-2">{{t('dispenser_machines')}}</h4>
                 <TabView v-model:activeIndex="active" v-if="!show">
                     <TabPanel header="Listar Dispenser Machines">
                         <div class="col-12">
@@ -662,46 +678,46 @@ onMounted(async () => {
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">
                                         <div class="flex justify-content-start">
-                                            <span>Total de registros: {{ totalRecords }}</span>
+                                            <span>{{$t('total_records',{count:filteredCount})}}</span>
                                         </div>
                                         <div>
                                             <IconField iconPosition="left">
                                                 <InputIcon>
                                                     <i class="pi pi-search" />
                                                 </InputIcon>
-                                                <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange" />
+                                                <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" />
                                             </IconField>
                                         </div>
                                     </div>
                                 </template>
-                                <template #empty> Nenhuma DM adicionada. </template>
-                                <Column field="Identificacao" sortable header="Identificação">
+                                <template #empty>{{$t('no_dm_added')}} </template>
+                                <Column field="Identificacao" sortable :header="t('identification')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
                                     </template></Column
                                 >
-                                <Column field="Numero" sortable header="Número">
+                                <Column field="Numero" sortable :header="t('number')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.Numero">{{ data.Numero }}</span>
                                     </template>
                                 </Column>
 
-                                <Column field="ClienteNome" sortable header="Cliente">
+                                <Column field="ClienteNome" sortable :header="t('client')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
                                     </template></Column
                                 >
-                                <Column field="local" sortable header="Localização">
+                                <Column field="local" sortable :header="t('station')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
                                     </template></Column
                                 >
-                                <Column field="Ativo" sortable style="width: 9%; text-align: center" header="Ativo">
+                                <Column field="Ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
                                     <template #body="{ data }">
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
                                     </template>
                                 </Column>
-                                <Column field="Updated" style="width: 15%" sortable header="Atualizado">
+                                <Column field="Updated" style="width: 15%" sortable :header="t('updated')">
                                     <template #body="{ data }">
                                         {{ normalizeDateTime(data.Updated, true) }}
                                     </template>
@@ -714,221 +730,230 @@ onMounted(async () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel :header="visible ? 'Editar Dispenser Machines' : 'Adicionar Dispenser Machines'" v-if="admin()">
+                    <TabPanel :header="visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine')"  v-if="admin()">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
-                                <label for="name">Cliente:</label>
+                                <label for="name">{{t('client')}}:</label>
                                 <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Selecione um" />
                             </div>
 
                             <div class="full lg:col-6 md:col-9 sm:col-12">
-                                <label for="email">Identificação da DM:</label>
-                                <InputText class="my-2" v-model="DM.Identificacao" id="email" />
+                                <label for="indetificacao">{{t('dm_identification')}}:</label>
+                                <InputText class="my-2" v-model="DM.Identificacao" id="indetificacao" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
-                                <label for="email">Numero da DM:</label>
-                                <InputText class="my-2" v-model="DM.Numero" id="email" />
+                                <label for="numero">{{t('dm_number')}}:</label>
+                                <InputText class="my-2" v-model="DM.Numero" id="numero" />
                             </div>
                             <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">DM ativa?</label>
+                                <label class="mt-0 text-nowrap" for="switch2">{{t('dm_active')}}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
-                                    <span class="ml-2">{{ DM.Ativo ? 'Sim' : 'Não' }}</span>
+                                    <span class="ml-2">{{ DM.Ativo ?  $t('yes') : $t('no')  }}</span>
                                 </div>
                             </div>
                             <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch3">DM aceita devolução?</label>
+                                <label class="mt-0 text-nowrap" for="switch3">{{t('dm_return')}}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
-                                    <span class="ml-2">{{ DM.Devolucao ? 'Sim' : 'Não' }}</span>
+                                    <span class="ml-2">{{ DM.Devolucao ?  $t('yes') : $t('no')  }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        
-                            <panel header="Opções de DM" class="mt-4">
-                                <div class="mt-5 mx-0 p-fluid grid">
-                                    <label for="fim"></label>
-                                    <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
-                                        <div class="checkbox-items m-2 flex align-items-end">
-                                            <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
-                                            <label for="Voucher" class="ml-2"> Voucher </label>
-                                        </div>
-                                        <div class="checkbox-items m-2 flex align-items-center">
-                                            <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
-                                            <label for="cracha" class="ml-2"> Crachá </label>
-                                        </div>
-                                        <div class="checkbox-items m-2 flex align-items-center">
-                                            <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
-                                            <label for="Biometria" class="ml-2"> Biometria </label>
-                                        </div>
-                                        <div class="checkbox-items m-2 flex align-items-center">
-                                            <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
-                                            <label for="Facial" class="ml-2"> Rec. Facial </label>
-                                        </div>
-                                        <div class="checkbox-items m-2 flex align-items-center">
-                                            <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
-                                            <label for="Senha" class="ml-2"> Senha </label>
-                                        </div>
+                        <panel header="Opções de DM" class="mt-4">
+                            <div class="mt-5 mx-0 p-fluid grid">
+                                <label for="fim"></label>
+                                <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
+                                    <div class="checkbox-items m-2 flex align-items-end">
+                                        <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
+                                        <label for="Voucher" class="ml-2"> {{t('voucher')}} </label>
                                     </div>
-                                </div>
-                                <Button class="mt-7" icon="pi pi-plus" label="Adicionar Controladora" @click="addControladora" />
-                            </panel>
-                            
-                            <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
-                                <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
-                                    <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
-                                    <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
-                                </div>
-                                <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                    <label for="userapi">UserID API:</label>
-                                    <InputText class="my-2" id="userapi" v-model="DM.UserID" />
-                                </div>
-                                <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                    <label for="senhaapi">Senha API:</label>
-                                    <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
-                                </div>
-                                <div class="full lg:col-6 md:col-12 sm:col-12">
-                                    <label for="clienteAPI">IdCliente API:</label>
-                                    <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
-                                </div>
-                                <div class="full lg:col-6 md:col-12 sm:col-12">
-                                    <label for="urlapi">URL:</label>
-                                    <InputText class="my-2" id="urlapi" v-model="DM.URL" />
-                                </div>
-                                <div class="full lg:col-6 md:col-12 sm:col-6">
-                                    <label for="codigo">Senha Chave:</label>
-                                    <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
+                                        <label for="cracha" class="ml-2"> {{t('badge')}}  </label>
+                                    </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
+                                        <label for="Biometria" class="ml-2"> {{t('biometric_reader')}} </label>
+                                    </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
+                                        <label for="Facial" class="ml-2">{{t('facial_recognition')}}</label>
+                                    </div>
+                                    <div class="checkbox-items m-2 flex align-items-center">
+                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
+                                        <label for="Senha" class="ml-2"> {{t('password')}} </label>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div>
-                                <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
-                                    <div class="flex justify-content-between flex-wrap">
-                                        <h5>Controladora {{ index + 1 }}</h5>
-                                        <!-- Botão de Remoção -->
-                                        <Button icon="pi pi-trash" label="Remover" class="p-button-danger" @click="removeControladora(index)" />
+                            <Button class="mt-7" icon="pi pi-plus" :label="t('new_controller')" @click="addControladora" />
+                        </panel>
+
+                        <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
+                            <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
+                                <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
+                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
+                            </div>
+                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
+                                <label for="userapi">{{t('userid_api')}}</label>
+                                <InputText class="my-2" id="userapi" v-model="DM.UserID" />
+                            </div>
+                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
+                                <label for="senhaapi">{{t('api_password')}}</label>
+                                <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
+                            </div>
+                            <div class="full lg:col-6 md:col-12 sm:col-12">
+                                <label for="clienteAPI">{{t('idclient_api')}}</label>
+                                <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
+                            </div>
+                            <div class="full lg:col-6 md:col-12 sm:col-12">
+                                <label for="urlapi">{{t('url_api')}}</label>
+                                <InputText class="my-2" id="urlapi" v-model="DM.URL" />
+                            </div>
+                            <div class="full lg:col-6 md:col-12 sm:col-6">
+                                <label for="codigo">{{t('key')}}</label>
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
+                            </div>
+                        </div>
+                        <div>
+                            <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
+                                <div class="flex justify-content-between flex-wrap">
+                                    <h5>{{ $t('controller_number', { number: index + 1 }) }}</h5>
+
+                                    <!-- Botão de Remoção -->
+                                    <Button icon="pi pi-trash" :label="$t('remove')" class="p-button-danger" @click="removeControladora(index)" />
+                                </div>
+
+                                <div class="field mt-3 col-12">
+                                    <label class="mr-3">{{t('model')}} </label>
+                                    <Dropdown
+                                        class=""
+                                        style="width: 250px"
+                                        v-model="controladora.tipo"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        :options="tipoControladoras"
+                                        :placeholder="$t('select_controller')" 
+                                        @change="updateTipoControladora(index, controladora.tipo)"
+                                    />
+                                </div>
+
+                                <!<!-- Controladora 2018 -->
+                                <div class="" v-if="controladora.tipo === '2018'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-5 p-0">{{t('board')}}: </label>
+                                        <InputText class="" style="width: 250px" v-model="controladora.dados.placa" />
                                     </div>
-                                    <div class="field mt-3 col-12">
-                                        <label class="mr-3">Modelo: </label>
-                                        <Dropdown
-                                            class=""
-                                            style="width: 250px"
-                                            v-model="controladora.tipo"
-                                            optionLabel="label"
-                                            optionValue="value"
-                                            :options="tipoControladoras"
-                                            placeholder="Selecione o tipo de controladora"
-                                            @change="updateTipoControladora(index, controladora.tipo)"
-                                        />
-                                    </div>
-                                    <!<!-- Controladora 2018 -->
-                                    <div class="" v-if="controladora.tipo === '2018'">
-                                        <div class="field col-12 mt-3">
-                                            <label class="mr-5 p-0">Placa: </label>
-                                            <InputNumber :allowEmpty="false" class="" style="width: 250px" v-model="controladora.dados.placa" />
+
+                                    <fieldset class="field card mt-4">
+                                        <legend>{{t('spring')}}</legend>
+
+                                        <div class="checkbox-group mt-3" style="text-align: center">
+                                            <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
+                                                <Checkbox v-model="controladora.dados.molas" :value="i" />
+                                                <label>{{ i }}</label>
+                                            </div>
                                         </div>
-                                        <fieldset class="field card mt-4">
-                                            <legend>Molas</legend>
-                                            <div class="checkbox-group mt-3" style="text-align: center">
-                                                <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
-                                                    <Checkbox v-model="controladora.dados.molas" :value="i" />
+
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                        </div>
+                                    </fieldset>
+                                </div>
+
+                                <!-- Controladora 2023 -->
+                                <div v-if="controladora.tipo === '2023'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-6 p-0">{{t('dip')}}: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                    </div>
+                                    <div class="card mt-5">
+                                        <div class="field mt-3">
+                                            <h4>{{t('level_floor')}}:</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.andar" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
-                                            <div class="button-group mt-5" style="text-align: end">
-                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
-                                            </div>
-                                        </fieldset>
-                                    </div>
-                                    <!-- Controladora 2023 -->
-                                    <div v-if="controladora.tipo === '2023'">
-                                        <div class="field col-12 mt-3">
-                                            <label class="mr-6 p-0">DIP: </label>
-                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.dip" />
                                         </div>
-                                        <div class="card mt-5">
-                                            <div class="field mt-3">
-                                                <h4>Andar:</h4>
-                                                <div class="checkbox-group">
-                                                    <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
-                                                        <Checkbox v-model="controladora.dados.andar" :value="i" />
-                                                        <label>{{ i }}</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="field mt-6">
-                                                <h4>Posição</h4>
-                                                <div class="checkbox-group">
-                                                    <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
-                                                        <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                        <label>{{ i }}</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="button-group mt-5" style="text-align: end">
-                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Controladora 2024 -->
-                                    <div v-if="controladora.tipo === '2024'">
-                                        <div class="field col-12 mt-3">
-                                            <label class="mr-5 p-0">Placa: </label>
-                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.placa" />
-                                        </div>
-                                        <div class="field col-12 mt-3">
-                                            <label class="mr-5 p-0">Motor: </label>
-                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.motor" />
-                                        </div>
-                                    </div>
-                                    <!-- Controladora Locker -->
-                                    <div v-if="controladora.tipo === 'Locker-Padrao'">
-                                        <div class="field col-12 mt-3">
-                                            <label class="mr-6 p-0">Dip: </label>
-                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.dip" />
-                                        </div>
-                                        <div class="field card">
-                                            <h4>Posição</h4>
+                                        <div class="field mt-6">
+                                            <h4>{{t('position')}}</h4>
                                             <div class="checkbox-group">
-                                                <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
+                                                <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
                                                     <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
-                                            <div class="button-group mt-5" style="text-align: end">
-                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
-                                            </div>
+                                        </div>
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px":label="$t('select_all')" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
                                         </div>
                                     </div>
-                                    <div v-if="controladora.tipo === 'Locker-Ker'">
-                                        <div class="field col-12 mt-3">
-                                            <label class="mr-6 p-0">Dip: </label>
-                                            <InputNumber :allowEmpty="false" style="width: 250px" v-model="controladora.dados.dip" />
+                                </div>
+
+                                <!-- Controladora 2024 -->
+                                <div v-if="controladora.tipo === '2024'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-5 p-0">{{t('board')}}: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.placa" />
+                                    </div>
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-5 p-0">{{t('motor')}}: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.motor" />
+                                    </div>
+                                </div>
+
+                                <!-- Controladora Locker -->
+                                <div v-if="controladora.tipo === 'Locker-Padrao'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-6 p-0">{{t('dip')}}: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                    </div>
+                                    <div class="field card">
+                                        <h4>{{t('position')}}</h4>
+                                        <div class="checkbox-group">
+                                            <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
+                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                <label>{{ i }}</label>
+                                            </div>
                                         </div>
-                                        <div class="field card">
-                                            <h4>Posição</h4>
-                                            <div class="checkbox-group">
-                                                <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
-                                                    <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                    <label>{{ i }}</label>
-                                                </div>
-                                            </div>
-                                            <div class="button-group mt-5" style="text-align: end">
-                                                <Button class="mr-3" style="width: 200px" label="Selecionar Todos" @click="selectAllCliente(index)" />
-                                                <Button style="width: 200px" label="Desselecionar Todos" @click="desselectAllCliente(index)" />
-                                            </div>
+
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
                                         </div>
                                     </div>
-                                </div></div>
-                        
+                                </div>
+                                <div v-if="controladora.tipo === 'Locker-Ker'">
+                                    <div class="field col-12 mt-3">
+                                        <label class="mr-6 p-0">{{t('dip')}}: </label>
+                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                    </div>
+                                    <div class="field card">
+                                        <h4>{{t('position')}}</h4>
+                                        <div class="checkbox-group">
+                                            <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
+                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                <label>{{ i }}</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="button-group mt-5" style="text-align: end">
+                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <Button v-if="!visible" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
-                            <Button v-if="visible" label="Salvar" icon="pi pi-check" severity="info" @click="atualizarDM" class="full mt-4 mr-2" />
+                            <Button v-if="!visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
+                            <Button v-if="visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="atualizarDM" class="full mt-4 mr-2" />
                         </div>
                     </TabPanel>
                 </TabView>
@@ -936,8 +961,8 @@ onMounted(async () => {
                     <div class="mx-0 grid">
                         <div class="col-12">
                             <div class="flex mt-5 justify-content-between">
-                                <h5>Itens da DM</h5>
-                                <Button label="Adicionar Itens" @click="showDialogProduto = true" />
+                                <h5>{{t('itens_dms')}}</h5>
+                                <Button :label="$t('add_items')" @click="showDialogProduto = true" />
                             </div>
                             <DataTable
                                 v-model:filters="filters"
@@ -961,45 +986,45 @@ onMounted(async () => {
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>Total de itens carregados: {{ ListaItens.length }}</span>
+                                            <span>{{$t('total_records',{count:ListaItens.length})}}</span>
                                         </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
                                             </InputIcon>
-                                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                            <InputText v-model="filters['global'].value":placeholder="t('search')" />
                                         </IconField>
                                     </div>
                                 </template>
 
-                                <template #empty> Nenhum item adicionado. </template>
+                                <template #empty> {{t('no_added_item')}} </template>
 
-                                <Column field="SKU" style="width: 9%" sortable header="SKU">
+                                <Column field="SKU" style="width: 9%" sortable :header="t('sku')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.SKU">{{ data.SKU }}</span>
                                     </template>
                                 </Column>
-                                <Column field="Nome_Produto" sortable style="width: 30%" header="Produto">
+                                <Column field="Nome_Produto" sortable style="width: 30%" :header="t('product')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.Nome_Produto">{{ data.Nome_Produto }}</span>
                                     </template></Column
                                 >
-                                <Column field="Posicao" sortable style="width: 40%" header="Posição">
+                                <Column field="Posicao" sortable style="width: 40%" :header="t('Posição')">
                                     <template #body="{ data }">
-                                        <span v-tooltip="data.modelo === '2018' ? 'Controladora / Placa / Motor 1 / Motor 2' : data.modelo === '2023' ? 'Controladora / DIP / Andar / Posição' : 'Placa / Motor'">
+                                        <span  v-tooltip="getTooltipText(data)">
                                             {{ data.Posicao }}
                                         </span>
                                     </template>
                                 </Column>
-                                <Column field="QTD" sortable style="width: 9%" header="QTD"></Column>
+                                <Column field="QTD" sortable style="width: 9%" :header="t('quantity_short')"></Column>
                                 <Column style="min-width: 8rem">
                                     <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" v-tooltip="{ value: 'Excluir Produto', showDelay: 1000, hideDelay: 300 }" />
+                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteItem(slotProps.data)" v-tooltip="{ value: $t('delete_product'), showDelay: 1000, hideDelay: 300 }" />
                                     </template>
                                 </Column>
                                 <template #groupheader="slotProps">
                                     <div class="flex align-items-center text-3xl gap-2">
-                                        <span v-tooltip="'Modelo da controladora'">
+                                        <span v-tooltip="$t('controller_model')">
                                             {{ slotProps.data.modelo }}
                                         </span>
                                     </div>
@@ -1007,17 +1032,17 @@ onMounted(async () => {
                             </DataTable>
                         </div>
                     </div>
-                    <Button class="m-1" label="Voltar" @click="voltar()" />
+                    <Button class="m-1" :label="$t('back')" @click="voltar()" />
                 </div>
                 <LoadingSpinner v-if="loading" />
             </div>
         </div>
     </div>
-    <Dialog class="" :header="isEditMode ? 'Editar Produto' : 'Adicionar Produto'" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
+    <Dialog class="" :header="isEditMode ?  $t('edit_product') : $t('add_product')" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
         <div class="box card">
             <div class="grid">
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Produto" class="font-semibold">Produto:</label>
+                    <label for="Produto" class="font-semibold">{{t('product')}}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <Dropdown
@@ -1031,99 +1056,101 @@ onMounted(async () => {
                         v-model:filters="filters"
                         optionLabel="label"
                         optionValue="value"
-                        placeholder="Selecione um produto"
+                        :placeholder="t('select_product')"
                     />
                 </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Controladora" class="font-semibold">Controladora:</label>
+                    <label for="Controladora" class="font-semibold">{{t('controller')}}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" placeholder="Selecione uma controladora" />
+                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" :placeholder="$t('controller_select')" />
                 </div>
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="tipoControladoraSelecionada === '2018'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">Placa:</label>
+                        <label for="Dip" class="font-semibold">{{t('board')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" placeholder="Selecione a Placa" />
+                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" :placeholder="$t('board_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="molas" class="font-semibold">Molas:</label>
+                        <label for="molas" class="font-semibold">{{t('spring')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" placeholder="Selecione as Molas" />
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" :placeholder="$t('spring_select')" />
                     </div>
                 </template>
 
                 <template v-if="tipoControladoraSelecionada === '2023'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">DIP:</label>
+                        <label for="Dip" class="font-semibold">{{t('dip')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Andar" class="font-semibold">Andar:</label>
+                        <label for="Andar" class="font-semibold">{{t('level_floor')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" placeholder="Selecione o andar" @change="handleAndarChange" />
+                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" :placeholder="$t('floor_select')" @change="handleAndarChange" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Posicao" class="font-semibold">Posição:</label>
+                        <label for="Posicao" class="font-semibold">{{t('position')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" @change="validarAndarSelecionado" />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" @change="validarAndarSelecionado" />
                     </div>
                 </template>
 
                 <template v-if="tipoControladoraSelecionada === '2024'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Motor" class="font-semibold">Motor:</label>
+                        <label for="Motor" class="font-semibold">{{t('motor')}}:</label>
                     </div>
-                    <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" placeholder="Selecione o Motor" />
+                    <div class="lg:col-8 md:c
+                    
+                    ol-8 sm:col-8 flex justify-content-end">
+                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" :placeholder="$t('motor_select')" />
                     </div>
                 </template>
 
                 <template v-if="isArmario(tipoControladoraSelecionada)">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">DIP:</label>
+                        <label for="Dip" class="font-semibold">{{t('dip')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" placeholder="Selecione DIP" />
+                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Posicao" class="font-semibold">Posição:</label>
+                        <label for="Posicao" class="font-semibold">{{t('position')}}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" placeholder="Selecione a posição" />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')"  />
                     </div>
                 </template>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Capacidade" class="font-semibold">Capacidade:</label>
+                    <label for="Capacidade" class="font-semibold">{{t('capacity')}}:</label>
                 </div>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
-                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" suffix=" unidades" />
+                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" :suffix="$t('capacity_suffix')" />
                 </div>
             </div>
         </div>
 
         <div class="flex justify-content-end gap-2 mt-4">
-            <Button type="button" label="Cancelar" severity="secondary" @click="handleCancelar()"></Button>
-            <Button type="button" :label="isEditMode ? 'Atualizar' : 'Salvar'" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
+            <Button type="button" :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
+            <Button type="button":label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
-    <Dialog header="Deletar Item" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+    <Dialog :header="$t('dialog_delete_item')" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
-            <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
-            <Button label="Sim" icon="pi pi-check" @click="confirmDeleteItem" />
+            <Button :label="$t('cancel')" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
+            <Button label="OK" icon="pi pi-check" @click="confirmDelete" />
         </template>
     </Dialog>
-    <Dialog header="Deletar DM" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+    <Dialog :header="$t('dialog_delte_dm')" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />

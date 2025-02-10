@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'; // Funções reativas e hooks do Vue.js
+import { reactive, ref, onMounted, watch, computed } from 'vue'; // Funções reativas e hooks do Vue.js
 import { useToast } from 'primevue/usetoast'; // Função para mostrar notificações
 import { FilterMatchMode } from 'primevue/api'; // Modo de filtro para tabelas, como CONTAINS ou EQUALS
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Spinner de carregamento
@@ -8,7 +8,8 @@ import clientesService from '@/services/clientesService'; // Serviço para manip
 import { validarCNPJ } from '@/helpers/HelperValidacao.js'; // Função para validar CNPJ
 import { resetClienteForm } from '@/helpers/formHelper'; // Função para resetar o formulário de cliente
 import { formatDate,prepareListData } from '@/helpers/HelperUtils.js'; // Função para formatação de datas (não utilizada diretamente)
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 /**
  * Declaração de variáveis reativas com `ref` e `reactive` do Vue
  */
@@ -49,11 +50,11 @@ let cliente = reactive({
  * Lista de opções de perfil que pode ser selecionada para o cliente.
  * As opções são 'Master', 'Operador', e 'Avulso' com valores associados.
  */
-const perfilOptions = [
-    { label: 'Master', value: 1 }, // Perfil Master
-    { label: 'Operador', value: 3 }, // Perfil Operador
-    { label: 'Avulso', value: 4 } // Perfil Avulso
-];
+const perfilOptions  = computed(() => [
+    { label: t('master'), value: 1 }, // Perfil Master
+    { label: t('operator'), value: 3 }, // Perfil Operador
+    { label: t('one_time'), value: 4 } // Perfil Avulso
+]);
 function debounce(func, wait = 300) {
     let timeout;
     return (...args) => {
@@ -112,13 +113,13 @@ const submitForm = () => {
 const adicionarCliente = async () => {
     try {
         await clientesService.adicionarCliente(cliente); // Chama o serviço para adicionar o cliente
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente adicionado', life: 3000  }); // Exibe uma mensagem de sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('client_add_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
         resetClienteForm(cliente); // Limpa o formulário após adicionar o cliente
         active.value = 0; // Reseta o índice ativo para 0 (volta para a visão geral)
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao adicionar cliente', life: 3000  });
+        toast.add({ severity: 'error', summary:t('title_error'), detail: t('client_add_fail'), life: 3000  });
     }
 };
 
@@ -131,13 +132,13 @@ const adicionarCliente = async () => {
 const atualizarCliente = async () => {
     try {
         await clientesService.atualizarCliente(cliente); // Chama o serviço para atualizar o cliente
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado', life: 3000  }); // Exibe uma mensagem de sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('client_update_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
         resetClienteForm(cliente); // Limpa o formulário após atualizar os dados
         active.value = 0; // Reseta o índice ativo para 0
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao atualizar cliente', life: 3000  });
+        toast.add({ severity: 'error', summary:  t('title_sucess'), detail: t('client_update_fail'), life: 3000  });
     }
 };
 
@@ -162,11 +163,11 @@ const deleteClientedes = (itm) => {
 const deleteCliente = async (clienteId) => {
     try {
         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado', life: 3000  }); // Exibe uma mensagem de sucesso
+        toast.add({ severity: 'success', summary:  t('title_sucess'), detail: t('client_delete_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
-        toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: 'Falha ao deletar cliente', life: 3000  });
+        toast.add({ severity: 'error', summary:  t('title_sucess'), life:3000,detail: t('client_delete_fail'), life: 3000  });
     }finally{
         deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
     }
@@ -195,6 +196,8 @@ const loadClientes = async (page=1) => {
     } catch (error) {
         // Em caso de erro, exibe a mensagem no console
         console.error(error.message);
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
+
     } finally {
         // Desativa o indicador de carregamento após a tentativa de carregamento
         loading.value = false;
@@ -216,7 +219,7 @@ const debouncedFilterChange = debounce(() => {
  * Se o CNPJ for inválido, a mensagem de erro é atualizada.
  */
 const validateCNPJField = () => {
-    errors.cnpj = validarCNPJ(cliente.cnpj) ? '' : 'CNPJ inválido'; // Se o CNPJ for inválido, exibe a mensagem de erro
+    errors.cnpj = validarCNPJ(cliente.cnpj) ? '' : t('error_invalid_cnpj'); // Se o CNPJ for inválido, exibe a mensagem de erro
 };
 
 /**
@@ -249,7 +252,7 @@ onMounted(() => {
         <!-- TabView que gerencia as abas de Listar Clientes e Editar/Adicionar Cliente -->
         <TabView v-model:activeIndex="active" v-if="!show">
             <!-- Aba de Listar Clientes -->
-            <TabPanel header="Listar Clientes">
+            <TabPanel  :header="$t('client_list')">
                 <div class="col-12">
                     <!-- DataTable que exibe a lista de clientes -->
                     <DataTable
@@ -295,22 +298,22 @@ onMounted(() => {
                                         <i class="pi pi-search" />
                                         <!--Ícone de pesquisa -->
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" @input="debouncedFilterChange"/>
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search"  @input="debouncedFilterChange"/>
                                     <!-- Campo de busca -->
                                 </IconField>
                             </div>
                         </template>
                         <!--Definição das colunas da tabela -->
                         <Column field="id_cliente" sortable style="width: 7%" header="ID"></Column>
-                        <Column field="nome" sortable style="width: 20%" header="Nome"></Column>
+                        <Column field="nome" sortable style="width: 20%" :header="t('name')"></Column>
                         <!--Coluna que mostra se o cliente está ativo, com ícones de status -->
-                        <Column field="ativo" sortable style="width: 10%; text-align: center" header="Ativo">
+                        <Column field="ativo" sortable style="width: 10%; text-align: center" :header="t('active')">
                             <template #body="{ data }">
                                 <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
                             </template>
                         </Column>
                         <!--oluna que mostra o último login do cliente formatado -->
-                        <Column field="last_login" sortable class="table-cell" style="width: 15%" header="Último Login">
+                        <Column field="last_login" sortable class="table-cell" style="width: 15%" :header="t('last_login')">
                             <template #body="{ data }">
                                 {{ formatDate(new Date(data.last_login)) }}
                                 <!-- Formata e exibe a data -->
@@ -327,7 +330,7 @@ onMounted(() => {
                 </div>
             </TabPanel>
             <!--Aba de Adicionar ou Editar Cliente -->
-            <TabPanel :header="visible ? 'Editar Cliente' : 'Adicionar Cliente'">
+            <TabPanel :header="visible ? t('edit_client') : t('add_client')">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">
@@ -336,37 +339,37 @@ onMounted(() => {
                                 <div class="mt-5 mx-0 p-fluid grid">
                                     <!--Campo para o nome do cliente -->
                                     <div class="full mt-5 lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_planta">Nome:</label>
+                                        <label for="id_planta">{{t('name')}}:</label>
                                         <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
                                     </div>
                                     <!--Campo para o CNPJ do cliente -->
                                     <div :class="visible ? { 'lg:col-9 md:col-9 sm:col-12': true } : { 'lg:col-12 md:col-12 sm:col-12': true }">
-                                        <label for="cnpj">CNPJ:</label>
+                                        <label for="cnpj">{{t('ein')}}:</label>
                                         <InputMask class="my-2" v-model="cliente.cnpj" id="cnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cnpj" @blur="validateCNPJField" />
                                         <small v-if="errors.cnpj" class="p-error">{{ errors.cnpj }}</small>
                                         <!--Exibe mensagem de erro se houver -->
                                     </div>
                                     <!--campo para selecionar o perfil, aparece apenas se visible for verdadeiro -->
                                     <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
-                                        <label v-if="visible">Selecione o perfil</label>
-                                        <Dropdown v-if="visible" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" placeholder="Selecione um Perfil" />
+                                        <label v-if="visible">{{t('select_profile')}}</label>
+                                        <Dropdown v-if="visible" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_profile')" />
                                     </div>
                                     <!--Campo para ativar ou desativar a integração via API-->
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                        <label class="mt-0 text-nowrap" for="switch1">Tem integração?</label>
+                                        <label class="mt-0 text-nowrap" for="switch1">{{t('external_integration')}}</label>
                                         <div class="grid mt-3">
                                             <InputSwitch class="mr-2" v-model="cliente.usar_api" inputId="switch1" />
                                             <!-- Comutador para a integração -->
-                                            <span class="ml-2">{{ cliente.usar_api ? 'Sim' : 'Não' }}</span>
+                                            <span class="ml-2">{{ cliente.usar_api ?  $t('yes') : $t('no') }}</span>
                                         </div>
                                     </div>
                                     <!--campo para ativar ou desativar o status de cliente ativo -->
                                     <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                        <label class="mt-0 text-nowrap" for="switch2">Cliente Ativo?</label>
+                                        <label class="mt-0 text-nowrap" for="switch2">{{t('active_client')}}</label>
                                         <div class="grid mt-3">
                                             <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
                                             <!--Comutador para o status ativo -->
-                                            <span class="ml-2">{{ cliente.ativo ? 'Sim' : 'Não' }}</span>
+                                            <span class="ml-2">{{ cliente.ativo ?  $t('yes') : $t('no')}}</span>
                                         </div>
                                     </div>
                                 </div>

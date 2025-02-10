@@ -2,9 +2,9 @@
 import { defineProps } from 'vue'; // defineProps para declarar propriedades
 import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
 import { format } from 'date-fns'; // Função para formatar a data
-
+import { useI18n } from 'vue-i18n';
 const toast = useToast(); //toast para exibir mensagens de erro ou sucesso
-
+const { t } = useI18n();
 // Defina os props
 /**
  * @typedef {Object} most
@@ -32,7 +32,7 @@ const props = defineProps({
     <div class="header" style="display: flex">
         <!-- Cabeçalho exibindo o título e o ícone de informação sobre os itens mais retirados -->
         <div class="title" style="display: flex; align-items: center">
-            <h5 style="margin-right: 5px">Itens mais retirados</h5>
+            <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5>
         </div>
 
         <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
@@ -52,18 +52,18 @@ const props = defineProps({
         <!-- Faz com que a tabela tenha um layout responsivo, com rolagem horizontal em telas menores -->
 
         <!-- Coluna para exibir o SKU do produto -->
-        <Column field="ProdutoSKU" header="SKU" sortable style="width: 15%"></Column>
+        <Column field="ProdutoSKU" :header="t('SKU')" sortable style="width: 15%"></Column>
         <!-- Coluna para exibir o nome do produto -->
-        <Column field="ProdutoNome" header="Item" sortable style="width: 60%">
+        <Column field="ProdutoNome" :header="t('item')" sortable style="width: 60%">
             <template #body="{ data }">
                 <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
             </template></Column
         >
         <!-- Coluna para exibir o número de retiradas -->
-        <Column field="NumeroDeRetiradas" header="Quant." sortable style="width: 15%"></Column>
+        <Column field="NumeroDeRetiradas" :header="t('quantity')" sortable style="width: 15%"></Column>
         <!-- Mensagem exibida caso não haja dados na tabela -->
         <template #empty>
-            <div class="empty-message" style="text-align: center; padding: 20px; color: gray">Nenhuma retirada foi realizada até o momento.</div>
+            <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{ $t('sem_retirada') }}</div>
         </template>
     </DataTable>
 </template>

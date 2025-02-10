@@ -3,7 +3,7 @@ import axios from './axios';
 import App from './App.vue';
 import router from './router/router';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-
+import i18n from './i18n';
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
 import Accordion from 'primevue/accordion';
@@ -147,7 +147,7 @@ app.use(PrimeVue, {
         reject: 'Rejeitar',
     }
 });
-
+app.use(i18n);
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);

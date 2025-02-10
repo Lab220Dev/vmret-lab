@@ -158,7 +158,7 @@ const handleFiles = (event) => {
         }
 
         // Verifica se o arquivo é maior que 5MB
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > 50 * 1024 * 1024) {
             toast.add({
                 severity: 'error',
                 summary: 'Erro de Arquivo',
