@@ -245,7 +245,7 @@ const cancelDelete = () => {
     showDialogControl.value = false;
     selectedItem.value = null;
 };
-function debounce(func, wait = 300) {
+function debounce(func, wait = 3000) {
     let timeout;
     return (...args) => {
         clearTimeout(timeout);

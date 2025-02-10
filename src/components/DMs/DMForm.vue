@@ -10,7 +10,7 @@
             optionLabel="label" 
             optionValue="value" 
             placeholder="Selecione um" />
-        </div>
+        </div> <!-- Fim da seção de seleção de cliente -->
 
         <!-- Seção para inserção do número da DM -->
         <div class="full lg:col-6 md:col-9 sm:col-12">
@@ -59,14 +59,14 @@ const store = useAuthStore(); // Acesso ao estado de autenticação
  * @async
  * @function saveDM
  */
-const saveDM = async () => {
+const saveDM = async () => { // Função para salvar a DM
     const data = {
         id_usuario: store.userId, // ID do usuário (do store de autenticação)
         ...DM.value, // Dados da DM
     };
 
     try {
-        const response = await axios.post('/DM/adicionar', data, {
+        const response = await axios.post('/DM/adicionar', data, { // Requisição POST para adicionar a DM
             headers: {
                 Authorization: `Bearer ${store.token}`, // Envia o token para autenticação
             }
@@ -85,7 +85,7 @@ const saveDM = async () => {
  */
 const fetchClientes = async () => {
     try {
-        const response = await axios.post('/admin/cliente/listar', {}, {
+        const response = await axios.post('/admin/cliente/listar', {}, { // Requisição POST para listar os clientes
             headers: {
                 Authorization: `Bearer ${store.token}`, // Envia o token para autenticação
             }
@@ -107,15 +107,15 @@ const fetchClientes = async () => {
 
 // Chama fetchClientes quando o componente é montado
 onMounted(() => {
-    fetchClientes();
+    fetchClientes();//Chama a função para buscar os clientes
 });
 
 // Observa mudanças no ID do cliente na DM e atualiza a seleção no Dropdown
 watch(
-    () => DM.value.IDcliente,
-    (newClienteId) => {
-        const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);
-        if (client) {
+    () => DM.value.IDcliente,//Observa mudanças no ID do cliente
+    (newClienteId) => {//Função chamada quando o ID do cliente muda
+        const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId);//Busca o cliente com o ID
+        if (client) {//Se o cliente foi encontrado
             selectedClient.value = client.value; // Atualiza o cliente selecionado
         }
     }

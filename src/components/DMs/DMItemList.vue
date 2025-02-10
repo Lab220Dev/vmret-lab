@@ -63,7 +63,7 @@ const loading = ref(false); //Flag de carregamento enquanto os dados estão send
  *
  * @function fetchDMS
  */
-const fetchItemDM = async () => {
+const fetchItemDM = async () => {// Função para carregar os itens da DM
     loading.value = true; // Ativa o estado de carregamento
     try {
         // Criação do objeto de dados a ser enviado na requisição
@@ -73,17 +73,16 @@ const fetchItemDM = async () => {
             id_usuario: store.userId // Identificador do usuário
         };
 
-        // Realiza uma requisição POST para buscar os itens da DM
-        const response = await axios.post('/DM/listaritens', data);
+        const response = await axios.post('/DM/listaritens', data);// Realiza uma requisição POST para buscar os itens da DM
 
         // Atribui os itens retornados à lista de itens
-        ListaItens.value = response.data;
-    } catch (error) {
+        ListaItens.value = response.data;// Atribui os itens retornados à lista de itens
+    } catch (error) { // Captura e exibe qualquer erro ocorrido durante a requisição
         // Captura e exibe qualquer erro ocorrido durante a requisição
-        console.error('Erro ao carregar Itens:', error);
-    } finally {
+        console.error('Erro ao carregar Itens:', error); // Exibe o erro no console
+    } finally {// Desativa o estado de carregamento, independentemente de sucesso ou falha
         // Desativa o estado de carregamento, independentemente de sucesso ou falha
-        loading.value = false;
+        loading.value = false; // Desativa o estado de carregamento
     }
 };
 
@@ -93,7 +92,7 @@ const fetchItemDM = async () => {
  * @function onMounted
  */
 onMounted(() => {
-    fetchItemDM();
+    fetchItemDM();// Executa a função fetchItemDM quando o componente é montado
 });
 
 /**
@@ -113,6 +112,6 @@ const deleteItem = async (item) => {
  * @param {Object} event - Evento de seleção da linha da tabela.
  */
 const handleRowSelection = (event) => {
-    emit('row-selected', event.data);
+    emit('row-selected', event.data);// Emite o evento 'row-selected' com os dados da linha selecionada
 };
 </script>
