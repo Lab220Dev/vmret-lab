@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString,getDateFromString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString,getDateFromString,isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
