@@ -262,17 +262,17 @@ onMounted(() => {
                                 <div class="p-fluid formgrid grid m-0 p-0">
                                     <!-- Campo para código da função -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_funcao">{{ t('function_code') }}:</label>
+                                        <label for="id_funcao">{{ $t('function_code') }}:</label>
                                         <InputText class="my-2" id="id_funcao" v-model="funcao.codigo" required />
                                     </div>
                                     <!-- Campo para nome da função -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="nome">{{ t('function_name') }}:</label>
+                                        <label for="nome">{{ $t('function_name') }}:</label>
                                         <InputText class="my-2" id="nome" v-model="funcao.nome" required />
                                     </div>
                                     <!-- Campo para selecionar o centro de custo -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="perfil">{{ t('cost_center') }}:</label>
+                                        <label for="perfil">{{ $t('cost_center') }}:</label>
                                         <Dropdown class="my-2" v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                                     </div>
                                 </div>

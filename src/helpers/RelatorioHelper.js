@@ -1,17 +1,18 @@
 import { toISODate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
-import { useAuthStore } from '@/store/authStore.js';// Importa o store de autenticação para acessar informações do usuário autenticado.
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import relatorioService from '@/Services/relatorioService.js';
 import jsPDF from 'jspdf'; // Importa a biblioteca jsPDF para gerar PDFs
 import autoTable from 'jspdf-autotable';
+import html2canvas from "html2canvas";
 import { parse } from 'date-fns';
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
-
+import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
 const store = useAuthStore();
 
 /**
  * Prepara os dados do relatório com base no tipo de relatório fornecido e nos valores do relatório.
  * A função retorna um objeto com as informações necessárias para o tipo de relatório específico.
- * 
+ *
  * @param {string} tipoRelatorio - O tipo do relatório para o qual os dados estão sendo preparados (ex.: 'Devoluções', 'Estoque').
  * @param {Object} relatorio - O objeto contendo os valores específicos para o relatório.
  * @param {Object} relatorio.value - O objeto interno que contém os valores do relatório.
@@ -24,11 +25,10 @@ const store = useAuthStore();
  * @param {string} relatorio.value.data_final - A data final para o filtro, quando aplicável.
  * @param {string} relatorio.value.id_operador - O ID do operador, quando aplicável.
  * @param {string} relatorio.value.dia - O dia do relatório, quando aplicável.
- * 
+ *
  * @returns {Object} O objeto com os dados preparados para o relatório, de acordo com o tipo.
  */
 export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
-
     // Define a base data com o ID do cliente a partir do store.
     const baseData = {
         id_cliente: store.userIdCliente
@@ -140,7 +140,7 @@ export function organizarFuncionarios(funcionarios) {
         id_planta: funcionario.id_planta, // ID da planta
         id_centro_custo: funcionario.id_centro_custo, // ID do centro de custo
         data_admissao: funcionario.data_admissao, // ID do centro de custo
-        matricula: funcionario.matricula, // ID do centro de custo
+        matricula: funcionario.matricula // ID do centro de custo
     }));
 
     // Adiciona a opção 'Todos' no início da lista
@@ -160,7 +160,7 @@ export function organizarFuncionarios(funcionarios) {
  * @param {Object} relatorio - The report object containing withdrawal details.
  * @throws {Error} Throws an error if the employee is not selected or if there is an error generating the PDF.
  */
-export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
+export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
     try {
         if (!funcionarioSelecionado) {
             throw new Error('Funcionário não selecionado');
@@ -222,7 +222,7 @@ export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
 
         // Definição da tabela
         const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
-        
+
         const tableRows = retiradas.data.map((item) => {
             try {
                 const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date()); // Faz o parse da data
@@ -265,16 +265,75 @@ export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
                 5: { cellWidth: 50 }
             }
         });
-    
+
         doc.setFontSize(12);
         doc.text('Data:', 30, doc.autoTable.previous.finalY + 30); // Exibe o campo de data
         doc.text('_______/_______/_______', 40, doc.autoTable.previous.finalY + 30); // Linha para o campo de data
-    
+
         doc.setFontSize(12);
-        doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30); 
-        doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50); 
-        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`); 
+        doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
+        doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
+        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
+    }
+}
+export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
+    try {
+        if (!funcionarioSelecionado.value || Object.keys(funcionarioSelecionado.value).length === 0){
+            throw new Error('Empleado no seleccionado');
+        }
+
+        const cabecalhoHTML = await relatorioService.Cabecalho(); // Obtém o HTML dinamicamente
+
+        const div = document.createElement("div");
+        div.innerHTML = cabecalhoHTML;
+        document.body.appendChild(div);
+
+        // Converter HTML do cabeçalho em imagem
+        const canvas = await html2canvas(div, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
+        document.body.removeChild(div); // Remove o elemento do DOM
+
+        // Criar o PDF
+        const pdf = new jsPDF("p", "mm", "a4");
+        const imgWidth = 190;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+
+        // Buscar dados da ficha e retiradas
+        const retiradas = await relatorioService.fichasRetiradas(relatorio);
+
+        // Criar a tabela de dados no PDF
+        pdf.autoTable({
+            startY: imgHeight + 20,
+            head: [['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO']],
+            body: retiradas.data.map(item => [
+                item.ProdutoNome || '',
+                item.Dia || '',
+                item.Quantidade || '',
+                item.unidade_medida || '',
+                item.ProdutoDescricao || '',
+                item.ProdutoSKU || '',
+                item.Forma_Autenticacao || ''
+            ]),
+            theme: 'grid'
+        });
+
+        // Salvar o PDF corretamente
+        pdf.save(`Entrega_EPI_${funcionarioSelecionado.value.label || 'Empleado'}.pdf`);
+
+    } catch (error) {
+        throw new Error(`Error al generar PDF: ${error.message}`);
+    }
+}
+
+export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
+    const linguaSelecionada = i18n.global.locale.value;
+    if (linguaSelecionada === 'es') {
+        await GerarPdfRetiradaEs(funcionarioSelecionado, relatorio);
+    } else {
+        await GerarPdfRetiradapt(funcionarioSelecionado, relatorio);
     }
 }

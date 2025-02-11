@@ -1,10 +1,10 @@
 <template>
     <div class="card"> 
         <div class="container flex justify-content-between align-items-center" style="width: 100%;">
-        <h4 class="ml-3" style="white-space: nowrap;">Selecione os Menus:</h4>
+        <h4 class="ml-3" style="white-space: nowrap;">{{t('select_menu')}}:</h4>
         <div class="button-container">
-            <Button class="mr-2 mt-5 mb-4" @click="toggleSelectAll(true)">Selecionar Todos</Button>
-            <Button class="mt-5 mb-4" @click="toggleSelectAll(false)">Desselecionar Todos</Button>
+            <Button class="mr-2 mt-5 mb-4" @click="toggleSelectAll(true)">{{t('select_all')}}</Button>
+            <Button class="mt-5 mb-4" @click="toggleSelectAll(false)">{{t('deselect')}}</Button>
         </div>
     </div>
         <!-- Menus Principais -->
@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" label="Salvar Configurações" @click="submitMenu" /></div>
+        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" :label="t('save')" @click="submitMenu" /></div>
     </div>
 </template>
 
@@ -41,7 +41,8 @@
 import { ref, computed, watch, onMounted } from 'vue';//reactive e ref são usados para reatividade, onMounted é um hook(função especial) para executar 
 import axios from '@/axios.js';//Instância configurada do Axios para fazer requisições HTTP
 import { useToast } from 'primevue/usetoast';//Função para mostrar notificações
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 //definindo as propriedades (props) que o componente irá receber (as props são passadas pelo componente pai)
 /**
  * Propriedades do componente.
@@ -76,99 +77,99 @@ const selectedSubsubmenus = ref([]); // Variável reativa para armazenar os subs
 // A estrutura de menus pode ser complexa, então a utilização de `ref` permite acompanhar mudanças na estrutura como um todo.
 const structuredMenus = ref([]); // Armazena a estrutura completa de menus (principal, submenus e subsubmenus). Inicialmente é um array vazio.
 
-const menus = { //'menus' cria a estrutura conforme o identificador do perfil
+const menus = computed(() => ({ //'menus' cria a estrutura conforme o identificador do perfil
     1: [
         // Master
         {
-            name: 'Relatórios',
+            name: t('relatorios'),
             submenus: [
                 {
-                    name: 'Estoque',
-                    subsubmenus: [{ name: 'Estoque da DM' }]
+                    name:  t('estoque'),
+                    subsubmenus: [{ name: t('estoque_da_dm') }]
                 },
                 {
-                    name: 'Retiradas e Devoluções',
-                    subsubmenus: [{ name: 'Retiradas Realizadas' }, { name: 'Itens Mais Retirados' }, { name: 'Retirada Avulsas por Exceções' }, { name: 'Fichas de Retiradas' }, { name: 'Devoluções' }]
+                    name:  t('retiradas_e_devolucoes'),
+                    subsubmenus: [{ name: t('retiradas_realizadas') }, { name: t('itens_mais_retirados') }, { name:t('retirada_avulsas_por_excecoes') }, { name: t('fichas_de_retiradas') }, { name: t('devolucoes')  }]
                 },
                 {
-                    name: 'Operacional',
-                    subsubmenus: [{ name: 'Histórico de Abastecimento' }, { name: 'Status DM' }, { name: 'Log' }]
+                    name: t('operacional'),
+                    subsubmenus: [{ name: t('historico_de_abastecimento') }, { name: t('status_dm') }, { name: t('log') }]
                 }
             ]
         },
         {
-            name: 'Cadastros',
+            name: t('cadastros'),
             submenus: [
-                { name: 'Funcionários' },
+                { name:  t('funcionarios')},
                 {
-                    name: 'Usuários',
-                    subsubmenus: [{ name: 'Usuários WEB' }, { name: 'Usuários DMs' }, { name: 'Liberação Avulsa' }]
+                    name:  t('usuarios'),
+                    subsubmenus: [{ name: t('usuarios_web') }, { name: t('usuarios_dms') }, { name:  t('liberacao_avulsa') }]
                 },
-                { name: 'Centros de Custo' },
-                { name: 'Setor/Diretoria' },
-                { name: 'Função/Nível Hierárquico' },
-                { name: 'Plantas' },
-                { name: 'Produtos' }
+                { name: t('centros_de_custo') },
+                { name: t('setor_diretoria') },
+                { name: t('funcao_nivel_hierarquico') },
+                { name: t('plantas') },
+                { name: t('produtos') }
             ]
         },
         {
-            name: 'EndPoints',
-            submenus: [{ name: 'Entrada' }, { name: 'Saída' }]
+            name:  t('endpoints'),
+            submenus: [{ name: t('entrada') }, { name: t('saida') }]
         },
         {
-            name: 'Importações',
-            submenus: [{ name: 'Importações' }]
+            name: t('importacoes'),
+            submenus: [{ name: t('importacoes') }]
         },
         {
-            name: 'Configurações',
-            submenus: [{ name: 'Lista de DM' }, { name: 'Liberação Avulsa' }, { name: 'Cadastro de Serviços' }, { name: 'Gerenciamento de Vídeos' }, { name: 'Termo de compromisso - Ficha Retirada' }]
+            name: t('configuracoes'),
+            submenus: [{ name: t('lista_de_dm') }, { name: t('liberacao_avulsa') }, { name: t('cadastro_de_servicos') }, { name: t('gerenciamento_de_videos') }, { name: t('termo_de_compromisso') }]
         }
     ],
     3: [
         // Operador
         {
-            name: 'Relatórios',
+            name: t('relatorios'),
             submenus: [
                 {
-                    name: 'Estoque',
-                    subsubmenus: [{ name: 'Estoque da DM' }]
+                    name: t('estoque'),
+                    subsubmenus: [{ name:  t('estoque_da_dm') }]
                 },
                 {
-                    name: 'Operacional',
-                    subsubmenus: [{ name: 'Status da DM' }]
+                    name: t('operacional'),
+                    subsubmenus: [{ name: t('status_dm') }]
                 },
                 {
-                    name: 'Retiradas e Devoluções',
-                    subsubmenus: [{ name: 'Retiradas Realizadas' }, { name: 'Itens Mais Retirados' }, { name: 'Devoluções' }]
+                    name: t('retiradas_e_devolucoes'),
+                    subsubmenus: [{ name: t('retiradas_realizadas') }, { name: t('itens_mais_retirados') }, { name: t('devolucoes') }]
                 }
             ]
         },
         {
-            name: 'Dispenser Machines',
-            submenus: [{ name: 'Lista de Itens não Alocados' }, { name: 'Lista de DMs' }]
+            name: t('dispenser_machines'),
+            submenus: [{ name: t('unallocated_items_list') }, { name: t('lista_dms') }]
         },
         {
-            name: 'Produtos',
-            submenus: [{ name: 'Lista de Produtos' }]
+            name: t('produtos'),
+            submenus: [{ name: t('list_products') }]
         }
     ],
     4: [
         // Avulso
         {
-            name: 'Liberação Avulsa',
+            name: t('liberacao_avulsa'),
             submenus: []
         },
         {
-            name: 'Consultar Status de Liberação Avulsa',
+            name: t('check_one_time_release_status'),
             submenus: []
         }
     ]
-};
+}));
 
 // A função `computed` é usada para criar uma propriedade computada que depende de outras variáveis reativas.
 // A propriedade computada `filteredMenus` retorna os menus filtrados com base no perfil selecionado.
 // Se `menus[props.selectedPerfil]` não existir ou for undefined, ela retorna um array vazio.
-const filteredMenus = computed(() => menus[props.selectedPerfil] || []);
+const filteredMenus = computed(() => menus.value[props.selectedPerfil] || []);
 
 /**
  * Inicializa a seleção de menus, submenus e subsubmenus quando o componente é montado.
@@ -200,21 +201,22 @@ onMounted(() => {
  * 
  * @returns {void}
  */
-const buildStructuredMenus = () => {
-    structuredMenus.value = filteredMenus.value    // Atualiza a variável reativa `structuredMenus` com um array de menus filtrados e estruturados
-        .filter((menu) => selectedMenus.value.includes(menu.name))// Filtra os menus, incluindo apenas aqueles cujos nomes estão presentes em `selectedMenus`
-        .map((menu) => {
-            const structuredSubmenus = menu.submenus // Para cada menu selecionado, filtra e estrutura seus submenus
-                .filter((submenu) => selectedSubmenus.value.includes(submenu.name)) // Inclui apenas submenus selecionados
-                .map((submenu) => {
-                    const structuredSubsubmenus = submenu.subsubmenus // Para cada submenu selecionado, filtra e estrutura seus subsubmenus (se existirem)
-                        ? submenu.subsubmenus.filter((subsubmenu) => selectedSubsubmenus.value.includes(subsubmenu.name)) // Inclui apenas subsubmenus selecionados
+ const buildStructuredMenus = () => {
+    structuredMenus.value = filteredMenus.value
+        .filter(menu => selectedMenus.value.includes(menu.name))
+        .map(menu => {
+            const structuredSubmenus = menu.submenus
+                .filter(submenu => selectedSubmenus.value.includes(submenu.name))
+                .map(submenu => {
+                    const structuredSubsubmenus = submenu.subsubmenus
+                        ? submenu.subsubmenus.filter(subsubmenu => selectedSubsubmenus.value.includes(subsubmenu.name))
                         : [];
-                    return { ...submenu, subsubmenus: structuredSubsubmenus }; // Retorna o submenu com a lista de subsubmenus filtrados
+                    return { ...submenu, subsubmenus: structuredSubsubmenus };
                 });
-            return { ...menu, submenus: structuredSubmenus };// Retorna o menu com a lista de submenus filtrados e estruturados
+            return { ...menu, submenus: structuredSubmenus };
         });
 };
+
 
 /**
  * Envia os dados dos menus e submenus selecionados para o servidor.

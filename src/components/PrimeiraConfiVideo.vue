@@ -5,7 +5,7 @@
         <div class="">
             <!-- Exibe mensagem de erro caso ocorra algum problema -->
             <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-            <P class="mb-4 mt-6">Selecione uma DM no quadro abaixo para fazer o upload dos vídeos:</P>
+            <P class="mb-4 mt-6">{{ t('select_dm_for_upload') }}</P>
             <div class="card flex align-items-center justify-content-center">
                 <!-- Verifica se há opções de DM disponíveis -->
                 <div class="flex grid my-2 flex justify-content-evenly flex-wrap" v-if="dmOptions.length > 0">
@@ -28,11 +28,11 @@
 
                     <div class="col-3 my-3 p-0">
                         <!-- Botão para abrir o seletor de arquivos -->
-                        <Button class="w-full" label="Selecionar Vídeos" icon="pi pi-folder-open" @click="triggerFileInput" />
+                        <Button class="w-full" :label="$t('select_video')" icon="pi pi-folder-open" @click="triggerFileInput" />
                         <!-- Botão para enviar os vídeos -->
-                        <Button class="my-2 w-full" label="Enviar Todos" icon="pi pi-upload" @click="uploadVideos" :disabled="filesToUpload.length === 0 || isUploading" />
+                        <Button class="my-2 w-full" :label="$t('send_all')" icon="pi pi-upload" @click="uploadVideos" :disabled="filesToUpload.length === 0 || isUploading" />
                         <!-- Botão de conclusão de setup, habilitado apenas quando pelo menos um vídeo foi enviado -->
-                        <Button class="w-full concluido" severity="success" label="Setup de Vídeo Concluído" icon="pi pi-check" @click="finalizarSetup" :disabled="!isAnyVideoUploaded" />
+                        <Button class="w-full concluido" severity="success" :label="$t('video_setup_completed')" icon="pi pi-check" @click="finalizarSetup" :disabled="!isAnyVideoUploaded" />
                     </div>
 
                     <Divider layout="vertical" />
@@ -110,7 +110,7 @@ const triggerFileInput = () => {
         toast.add({
             severity: 'warn',
             summary: 'Aviso',
-            detail: 'Selecione a DM para adicionar vídeos.',
+            detail: t('video_associated_dm'),
             life: 3000
         });
 
@@ -165,7 +165,7 @@ const handleFiles = (event) => {
             toast.add({
                 severity: 'error',
                 summary: 'Erro de Arquivo',
-                detail: 'O tamanho do arquivo não pode exceder 5MB.',
+                detail: 'O tamanho do arquivo não pode exceder 50MB.',
                 life: 3000
             });
             continue; // Pula o arquivo inválido

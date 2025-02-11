@@ -24,7 +24,7 @@
     <!-- Template personalizado para exibição quando não há dados -->
     <template #empty>
       <!-- Mensagem de 'vazio' quando não há notificações disponíveis -->
-      <p class="text-center">{{$t('no_notifications')}}</p>
+     {{t('no_notifications')}}
     </template>
   </DataTable>
 </template>

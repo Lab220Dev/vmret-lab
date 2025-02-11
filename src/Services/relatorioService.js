@@ -198,6 +198,18 @@ const relatorioService = {
 
             throw new Error(`Erro ao consultar dados: ${error.message}`);
         }
+    },
+    async Cabecalho() {
+        try {
+            const response = await fetch('/src/assets/cabecalho.html'); 
+            if (!response.ok) {
+                throw new Error('Erro ao carregar o cabeçalho');
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('Erro ao recuperar o cabeçalho:', error);
+            return '';
+        }
     }
 };
 // Exporta o serviço `relatorioService` para que ele possa ser utilizado em outros módulos.
