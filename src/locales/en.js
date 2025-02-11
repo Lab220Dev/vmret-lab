@@ -119,7 +119,7 @@ export default {
     sku: 'SKU',
     product: 'Product',
     current_quantity: 'Current Quantity',
-    minimal_quantity: 'Minimal Quantity',
+    minimal_quantity: 'Min. Quantity',
     capacity: 'Capacity',
     cost_center: 'Cost Center',
     sector: 'Sector',

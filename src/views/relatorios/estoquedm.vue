@@ -112,18 +112,21 @@ watch(
 onMounted(() => {
     fetchDM(); // Carrega as DM's quando o componente é montado
 });
+
+//truncar texto acima de 15 caracteres
+const truncatedText = (text) => {
+    return text.length > 40 ? text.substring(0, 40) + '...' : text;
+};
 </script>
 
 <template>
     <div class="card vh">
         <!-- Contêiner principal da tela -->
-        <h5 class="my-6 ml-2 text-2xl">{{$t('dm_inventory')}}</h5>
-        <!-- Título da página -->
-
+        <!-- Título da página <h5 class="my-6 ml-2 text-2xl">{{$t('dm_inventory')}}</h5>-->
         <!-- Dropdown para seleção de DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">{{$t('dispenser_machine')}}:</label>
-            <Dropdown id="dm" style="width: 20%" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
+            <Dropdown id="dm" style="width: 200px" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <!-- Tabela de Estoque -->
@@ -143,8 +146,8 @@ onMounted(() => {
             :metaKeySelection="false"
             :sortOrder="1"
             :sortField="'sku'"
-            tableStyle="max-width: 100%; table-layout: fixed;"
-        >
+            size="Normal"
+            columnResizeMode="fit">
             <!-- A tabela exibe os dados provenientes da variável 'EstoqueDM' com várias funcionalidades de interatividade, como filtros, paginação e ordenação. -->
             <!-- O usuário pode filtrar os dados globalmente usando os campos definidos em ':globalFilterFields', como 'sku', 'nome', 'Posicao', 'quantidade', etc. -->
             <!-- A tabela suporta a ordenação inicial pelo campo 'sku' em ordem crescente e permite que o usuário remova a ordenação clicando novamente na coluna. -->
@@ -156,7 +159,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                        <span>{{$t('total_records',{count: filteredCount})}}</span>
                         <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
@@ -177,21 +180,19 @@ onMounted(() => {
             <template #empty>  {{ $t('empty_message') }}</template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="sku" class="table-cell" style="width: 10%;" sortable :header="t('SKU')">
+            <Column field="sku" class="table-cell" sortable style="width: 8%;" :header="t('SKU')">
             
                 <template #body="{ data }">
-                    <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span>
-                    <!-- Exibe o nome do produto com tooltip -->
+                    <span class="tooltip-target" v-tooltip="data.sku">{{ truncatedText(data.sku) }}</span>
                 </template>
             
             </Column>
-            <Column field="nome" sortable :header="t('product')">
+            <Column field="nome" class="table-cell" sortable :header="t('product')">
                 <template #body="{ data }">
-                    <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
-                    <!-- Exibe o nome do produto com tooltip -->
+                    <span class="tooltip-target" v-tooltip="data.nome">{{ truncatedText(data.nome) }}</span>
                 </template>
             </Column>
-            <Column field="Posicao" sortable style="text-align: center" :header="t('position')">
+            <Column field="Posicao" sortable style="width: 10%; text-align: center" :header="t('position')">
                 <template #body="{ data }">
                     <span v-tooltip="getTooltipText(data)">
                         {{ data.Posicao }}
@@ -199,20 +200,20 @@ onMounted(() => {
                     <!-- Exibe a posição do produto com tooltip condicional -->
                 </template>
             </Column>
-            <Column :field="t('quantity')" sortable style="text-align: center">
+            <Column :field="t('quantity')" sortable style="width: 12%; text-align: center">
                 <template #header>
                     <span v-tooltip="$t('current_quantity')">{{t('current_quantity_short')}}</span>
                     <!-- Tooltip para a coluna de quantidade -->
                 </template>
             </Column>
-            <Column field="quantidademinima" sortable style="text-align: center">
+            <Column field="quantidademinima" sortable style="width: 12%; text-align: center">
                 <template #header>
-                    <span v-tooltip="$t('minimal_quantity')">{{t('minimal_quantity')}}</span>
+                    <span v-tooltip="$t('minimum_quantity')">{{t('minimal_quantity')}}</span>
                     <!-- Tooltip para a coluna de quantidade mínima -->
                 </template>
             </Column>
-            <Column field="capacidade" sortable  style=" width: 20%;text-align: center " :header="t('capacity')"></Column>
             <!-- Coluna para capacidade -->
+            <Column field="capacidade" sortable style="width: 10%; text-align: center" :header="t('capacity')"></Column>
         </DataTable>
 
         <!-- Spinner de carregamento exibido enquanto a requisição está em andamento -->
@@ -264,5 +265,21 @@ onMounted(() => {
     overflow: hidden; /* Oculta o texto que excede o tamanho da célula */
     white-space: nowrap; /* Impede quebra de linha */
     text-overflow: ellipsis; /* Exibe reticências (...) quando o texto excede o tamanho */
+}
+
+/* Estilos para a exibição de tooltip */
+.tooltip-target {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* Estilos para o tooltip, permitindo múltiplas linhas de texto */
+.v-tooltip {
+    max-width: 400px;
+    white-space: normal;
 }
 </style>

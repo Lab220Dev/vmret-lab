@@ -31,7 +31,7 @@ const props = defineProps({
 <template>
     <div class="header" style="display: flex">
         <!-- Cabeçalho exibindo o título e o ícone de informação sobre os itens mais retirados -->
-        <div class="title" style="display: flex; align-items: center">
+        <div class="title mb-0" style="display: flex; align-items: center">
             <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5>
         </div>
 
@@ -43,8 +43,10 @@ const props = defineProps({
     :value="props.most" 
     removableSort 
     :rows="5" 
-    tableStyle="min-width: 20rem; table-layout: fixed;" 
-    responsiveLayout="scroll" class="mt-3">
+    size="Normal"
+    columnResizeMode="fit"
+    responsiveLayout="scroll" 
+    class="mt-3">
         <!-- A tabela exibe os dados provenientes de "props.most" -->
         <!-- O usuário pode remover a ordenação clicando na coluna de ordenação -->
         <!-- Define o número de linhas visíveis por página como 5 -->
@@ -52,15 +54,18 @@ const props = defineProps({
         <!-- Faz com que a tabela tenha um layout responsivo, com rolagem horizontal em telas menores -->
 
         <!-- Coluna para exibir o SKU do produto -->
-        <Column field="ProdutoSKU" :header="t('SKU')" sortable style="width: 15%"></Column>
+        <Column field="ProdutoSKU" :header="t('SKU')" style="width: 10%;" sortable>
+            <template #body="{ data }">
+                            <span class="tooltip-target" v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
+                        </template></Column>
         <!-- Coluna para exibir o nome do produto -->
-        <Column field="ProdutoNome" :header="t('item')" sortable style="width: 60%">
+        <Column field="ProdutoNome" :header="t('item')" sortable>
             <template #body="{ data }">
                 <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
             </template></Column
         >
         <!-- Coluna para exibir o número de retiradas -->
-        <Column field="NumeroDeRetiradas" :header="t('quantity')" sortable style="width: 15%"></Column>
+        <Column field="NumeroDeRetiradas" :header="t('quantity')" style="width: 10%; text-align: center;" sortable ></Column>
         <!-- Mensagem exibida caso não haja dados na tabela -->
         <template #empty>
             <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{ $t('sem_retirada') }}</div>

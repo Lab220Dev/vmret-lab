@@ -3,13 +3,16 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueD
 import { FilterMatchMode } from 'primevue/api'; // Importa o modo de filtro para correspondência de filtros globais
 import { useToast } from 'primevue/usetoast'; // Importa o serviço de toast para mensagens rápidas
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS necessário para o VueDatePicker
-import { ref, onMounted, watch,computed } from 'vue'; // Importa os hooks do Vue (ref, onMounted, watch)
+import { ref, onMounted, watch, computed } from 'vue'; // Importa os hooks do Vue (ref, onMounted, watch)
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString,getDateFromString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString, getDateFromString, isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
 import { useI18n } from 'vue-i18n';
+import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
+import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
+
 const { t } = useI18n();
 
 const showDialog = ref(false); // Controla a visibilidade do dialog de erro
@@ -173,107 +176,116 @@ onMounted(() => {
 <template>
     <!-- Card principal para exibição do relatório -->
     <div class="card vh">
-        <!-- Título do card -->
-        <h5 class="my-6 ml-2 text-2xl">{{$t('retiradas_realizadas')}}</h5>
+        <div class="form">
+            <div class="text-center">
+                <!-- Título do card <h5 class="my-6 ml-2 text-2xl">{{$t('retiradas_realizadas')}}</h5>-->
+                
+                <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
+                    <!-- Filtro DM (Departamento ou Manager) -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="dm">{{ $t('dm') }}</label>
+                        <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
+                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1"></Dropdown>
+                    </div>
 
-        <!-- Formulário de filtros de busca, visível quando a variável 'show' for verdadeira -->
-        <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
-            <!-- Filtro DM (Departamento ou Manager) -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="dm">{{ $t('dm') }}</label>
-                <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
-                <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value":placeholder="$t('all')" ref="dropdown1"></Dropdown>
+                    <!-- Filtro Centro de Custo -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <label for="perfil">{{ $t('cost_center') }}</label>
+                        <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
+                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
+                    </div>
+
+                    <!-- Filtro Setor -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <label for="perfil">{{ $t('sector') }}</label>
+                        <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
+                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
+                    </div>
+
+                    <!-- Filtro Planta -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="planta">{{ $t('factory') }}:</label>
+                        <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
+                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
+                    </div>
+
+                    <!-- Filtro Funcionário -->
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <label for="perfil">{{ t('employee') }}:</label>
+                        <!-- Dropdown para selecionar Funcionário -->
+                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                    </div>
+
+                    <!-- Filtro Data Inicial -->
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                        <label for="perfil">{{ t('initial_date') }}:</label>
+                        <!-- DatePicker para selecionar a Data Inicial -->
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="formatDateToString"
+                            locale="pt-BR"
+                            auto-apply
+                            :enable-time-picker="false"
+                            :placeholder="$t('initial_date_placeholder')"
+                            teleport="body"
+                            ref="datepicker1"
+                            @open="handleDatepickerOpen"
+                        />
+                    </div>
+
+                    <!-- Filtro Data Final -->
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                        <label for="perfil">{{ $t('end_date') }}:</label>
+                        <!-- DatePicker para selecionar a Data Final -->
+                        <VueDatePicker
+                            class="drop"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="formatDateToString"
+                            locale="pt-BR"
+                            auto-apply
+                            :enable-time-picker="false"
+                            :placeholder="$t('end_date_placeholder')"
+                            teleport="body"
+                            ref="datepicker2"
+                            @open="handleDatepickerOpen"
+                        />
+                    </div>
+
+                    <!-- Botão de filtro -->
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+                    </div>
+
+                    <!-- Botão para exportar dados em CSV -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
+                    </div>
+
+                    <!-- Botão para exportar dados em JSON -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Filtro Centro de Custo -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{$t('cost_center')}}</label>
-                <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
+            <!-- WEB - Se for mobile não é para mostrar esse ícones -->
+        </div>
+        <div v-if="!isMobile" class="flex justify-content-start align-items-center">
+            <!-- Imagem para exportar dados em CSV -->
+            <div class="">
+                <img :src="exportCsv" alt="Export CSV" @click="exportCSV" style="cursor: pointer" width="70" height="70" />
             </div>
 
-            <!-- Filtro Setor -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{ $t('sector') }}</label>
-                <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
-            </div>
-
-            <!-- Filtro Planta -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="planta">{{$t('factory')}}:</label>
-                <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
-                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
-            </div>
-
-            <!-- Filtro Funcionário -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{t('employee')}}:</label>
-                <!-- Dropdown para selecionar Funcionário -->
-                <Dropdown class="drop" 
-                v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                optionLabel="label" 
-                optionValue="value" 
-                :placeholder="$t('all')" 
-                ref="dropdown5" />
-            </div>
-
-            <!-- Filtro Data Inicial -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">{{t('initial_date')}}:</label>
-                <!-- DatePicker para selecionar a Data Inicial -->
-                <VueDatePicker
-                    class="drop"
-                    v-model="relatorio.data_inicio"
-                    showIcon
-                    :showOnFocus="false"
-                    :format="formatDateToString"
-                    locale="pt-BR"
-                    auto-apply
-                    :enable-time-picker="false"
-                    :placeholder="$t('initial_date_placeholder')"
-                    teleport="body"
-                    ref="datepicker1"
-                    @open="handleDatepickerOpen"
-                />
-            </div>
-
-            <!-- Filtro Data Final -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <label for="perfil">{{$t('end_date')}}:</label>
-                <!-- DatePicker para selecionar a Data Final -->
-                <VueDatePicker
-                    class="drop"
-                    v-model="relatorio.data_final"
-                    showIcon
-                    :showOnFocus="false"
-                    :format="formatDateToString"
-                    locale="pt-BR"
-                    auto-apply
-                    :enable-time-picker="false"
-                    :placeholder="$t('end_date_placeholder')"
-                    teleport="body"
-                    ref="datepicker2"
-                    @open="handleDatepickerOpen"
-                />
-            </div>
-
-            <!-- Botão de filtro -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
-            </div>
-
-            <!-- Botão para exportar dados em CSV -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
-            </div>
-
-            <!-- Botão para exportar dados em JSON -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
+            <!-- Imagem para exportar dados em JSON -->
+            <div class="">
+                <img :src="exportJson" alt="Export JSON" @click="exportJSON" style="cursor: pointer" width="70" height="70" />
             </div>
         </div>
-
         <!-- DataTable que exibe o relatório com base nos filtros -->
         <DataTable
             v-model:filters="filters"
@@ -286,11 +298,12 @@ onMounted(() => {
             :rowsPerPageOptions="[5, 10, 20, 50]"
             rowHover
             :globalFilterFields="['Identificacao', 'Dia', 'matricula', 'nome', 'email', 'ProdutoNome', 'Quantidade', 'ProdutoSKU']"
-            tableStyle="max-width: 100%;"
             ref="dt"
             class="mt-6"
             :sortField="'ProdutoSKU'"
             :sortOrder="1"
+            size="Normal"
+            columnResizeMode="fit"
         >
             <!-- 
     A tabela exibe os dados contidos na variável 'retiradas', que provavelmente são registros de algum tipo de transação ou retirada de itens. Cada linha da tabela corresponde a um item dessa lista.
@@ -332,7 +345,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                        <span>{{ $t('total_records', { count: filteredCount }) }}</span>
                         <!-- Exibe o total de registros filtrados -->
                     </div>
                     <div>
@@ -357,35 +370,28 @@ onMounted(() => {
                 </template> -->
             </Column>
 
-            <Column field="Dia" sortable class="table-cell"  :header="t('date')">
+            <Column field="Dia" sortable class="table-cell" :header="t('date')">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ getDateFromString(data.Dia) }}</span>
+                    <span v-tooltip="data.Dia">{{ data.Dia }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
 
-            <Column field="Hora" sortable class="table-cell" style="width: 7%" :header="t('time')">
+            <!-- <Column field="Hora" sortable class="table-cell" style="width: 7%" :header="t('time')">
                 <template #body="{ data }">
                     {{ getTimeFromString(data.Dia) }}
-                    <!-- Exibe a hora formatada -->
                 </template>
-            </Column>
+            </Column> -->
 
-            <Column field="Matricula" style="width: 15%;" sortable class="table-cell"  :header="t('employee_id')">
+            <Column field="Matricula" sortable class="table-cell" :header="t('employee_id')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
                 </template> -->
             </Column>
 
-            <Column field="Nome" class="table-cell"  sortable :header="t('name')">
+            <Column field="Nome" class="table-cell" sortable :header="t('name')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Nome">{{ data.Nome }}</span>
-                </template> -->
-            </Column>
-
-            <Column field="Email" sortable class="table-cell"  :header="t('email')">
-                <!-- <template #body="{ data }">
-                    <span v-tooltip="data.Email">{{ data.Email }}</span>
                 </template> -->
             </Column>
 
@@ -395,13 +401,14 @@ onMounted(() => {
                 </template>
             </Column>
 
-            <Column field="Quantidade"  sortable class="text-center table-cell">
+            <Column field="Quantidade" sortable class="text-center table-cell">
                 <template #header>
                     <span v-tooltip="$t('quantity')">{{ $t('quantity_short') }}</span>
                     <!-- Tooltip para a coluna de quantidade mínima -->
-                </template></Column>
+                </template></Column
+            >
 
-            <Column field="ProdutoSKU" class="table-cell"  sortable header="CA">
+            <Column field="ProdutoSKU" class="table-cell" sortable header="CA">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
                 </template> -->

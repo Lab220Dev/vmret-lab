@@ -333,7 +333,7 @@ const deleteUsuario = async (item) => {
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>{{$t('total_records')}}:{{  filteredCount  }}</span><!-- Exibe a quantidade de registros filtrados -->
+                                            <span>{{$t('total_records',{count: filteredCount})}}</span><!-- Exibe a quantidade de registros filtrados -->
                                         </div>
                                         <!-- Componente para busca global na tabela -->
                                         <IconField iconPosition="left">

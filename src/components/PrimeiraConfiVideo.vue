@@ -66,6 +66,9 @@
 import axios from '@/axios.js'; // Importa o axios para realizar requisições HTTP
 import { ref, computed, defineProps, defineEmits } from 'vue'; // Funções do Vue para reatividade e manipulação de props
 import { useToast } from 'primevue/usetoast'; // Importa a função de toast para exibir notificações
+import videoService from '@/services/videoService';
+import { isValidVideoFile } from '@/helpers/HelperValidacao';
+import { generateCustomVideoName } from '@/helpers/HelperUtils';
 
 const toast = useToast(); // Instancia o objeto de notificações de toast
 
@@ -205,15 +208,14 @@ const uploadVideos = async () => {
         formData.append('customName', item.customName); // Adiciona o nome customizado do arquivo
 
         try {
-            // Envia o vídeo via POST para o servidor
-            await axios.post('/video/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                },
-                onUploadProgress: (progressEvent) => {
+            await videoService.uploadVideo(
+                item.file,
+                item.dmId,
+                item.customName,
+                (progressEvent) => {
                     item.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100); // Atualiza o progresso
                 }
-            });
+            );
 
             uploadedVideos.value++; // Incrementa o contador de vídeos enviados com sucesso
 
