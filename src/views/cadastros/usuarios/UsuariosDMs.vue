@@ -347,7 +347,7 @@ const deleteUsuario = async (item) => {
                                 </template>
 
                                 <!-- Mensagem exibida quando não há dados -->
-                                <template #empty> Nenhum usuário adicionado. </template>
+                                <template #empty> Nenhum usuário adicio{{t('empty_user')}} </template>
 
                                 <!-- Coluna para o nome do usuário -->
                                 <Column field="nome" sortable style="width: 30%;" :header="t('name')"></Column>
@@ -416,13 +416,13 @@ const deleteUsuario = async (item) => {
                                 <label class="mt-0 text-nowrap" for="switch2">{{$t('active_user')}}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
-                                    <span class="ml-2">{{ usuario.ativo ? 'Sim' : 'Não' }}</span>
+                                    <span class="ml-2">{{ usuario.ativo ? t('yes') : t('no') }}</span>
                                 </div>
                             </div>
                             
                             <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="perfil">{{$t('client')}}</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Escolha um" @change="fetchIdPlanta"></Dropdown>
+                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Dropdown>
                                 <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
                             

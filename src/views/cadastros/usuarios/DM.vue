@@ -651,7 +651,7 @@ onMounted(async () => {
             <div class="card">
                 <h4 class="my-6 ml-2">{{t('dispenser_machines')}}</h4>
                 <TabView v-model:activeIndex="active" v-if="!show">
-                    <TabPanel header="Listar Dispenser Machines">
+                    <TabPanel :header="$t('dispenser_machine_list')">
                         <div class="col-12">
                             <DataTable
                                 v-model:filters="filters"
@@ -734,7 +734,7 @@ onMounted(async () => {
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">{{t('client')}}:</label>
-                                <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" placeholder="Selecione um" />
+                                <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
                             </div>
 
                             <div class="full lg:col-6 md:col-9 sm:col-12">

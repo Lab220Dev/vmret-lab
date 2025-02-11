@@ -817,8 +817,7 @@ const hideDialog = () => {
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
                                     <Fieldset
-                                        legend="Selecione os dias que o funcionário poderá retirar os
-                                        Itens:"
+                                         :legend="t('select_days_for_employee')"
                                         class="mt-5 p-1 lg:col-12 md:col-12 sm:col-12"
                                     >
                                         <label for="fim"></label>

@@ -55,7 +55,7 @@ const fetchData = async () => {
 const formattedListanoti = computed(() => {
     return Array.isArray(notifcacoes.value)
         ? notifcacoes.value
-        : [{ cliente: '-', tipo: '-', date: '-', status: 'Sem notificações' }];
+        : [{ cliente: '-', tipo: '-', date: '-', status: t('no_notifications') }];
 });
 onMounted(async () => {
    await fetchData();

@@ -1,6 +1,6 @@
 <script setup>
 // Importação dos hooks e bibliotecas do Vue e PrimeVue
-import { reactive, ref, onMounted, watch } from 'vue'; // Importação das funções do Vue.
+import { reactive, ref, onMounted, watch ,computed} from 'vue'; // Importação das funções do Vue.
 import { useToast } from 'primevue/usetoast'; // Importação do hook para exibição de toast messages.
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store de autenticação.
 import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de correspondência.
@@ -528,7 +528,7 @@ const resetForm = () => {
                         </div>
                     </TabPanel>
 
-                    <TabPanel :header="visible ? t('edit_user') : t('add_user')'">
+                    <TabPanel :header="visible ? t('edit_user') : t('add_user')">
                         <!-- Aba para edição ou criação de usuário -->
                         <div class="mt-3 mx-0 p-fluid grid">
                             <!-- Formulário de edição ou adição -->

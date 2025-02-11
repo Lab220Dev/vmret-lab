@@ -12,7 +12,7 @@
       </div>
       
       <!-- Botão para acionar o envio de imagem -->
-      <button class="button" @click="triggerFileInput"><i class="pi pi-upload icon-left"></i> Enviar Imagem</button>
+      <button class="button" @click="triggerFileInput"><i class="pi pi-upload icon-left"></i> {{$t('send_image')}}</button>
     </div>
   </template>
   
@@ -21,7 +21,8 @@
   import { defineProps, defineEmits, defineExpose } from 'vue'; // defineProps para declarar propriedades, defineEmits para declarar eventos e defineExpose para expor funções
   import imageUrl from '@/assets/images/placeholder4.png'; // Importa imagem de placeholder
   import { useToast } from 'primevue/usetoast'; // Função para mostrar notificações
-  
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
   /**
    * Propriedades do componente.
    * 

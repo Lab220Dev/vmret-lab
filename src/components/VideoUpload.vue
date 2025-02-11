@@ -3,33 +3,33 @@
         <!-- Tabela que exibe a lista de DMs e vídeos associados -->
         <DataTable class="" :value="dmOptions"  responsiveLayout="scroll">
             <Column field="Identificacao" header="DM"> </Column>
-            <Column field="Video" header="Vídeo Associado"></Column>
+            <Column field="Video" :header="$t('video_associated')"></Column>
 
             <!-- Coluna de Ações: Editar DM -->
-            <Column header="Ações" style="width: 10%">
+            <Column :header="$t('action')" style="width: 10%">
                 <template #body="slotProps">
                     <!-- Botão de Editar: Exibe o diálogo de associar vídeo -->
-                    <Button label="Editar" style="width: 100px;" icon="pi pi-pencil" class="p-button-sm mb-2" @click="editDM(slotProps.data)" />
-                    <Button label="Deletar" style="width: 100px;" icon="pi pi-trash" class="p-button-sm p-button-danger" @click="deleteDM(slotProps.data)" />
+                    <Button :label="$t('edit')" style="width: 100px;" icon="pi pi-pencil" class="p-button-sm mb-2" @click="editDM(slotProps.data)" />
+                    <Button :label="$t('delete')" style="width: 100px;" icon="pi pi-trash" class="p-button-sm p-button-danger" @click="deleteDM(slotProps.data)" />
                 </template>
             </Column>
         </DataTable>
 
         <!-- Diálogo para associar vídeo -->
-        <Dialog v-model:visible="showDialog" header="Editar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
+        <Dialog v-model:visible="showDialog":header="$t('edit_video')" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
             <hr class="my-0" />
             <form class="card formdevideo mx-4 my-3 py-3" @submit.prevent="uploadVideo">
                 <!-- Campo de seleção de arquivo (oculto) -->
                 <input type="file" accept="video/mp4" ref="fileInput" @change="handleFile" style="display: none" />
 
                 <!-- Botão para abrir o seletor de arquivos -->
-                <Button label="Selecionar Arquivo" icon="pi pi-folder-open" @click="triggerFileInput" />
+                <Button :label="$t('select_file')" icon="pi pi-folder-open" @click="triggerFileInput" />
 
                 <!-- Pré-visualização do vídeo selecionado -->
                 <video autoplay loop id="video-preview" v-show="selectedFile" width="140" height="240" class="mt-3 p-0 mx-auto" />
             </form>
             <div class="mt-6 name-file" v-if="selectedFile">
-                <p class="text-sm "><strong>Arquivo Selecionado:</strong></p>
+                <p class="text-sm "><strong>{{$t('selected_video')}}</strong></p>
                 <p class="text-sm file-name ">
                     <span class="tooltip-target" v-tooltip="selectedFile.name">{{ selectedFile.name }}</span>
                 </p>
@@ -39,14 +39,14 @@
             <!-- Botões de ação para salvar ou cancelar -->
 
             <div class="button-group flex justify-content-between mt-3">
-                <Button label="Salvar" icon="pi pi-check" class="p-button-sm p-button-success" :disabled="!selectedFile || isUploading" @click="uploadVideo" />
-                <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
+                <Button :label="$t('save')" icon="pi pi-check" class="p-button-sm p-button-success" :disabled="!selectedFile || isUploading" @click="uploadVideo" />
+                <Button :label="$t('cancel')" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
             </div>
         </Dialog>
-        <Dialog v-model:visible="showDeleteDialog" header="Apagar Vídeo" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
+        <Dialog v-model:visible="showDeleteDialog" :header="$t('delete_video')" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
             <hr class="my-0" />
             <div class="m-5">
-                <p class="text-sm "><strong>Você tem certeza que quer apagar o video:</strong></p>
+                <p class="text-sm "><strong>{{$t('delete_video_dialog')}}</strong></p>
                 <p class="text-sm ">{{ selectedDM.Video }}</p>
             </div>
 
@@ -54,8 +54,8 @@
             <!-- Botões de ação para salvar ou cancelar -->
 
             <div class="button-group flex justify-content-between mt-3">
-                <Button label="Deletar" icon="pi pi-trash" class="p-button-sm p-button-danger"  @click="handleDelete" />
-                <Button label="Cancelar" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
+                <Button :label="$t('delete')" icon="pi pi-trash" class="p-button-sm p-button-danger"  @click="handleDelete" />
+                <Button :label="$t('cancel')" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="closeDialog" />
             </div>
         </Dialog>
         <!-- Spinner de carregamento enquanto o vídeo está sendo enviado -->
@@ -112,8 +112,8 @@ const handleFile = (event) => {
     if (!selectedDM.value) {
         toast.add({
             severity: 'error',
-            summary: 'Erro',
-            detail: 'Selecione uma DM antes de adicionar arquivos.',
+            summary: -t('title_error'),
+            detail: t('video_associated_dm'),
             life: 3000
         });
         return;
@@ -123,7 +123,7 @@ const handleFile = (event) => {
     if (!validation.valid) {
         toast.add({
             severity: 'error',
-            summary: 'Erro de Arquivo',
+            summary: t('title_error'),
             detail: validation.error,
             life: 3000,
         });
@@ -152,22 +152,22 @@ const handleDelete = async () => {
     try {
         await videoService.deleteVideo(selectedDM.value.ID_DM);
         emit('update-video', { dmId: selectedDM.value.ID_DM, video: null });
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Vídeo apagado com sucesso.', life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail:  t('video_dialog_sucess'), life: 3000 });
         closeDialog();
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao apagar o vídeo.', life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail:  t('video_dialog_fail'), life: 3000 });
     }
 };
 // Função para realizar o upload do vídeo
 const uploadVideo = async () => {
   if (!selectedFile.value) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Nenhum arquivo selecionado.', life: 3000 });
+    toast.add({ severity: 'error', summary: t('title_error'), detail: t('video_empty'), life: 3000 });
     return;
   }
 
   const validation = isValidVideoFile(selectedFile.value);
   if (!validation.valid) {
-    toast.add({ severity: 'error', summary: 'Erro de Arquivo', detail: validation.error, life: 3000 });
+    toast.add({ severity: 'error', summary: t('title_error'), detail: validation.error, life: 3000 });
     return;
   }
 
@@ -183,11 +183,11 @@ const uploadVideo = async () => {
         uploadProgress.value = Math.round((progressEvent.loaded / progressEvent.total) * 100);
       }
     );
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: `Arquivo enviado como "${customName}"`, life: 3000 });
+    toast.add({ severity: 'success', summary: t('title_sucess'), detail:t('file_uploaded', { file: customName }), life: 3000 });
     emit('update-video', { dmId: selectedDM.value.ID_DM, video: customName });
     closeDialog();
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao enviar o vídeo.', life: 3000 });
+    toast.add({ severity: 'error', summary: t('title_error'), detail: t('video_upload_failed'), life: 3000 });
   } finally {
     isUploading.value = false;
   }
