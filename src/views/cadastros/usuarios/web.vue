@@ -1,6 +1,6 @@
 <script setup>
 // Importação dos hooks e bibliotecas do Vue e PrimeVue
-import { reactive, ref, onMounted, watch ,computed} from 'vue'; // Importação das funções do Vue.
+import { reactive, ref, onMounted, watch, computed } from 'vue'; // Importação das funções do Vue.
 import { useToast } from 'primevue/usetoast'; // Importação do hook para exibição de toast messages.
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store de autenticação.
 import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de correspondência.
@@ -458,7 +458,7 @@ const resetForm = () => {
                                     <!-- Cabeçalho da tabela com total de registros e campo de busca -->
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>{{ $t('total_records') }}:{{ filteredCount }}</span>
+                                            <span>{{ $t('total_records' ,{count: filteredCount})}}</span>
                                             <!-- Exibe a quantidade de registros filtrados -->
                                         </div>
                                         <IconField iconPosition="left">

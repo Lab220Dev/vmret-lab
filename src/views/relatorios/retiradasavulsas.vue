@@ -328,7 +328,6 @@ onMounted(() => {
                         <Column field="Matricula" sortable header="Matricula"></Column>
                         <Column field="Voucher" sortable header="Voucher"></Column>
                         <Column field="Nome" sortable header="Nome"></Column>
-                        <Column field="Email" sortable header="E-mail"></Column>
                         <Column field="CodigoCa" sortable header="CA"></Column>
                         <Column field="Item" sortable header="Item"></Column>
                     </DataTable>

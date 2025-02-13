@@ -9,8 +9,12 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados para acessar listas e informações
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import {filtroGenericoReltorio,gerarEbaixarCSV,gerarEbaixarJSON} from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import {filtroGenericoReltorio,gerarEbaixarCSV,gerarEbaixarJSON, isMobileDevice} from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import { useI18n } from 'vue-i18n';
+
+import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
+import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
+
 const { t } = useI18n();
 const dataStore = useDataStore(); // Instancia o store de dados
 const showDialog = ref(false); // Estado reativo para controlar a visibilidade de uma caixa de diálogo
@@ -186,6 +190,8 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
 };
 
+const isMobile = isMobileDevice();
+
 // Função chamada quando o componente é montado
 onMounted(() => {
     loadData(); // Carrega os dados iniciais
@@ -194,33 +200,34 @@ onMounted(() => {
 
 <template>
     <div class="card vh">
-        
-            
-                <h5 class="my-6 ml-2 text-2xl">{{t('devolucoes')}}</h5>
+        <div class="form">
+            <div class="text-center">
+        <!--<h5 class="my-6 ml-2 text-2xl">{{t('devolucoes')}}</h5>-->
+                
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <label for="id_dm">{{t('dm')}}:</label>
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="id_dm">{{t('dm')}}</label>
                         <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" :placeholder="$t('all')" ></Dropdown>
                     </div>
 
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">{{t('cost_center')}}:</label>
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="perfil">{{t('cost_center')}}</label>
                         <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown3" @change="filtroGenerico" />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">{{t('sector')}}:</label>
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                        <label for="perfil">{{t('sector')}}</label>
                         <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value":placeholder="$t('all')"  ref="dropdown4" @change="filtroGenerico" />
                     </div>
-                    <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown2" @change="filtroGenerico" />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('employee')}}:</label>
                         <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown5" />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('initial_date')}}:</label>
                         <VueDatePicker
                             class="drop"
@@ -237,7 +244,7 @@ onMounted(() => {
                             @open="handleDatepickerOpen"
                         />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('end_date')}}:</label>
                         <VueDatePicker
                             class="drop"
@@ -254,18 +261,36 @@ onMounted(() => {
                             @open="handleDatepickerOpen"
                         />
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <!-- botão de filtrar -->
                         <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file":label="$t('export_csv')" @click="exportCSV"></Button>
+                    <!-- Botão para exportar dados em CSV -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
                     </div>
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6">
-                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')"  @click="exportJSON"></Button>
+
+                    <!-- Botão para exportar dados em JSON -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
                     </div>
                 </div>
+            </div>
+
+            <!-- WEB - Se for mobile não é para mostrar esse ícones -->
+        </div>
+        <div v-if="!isMobile" class="flex justify-content-start align-items-center">
+            <!-- Imagem para exportar dados em CSV -->
+            <div class="">
+                <img :src="exportCsv" alt="Export CSV" @click="exportCSV" style="cursor: pointer" width="70" height="70" />
+            </div>
+
+            <!-- Imagem para exportar dados em JSON -->
+            <div class="">
+                <img :src="exportJson" alt="Export JSON" @click="exportJSON" style="cursor: pointer" width="70" height="70" />
+            </div>
+        </div>
 
                 <!--  datatable do relatorio -->
                 <div class="mt-6">
@@ -295,7 +320,7 @@ onMounted(() => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                    <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                                    <span>{{$t('total_records',{count: filteredCount})}}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">
@@ -313,7 +338,6 @@ onMounted(() => {
                         <Column field="Dia" sortable :header="t('date')">></Column>
                         <Column field="matricula" sortable :header="t('employee_id')"></Column>
                         <Column field="nome" sortable :header="t('name')"></Column>
-                        <Column field="email" sortable :header="t('email')"></Column>
                         <Column field="ProdutoNome" sortable :header="t('item')"></Column>
                         <Column field="Quantidade" sortable :header="t('quantity_short')" class="text-center"></Column>
                         <Column field="ProdutoSKU" :header="t('ca')"></Column>

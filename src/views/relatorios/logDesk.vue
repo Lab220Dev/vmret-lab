@@ -4,7 +4,7 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Componente de seletor de 
 import { FilterMatchMode } from 'primevue/api'; // Modo de filtragem do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Função para exibir mensagens de toast
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilo do VueDatePicker
-import { ref, onMounted, watch } from 'vue'; // Funções do Vue para reatividade e ciclo de vida
+import { ref, onMounted, watch, computed } from 'vue'; // Funções do Vue para reatividade e ciclo de vida
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação e dados do usuário
 
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
@@ -237,7 +237,7 @@ onMounted(() => {
         <template #header>
                             <div class="flex justify-content-between align-items-center">
                                 <div class="flex justify-content-start">
-                                    <span>{{$t('total_records')}}: {{ filteredCount }}</span>
+                                    <span>{{$t('total_records',{count: filteredCount})}}</span>
                                 </div>
                                 <div>
                                     <IconField iconPosition="left">

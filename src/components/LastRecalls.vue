@@ -37,6 +37,10 @@ const props = defineProps({
 const formatDateTime = (date) => {
     return date ? format(new Date(date), 'dd/MM/yyyy HH:mm') : null;
 };
+
+const truncatedText = (text) => {
+    return text.length > 20 ? text.substring(0, 20) + '...' : text;
+};
 </script>
 
 <template>
@@ -53,10 +57,12 @@ const formatDateTime = (date) => {
   <!-- Tabela de dados com os produtos retirados -->
   <DataTable 
   :value="props.products" 
-  :rows="5" 
-  tableStyle="min-width: 20rem; table-layout: fixed;" 
-  removableSort responsiveLayout="scroll"
-  class="mt-3 pt-0">
+  removableSort 
+    :rows="5" 
+    size="Normal"
+    columnResizeMode="fit"
+    responsiveLayout="scroll" 
+    class="mt-3">
 
   <!-- A tabela exibe os dados provenientes de "props.products" -->
    <!-- Define o número de linhas visíveis por página como 5 -->
@@ -64,24 +70,24 @@ const formatDateTime = (date) => {
      <!-- Faz com que a tabela tenha um layout responsivo, com rolagem horizontal em telas menores -->
     
     <!-- Coluna de identificação da máquina -->
-    <Column field="Identificacao" :header="t('machine')" sortable style="width: 20%">
+    <Column field="Identificacao" style="width: 10%;" :header="t('machine')" sortable >
       <template #body="{ data }">
         <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
       </template>
     </Column>
     
     <!-- Coluna de SKU do produto -->
-    <Column field="ProdutoSKU" :header="t('SKU')" sortable style="width: 15%"></Column>
+    <Column field="ProdutoSKU" style="width: 10%; text-align: center;" :header="t('SKU')" sortable ></Column>
     
     <!-- Coluna de descrição do produto -->
-    <Column field="ProdutoDescricao" :header="t('description')" sortable style="width: 35%">
+    <Column field="ProdutoDescricao" class="table-cell" :header="t('description')" sortable style="max-width: 250px;">
       <template #body="{ data }">
         <span class="tooltip-target" v-tooltip="data.ProdutoDescricao">{{ data.ProdutoDescricao }}</span>
       </template>
     </Column>
     
     <!-- Coluna de data e hora da retirada -->
-    <Column field="Dia" :header="t('date_time')" sortable style="width: 30%">
+    <Column field="Dia" style="width: 10%;" class="table-cell" :header="t('date_time')" sortable >
       <template #body="slotProps">
         {{ formatDateTime(slotProps.data.Dia) }} <!-- Exibe a data formatada -->
       </template>
@@ -94,7 +100,14 @@ const formatDateTime = (date) => {
   </DataTable>
 </template>
 
-<style scoped>
+<style >
+.table-cell {
+    overflow: hidden !important;  /* Oculta o texto que excede o tamanho da célula */
+    white-space: nowrap; /* Impede quebra de linha */
+    text-overflow: ellipsis; /* Exibe reticências (...) quando o texto excede o tamanho */
+    
+}
+
 /* Estilos para a exibição de tooltip */
 .tooltip-target {
     cursor: pointer;

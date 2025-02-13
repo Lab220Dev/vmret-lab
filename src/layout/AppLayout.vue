@@ -8,7 +8,8 @@ import { useLayout } from '@/layout/composables/layout'; // Função personaliza
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de spinner de carregamento
 import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação
 import { useToast } from 'primevue/usetoast'; // Importa o hook de notificações do PrimeVue
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Instancia o toast para exibir notificações ao usuário
 const toast = useToast();
 
@@ -27,7 +28,7 @@ const exibirMensagemGlobal = (mensagem) => {
     if (mensagem) {
         toast.add({
             severity: "info", // Tipo de mensagem
-            summary: "Notificação", // Título do toast
+            summary: t('notification'), // Título do toast
             detail: mensagem, // Mensagem do store
             life: 3000, // Duração do toast
         });

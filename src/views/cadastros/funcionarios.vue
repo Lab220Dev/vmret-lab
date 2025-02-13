@@ -698,7 +698,7 @@ const hideDialog = () => {
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>{{$t('total_records')}}:{{  totalRecords  }}</span>
+                                    <span>{{$t('total_records',{count: totalRecords})}}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>
@@ -893,9 +893,9 @@ const hideDialog = () => {
                                                 </div>
                                             </template>
                                             <template #empty> {{t('employee_itens_empty')}} </template>
-                                            <Column :field="nome" sortable style="width: 45%" :header="t('name')"></Column>
-                                            <Column :field="sku" sortable :header="t('sku')"></Column>
-                                            <Column :field="qtd_limite" :header="t('quantity')"></Column>
+                                            <Column field="nome" sortable style="width: 45%" :header="t('name')"></Column>
+                                            <Column field="sku" sortable :header="t('sku')"></Column>
+                                            <Column field="qtd_limite" :header="t('quantity')"></Column>
                                         </DataTable>
                                     </TabPanel>
                                     <TabPanel :header="t('employee_items')">

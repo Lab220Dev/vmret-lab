@@ -191,17 +191,16 @@ const translatedItem = computed(() => translateMenuItem(props.item));
 
     <!-- Router Link para navegação de rota -->
     <router-link 
-      v-if="translatedItem.to && !translatedItem.items && translatedItem.visible !== false"
-      @click="itemClick($event, translatedItem, index)" 
-      :class="[translatedItem.class, { 'active-route': checkActiveRoute(translatedItem) }]" 
-      tabindex="0" 
-      :to="translatedItem.to"
-    >
-      <i :class="translatedItem.icon" class="layout-menuitem-icon"></i>
-      <span class="layout-menuitem-text">{{ translatedItem.label }}</span>
-      <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="translatedItem.items"></i>
-    </router-link>
-
+  v-if="translatedItem.to && !translatedItem.items && translatedItem.visible !== false"
+  @click="itemClick($event, translatedItem, index)" 
+  :class="[{ 'active-route': checkActiveRoute(translatedItem) }, 'layout-menuitem-text']" 
+  tabindex="0" 
+  :to="translatedItem.to"
+>
+  <i :class="translatedItem.icon" class="layout-menuitem-icon"></i>
+  <span :class="[translatedItem.disabled ? disabledtext : abletext]">{{ translatedItem.label }}</span>
+  <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="translatedItem.items"></i>
+</router-link>
     <!-- Submenu com animação de transição -->
     <Transition v-if="translatedItem.items && translatedItem.visible !== false" name="layout-submenu">
       <ul v-show="root ? true : isActiveMenu" class="layout-submenu">

@@ -14,7 +14,7 @@ import AppLayout from '@/layout/AppLayout.vue';
  * Importa o store de autenticação, que gerencia o estado de login do usuário.
  */
 import { useAuthStore } from '@/store/authStore';
-
+import i18n from '@/i18n';
 /**
  * Variável reativa que controla o estado de carregamento da página.
  * @type {Ref<boolean>}
@@ -324,56 +324,28 @@ const router = createRouter({
  * @param {Function} next - Função que deve ser chamada para permitir ou bloquear a navegação.
  */
 router.beforeEach((to, from, next) => {
-    /**
-     * Acessa o store de autenticação para verificar o estado do login.
-     * @type {Object}
-     */
+
     const authStore = useAuthStore();
-
-    /**
-     * Verifica se a rota exige autenticação.
-     * @type {boolean}
-     */
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-
-    /**
-     * Obtém o token de autenticação do localStorage.
-     * @type {string|null}
-     */
     const token = localStorage.getItem('token');
 
     if (requiresAuth && !token) {
-        /**
-         * Se a página requer login e o usuário não tem token, redireciona para o login.
-         */
         next({ name: 'login' });
     } else if (to.meta.Availability === false) {
-        /**
-         * Se a página estiver marcada como indisponível, mostra uma mensagem e redireciona para o Dashboard.
-         */
-        authStore.setGlobalMessage('Página indisponível no momento');
+        authStore.setGlobalMessage(i18n.global.t('page_unavailable'));
         if (to.name !== 'Dashboard') {
             next({ name: 'Dashboard' });
         } else {
             router.replace({ name: 'Dashboard' });
         }
     } else {
-        /**
-         * Caso contrário, a navegação continua normalmente e o estado de carregamento é ativado.
-         */
         isLoading.value = true;
         next();
     }
 });
 
-/**
- * Após cada navegação, desativa o estado de carregamento.
- */
 router.afterEach(() => {
     isLoading.value = false;
 });
 
-/**
- * Exporta o roteador para que ele possa ser usado em outras partes da aplicação.
- */
 export default router;

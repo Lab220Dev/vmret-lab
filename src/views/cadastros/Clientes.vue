@@ -20,6 +20,7 @@ const loading = ref(false); // Flag de carregamento (indica se o sistema está p
 const ListaClientes = ref([]); // Lista de clientes, inicialmente vazia
 const visible = ref(false); // Controle da visibilidade do formulário de cliente
 const deleteClienteDialog = ref(false); // Controle da exibição do diálogo de exclusão de cliente
+const progressValue = ref(0); 
 const item = ref({}); // Armazena o cliente selecionado para exclusão
 const selectedPerfil = ref(null); // Armazena o perfil selecionado para o cliente
 const structuredMenus = ref([]); // Estrutura de menus hierárquicos selecionados para o cliente
@@ -32,7 +33,7 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'id_cliente', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 /**
  * Objeto `cliente` reativo para armazenar os dados do cliente atual.
@@ -65,7 +66,7 @@ function debounce(func, wait = 300) {
 /**
  * Função chamada quando uma linha de cliente é selecionada na tabela.
  * Preenche o objeto `cliente` com os dados da linha selecionada e faz outras configurações de visibilidade e menus.
- * 
+ *
  * @param {Object} event - O evento de seleção da linha, contendo os dados do cliente selecionado.
  */
 const onRowSelect = (event) => {
@@ -107,7 +108,7 @@ const submitForm = () => {
 /**
  * Função assíncrona para adicionar um novo cliente.
  * Chama o serviço `clientesService.adicionarCliente` para salvar os dados no servidor.
- * 
+ *
  * @async
  */
 const adicionarCliente = async () => {
@@ -126,7 +127,7 @@ const adicionarCliente = async () => {
 /**
  * Função assíncrona para atualizar os dados de um cliente existente.
  * Chama o serviço `clientesService.atualizarCliente` para salvar as alterações no servidor.
- * 
+ *
  * @async
  */
 const atualizarCliente = async () => {
@@ -142,25 +143,39 @@ const atualizarCliente = async () => {
     }
 };
 
-/**
- * Função chamada para iniciar o processo de exclusão de um cliente.
- * Exibe um diálogo de confirmação antes de excluir o cliente.
- * 
- * @param {Object} itm - O cliente selecionado para exclusão.
- */
+
 const deleteClientedes = (itm) => {
     item.value = itm; // Armazena o cliente selecionado para exclusão
     deleteClienteDialog.value = true; // Exibe o diálogo de confirmação de exclusão
 };
 
-/**
- * Função assíncrona para deletar um cliente do sistema.
- * Chama o serviço `clientesService.deletarCliente` para remover o cliente do banco de dados.
- * 
- * @param {string} clienteId - O ID do cliente a ser deletado.
- * @async
- */
 const deleteCliente = async (clienteId) => {
+    progressValue.value = 0; // Reseta a barra de progresso
+    let eventSource = null; 
+
+    try {
+        // 🔹 Enviar a requisição para iniciar a exclusão
+        //await clientesService.deletarCliente(clienteId); 
+
+        // 🔹 Agora iniciar a escuta do progresso
+        eventSource = new EventSource(`/admin/cliente/deletar`,{id_cliente: clienteId});
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            progressValue.value = data[clienteId] || 0; // Atualiza progresso
+            console.log('Progresso:', progressValue.value); // Exibe o progresso no console
+        };
+
+        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado com progresso', life: 3000 });
+        loadClientes();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar cliente', life: 3000 });
+    } finally {
+        if (eventSource) eventSource.close(); // Fecha a conexão SSE
+        deleteClienteDialog.value = false;
+    }
+};
+
+const deleteClienteWithProgress = async (clienteId) => {
     try {
         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
         toast.add({ severity: 'success', summary:  t('title_sucess'), detail: t('client_delete_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
@@ -172,14 +187,13 @@ const deleteCliente = async (clienteId) => {
         deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
     }
 };
-
 /**
  * Função assíncrona para carregar a lista de clientes.
  * Chama o serviço `clientesService.listarClientes` para obter os dados dos clientes.
- * 
+ *
  * @async
  */
-const loadClientes = async (page=1) => {
+const loadClientes = async (page = 1) => {
     loading.value = true; // Ativa o indicador de carregamento
     try {
         const params = {
@@ -187,12 +201,12 @@ const loadClientes = async (page=1) => {
             rows: lazyParams.value.rows, // Número de registros por página
             sortField: lazyParams.value.sortField, // Campo para ordenação
             sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
+            filters: lazyParams.value.filters // Filtros aplicados
         };
         const data = prepareListData(params);
-       const result = await clientesService.listarClientesPaginado(data); // Carrega os dados dos clientes
-       ListaClientes.value= result.clientesComMenu;
-       filteredCount.value = result.totalRecords;
+        const result = await clientesService.listarClientesPaginado(data); // Carrega os dados dos clientes
+        ListaClientes.value = result.clientesComMenu;
+        filteredCount.value = result.totalRecords;
     } catch (error) {
         // Em caso de erro, exibe a mensagem no console
         console.error(error.message);
@@ -225,7 +239,7 @@ const validateCNPJField = () => {
 /**
  * `watch` do Vue: observa mudanças na variável `active`.
  * Quando `active` muda para 0, reseta o formulário e recarrega a lista de clientes.
- * 
+ *
  * @param {number} newIndex - Novo valor de `active` após a mudança.
  * @param {number} oldIndex - Valor antigo de `active`.
  */
@@ -243,7 +257,6 @@ watch(active, (newIndex, oldIndex) => {
 onMounted(() => {
     loadClientes(); // Chama a função para carregar os clientes assim que o componente for montado
 });
-
 </script>
 
 <template>
@@ -273,9 +286,9 @@ onMounted(() => {
                         @page="onPageChange($event)"
                         @sort="onSortChange($event)"
                         :globalFilterFields="['id_cliente', 'nome', 'last_login']"
-                        :sortOrder="lazyParams.value?.sortOrder||1"
-                        :sortField="lazyParams.value?.sortField ||'id_cliente'"
-                        >
+                        :sortOrder="lazyParams.value?.sortOrder || 1"
+                        :sortField="lazyParams.value?.sortField || 'id_cliente'"
+                    >
                         <!-- Filtragem global na tabela -->
                         <!-- Dados da tabela (lista de clientes) -->
                         <!-- Permite selecionar apenas um item -->
@@ -322,8 +335,8 @@ onMounted(() => {
                         <!--Coluna com botão de exclusão -->
                         <Column style="width: 10%">
                             <template #body="slotProps">
-                                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
                                 <!--Botão de excluir -->
+                                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
                             </template>
                         </Column>
                     </DataTable>
@@ -382,9 +395,9 @@ onMounted(() => {
                         </div>
                         <!--botões para salvar ou voltar -->
                         <div class="mr-1 my-7 grid justify-content-end">
-                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
-                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')"  icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
+                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarCliente" />
                         </div>
                     </div>
                 </div>
@@ -402,11 +415,14 @@ onMounted(() => {
             <template #footer>
                 <Button label="Não" icon="pi pi-times" @click="deleteClienteDialog = false" class="p-button-text" />
                 <!-- Botão para cancelar -->
-                <Button label="Sim" icon="pi pi-check" @click="deleteCliente(item.id_cliente )" class="p-button-text" />
+                <Button label="Sim" icon="pi pi-check" @click="deleteCliente(item.id_cliente)" class="p-button-text" />
                 <!-- Botão para confirmar a exclusão -->
             </template>
         </Dialog>
+        <!-- ProgressBar para mostrar o progresso -->
+        <ProgressBar v-if="progressValue > 0"  :value="progressValue" style="height: 20px" />
 
+        
         <!-- Componente de carregamento -->
         <LoadingSpinner v-if="loading" />
     </div>

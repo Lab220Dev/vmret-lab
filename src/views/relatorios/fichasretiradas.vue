@@ -102,17 +102,12 @@ onMounted(() => {
     <!-- Card principal que contém o formulário de filtros e informações -->
     <div class="card">
         <div class="form">
-            <!-- Título da página "Fichas de Retiradas" -->
+            <!-- Título da página "Fichas de Retiradas" <h5 class="my-6 ml-2 text-2xl">{{t('fichas_de_retiradas')}}<hr/></h5>-->
             <div class="text-center">
-                <h5 class="my-6 ml-2 text-2xl">
-                    Fichas de Retiradas
-                    <hr />
-                </h5>
+                 
             </div>
             <!-- Grid do formulário, com margens e espaçamento definidos -->
             <div class="">
-                <!-- Título da página "Fichas de Retiradas" -->
-                <h5 class="my-6 ml-2 text-2xl">{{t('fichas_de_retiradas')}}</h5>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12">
                     <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
@@ -128,7 +123,7 @@ onMounted(() => {
                     </div>
                     <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <label for="perfil">{{t('initial_date')}}</label>
+                        <label for="perfil">{{t('initial_date')}}:</label>
                         <!-- Componente VueDatePicker para selecionar a data inicial, com o formato de data "dd/MM/yyyy" -->
                         <VueDatePicker
                             class="drop"
@@ -146,7 +141,7 @@ onMounted(() => {
                     </div>
                     <!-- Campo de seleção para Data Final -->
                     <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <label for="perfil">{{t('end_date')}}</label>
+                        <label for="perfil">{{t('end_date')}}:</label>
                         <VueDatePicker
                             class="datepicker"
                             v-model="relatorio.data_final"

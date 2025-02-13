@@ -235,7 +235,7 @@ onMounted(() => {
                         <template #header>
                             <!-- Cabeçalho da tabela com filtro global e contador de registros -->
                             <div class="flex justify-content-between align-items-center mt-4">
-                                <span>{{ $t('total_records') }}: {{ filteredCount }}</span>
+                                <span>{{ $t('total_records',{count: filteredCount})}}</span>
 
                                 <IconField iconPosition="left">
                                     <InputIcon>

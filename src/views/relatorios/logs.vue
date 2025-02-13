@@ -294,7 +294,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                        <span>{{$t('total_records',{count: filteredCount})}}</span>
                     </div>
                     <div>
                         <IconField iconPosition="left">

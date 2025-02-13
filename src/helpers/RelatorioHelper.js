@@ -162,7 +162,7 @@ export function organizarFuncionarios(funcionarios) {
  */
 export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
     try {
-        if (!funcionarioSelecionado) {
+        if (!funcionarioSelecionado?.value || Object.keys(funcionarioSelecionado.value).length === 0) {
             throw new Error('Funcionário não selecionado');
         }
         const textoFicha = await relatorioService.TextoFicha();
@@ -219,60 +219,66 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         const text = `${textoFicha}`; // Obtém o texto da ficha
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
+        // **Verifica se há dados para exibir na tabela**
+        if (!retiradas.data?.data || retiradas.data.data.length === 0) {
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
+        } else {
+            // Definição da tabela
+            const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
+            const tableRows = retiradas.data.map((item) => {
+                try {
+                    const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date());
+                    const formattedDate = formatDateToString(parsedDate, 'dd/MM/yyyy - HH:mm');
+                    return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                } catch (error) {
+                    console.error('Erro ao formatar data:', error);
+                    return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                }
+            });
 
-        // Definição da tabela
-        const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
-
-        const tableRows = retiradas.data.map((item) => {
-            try {
-                const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date()); // Faz o parse da data
-                const formattedDate = formatDateToString(parsedDate, 'dd/MM/yyyy - HH:mm'); // Formata a data
-                return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || '']; // Retorna os dados da linha
-            } catch (error) {
-                console.error('Error parsing date:', error); // Caso ocorra erro ao parsear a data
-                return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || '']; // Retorna dados padrão com "Data inválida"
-            }
-        });
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            width: 270,
-            startY: 85,
-            theme: 'grid',
-            styles: {
-                fillColor: [255, 255, 255],
-                textColor: [0, 0, 0],
-                lineColor: [0, 0, 0],
-                lineWidth: 0.25,
-                fontSize: 10
-            },
-            headStyles: {
-                fillColor: [220, 220, 220],
-                textColor: [0, 0, 0],
-                fontStyle: 'bold',
-                lineWidth: 0.25,
-                halign: 'center'
-            },
-            alternateRowStyles: {
-                fillColor: [245, 245, 245]
-            },
-            columnStyles: {
-                0: { cellWidth: 30 },
-                1: { cellWidth: 30 },
-                2: { cellWidth: 20 },
-                3: { cellWidth: 20 },
-                4: { cellWidth: 70 },
-                5: { cellWidth: 50 }
-            }
-        });
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                width: 270,
+                startY: 85,
+                theme: 'grid',
+                styles: {
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 0, 0],
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.25,
+                    fontSize: 10
+                },
+                headStyles: {
+                    fillColor: [220, 220, 220],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    lineWidth: 0.25,
+                    halign: 'center'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                columnStyles: {
+                    0: { cellWidth: 30 },
+                    1: { cellWidth: 30 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 20 },
+                    4: { cellWidth: 70 },
+                    5: { cellWidth: 50 }
+                }
+            });
+        }
+        const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120;
+        doc.setFontSize(12);
+        doc.text('Data:', 30, finalY ); // Exibe o campo de data
+        doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
 
         doc.setFontSize(12);
-        doc.text('Data:', 30, doc.autoTable.previous.finalY + 30); // Exibe o campo de data
-        doc.text('_______/_______/_______', 40, doc.autoTable.previous.finalY + 30); // Linha para o campo de data
-
-        doc.setFontSize(12);
-        doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
-        doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
+        doc.text('______________________________________', 180, finalY);
+        doc.text('Assinatura do funcionário', 200, finalY+10);
         doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);

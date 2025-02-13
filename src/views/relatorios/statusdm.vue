@@ -166,7 +166,7 @@ const handleDatepickerOpen = () => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
-                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                        <span>{{$t('total_records',{count: filteredCount})}}</span>
                         <!-- Exibe o número total de registros -->
                     </div>
                     <div>

@@ -28,11 +28,11 @@
             :tableStyle="{ width: '100%' }"
             >
                 <template #empty>{{t('no_added_services')}}</template>
-                <Column field="name" style="width: 75%" :header="t('service')"></Column>
+                <Column field="name" style="width: 80%" :header="t('service')"></Column>
                 <Column :header="t('action')">
                     <template #body="slotProps">
-                        <Button :label="$t('setting')" class="mr-2 configuracao-monitoramento" icon="pi pi-cog" @click="editService(slotProps.data)" />
-                        <Button :label="$t('remove')" class="p-button-danger" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
+                        <Button :label="$t('setting')" class="mr-2 configuracao-monitoramento w-full" icon="pi pi-cog" @click="editService(slotProps.data)" />
+                        <Button :label="$t('remove')" class="p-button-danger w-full" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
             </DataTable>

@@ -7,8 +7,12 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'; // Importa fun�
 import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import { useI18n } from 'vue-i18n';
+
+import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
+import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
+
 const { t } = useI18n();
 /**
  * @type {Ref<boolean>}
@@ -309,6 +313,8 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
 };
 
+const isMobile = isMobileDevice();
+
 // Função chamada ao montar o componente
 onMounted(() => {
     loadData();
@@ -317,50 +323,47 @@ onMounted(() => {
 
 <template>
     <div class="card vh">
-        <!-- Card principal da página -->
-
-        <!-- Título principal -->
-        <h5 class="my-6 ml-2 text-2xl">{{t('most_withdrawn_items')}}</h5>
-
+        <div class="form">
+            <div class="text-center">
         <div class="p-0 m-0 p-fluid formgrid grid col-12">
             <!-- Início do formulário de busca de informações para o relatório -->
             <!-- Filtro para DM (Documento de Medição) -->
-            <div class="field lg:col-3 md:col-6 sm:col-12">
+            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="id_dm">{{t('dispenser_machine')}}</label>
                 <!-- Dropdown para selecionar o DM (documento de medição) -->
                 <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
             </div>
 
             <!-- Filtro para Centro de Custo -->
-            <div class="field lg:col-3 md:col-6 sm:col-12">
+            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="perfil">{{t('cost_center')}}</label>
                 <!-- Dropdown para selecionar o centro de custo -->
                 <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Setor -->
-            <div class="field lg:col-3 md:col-6 sm:col-12">
+            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="perfil">{{t('sector')}}:</label>
                 <!-- Dropdown para selecionar o setor -->
                 <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Planta -->
-            <div class="field lg:col-3 md:col-6 sm:col-12">
+            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="planta">{{t('factory')}}:</label>
                 <!-- Dropdown para selecionar a planta -->
                 <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Funcionário -->
-            <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
+            <div class="field py-0 mt-2 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="perfil">{{t('employee')}}:</label>
                 <!-- Dropdown para selecionar o funcionário -->
                 <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
             </div>
 
             <!-- Filtro para Data Inicial -->
-            <div class="field lg:col-3 md:col-6 sm:col-6">
+            <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <label for="perfil">{{t('initial_date')}}</label>
                 <!-- DataPicker para selecionar a data inicial -->
                 <VueDatePicker
@@ -380,7 +383,7 @@ onMounted(() => {
             </div>
 
             <!-- Filtro para Data Final -->
-            <div class="field lg:col-3 md:col-6 sm:col-6">
+            <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <label for="perfil">{{t('end_date')}}</label>
                 <!-- DataPicker para selecionar a data final -->
                 <VueDatePicker
@@ -400,18 +403,33 @@ onMounted(() => {
             </div>
 
             <!-- Botão de Filtrar -->
-            <div class="field lg:col-3 md:col-6 sm:col-12">
+            <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                 <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
             </div>
 
-            <!-- Botão para Exportar para CSV -->
-            <div class="field lg:col-3 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
+            <!-- Botão para exportar dados em CSV -->
+            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
+                    </div>
+
+                    <!-- Botão para exportar dados em JSON -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Botão para Exportar para JSON -->
-            <div class="field lg:col-3 md:col-6 sm:col-6">
-                <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
+            <!-- WEB - Se for mobile não é para mostrar esse ícones -->
+        </div>
+        <div v-if="!isMobile" class="flex justify-content-start align-items-center">
+            <!-- Imagem para exportar dados em CSV -->
+            <div class="">
+                <img :src="exportCsv" alt="Export CSV" @click="exportCSV" style="cursor: pointer" width="70" height="70" />
+            </div>
+
+            <!-- Imagem para exportar dados em JSON -->
+            <div class="">
+                <img :src="exportJson" alt="Export JSON" @click="exportJSON" style="cursor: pointer" width="70" height="70" />
             </div>
         </div>
 
@@ -450,7 +468,7 @@ onMounted(() => {
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
                         <!-- Exibe o total de registros filtrados -->
-                        <span>{{$t('total_records')}}:{{  filteredCount  }}</span>
+                        <span>{{$t('total_records',{count: filteredCount})}}</span>
                     </div>
                     <div>
                         <!-- Filtro global de pesquisa -->
@@ -480,7 +498,7 @@ onMounted(() => {
                     <Column field="ProdutoNome" sortable :header="t('item')"></Column>
                     <Column field="Data" sortable :header="t('date')"></Column>
                     <Column field="Quantidade" sortable :header="t('quantity')"> </Column>
-                    <Column field="ProdutoSKU" sortable :header="t('SKU')"></Column>
+                    <Column field="ProdutoSKU" sortable  :header="t('SKU')"></Column>
                 </DataTable>
             </template>
         </card>
