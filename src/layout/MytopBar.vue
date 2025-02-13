@@ -257,12 +257,12 @@ const idiomasMapeados = {
  */
 const menu = ref();
 const menuLingua = ref();
-const items = ref([
+const items = computed(() => [
     {
-        label: 'Opções',
+        label: t('options'),
         items: [
             {
-                label: 'Fazer Logoff',
+                label: t('logout'),
                 icon: 'pi pi-power-off',
                 command: fazerLogoff // Chama a função de logoff quando o item for selecionado
             }

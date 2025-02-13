@@ -893,9 +893,9 @@ const hideDialog = () => {
                                                 </div>
                                             </template>
                                             <template #empty> {{t('employee_itens_empty')}} </template>
-                                            <Column :field="nome" sortable style="width: 45%" :header="t('name')"></Column>
-                                            <Column :field="sku" sortable :header="t('sku')"></Column>
-                                            <Column :field="qtd_limite" :header="t('quantity')"></Column>
+                                            <Column field="nome" sortable style="width: 45%" :header="t('name')"></Column>
+                                            <Column field="sku" sortable :header="t('sku')"></Column>
+                                            <Column field="qtd_limite" :header="t('quantity')"></Column>
                                         </DataTable>
                                     </TabPanel>
                                     <TabPanel :header="t('employee_items')">

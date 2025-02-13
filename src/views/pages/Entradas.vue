@@ -62,10 +62,11 @@ const fetchDadosIniciais = async () => {
         // Trata erros que ocorrem durante a requisição.
         if (error.response && error.response.status === 401) { // Verifica se o erro é 401 (não autorizado).
             validador.value = true; // Marca a falha na integração.
+            console.warn('Erro de autenticação:', error.response?.data?.message); // Exibe um aviso no console.
             toast.add({
                 severity: 'warn', // Exibe a notificação como aviso.
                 summary: t('info'), // Título da notificação.
-                detail: `${error.response?.data?.message || t('entrada_fetch_dm_default')}`, // Detalhes do erro, se disponíveis.
+                detail:  t('entrada_fetch_dm_default'), // Detalhes do erro, se disponíveis.
                 life: 3000 // Duração da notificação.
             });
         } else {
@@ -167,7 +168,7 @@ onMounted(() => {
                 v-model="DMSelecionada"
                 optionLabel="Identificacao"
                 optionValue="ID_DM"
-                placeholder="Selecione uma DM"
+                :placeholder="$t('select_machine')"
                 @change="handleDMChange()"
             />
             <!-- Mensagem informativa caso não haja interação e validador não esteja ativo -->

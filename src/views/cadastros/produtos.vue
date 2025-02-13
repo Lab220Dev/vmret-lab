@@ -440,7 +440,7 @@ onMounted(async () => {
                             </div>
                         </template>
                         <template #empty> {{t('product_empty')}} </template>
-                        <Column header="Imagem" class="col-3">
+                        <Column :header="t('image')"  class="col-3">
                             <template #body="slotProps">
                                 <div>
                                     <img :src="slotProps.data.imagemUrl" :alt="$t('product_image_alt')" class="w-6rem border-round" />

@@ -6,6 +6,7 @@ import axios from '@/axios.js';  // Importa a instância de axios configurada pa
 import { useAuthStore } from '@/store/authStore.js';  // Importa o store de autenticação para acessar dados do usuário
 import LoadingSpinner from '@/components/LoadingSpinner.vue';  // Importa o componente de loading spinner para exibição enquanto a página está carregando
 import { useI18n } from 'vue-i18n';
+import{isMobEnabled} from '@/helpers/HelperUtils.js';  
 const { t } = useI18n();
 // Refs para armazenar os dados e controlar o estado do componente
 const loading = ref(false);  // Ref que controla o estado de carregamento
@@ -16,7 +17,7 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }  // Configuração de filtro global (filtro por conteúdo)
 });
 const emptyMessage = computed(() => t('employee_no_availble_item'));  // Mensagem padrão quando não há itens retornados
-
+const mob = ref(false);
 /**
  * Função responsável por buscar os itens não alocados
  */
@@ -89,6 +90,7 @@ const sincronizar = async () => {
 
 // Chama a função de busca de itens não alocados quando o componente é montado
 onMounted(() => {
+    mob.value = isMobEnabled();
     fetchItensNaoAlocadas();  // Realiza a chamada para carregar os itens não alocados
 });
 </script>
@@ -99,7 +101,7 @@ onMounted(() => {
 
         <!-- Botão para sincronizar os dados com o backend -->
         <div class="mb-4 flex justify-content-end">
-            <Button :label="$t('sync')" icon="pi pi-refresh" class="p-button-secondary" @click="sincronizar" />
+            <Button :label="$t('sync')" icon="pi pi-refresh" class="p-button-secondary" @click="sincronizar" :disabled="!mob" />
         </div>
 
         <!-- DataTable que exibe os itens não alocados -->

@@ -29,10 +29,12 @@ const ListaDMS = ref([]); // Lista de DM
 const isSameSenha = () => { // Função para verificar se a senha inserida é a mesma
     return usuario.value.senha === SenhaBE.value; 
 };
-const filters = ref({
+const filterUser = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 }); // Filtro global para a busca de usuários
-
+const filterDM = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+})
 const filteredCount = ref(0); // Contador de resultados filtrados
 
 // Objeto para armazenar os dados do usuário
@@ -199,9 +201,9 @@ const fetchCliente = async () => {
 /**
  * Watch para atualizar o contador de resultados filtrados
  */
-watch(() => filters.value.global.value, () => {
+watch(() => filterDM.value.global.value, () => {
     filteredCount.value = ListaUsuario.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || '';
+        const filterValue = filterDM.value.global.value?.toLowerCase() || '';
         return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue)); // Filtra os usuários
     }).length;
 }, { immediate: true }); // Aciona imediatamente
@@ -296,11 +298,11 @@ const deleteUsuario = async (item) => {
                 <!-- Componente TabView para controlar as abas de navegação -->
                 <TabView v-model:activeIndex="active">
                     <!-- Aba para listar os usuários DM -->
-                    <TabPanel header="Listar  Usuário DM">
+                    <TabPanel :header="$t('dm_user_list')">
                         <div class="col-12">
                             <!-- Componente DataTable para exibir os usuários -->
                             <DataTable 
-                                v-model:filters="filters" 
+                                v-model:filters="filterDM" 
                                 :value="ListaUsuario"
                                 stripedRows 
                                 paginator 
@@ -341,13 +343,13 @@ const deleteUsuario = async (item) => {
                                                 <i class="pi pi-search" /> <!-- Ícone de busca -->
                                             </InputIcon>
                                             <!-- Campo de texto para busca -->
-                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
+                                            <InputText v-model="filterDM['global'].value" :placeholder="t('search')" />
                                         </IconField>
                                     </div>
                                 </template>
 
                                 <!-- Mensagem exibida quando não há dados -->
-                                <template #empty> Nenhum usuário adicio{{t('empty_user')}} </template>
+                                <template #empty> {{t('empty_user')}} </template>
 
                                 <!-- Coluna para o nome do usuário -->
                                 <Column field="nome" sortable style="width: 30%;" :header="t('name')"></Column>
@@ -441,7 +443,7 @@ const deleteUsuario = async (item) => {
                         <!-- Tabela de DMs para associar ao usuário -->
                         <div class="col-12" v-if="visible">
                             <DataTable 
-                                v-model:filters="filters" 
+                                v-model:filters="filterUser" 
                                 v-model:selection="selectedDM" :value="ListaDMS" 
                                 stripedRows
                                 paginator
@@ -470,7 +472,7 @@ const deleteUsuario = async (item) => {
                                             <InputIcon>
                                                 <i class="pi pi-search" /> <!-- Ícone de busca -->
                                             </InputIcon>
-                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
+                                            <InputText v-model="filterUser['global'].value" :placeholder="t('search')" />
                                         </IconField>
                                     </div>
                                 </template>

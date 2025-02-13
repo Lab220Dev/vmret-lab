@@ -395,9 +395,9 @@ onMounted(() => {
                         </div>
                         <!--botões para salvar ou voltar -->
                         <div class="mr-1 my-7 grid justify-content-end">
-                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Atualizar" icon="pi pi-check" severity="primary" @click="atualizarCliente" />
-                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Voltar" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" label="Salvar" icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')"  icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
+                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarCliente" />
                         </div>
                     </div>
                 </div>
