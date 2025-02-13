@@ -523,4 +523,14 @@ export default {
     function_name: 'Nombre de la Función',
     function_code: 'Código de la Función',
     factory_name: 'Nombre de la Planta',
+    page_unavailable: 'Página no disponible en este momento',
+    login_alert: '¡El enlace de recuperación se ha enviado con éxito! Revisa la bandeja de entrada de tu correo electrónico. Contacta con nuestro soporte si sigues teniendo problemas para iniciar sesión: suporte@lab220.com.br',
+    login_title_home: 'Sistema de Gestión de Dispenser Machines',
+    login_inital_text: '¡Vamos a empezar!',
+    login_intial_tex_sub: 'Para acceder al sistema, completa los campos a continuación.',
+    login_forgot_password: '¿Olvidaste tu contraseña?',
+    login_recover_email: 'Ingresa tu correo electrónico para recuperar tu acceso:',
+    site_greet: 'Visita nuestro sitio web',
+    login_forgot_link: 'Enviar enlace de recuperación',
+    return_login: 'Volver al inicio de sesión'
 };
