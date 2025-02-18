@@ -523,5 +523,6 @@ export default {
     login_recover_email: 'Enter your email to recover your access:',
     site_greet: 'Visit our website',
     login_forgot_link: 'Send recovery link',
-    return_login: 'Return to login'
+    return_login: 'Return to login',
+    docmask:"999.999.999-99",
 };

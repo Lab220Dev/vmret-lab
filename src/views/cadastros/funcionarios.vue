@@ -26,7 +26,7 @@ import * as formatservices from '@/helpers/HelperUtils.js';
 import {resetFuncionarioForm,resetItens as resetProduto} from '@/helpers/formHelper.js';
 import { validadorcpf, validadoremail,validateForm } from '@/helpers/HelperFuncionario.js';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const store = useAuthStore();// Acessa o store de autenticação para obter dados sobre o usuário logado
 
 const dataStore = useDataStore();// Acessa o store de dados para obter informações sobre plantas e outros dados
@@ -749,7 +749,7 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">{{t('ssn')}}:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" mask="999.999.999-99" 
+                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" :mask="$t('docmask')" 
                                     :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false"/>
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>

@@ -7,6 +7,8 @@ import html2canvas from "html2canvas";
 import { parse } from 'date-fns';
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
+import clientesService from '../Services/ClientesService';
+import funcionarioService from '../Services/funcionarioService';
 const store = useAuthStore();
 
 /**
@@ -291,10 +293,21 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         }
 
         const cabecalhoHTML = await relatorioService.Cabecalho(); // Obtém o HTML dinamicamente
-
+        const dadosCliente = await clientesService.fetchDadosCliente(store.userIdCliente); // Obtém os dados do cliente
+        const dadosfuncionario = await funcionarioService.fetchdadosfuncionario(funcionarioSelecionado.value.value); // Obtém os dados do funcionário
         const div = document.createElement("div");
         div.innerHTML = cabecalhoHTML;
         document.body.appendChild(div);
+        div.querySelector("#razon-social").textContent = dadosCliente.nome || "No informado";
+        div.querySelector("#cuit").textContent = dadosCliente.cpfcnpj || "No informado";
+        div.querySelector("#direccion").textContent = dadosCliente.endereco || "No informado";
+        div.querySelector("#cp").textContent = dadosCliente.cep || "No informado";
+        div.querySelector("#localidad").textContent = dadosCliente.cidade || "No informado";
+        div.querySelector("#provincia").textContent = dadosCliente.estado || "No informado";
+        div.querySelector("#dni").textContent = dadosfuncionario.cpf || "No informado";
+        div.querySelector("#nombre-trabajador").textContent = funcionarioSelecionado.value.label || "No informado";
+        div.querySelector("#puesto").textContent = dadosfuncionario.funcao_nome || "No informado";
+        div.querySelector("#elementos").textContent = dadosfuncionario.elementos || "No informado";
 
         // Converter HTML do cabeçalho em imagem
         const canvas = await html2canvas(div, { scale: 2 });
@@ -303,18 +316,24 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 
         // Criar o PDF
         const pdf = new jsPDF("p", "mm", "a4");
-        const imgWidth = 190;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const pageWidth = pdf.internal.pageSize.width || 210; // Largura total da página
+        const margin = 10;
+        const imgWidth = pageWidth - 2 * margin; // Mantém a largura da imagem dentro da página
+        const imgHeight = (canvas.height * imgWidth) / canvas.width; // Mantém proporção
 
-        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", margin, 10, imgWidth, imgHeight);
 
         // Buscar dados da ficha e retiradas
         const retiradas = await relatorioService.fichasRetiradas(relatorio);
 
         // Criar a tabela de dados no PDF
         pdf.autoTable({
-            startY: imgHeight + 20,
-            head: [['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO']],
+            startY: imgHeight + 10,
+            tableWidth: imgWidth, 
+            head: [[
+                "NOME DO ITEM", "DT RETIRADA", "QUANT", "UNID",
+                "DESCRIÇÃO DO EQUIPAMENTO", "N° DO C.A", "AUTENTICAÇÃO"
+            ]],
             body: retiradas.data.map(item => [
                 item.ProdutoNome || '',
                 item.Dia || '',
@@ -324,7 +343,17 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
                 item.ProdutoSKU || '',
                 item.Forma_Autenticacao || ''
             ]),
-            theme: 'grid'
+            theme: "grid",
+            styles: { fontSize: 10 },
+            columnStyles: {
+                0: { cellWidth: 30 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 15 },
+                3: { cellWidth: 15 },
+                4: { cellWidth: 50 },
+                5: { cellWidth: 25 },
+                6: { cellWidth: 30 }
+            }
         });
 
         // Salvar o PDF corretamente
@@ -334,7 +363,6 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         throw new Error(`Error al generar PDF: ${error.message}`);
     }
 }
-
 export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
     const linguaSelecionada = i18n.global.locale.value;
     if (linguaSelecionada === 'es') {

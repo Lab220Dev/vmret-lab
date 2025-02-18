@@ -5,7 +5,7 @@ import { FilterMatchMode } from 'primevue/api'; // Modo de filtro para tabelas, 
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Spinner de carregamento
 import MenuSelector from '@/components/MenuSelector.vue'; // Seleção de menus hierárquicos
 import clientesService from '@/services/clientesService'; // Serviço para manipulação de dados de clientes
-import { validarCNPJ } from '@/helpers/HelperValidacao.js'; // Função para validar CNPJ
+import { isValidDoc } from '@/helpers/HelperValidacao.js'; // Função para validar CNPJ
 import { resetClienteForm } from '@/helpers/formHelper'; // Função para resetar o formulário de cliente
 import { formatDate,prepareListData } from '@/helpers/HelperUtils.js'; // Função para formatação de datas (não utilizada diretamente)
 import { useI18n } from 'vue-i18n';
@@ -233,7 +233,7 @@ const debouncedFilterChange = debounce(() => {
  * Se o CNPJ for inválido, a mensagem de erro é atualizada.
  */
 const validateCNPJField = () => {
-    errors.cnpj = validarCNPJ(cliente.cnpj) ? '' : t('error_invalid_cnpj'); // Se o CNPJ for inválido, exibe a mensagem de erro
+    errors.cnpj = isValidDoc(cliente.cnpj) ? '' : t('error_invalid_cnpj'); // Se o CNPJ for inválido, exibe a mensagem de erro
 };
 
 /**

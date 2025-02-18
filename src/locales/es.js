@@ -532,5 +532,6 @@ export default {
     login_recover_email: 'Ingresa tu correo electrónico para recuperar tu acceso:',
     site_greet: 'Visita nuestro sitio web',
     login_forgot_link: 'Enviar enlace de recuperación',
-    return_login: 'Volver al inicio de sesión'
+    return_login: 'Volver al inicio de sesión',
+    docmask:'99-99999999-9',
 };

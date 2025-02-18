@@ -101,7 +101,10 @@ const funcionarioService = {
     async fetchItensSetor(data) {
         return axios.post('Setor/itensdisponiveissetor', data); // Envia uma requisição POST para obter os itens do setor.
     },
-
+    async fetchdadosfuncionario(id_funcionario) {
+        const response = await axios.post('funcionarios/fetchdados', {id_funcionario:id_funcionario});
+        return response.data // Envia uma requisição POST para obter os itens do setor.
+    },
     /**
      * Obtém as opções de hierarquia dos funcionários.
      *

@@ -285,7 +285,7 @@ const linguas = computed(() => [
             },
             {
                 label: t('spanish'),
-                icon: 'custom-icon flag flag-es',
+                icon: 'custom-icon flag flag-ar',
                 command: () => alterarLingua('es')
             }
         ]

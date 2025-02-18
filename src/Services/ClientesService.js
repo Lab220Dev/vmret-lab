@@ -159,6 +159,20 @@ const clientesService = {
       throw error; // Lança o erro novamente para o chamador.
     }
   },
+  async fetchDadosCliente(clienteId) {
+    // Cria um objeto de dados com o id do cliente e o id do usuário autenticado.
+    const data = { id_cliente: clienteId };
+
+    try {
+      // Realiza uma requisição POST para deletar o cliente.
+     const response = await axios.post('/admin/cliente/fetchdados', data);
+     return response.data;
+    } catch (error) {
+      // Caso ocorra um erro na requisição, exibe a mensagem no console e lança o erro.
+      console.error('Erro ao deletar cliente:', error.message);
+      throw error; // Lança o erro novamente para o chamador.
+    }
+  },
 };
 
 // Exporta o objeto `clientesService` para ser utilizado em outros arquivos ou componentes.

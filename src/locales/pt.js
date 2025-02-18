@@ -551,4 +551,5 @@ export default {
     site_greet:'Visite nosso site',
     login_forgot_link:'Enviar link de recuperação',
     return_login:'Retornar ao login',
+    docmask:"999.999.999-99",
 };
