@@ -80,7 +80,7 @@ const truncatedText = (text) => {
     <Column field="ProdutoSKU" style="width: 10%; text-align: center;" :header="t('SKU')" sortable ></Column>
     
     <!-- Coluna de descrição do produto -->
-    <Column field="ProdutoDescricao" class="table-cell" :header="t('description')" sortable style="max-width: 250px;">
+    <Column field="ProdutoDescricao" class="table-cell" :header="t('description')" sortable style="width: 80%"">
       <template #body="{ data }">
         <span class="tooltip-target" v-tooltip="data.ProdutoDescricao">{{ data.ProdutoDescricao }}</span>
       </template>

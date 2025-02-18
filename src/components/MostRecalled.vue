@@ -8,10 +8,7 @@ const { t } = useI18n();
 // Defina os props
 /**
  * @typedef {Object} most
- * @property {string} Identificacao - Identificação da máquina.
- * @property {string} ProdutoSKU - Código do produto (SKU).
- * @property {string} ProdutoDescricao - Descrição do produto.
- * @property {string} Dia - Data e hora da retirada.
+
  */
 
 /**
@@ -30,7 +27,6 @@ const props = defineProps({
 
 <template>
     <div class="header" style="display: flex">
-        <!-- Cabeçalho exibindo o título e o ícone de informação sobre os itens mais retirados -->
         <div class="title mb-0" style="display: flex; align-items: center">
             <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5>
         </div>

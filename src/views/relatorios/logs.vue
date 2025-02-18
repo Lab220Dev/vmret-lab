@@ -191,8 +191,7 @@ onMounted(() => {
 <template>
     <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-6 ml-2 text-2xl">Log</h5>
-            <div class="grid mt-3 mx-1 p-1">
+            <div class="grid mb-0 pt-5">
                 <!-- Campos para filtros -->
                 <div class="field lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">{{t('user')}}:</label>
@@ -236,10 +235,11 @@ onMounted(() => {
                         :placeholder="$t('end_date_placeholder')"
                     />
                 </div>
-                <div class="field lg:col-12 md:col-12 sm:col-12">
+                
+            </div>
+            <div class=" p-0 m-0 field lg:col-12 md:col-12 sm:col-12">
                     <Button class="filtrar" type="button":label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                 </div>
-            </div>
         </div>
 
         <!-- Tabela para exibição dos logs -->
