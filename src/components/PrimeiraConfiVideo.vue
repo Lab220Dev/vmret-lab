@@ -5,7 +5,7 @@
         <div class="">
             <!-- Exibe mensagem de erro caso ocorra algum problema -->
             <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-            <P class="mb-4 mt-6">{{ t('select_dm_for_upload') }}</P>
+            <P class="mb-4 mt-6">{{ $t('select_dm_for_upload') }}</P>
             <div class="card flex align-items-center justify-content-center">
                 <!-- Verifica se há opções de DM disponíveis -->
                 <div class="flex grid my-2 flex justify-content-evenly flex-wrap" v-if="dmOptions.length > 0">

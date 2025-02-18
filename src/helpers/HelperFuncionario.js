@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
-import { isValidCPF, isValidEmail } from '@/helpers/HelperValidacao';
+import { isValidDocPessoaFisica, isValidEmail } from '@/helpers/HelperValidacao';
 const store = useAuthStore();
 
 /**
@@ -116,7 +116,7 @@ export const validateForm = (funcionario) => {
      * @param {string} funcionario.CPF - CPF do funcionário a ser validado.
      * @returns {undefined} - Não retorna valor, mas altera o objeto `errors` se necessário.
      */
-    if (!funcionario.CPF || !isValidCPF(funcionario.CPF)) {
+    if (!funcionario.CPF || !isValidDocPessoaFisica(funcionario.CPF)) {
         /**
          * Se o CPF for inválido, uma mensagem de erro é adicionada ao objeto `errors` com a chave 'CPF'.
          * @type {string}
@@ -162,7 +162,8 @@ export const validateForm = (funcionario) => {
 /**
  * Valida o CPF informado.
  * 
- * A função verifica se o CPF foi fornecido e se é válido utilizando a função `isValidCPF`.
+ * A função verifica se o Documento foi fornecido e se é válido utilizando a função `isValidDocPessoaFisica`.
+ * alteranando baseado no lingua fornecida pelo cliente no navegador, sendo o cpf pra br ou cuit para ar.
  * Se o CPF não for fornecido ou for inválido, retorna uma mensagem de erro.
  * Caso contrário, retorna uma string vazia indicando que o CPF está válido.
  * 
@@ -181,7 +182,7 @@ export const validadorcpf = (CPF) => {
      * Verifica se o CPF fornecido é válido. Se não for, retorna a mensagem de erro.
      * @returns {string} - Mensagem de erro indicando que o CPF é inválido.
      */
-    else if (!isValidCPF(CPF)) {
+    else if (!isValidDocPessoaFisica(CPF)) {
         return 'CPF inválido';
     } 
     /**

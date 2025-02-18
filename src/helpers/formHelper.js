@@ -241,6 +241,8 @@ export const resetDMForm = (DM, Controladoras, selectedClient, nextValues) => {
       OP_Biometria: '',  // Reseta a propriedade 'OP_Biometria' para uma string vazia.
       OP_Facial: '',  // Reseta a propriedade 'OP_Facial' para uma string vazia.
       OP_Senha: '',  // Reseta a propriedade 'OP_Senha' para uma string vazia.
+      voucher: '',  // Reseta a propriedade 'OP_Senha' para uma string vazia.
+      cracha: '',  // Reseta a propriedade 'OP_Senha' para uma string vazia.
       URL: '',  // Reseta a propriedade 'URL' para uma string vazia.
       Updated: '',  // Reseta a propriedade 'Updated' para uma string vazia.
       UserID: '',  // Reseta a propriedade 'UserID' para uma string vazia.

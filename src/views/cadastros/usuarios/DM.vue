@@ -562,8 +562,13 @@ const fetchCliente = async () => {
  * Mapeia o cliente para as opções de uso de API.
  */
 const configurarCliente = () => {
-    selectedClient.value = configurarClienteSelecionado(ListaClientes.value, DM);
-    usarApi.value = selectedClient.value.usar_api;
+    const cliente = ListaClientes.value.find(c => c.value.id_cliente === DM.id_cliente);
+    if (cliente) {
+        selectedClient.value = cliente; // Agora `selectedClient` terá a estrutura correta
+        usarApi.value = cliente.value.usar_api;
+    } else {
+        console.warn('Cliente não encontrado na ListaClientes:', DM.id_cliente);
+    }
 };
 //Geral
 /**
@@ -1009,7 +1014,7 @@ onMounted(async () => {
                                         <span class="tooltip-target" v-tooltip="data.Nome_Produto">{{ data.Nome_Produto }}</span>
                                     </template></Column
                                 >
-                                <Column field="Posicao" sortable style="width: 40%" :header="t('Posição')">
+                                <Column field="Posicao" sortable style="width: 40%" :header="t('position')">
                                     <template #body="{ data }">
                                         <span  v-tooltip="getTooltipText(data)">
                                             {{ data.Posicao }}
@@ -1147,7 +1152,7 @@ onMounted(async () => {
         <p>{{ dialogMessage }}</p>
         <template #footer>
             <Button :label="$t('cancel')" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
-            <Button label="OK" icon="pi pi-check" @click="confirmDelete" />
+            <Button label="OK" icon="pi pi-check" @click="confirmDeleteItem" />
         </template>
     </Dialog>
     <Dialog :header="$t('dialog_delte_dm')" :visible.sync="showDialogDVM" style="width: 30vw" :modal="true" :closable="false" :draggable="false">

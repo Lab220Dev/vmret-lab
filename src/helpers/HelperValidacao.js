@@ -1,6 +1,6 @@
 import { useDataStore } from '@/store/dataStore';  // Importa o hook `useDataStore` para acessar o armazenamento de dados.
 import { isValid as validateCPF } from 'cpf-validator';  // Importa a função `isValid` da biblioteca `cpf-validator` e a renomeia como `validateCPF`.
-
+import i18n from '@/i18n'; 
 /**
  * Valida CPF usando a biblioteca cpf-validator.
  * @param {string} cpf - CPF a ser validado.
@@ -8,6 +8,34 @@ import { isValid as validateCPF } from 'cpf-validator';  // Importa a função `
  */
 export const isValidCPF = (cpf) => !!cpf && validateCPF(cpf);  // Verifica se o CPF existe e se ele é válido usando a função `validateCPF`.
 
+export const isValidCUIT = (cuit) => {
+    if (!cuit) return false;
+
+    // Remover caracteres não numéricos
+    cuit = cuit.replace(/\D/g, '');
+
+    // Verificar se tem exatamente 11 dígitos
+    if (cuit.length !== 11) return false;
+
+    // Verificar se começa com identificadores válidos
+    const prefixo = cuit.substring(0, 2);
+    const prefixosValidos = ["20", "23", "24", "27", "30", "33", "34"];
+
+    if (!prefixosValidos.includes(prefixo)) return false;
+
+    // Chama a função de validação do CUIT
+    return validarCUIT(cuit);
+};
+
+
+export const isValidDocPessoaFisica = (doc) => {
+    const linguaSelecionada = i18n.global.locale.value;
+    if(linguaSelecionada === 'es') {
+        return isValidCUIT(doc);
+    } else {    
+        return isValidCPF(doc);
+    }
+}
 /**
  * Valida email com regex.
  * Utiliza uma expressão regular para verificar se o email possui o formato correto.
@@ -127,6 +155,41 @@ export const validarCNPJ = (cnpj) => {
     return resultado == digitos.charAt(1);  // Retorna `true` se o segundo dígito verificador for válido, caso contrário `false`.
 };
 
+export const validarCUIT = (cuit) =>{
+    cuit = cuit.replace(/\D/g, '');
+
+    // Verificar se tem exatamente 11 dígitos
+    if (cuit.length !== 11) return false;
+
+    // Array de multiplicadores usados no cálculo do dígito verificador
+    const weights = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+    let sum = 0;
+
+    // Calcular a soma ponderada
+    for (let i = 0; i < 10; i++) {
+        sum += parseInt(cuit[i]) * weights[i];
+    }
+
+    // Calcular o dígito verificador
+    let remainder = sum % 11;
+    let calculatedDigit = remainder === 0 ? 0 : 11 - remainder;
+
+    // Tratar casos especiais (se for 10, o CUIT é inválido)
+    if (calculatedDigit === 10) return false;
+
+    // Comparar com o dígito verificador real
+    return calculatedDigit === parseInt(cuit[10]);
+}
+
+export const isValidDoc = (doc) => {
+const linguaSelecionada = i18n.global.locale.value;
+    if (linguaSelecionada === 'es') {
+        validarCUIT(doc);
+    } else {
+        validarCNPJ(doc);
+    }
+}
 /**
  * Valida se o arquivo enviado é um vídeo válido do tipo .mp4 e não excede o tamanho máximo permitido.
  * 

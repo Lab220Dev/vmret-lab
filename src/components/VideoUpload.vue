@@ -70,7 +70,8 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa a funç
 import videoService from '@/services/videoService';
 import {  generateCustomVideoName } from '@/helpers/HelperUtils';
 import {  isValidVideoFile  } from '@/helpers/HelperValidacao.js';
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Propriedades recebidas pelo componente, espera uma lista de DMs
 const props = defineProps({
     dmList: Array // Recebe a lista de DMs (Dispositivos de Mídia) como prop

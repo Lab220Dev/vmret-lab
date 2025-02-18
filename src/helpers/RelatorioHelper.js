@@ -7,6 +7,8 @@ import html2canvas from "html2canvas";
 import { parse } from 'date-fns';
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
+import clientesService from '../Services/ClientesService';
+import funcionarioService from '../Services/funcionarioService';
 const store = useAuthStore();
 
 /**
@@ -162,7 +164,7 @@ export function organizarFuncionarios(funcionarios) {
  */
 export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
     try {
-        if (!funcionarioSelecionado) {
+        if (!funcionarioSelecionado?.value || Object.keys(funcionarioSelecionado.value).length === 0) {
             throw new Error('Funcionário não selecionado');
         }
         const textoFicha = await relatorioService.TextoFicha();
@@ -219,60 +221,66 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         const text = `${textoFicha}`; // Obtém o texto da ficha
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
+        // **Verifica se há dados para exibir na tabela**
+        if (!retiradas.data?.data || retiradas.data.data.length === 0) {
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
+        } else {
+            // Definição da tabela
+            const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
+            const tableRows = retiradas.data.map((item) => {
+                try {
+                    const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date());
+                    const formattedDate = formatDateToString(parsedDate, 'dd/MM/yyyy - HH:mm');
+                    return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                } catch (error) {
+                    console.error('Erro ao formatar data:', error);
+                    return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                }
+            });
 
-        // Definição da tabela
-        const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
-
-        const tableRows = retiradas.data.map((item) => {
-            try {
-                const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date()); // Faz o parse da data
-                const formattedDate = formatDateToString(parsedDate, 'dd/MM/yyyy - HH:mm'); // Formata a data
-                return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || '']; // Retorna os dados da linha
-            } catch (error) {
-                console.error('Error parsing date:', error); // Caso ocorra erro ao parsear a data
-                return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || '']; // Retorna dados padrão com "Data inválida"
-            }
-        });
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            width: 270,
-            startY: 85,
-            theme: 'grid',
-            styles: {
-                fillColor: [255, 255, 255],
-                textColor: [0, 0, 0],
-                lineColor: [0, 0, 0],
-                lineWidth: 0.25,
-                fontSize: 10
-            },
-            headStyles: {
-                fillColor: [220, 220, 220],
-                textColor: [0, 0, 0],
-                fontStyle: 'bold',
-                lineWidth: 0.25,
-                halign: 'center'
-            },
-            alternateRowStyles: {
-                fillColor: [245, 245, 245]
-            },
-            columnStyles: {
-                0: { cellWidth: 30 },
-                1: { cellWidth: 30 },
-                2: { cellWidth: 20 },
-                3: { cellWidth: 20 },
-                4: { cellWidth: 70 },
-                5: { cellWidth: 50 }
-            }
-        });
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                width: 270,
+                startY: 85,
+                theme: 'grid',
+                styles: {
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 0, 0],
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.25,
+                    fontSize: 10
+                },
+                headStyles: {
+                    fillColor: [220, 220, 220],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    lineWidth: 0.25,
+                    halign: 'center'
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245]
+                },
+                columnStyles: {
+                    0: { cellWidth: 30 },
+                    1: { cellWidth: 30 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 20 },
+                    4: { cellWidth: 70 },
+                    5: { cellWidth: 50 }
+                }
+            });
+        }
+        const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120;
+        doc.setFontSize(12);
+        doc.text('Data:', 30, finalY ); // Exibe o campo de data
+        doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
 
         doc.setFontSize(12);
-        doc.text('Data:', 30, doc.autoTable.previous.finalY + 30); // Exibe o campo de data
-        doc.text('_______/_______/_______', 40, doc.autoTable.previous.finalY + 30); // Linha para o campo de data
-
-        doc.setFontSize(12);
-        doc.text('______________________________________', 180, doc.autoTable.previous.finalY + 30);
-        doc.text('Assinatura do funcionário', 200, doc.autoTable.previous.finalY + 50);
+        doc.text('______________________________________', 180, finalY);
+        doc.text('Assinatura do funcionário', 200, finalY+10);
         doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
@@ -285,10 +293,21 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         }
 
         const cabecalhoHTML = await relatorioService.Cabecalho(); // Obtém o HTML dinamicamente
-
+        const dadosCliente = await clientesService.fetchDadosCliente(store.userIdCliente); // Obtém os dados do cliente
+        const dadosfuncionario = await funcionarioService.fetchdadosfuncionario(funcionarioSelecionado.value.value); // Obtém os dados do funcionário
         const div = document.createElement("div");
         div.innerHTML = cabecalhoHTML;
         document.body.appendChild(div);
+        div.querySelector("#razon-social").textContent = dadosCliente.nome || "No informado";
+        div.querySelector("#cuit").textContent = dadosCliente.cpfcnpj || "No informado";
+        div.querySelector("#direccion").textContent = dadosCliente.endereco || "No informado";
+        div.querySelector("#cp").textContent = dadosCliente.cep || "No informado";
+        div.querySelector("#localidad").textContent = dadosCliente.cidade || "No informado";
+        div.querySelector("#provincia").textContent = dadosCliente.estado || "No informado";
+        div.querySelector("#dni").textContent = dadosfuncionario.cpf || "No informado";
+        div.querySelector("#nombre-trabajador").textContent = funcionarioSelecionado.value.label || "No informado";
+        div.querySelector("#puesto").textContent = dadosfuncionario.funcao_nome || "No informado";
+        div.querySelector("#elementos").textContent = dadosfuncionario.elementos || "No informado";
 
         // Converter HTML do cabeçalho em imagem
         const canvas = await html2canvas(div, { scale: 2 });
@@ -297,18 +316,24 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 
         // Criar o PDF
         const pdf = new jsPDF("p", "mm", "a4");
-        const imgWidth = 190;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const pageWidth = pdf.internal.pageSize.width || 210; // Largura total da página
+        const margin = 10;
+        const imgWidth = pageWidth - 2 * margin; // Mantém a largura da imagem dentro da página
+        const imgHeight = (canvas.height * imgWidth) / canvas.width; // Mantém proporção
 
-        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", margin, 10, imgWidth, imgHeight);
 
         // Buscar dados da ficha e retiradas
         const retiradas = await relatorioService.fichasRetiradas(relatorio);
 
         // Criar a tabela de dados no PDF
         pdf.autoTable({
-            startY: imgHeight + 20,
-            head: [['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO']],
+            startY: imgHeight + 10,
+            tableWidth: imgWidth, 
+            head: [[
+                "NOME DO ITEM", "DT RETIRADA", "QUANT", "UNID",
+                "DESCRIÇÃO DO EQUIPAMENTO", "N° DO C.A", "AUTENTICAÇÃO"
+            ]],
             body: retiradas.data.map(item => [
                 item.ProdutoNome || '',
                 item.Dia || '',
@@ -318,7 +343,17 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
                 item.ProdutoSKU || '',
                 item.Forma_Autenticacao || ''
             ]),
-            theme: 'grid'
+            theme: "grid",
+            styles: { fontSize: 10 },
+            columnStyles: {
+                0: { cellWidth: 30 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 15 },
+                3: { cellWidth: 15 },
+                4: { cellWidth: 50 },
+                5: { cellWidth: 25 },
+                6: { cellWidth: 30 }
+            }
         });
 
         // Salvar o PDF corretamente
@@ -328,7 +363,6 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         throw new Error(`Error al generar PDF: ${error.message}`);
     }
 }
-
 export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
     const linguaSelecionada = i18n.global.locale.value;
     if (linguaSelecionada === 'es') {

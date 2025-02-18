@@ -75,10 +75,31 @@ export const handleControladoraChange = (Controladoras, produtoSelecionado, List
     // Verifica se o tipo da controladora é um 'Locker'.
     else if (selectedControladora.tipo === 'Locker'||selectedControladora.tipo === 'Locker-Padrao'||selectedControladora.tipo === 'Locker-Ker') {
         // Atualiza as opções de DIP para a controladora do tipo Locker.
+        let posicoesOcupadas = ListaItens.filter((item) => {
+            // Separa a posição em tipo e identificador, removendo espaços.
+            const [tipo, identificador] = item.Posicao.replace(/\s/g, '').split('/');
+            // Retorna os itens que correspondem ao tipo 'Locker' e ao identificador da controladora.
+            return (tipo === 'Locker' || tipo === 'Locker-Padrao' || tipo === 'Locker-Ker') && 
+                   Number(identificador) === selectedControladora.dados.dip;
+        }).map((item) => {
+            // Para cada item, separa a posição e retorna a posição específica do Locker.
+            const [_, __, posicao] = item.Posicao.replace(/\s/g, '').split('/');
+            return Number(posicao);
+        });
+    
+        // Se estiver no modo de edição e houver uma posição selecionada, remove a posição ocupada.
+        if (isEditMode && produtoSelecionado.Posicao) {
+            posicoesOcupadas = posicoesOcupadas.filter((pos) => pos !== produtoSelecionado.Posicao);
+        }
+    
+        // Filtra as posições disponíveis, removendo as que estão ocupadas.
+        const posicoesDisponiveis = selectedControladora.dados.posicao.filter((pos) => !posicoesOcupadas.includes(pos));
+    
+        // Atualiza as opções de DIP para a controladora do tipo Locker.
         dipOptions.value = [{ label: selectedControladora.dados.dip.toString(), value: selectedControladora.dados.dip }];
-        
+    
         // Atualiza as opções de posição para a controladora do tipo Locker.
-        posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
+        posicaoOptions.value = posicoesDisponiveis.map((p) => ({ label: p, value: p }));
     }
 };
 
