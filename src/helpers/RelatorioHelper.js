@@ -7,6 +7,8 @@ import html2canvas from 'html2canvas';
 import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
 import clientesService from '../Services/ClientesService';
 import funcionarioService from '../Services/funcionarioService';
+
+const { t } = i18n.global; // Obtém a função de tradução do vue-i18n
 const store = useAuthStore();
 
 /**
@@ -183,12 +185,16 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         doc.setTextColor(0, 0, 0); // Define a cor do texto como preto
         doc.setDrawColor(0, 0, 0); // Define a cor das linhas do PDF
 
-        doc.setFontSize(12); // Define o tamanho da fonte
-        doc.setFont('helvetica', 'bold'); // Define a fonte como Helvetica em negrito
-        doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 14, 200); // Título do documento
+        const addFooter = () => {
+            doc.setFontSize(12); // Define o tamanho da fonte
+            doc.setFont('helvetica', 'bold'); // Define a fonte como Helvetica em negrito
+            doc.text(`LAB220 - ${t('dm_management_system')}`, 14, 205); // Título do documento
+        };
+
+        addFooter(); // Adiciona o rodapé ao PDF
 
         doc.setFontSize(14); // Altera o tamanho da fonte
-        doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', doc.internal.pageSize.width / 2, 20, { align: 'center' }); // Subtítulo centralizado
+        doc.text(`${t('EQUIPMENT_DELIVERY_FORM_DOC')}`, doc.internal.pageSize.width / 2, 20, { align: 'center' }); // Subtítulo centralizado
         doc.setFontSize(12); // Define novamente o tamanho da fonte
         doc.setFont('helvetica', 'normal'); // Define a fonte como normal
 
@@ -199,15 +205,15 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         // Linha 1: NOME, N° DE REGISTRO e DATA DE ADMISSÃO
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('NOME:', 15, 35);
+        doc.text(`${t('NAME_DOC')}:`, 15, 35);
         doc.setFont('helvetica', 'normal');
         doc.text(`${funcionarioSelecionado.value.label || ''}`, 30, 35); // Exibe o nome do funcionário
         doc.setFont('helvetica', 'bold');
-        doc.text('N° DE REGISTRO:', 107, 35);
+        doc.text(`${t('REGISTRATION_NUMBER_DOC')}:`, 107, 35);
         doc.setFont('helvetica', 'normal');
         doc.text(`${funcionarioSelecionado.value.matricula || ''}`, 145, 35); // Exibe o número de matrícula
         doc.setFont('helvetica', 'bold');
-        doc.text('DATA DE ADMISSÃO:', 203, 35);
+        doc.text(`${t('ADMISSION_DATE_DOC')}:`, 203, 35);
         doc.setFont('helvetica', 'normal');
         doc.text(`${funcionarioSelecionado.value.data_admissao ? new Date(funcionarioSelecionado.value.data_admissao).toLocaleDateString('pt-BR') : ''}`, 248, 35); // Exibe a data de admissão
 
@@ -216,29 +222,41 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
 
         // Texto Linha 2: FUNÇÃO e SETOR
         doc.setFont('helvetica', 'bold');
-        doc.text('FUNÇÃO:', 15, 41);
+        doc.text(`${t('FUNCTION_DOC')}:`, 15, 41);
         doc.setFont('helvetica', 'normal');
-        doc.text(` ${funcionarioSelecionado.value.id_funcao || ''}`, 36, 41); // Exibe a função
+        doc.text(` ${funcionarioSelecionado.value.id_funcao || ''}`, 37, 41); // Exibe a função
         doc.setFont('helvetica', 'bold');
-        doc.text('SETOR:', 107, 41);
+        doc.text(`${t('SECTOR_DOC')}:`, 107, 41);
         doc.setFont('helvetica', 'normal');
-        doc.text(` ${funcionarioSelecionado.value.id_setor || ''}`, 123, 41); // Exibe o setor
+        doc.text(` ${funcionarioSelecionado.value.id_setor || ''}`, 126, 41); // Exibe o setor
 
         doc.setFontSize(11); // Define o tamanho da fonte
         const text = `${textoFicha}`; // Obtém o texto da ficha
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
         // **Verifica se há dados para exibir na tabela**
-        if (!retiradas.data || retiradas.data.length === 0) {
+        if (!Array.isArray(retiradas.data) || retiradas.data.length === 0 ) {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
         } else {
             // Definição da tabela
-            const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
+            const tableColumn = [`${t('ITEM_NAME_DOC')}`, `${t('WITHDRAWAL_DATE_DOC')}`, `${t('QUANT_DOC')}`, `${t('UNIT_DOC')}`, `${t('DESCRIPTION_DOC')}`, `${t('CA_NUMBER_DOC')}`, `${t('AUTHENTICATION_DOC')}`];
             const tableRows = retiradas.data.map((item) => {
                 try {
-                    return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    if (i18n.global.locale.value === 'en') {
+                        return [
+                            item.ProdutoNome || '',
+                            formatStringDate(item.Dia) || '',
+                            item.Quantidade || '',
+                            item.unidade_medida || '',
+                            item.ProdutoDescricao || '',
+                            item.ProdutoSKU || '',
+                            item.Forma_Autenticacao === 'Senha' ? 'Password' : item.Forma_Autenticacao || ''
+                        ];
+                    } else {
+                        return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    }
                 } catch (error) {
                     console.error('Erro:', error);
                     return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
@@ -269,16 +287,28 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
                     fillColor: [245, 245, 245]
                 },
                 columnStyles: {
-                    0: { cellWidth: 30 },
-                    1: { cellWidth: 30 },
-                    2: { cellWidth: 20 },
-                    3: { cellWidth: 20 },
+                    0: { cellWidth: 50, halign: 'center' },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 20, halign: 'center' },
+                    3: { cellWidth: 20, halign: 'center' },
                     4: { cellWidth: 70 },
-                    5: { cellWidth: 50 }
+                    5: { cellWidth: 30, halign: 'center' },
+                    6: { cellWidth: 40, halign: 'center' }
+                },
+                didDrawPage: (data) => {
+                    // Adiciona o cabeçalho em cada página
+                    addFooter();
+
+                    // Adiciona o número da página no rodapé
+                    const pageCount = doc.internal.getNumberOfPages();
+                    const pageSize = doc.internal.pageSize;
+                    const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+                    doc.setFontSize(10);
+                    doc.text(`${data.pageNumber} de ${pageCount}`, 280, pageHeight - 200);
                 }
             });
         }
-        const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120;
+        const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120; // Posição Y final da tabela
         doc.setFontSize(12);
         doc.text('Data:', 30, finalY); // Exibe o campo de data
         doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
@@ -339,16 +369,16 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         // Adicionar borda ao redor da página
         pdf.rect(10, 10, 190, 280); // Desenha o retângulo ao redor da página
 
-        let posY = imgHeight + 11;// Posição Y inicial para a tabela
-        const itemsPerPage = 50;// Itens por página
-        let itemCount = 0;// Contador de itens
+        let posY = imgHeight + 11; // Posição Y inicial para a tabela
+        const itemsPerPage = 50; // Itens por página
+        let itemCount = 0; // Contador de itens
 
         for (let i = 0; i < retiradas.data.length; i += itemsPerPage) {
             if (i > 0) {
                 pdf.addPage(); // Adiciona uma nova página
                 // Adicionar borda ao redor da página
-                pdf.rect(10, 10, 190, 280);// Desenha o retângulo ao redor das demais páginas
-                posY = 11;// Posição Y inicial para a tabela
+                pdf.rect(10, 10, 190, 280); // Desenha o retângulo ao redor das demais páginas
+                posY = 11; // Posição Y inicial para a tabela
             }
 
             //pdf.rect(10, 260, 190, 30);
@@ -425,9 +455,6 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
             let rodapeHeight = (rodapeCanvas.height * rodapeWidth) / rodapeCanvas.width; // Mantém proporção
             let rodapeY = 271; // Posição Y do rodapé no PDF
 
-            // Adicionar retângulo com "Información adicional:"
-            //pdf.rect(10, rodapeY, rodapeWidth, rodapeHeight); // Desenha o retângulo
-
             pdf.addImage(rodapeImgData, 'PNG', margin, rodapeY, rodapeWidth, rodapeHeight); // Adiciona a imagem ao PDF
 
             // Adicionar texto "Generado por Lab 220 by www.lab220.com.br" centralizado
@@ -438,6 +465,19 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
             const textY = 293; // Posição Y do texto no final da página
             pdf.text(footerText, textX, textY); // Adiciona o texto ao PDF
         }
+
+        // Adicionar contagem de páginas
+        const pageCount = pdf.internal.getNumberOfPages();
+        for (let j = 1; j <= pageCount; j++) {
+            pdf.setPage(j);
+            const pageSize = pdf.internal.pageSize;
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            const text = `${j} de ${pageCount}`;
+            const textWidth = pdf.getTextWidth(text);
+            pdf.setFontSize(6);
+            pdf.text(text, pageWidth - textWidth - margin, pageHeight - 4);
+        }
+
         // Salvar PDF
         pdf.save(`Entrega_EPI_${funcionarioSelecionado.value.label || 'Empleado'}.pdf`);
     } catch (error) {
@@ -446,6 +486,7 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 }
 export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
     const linguaSelecionada = i18n.global.locale.value;
+    
     if (linguaSelecionada === 'es') {
         await GerarPdfRetiradaEs(funcionarioSelecionado, relatorio);
     } else {
