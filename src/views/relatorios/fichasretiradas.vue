@@ -157,7 +157,7 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Botão para gerar a ficha -->
-                    <div class="field xl:col-2 lg:col-4 md:col-4 sm:col-6">
+                    <div class="ml-0 pl-0 field xl:col-2 lg:col-4 md:col-4 sm:col-6">
                         <Button class="filtrar" type="button" :label="$t('generate_pdf')" icon="pi pi-download" severity="info" @click="generatePDF" />
                     </div>
                 </div>
@@ -200,6 +200,7 @@ onMounted(() => {
 
 .filtrar {
     margin-top: 25px;
+    width: 179px;
 }
 
 .drop {

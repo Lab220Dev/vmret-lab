@@ -1,11 +1,9 @@
-import { toISODate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
+import { toISODate, formatStringDate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import relatorioService from '@/Services/relatorioService.js';
 import jsPDF from 'jspdf'; // Importa a biblioteca jsPDF para gerar PDFs
 import autoTable from 'jspdf-autotable';
-import html2canvas from "html2canvas";
-import { parse } from 'date-fns';
-import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import html2canvas from 'html2canvas';
 import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
 import clientesService from '../Services/ClientesService';
 import funcionarioService from '../Services/funcionarioService';
@@ -121,6 +119,15 @@ export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
                 data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
                 data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
+        case 'Fichas Retiradas':
+            // Retorna os dados preparados para o relatório de Logs.
+            return {
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_planta: relatorio.value.id_planta || undefined, // Adiciona o ID da planta, ou undefined se não existir.
+                id_funcionario: relatorio.value.id_funcionario, // Adiciona o ID do funcionário.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
+            };
         default:
             // Se o tipo do relatório não for reconhecido, retorna apenas a base de dados com o ID do cliente.
             return baseData;
@@ -222,7 +229,7 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
         // **Verifica se há dados para exibir na tabela**
-        if (!retiradas.data?.data || retiradas.data.data.length === 0) {
+        if (!retiradas.data || retiradas.data.length === 0) {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
@@ -231,12 +238,10 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
             const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
             const tableRows = retiradas.data.map((item) => {
                 try {
-                    const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date());
-                    const formattedDate = formatDateToString(parsedDate, 'dd/MM/yyyy - HH:mm');
-                    return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
                 } catch (error) {
-                    console.error('Erro ao formatar data:', error);
-                    return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    console.error('Erro:', error);
+                    return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
                 }
             });
 
@@ -275,12 +280,12 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         }
         const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120;
         doc.setFontSize(12);
-        doc.text('Data:', 30, finalY ); // Exibe o campo de data
+        doc.text('Data:', 30, finalY); // Exibe o campo de data
         doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
 
         doc.setFontSize(12);
         doc.text('______________________________________', 180, finalY);
-        doc.text('Assinatura do funcionário', 200, finalY+10);
+        doc.text('Assinatura do funcionário', 200, finalY + 10);
         doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
@@ -288,77 +293,153 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
 }
 export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
     try {
-        if (!funcionarioSelecionado.value || Object.keys(funcionarioSelecionado.value).length === 0){
+        if (!funcionarioSelecionado.value || Object.keys(funcionarioSelecionado.value).length === 0) {
             throw new Error('Empleado no seleccionado');
         }
 
         const cabecalhoHTML = await relatorioService.Cabecalho(); // Obtém o HTML dinamicamente
         const dadosCliente = await clientesService.fetchDadosCliente(store.userIdCliente); // Obtém os dados do cliente
         const dadosfuncionario = await funcionarioService.fetchdadosfuncionario(funcionarioSelecionado.value.value); // Obtém os dados do funcionário
-        const div = document.createElement("div");
+        const div = document.createElement('div');
         div.innerHTML = cabecalhoHTML;
         document.body.appendChild(div);
-        div.querySelector("#razon-social").textContent = dadosCliente.nome || "No informado";
-        div.querySelector("#cuit").textContent = dadosCliente.cpfcnpj || "No informado";
-        div.querySelector("#direccion").textContent = dadosCliente.endereco || "No informado";
-        div.querySelector("#cp").textContent = dadosCliente.cep || "No informado";
-        div.querySelector("#localidad").textContent = dadosCliente.cidade || "No informado";
-        div.querySelector("#provincia").textContent = dadosCliente.estado || "No informado";
-        div.querySelector("#dni").textContent = dadosfuncionario.cpf || "No informado";
-        div.querySelector("#nombre-trabajador").textContent = funcionarioSelecionado.value.label || "No informado";
-        div.querySelector("#puesto").textContent = dadosfuncionario.funcao_nome || "No informado";
-        div.querySelector("#elementos").textContent = dadosfuncionario.elementos || "No informado";
+        div.querySelector('#razon-social').textContent = dadosCliente.nome || 'No informado';
+        div.querySelector('#cuit').textContent = dadosCliente.cpfcnpj || 'No informado';
+        div.querySelector('#direccion').textContent = dadosCliente.endereco || 'No informado';
+        div.querySelector('#cp').textContent = dadosCliente.cep || 'No informado';
+        div.querySelector('#localidad').textContent = dadosCliente.cidade || 'No informado';
+        div.querySelector('#provincia').textContent = dadosCliente.estado || 'No informado';
+        div.querySelector('#dni').textContent = dadosfuncionario.cpf || 'No informado';
+        div.querySelector('#nombre-trabajador').textContent = funcionarioSelecionado.value.label || 'No informado';
+        div.querySelector('#puesto').textContent = dadosfuncionario.funcao_nome || 'No informado';
+        div.querySelector('#elementos').textContent = dadosfuncionario.elementos || 'No informado';
 
         // Converter HTML do cabeçalho em imagem
         const canvas = await html2canvas(div, { scale: 2 });
-        const imgData = canvas.toDataURL("image/png");
+        const imgData = canvas.toDataURL('image/png');
         document.body.removeChild(div); // Remove o elemento do DOM
 
         // Criar o PDF
-        const pdf = new jsPDF("p", "mm", "a4");
+        const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.width || 210; // Largura total da página
-        const margin = 10;
+        const margin = 10; // Margem da página
         const imgWidth = pageWidth - 2 * margin; // Mantém a largura da imagem dentro da página
         const imgHeight = (canvas.height * imgWidth) / canvas.width; // Mantém proporção
 
-        pdf.addImage(imgData, "PNG", margin, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'PNG', margin, 10, imgWidth, imgHeight); // Adiciona a imagem ao PDF
 
         // Buscar dados da ficha e retiradas
         const retiradas = await relatorioService.fichasRetiradas(relatorio);
 
-        // Criar a tabela de dados no PDF
-        pdf.autoTable({
-            startY: imgHeight + 10,
-            tableWidth: imgWidth, 
-            head: [[
-                "NOME DO ITEM", "DT RETIRADA", "QUANT", "UNID",
-                "DESCRIÇÃO DO EQUIPAMENTO", "N° DO C.A", "AUTENTICAÇÃO"
-            ]],
-            body: retiradas.data.map(item => [
-                item.ProdutoNome || '',
-                item.Dia || '',
-                item.Quantidade || '',
-                item.unidade_medida || '',
-                item.ProdutoDescricao || '',
-                item.ProdutoSKU || '',
-                item.Forma_Autenticacao || ''
-            ]),
-            theme: "grid",
-            styles: { fontSize: 10 },
-            columnStyles: {
-                0: { cellWidth: 30 },
-                1: { cellWidth: 25 },
-                2: { cellWidth: 15 },
-                3: { cellWidth: 15 },
-                4: { cellWidth: 50 },
-                5: { cellWidth: 25 },
-                6: { cellWidth: 30 }
+        pdf.setDrawColor(0, 0, 0); // Define a cor da borda
+        pdf.setFillColor(143, 143, 143); // Define a cor de fundo
+        pdf.setLineWidth(0.1); // Largura da linha da borda
+        pdf.rect(10, 33.1, 190, 1, 'FD'); // Desenha o retângulo
+
+        // Adicionar borda ao redor da página
+        pdf.rect(10, 10, 190, 280); // Desenha o retângulo ao redor da página
+
+        let posY = imgHeight + 11;// Posição Y inicial para a tabela
+        const itemsPerPage = 50;// Itens por página
+        let itemCount = 0;// Contador de itens
+
+        for (let i = 0; i < retiradas.data.length; i += itemsPerPage) {
+            if (i > 0) {
+                pdf.addPage(); // Adiciona uma nova página
+                // Adicionar borda ao redor da página
+                pdf.rect(10, 10, 190, 280);// Desenha o retângulo ao redor das demais páginas
+                posY = 11;// Posição Y inicial para a tabela
             }
-        });
 
-        // Salvar o PDF corretamente
+            //pdf.rect(10, 260, 190, 30);
+            //pdf.text('Información adicional: ', 2, 20, { align: 'center' });
+
+            // Criar um elemento de tabela para gerar a imagem da tabela
+            //linhas deletadas <td>${item.ProdutoSKU || ''}</td><td>${item.unidade_medida || ''}</td><td>${item.ProdutoDescricao || ''}</td>
+            const tabelaDiv = document.createElement('div');
+            tabelaDiv.innerHTML = `
+    <table border="1" style="border-collapse: collapse; width: 100%; text-align: left; border-color: rgb(0, 0, 0); color: rgb(0, 0, 0);">
+         <thead>
+             <tr style="background-color:rgb(255, 255, 255); height: 30px; text-align: center">
+                 <th style="width: 35px; background-color:rgb(143, 143, 143);" > </th>
+                 <th>Producto</th>
+                 <th>Tipo // Modelo</th>
+                 <th>Marca</th>
+                 <th>Cantidad</th>
+                 <th>Fecha</th>
+                 <th>Firma</th>
+             </tr>
+         </thead>
+         <tbody>
+                    ${retiradas.data
+                        .slice(i, i + itemsPerPage)
+                        .map(
+                            (item, index) => `
+                                <tr style="height: 35px;">
+                                    <td style="text-align: center">${i + index + 1}</td>
+                     <td style="padding: 5px">${item.ProdutoNome || ''}</td>
+                     <td style="padding: 5px">${item.modelo || ''}</td>
+                     <td style="padding: 5px">${item.marca || ''}</td>
+                     <td style="text-align: center">${item.Quantidade || ''}</td>
+                     <td style="text-align: center">${formatStringDate(item.Dia) || ''}</td>
+                     <td style="padding: 5px; text-align: center">${item.Forma_Autenticacao === 'Senha' ? 'Contraseña' : item.Forma_Autenticacao || ''}</td>                 
+                </tr>
+             `
+                        )
+                        .join('')}
+         </tbody>
+     </table>
+ `;
+
+            document.body.appendChild(tabelaDiv);
+
+            // Capturar a tabela como imagem
+            const tabelaCanvas = await html2canvas(tabelaDiv, { scale: 2 });
+            const tabelaImgData = tabelaCanvas.toDataURL('image/png');
+            document.body.removeChild(tabelaDiv);
+
+            // Definir posição para inserir a tabela abaixo do cabeçalho no PDF
+            //let posY = imgHeight + 11;
+            let tabelaWidth = pageWidth - 2 * margin;
+            let tabelaHeight = (tabelaCanvas.height * tabelaWidth) / tabelaCanvas.width;
+
+            // Adicionar tabela ao PDF
+            pdf.addImage(tabelaImgData, 'PNG', margin, posY, tabelaWidth, tabelaHeight);
+            itemCount += itemsPerPage;
+
+            const rodapediv = document.createElement('div');
+            rodapediv.innerHTML = `
+     <div>
+        <div style="width: 100%; height: 150px; border: 1px solid rgb(0, 0, 0);color: rgb(0, 0, 0);">
+               <p style="margin-left:5px; font-size: 12px; font-weight: bold; font-style: italic;">Información adicional:</p>
+         </div>
+     </div>
+ `;
+            document.body.appendChild(rodapediv);
+
+            const rodapeCanvas = await html2canvas(rodapediv, { scale: 2 });
+            const rodapeImgData = rodapeCanvas.toDataURL('image/png');
+            document.body.removeChild(rodapediv);
+
+            let rodapeWidth = pageWidth - 2 * margin; // Largura da imagem do rodapé
+            let rodapeHeight = (rodapeCanvas.height * rodapeWidth) / rodapeCanvas.width; // Mantém proporção
+            let rodapeY = 271; // Posição Y do rodapé no PDF
+
+            // Adicionar retângulo com "Información adicional:"
+            //pdf.rect(10, rodapeY, rodapeWidth, rodapeHeight); // Desenha o retângulo
+
+            pdf.addImage(rodapeImgData, 'PNG', margin, rodapeY, rodapeWidth, rodapeHeight); // Adiciona a imagem ao PDF
+
+            // Adicionar texto "Generado por Lab 220 by www.lab220.com.br" centralizado
+            const footerText = 'Generado por Lab 220 by www.lab220.com.br';
+            pdf.setFontSize(5);
+            const textWidth = pdf.getTextWidth(footerText);
+            const textX = (pageWidth - textWidth) / 2; // Centraliza o texto horizontalmente
+            const textY = 293; // Posição Y do texto no final da página
+            pdf.text(footerText, textX, textY); // Adiciona o texto ao PDF
+        }
+        // Salvar PDF
         pdf.save(`Entrega_EPI_${funcionarioSelecionado.value.label || 'Empleado'}.pdf`);
-
     } catch (error) {
         throw new Error(`Error al generar PDF: ${error.message}`);
     }
