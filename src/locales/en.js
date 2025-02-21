@@ -525,4 +525,8 @@ export default {
     login_forgot_link: 'Send recovery link',
     return_login: 'Return to login',
     docmask:"999.999.999-99",
+    validate_external_data: 'Validate Data',
+    validate_external_data_text: 'Validate',
+
+
 };

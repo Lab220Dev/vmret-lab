@@ -533,5 +533,7 @@ export default {
     site_greet: 'Visita nuestro sitio web',
     login_forgot_link: 'Enviar enlace de recuperación',
     return_login: 'Volver al inicio de sesión',
+    validate_external_data: 'validación de datos',
+    validate_external_data_text: 'validar',
     docmask:'99-99999999-9',
 };
