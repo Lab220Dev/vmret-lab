@@ -3,12 +3,15 @@
     <div class="loading-overlay">
         <div class="loading-container">
             <div class="loading-spinner"></div>
-            <p style="margin-top: 15px; color: #333">Carregando... Aguarde</p>
+            <p style="margin-top: 15px; color: #333">{{t('load_spinner')}}</p>
         </div>
     </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+</script>
 
 <style>
 /* Estilo para o modal de carregamento */

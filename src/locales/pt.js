@@ -568,4 +568,5 @@ export default {
     validate_external_data:"Validar Dados",
     validate_external_data_text: 'Validar',
     select_factory_name:' Planta {nome}',
+    load_spinner:'Carregando... Aguarde',
 };

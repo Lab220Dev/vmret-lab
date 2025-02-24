@@ -3,14 +3,15 @@
   <div v-if="isLoading" class="loading-modal">
     <div class="loading-container">
       <div class="spinner"></div>
-      <p>Carregando... Aguarde</p>
+      <p>{{t('load_spinner')}}</p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps } from 'vue'; // defineProps para declarar propriedades
-
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Definindo a propriedade 'isLoading' que controla a exibição do modal
 /**
  * Propriedades do componente
