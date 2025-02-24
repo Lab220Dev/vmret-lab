@@ -20,10 +20,10 @@ const { t } = useI18n();
  * @typedef {Object} Props
  * @property {Array<most>} most - Lista de produtos mais retirados, contendo a identificação da máquina, SKU, descrição e data/hora.
  */
-const props = defineProps({
-    low: {
-        type: Array,
-        required: true
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
+    low: {//low é um array de objetos
+        type: Array,//define que low é um array
+        required: true//define que low é obrigatório
     }
 });
 </script>

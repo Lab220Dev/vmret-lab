@@ -18,10 +18,10 @@ import { defineProps } from 'vue'; // defineProps para declarar propriedades
  * @typedef {Object} Props
  * @property {boolean} isLoading - Controla a visibilidade do modal de carregamento. Se verdadeiro, o modal será exibido.
  */
-const props = defineProps({
-  isLoading: {
-    type: Boolean,
-    required: true,
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
+  isLoading: {//isLoading é uma propriedade do tipo booleano
+    type: Boolean,//define que isLoading é do tipo booleano
+    required: true,//define que isLoading é obrigatório
   },
 });
 </script>
@@ -29,27 +29,27 @@ const props = defineProps({
 <style scoped>
 /* Estilo para o modal de carregamento */
 .loading-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: fixed;/* Posiciona o modal de carregamento fixo na tela */
+  top: 0;/* Alinha o modal ao topo da tela */
+  left: 0;/* Alinha o modal à esquerda da tela */
+  width: 100%;/* Largura total */
+  height: 100%;/* Altura total */
   background: rgba(0, 0, 0, 0.5); /* Fundo semitransparente */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex;/* Exibe os elementos em linha */
+  justify-content: center;/* Centraliza os elementos horizontalmente */
+  align-items: center;/* Centraliza os elementos verticalmente */
   z-index: 9999; /* Garante que o modal ficará acima de outros conteúdos */
 }
 
 /* Estilo do container do modal de carregamento */
 .loading-container {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background: white;/* Cor de fundo do container */
+  padding: 20px;/* Espaçamento interno */
+  border-radius: 10px;/* Borda arredondada */
+  display: flex;/* Exibe os elementos em linha */
+  flex-direction: column;/* Alinha os elementos verticalmente */
+  align-items: center;/* Alinha os elementos ao centro */
+  justify-content: center;/* Centraliza os elementos */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra suave */
 }
 
@@ -65,8 +65,8 @@ const props = defineProps({
 }
 
 /* Animação de rotação do spinner */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes spin {/*define a animação de rotação do spinner*/
+  0% { transform: rotate(0deg); }/*define o início da animação*/
+  100% { transform: rotate(360deg); }/*define o fim da animação*/
 }
 </style>

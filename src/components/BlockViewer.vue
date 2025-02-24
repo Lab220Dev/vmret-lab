@@ -11,19 +11,19 @@ import { ref, reactive } from 'vue';//reactive e ref são usados para reatividad
  * @property {string|null} containerClass - Classe adicional para o container do bloco.
  * @property {string|null} previewStyle - Estilo customizado para a visualização do bloco.
  */
-const props = defineProps({
-    header: { 
-        type: String, 
-        default: null 
-    }, //o `header` recebe uma string ou nulo (título do bloco)
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
+    header: { // `header` recebe uma string ou nulo
+        type: String, // Define o tipo da propriedade como string
+        default: null // Define o valor padrão como nulo
+    },
     code: null, // `code` pode ser qualquer tipo (geralmente uma string com o código a ser exibido)
-    recent: { 
-        type: Boolean, 
-        default: false 
-    }, // `recent` recebe um booleano (indica se o bloco é recente)
-    free: { 
-        type: Boolean, 
-        default: false 
+    recent: { // `recent` recebe um booleano (indica se o bloco é recente)
+        type: Boolean, // Define o tipo da propriedade como booleano
+        default: false // Define o valor padrão como falso
+    }, 
+    free: {// `free` recebe um booleano (indica se o bloco é gratuito) 
+        type: Boolean, // Define o tipo da propriedade como booleano
+        default: false // Define o valor padrão como falso
     }, // `free` recebe um booleano (indica se o bloco é gratuito)
     containerClass: null, // `containerClass` pode ser qualquer tipo (classe adicional para o container)
     previewStyle: null // `previewStyle` pode ser qualquer tipo (estilo customizado para o preview)
@@ -35,7 +35,7 @@ const props = defineProps({
  * @readonly
  * @enum {number}
  */
- const BlockView = reactive({
+ const BlockView = reactive({ // `BlockView` é uma enumeração reativa dos estados de visualização
     PREVIEW: 0, // Visualização do Preview
     CODE: 1 // Visualização do Código
 });
@@ -53,8 +53,8 @@ const blockView = ref(0); // `blockView` armazena o estado da visualização ati
  * @param {Event} event - O evento de clique.
  * @param {number} blockViewValue - O valor da visualização a ser ativada.
  */
- function activateView(event, blockViewValue) {
-    blockView.value = blockViewValue;
+ function activateView(event, blockViewValue) { // `activateView` ativa a visualização desejada (Preview ou Código)
+    blockView.value = blockViewValue; // Ativa a visualização com o valor fornecido
     event.preventDefault(); // Evita o comportamento padrão do clique
 }
 
@@ -63,21 +63,24 @@ const blockView = ref(0); // `blockView` armazena o estado da visualização ati
  * 
  * @param {Event} event - O evento de clique.
  */
-async function copyCode(event) {
+async function copyCode(event) {// `copyCode` copia o código para a área de transferência
     await navigator.clipboard.writeText(props.code); // Copia o conteúdo de `props.code` para a área de transferência
     event.preventDefault(); // Evita o comportamento padrão do clique
 }
 </script>
 
-<template>
+<template><!-- Template do componente -->
+    <!-- Bloco de seção -->
     <div class="block-section">
         <!-- Cabeçalho do bloco -->
         <div class="block-header">
+            <!-- Título do bloco -->
             <span class="block-title">
                 <span>{{ header }}</span>
                 <span class="badge-new" v-if="recent">New</span>
                 <span class="badge-free" v-if="free">Free</span>
             </span>
+            <!-- Ações do bloco -->
             <div class="block-actions">
                 <!-- Botões para alternar entre visualizações -->
                 <a tabindex="0" :class="{ 'block-action-active': blockView === BlockView.PREVIEW }" @click="activateView($event, BlockView.PREVIEW)">

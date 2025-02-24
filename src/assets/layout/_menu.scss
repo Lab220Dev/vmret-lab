@@ -30,7 +30,7 @@
 
         >a {
             display: none;
-            color: black    ;
+            color: black;
         }
     }
 
@@ -43,6 +43,7 @@
             
             >.layout-submenu-toggler {
                 transform: rotate(-180deg);
+                color: #ffffff;
                 
             }
         }
@@ -52,6 +53,9 @@
         >a {
             .layout-submenu-toggler {
                 transform: rotate(-180deg);
+                color: #e8a835;
+
+                
             }
         }
         
@@ -79,8 +83,15 @@
             }
             
             .layout-menuitem-text.active-route {
-                color: #e8a835 !important; 
+                color: #ffffff !important; 
                 font-weight: 700;
+            }
+            .layout-menuitem-text:active {
+                color: #ffffff !important;
+            }
+
+            .layout-menuitem-text:visited {
+                color: #e8a835 !important;
             }
 
             .layout-menuitem-text-disabled {
@@ -98,7 +109,7 @@
 
             &.active-route {
                 font-weight: 700;
-                color: #e8a835 ;
+                color: #ffa600 !important;
             }
 
             &:hover {
@@ -107,6 +118,9 @@
 
             &:focus {
                 @include focused-inset();
+            }
+            &:visited {
+                color: inherit;
             }
         }
 
@@ -118,7 +132,7 @@
             li {
                 a {
                     margin-left: 1rem;
-                    color: rgba(255,255,255,.5);
+                    color: #ffffff;
                 }
 
                 li {

@@ -193,17 +193,17 @@ onMounted(() => {
         <div class="form">
             <div class="grid mb-0 pt-5">
                 <!-- Campos para filtros -->
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">{{t('user')}}:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario"
+                    <Dropdown filter class="drop" v-model="relatorio.id_usuario" :options="usuario"
                      optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">{{t('operation')}}:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" 
+                    <Dropdown filter class="drop" v-model="relatorio.id_operacao" :options="operacao" 
                     optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{t('initial_date')}}:</label>
                     <VueDatePicker
                         class="drop"
@@ -219,7 +219,7 @@ onMounted(() => {
                         :placeholder="$t('initial_date_placeholder')"
                     />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{t('end_date')}}:</label>
                     <VueDatePicker
                         class="drop"

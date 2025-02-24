@@ -12,7 +12,7 @@ import usuarioDMService from '@/services/usuarioDMService';
 
 import funcionarioService from '@/Services/funcionarioService.js';
 
-import relatorioService  from '@/Services/relatorioService'; // Serviço para buscar logs de desktop
+import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs de desktop
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
@@ -40,7 +40,8 @@ const filters = ref({
 // Variáveis para armazenar as opções de funcionários e usuários
 const ListaFuncionarios = ref([todosOption]);
 const operador = ref([]); // Lista de usuários
-const relatorioDesk = ref({ // Objeto que armazena os filtros para a busca de logs
+const relatorioDesk = ref({
+    // Objeto que armazena os filtros para a busca de logs
     dm: '',
     id_usuario: '',
     id_funcionario: '',
@@ -82,37 +83,45 @@ const toISODate = (date) => {
 };
 
 // Função que monitora mudanças no filtro global e atualiza o contador de registros filtrados
-watch(() => filters.value.global.value, () => {
-    filteredCount.value = historico.value.filter(item => {
-        const filterValue = filters.value.global.value?.toLowerCase() || ''; // Valor do filtro global
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum valor no item contém o filtro
-    }).length; // Atualiza o contador de registros filtrados
-}, { immediate: true }); // O watch é executado imediatamente após a inicialização
+watch(
+    () => filters.value.global.value,
+    () => {
+        filteredCount.value = historico.value.filter((item) => {
+            const filterValue = filters.value.global.value?.toLowerCase() || ''; // Valor do filtro global
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum valor no item contém o filtro
+        }).length; // Atualiza o contador de registros filtrados
+    },
+    { immediate: true }
+); // O watch é executado imediatamente após a inicialização
 
 // Função para buscar a lista de usuários (Usuário DM = Operador)
 const fetchUsuarioDM = async () => {
-    const data = { id_cliente: relatorioDesk.value.dm.id_cliente  }; // Dados para a requisição
+    const data = { id_cliente: relatorioDesk.value.dm.id_cliente }; // Dados para a requisição
     try {
         const response = await usuarioDMService.listarUDMSimples(data); // Requisição para buscar usuários
-        operador.value = response.data.map(({ id, nome, id_cliente }) => ({ // Mapeia os usuários para o formato esperado no dropdown
-            label: nome, 
+        operador.value = response.data.map(({ id, nome, id_cliente }) => ({
+            // Mapeia os usuários para o formato esperado no dropdown
+            label: nome,
             value: id,
             id_cliente: id_cliente
         }));
     } catch (error) {
         console.error('Erro ao carregar lista de operadores:', error); // Log de erro
-        toast.add({ severity: 'error', summary: t('title_error'), detail: t('operator_list_error'), life: 3000  }); // Mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('operator_list_error'), life: 3000 }); // Mensagem de erro
     }
 };
 // Função para buscar DMs disponíveis
 const fetchDM = async () => {
     try {
         const response = await dmService.listarDMId(); // Requisição para buscar DMs
-        dms.value = [...response.data.map(({ id_dm, Identificacao , id_cliente}) => ({ // Mapeia as DMs para o formato esperado no dropdown
-            label: Identificacao, 
-            value: id_dm,
-            id_cliente: id_cliente
-        }))]; // Atualiza a lista de DMs
+        dms.value = [
+            ...response.data.map(({ id_dm, Identificacao, id_cliente }) => ({
+                // Mapeia as DMs para o formato esperado no dropdown
+                label: Identificacao,
+                value: id_dm,
+                id_cliente: id_cliente
+            }))
+        ]; // Atualiza a lista de DMs
     } catch (error) {
         console.error('Erro ao carregar lista de dms:', error); // Log de erro
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_dm_list'), life: 3000 }); // Mensagem de erro
@@ -124,7 +133,7 @@ const fetchFuncionarios = async () => {
     const data = { id_cliente: relatorioDesk.value.dm.id_cliente }; // Prepara os dados para a requisição
 
     try {
-        const response= await funcionarioService.listarFuncionariosSimples(data);
+        const response = await funcionarioService.listarFuncionariosSimples(data);
         ListaFuncionarios.value = response.data.map((funcionario) => ({
             value: funcionario.id_funcionario, // ID do funcionário.
             label: funcionario.nome // Nome do funcionário.
@@ -137,7 +146,6 @@ const fetchFuncionarios = async () => {
 };
 
 const buscar = async () => {
-
     try {
         historico.value = await relatorioService.logDesktop(relatorioDesk); // Requisição para buscar logs
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
@@ -150,7 +158,6 @@ const buscar = async () => {
 const handleDmChange = async () => {
     await fetchUsuarioDM(); // Busca os usuários
     await fetchFuncionarios(); // Busca os funcionários
-    
 };
 
 // Função para fechar todos os dropdowns abertos
@@ -165,8 +172,6 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
 };
 
-
-
 // Função chamada ao montar o componente, para buscar dados iniciais
 onMounted(() => {
     fetchDM(); // Busca as DMs
@@ -177,79 +182,91 @@ onMounted(() => {
     <!-- Formulário de filtros para a busca dos logs -->
     <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-6 ml-2 text-2xl">{{t('desk_log_title')}}</h5>
-            <div class="grid mt-3 mx-1 p-1">
+            <div class="grid mb-0 pt-5">
                 <!-- Filtros para DM, Operação, Usuário, Funcionário, e Data -->
-                <div class="field lg:col-2 md:col-6 sm:col-6">
-                    <label for="operador">{{t('dm')}}:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter
-                    :placeholder="$t('all')" ref="dropdown1" @change="handleDmChange" />
+                <div class="field py-0 my-0 lg:col-2 md:col-6 sm:col-6">
+                    <label for="operador">{{ t('dm') }}:</label>
+                    <Dropdown  class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="dropdown1" @change="handleDmChange" />
                 </div>
-                <!-- <div class="field lg:col-4 md:col-6 sm:col-6">
-                    <label for="operacao">Operação:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.id_operacao" :options="operacao" optionLabel="label"
-                        optionValue="value" placeholder="Todos" />
-                </div> -->
-                <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="operador">{{t('operator')}}:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label"
-                        optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                    <label for="operador">{{ t('operator') }}:</label>
+                    <Dropdown class="drop" filter v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
-                    <label for="operador">{{t('employee')}}:</label>
-                    <Dropdown class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label"
-                        optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                    <label for="operador">{{ t('employee') }}:</label>
+                    <Dropdown filter class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-2 md:col-6 sm:col-6">
-                    <label for="perfil">{{t('initial_date')}}:</label>
-                    <VueDatePicker class="drop" v-model="relatorioDesk.data_inicio" showIcon :showOnFocus="false"
-                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
-                        :enable-time-picker="false" teleport="body" :placeholder="$t('initial_date_placeholder')" />
+                <div class="field py-0 my-0 lg:col-2 md:col-6 sm:col-6">
+                    <label for="perfil">{{ t('initial_date') }}:</label>
+                    <VueDatePicker
+                        class="drop"
+                        v-model="relatorioDesk.data_inicio"
+                        showIcon
+                        :showOnFocus="false"
+                        :format="format"
+                        auto-apply
+                        locale="pt-BR"
+                        @open="handleDatepickerOpen"
+                        :enable-time-picker="false"
+                        teleport="body"
+                        :placeholder="$t('initial_date_placeholder')"
+                    />
                 </div>
-                <div class="field lg:col-2 md:col-6 sm:col-6">
-                    <label for="perfil">{{t('end_date')}}:</label>
-                    <VueDatePicker class="drop" v-model="relatorioDesk.data_final" showIcon :showOnFocus="false"
-                        :format="format" auto-apply locale="pt-BR" @open="handleDatepickerOpen"
-                        :enable-time-picker="false" teleport="body" :placeholder="$t('end_date_placeholder')" />
+                <div class="field py-0 my-0 lg:col-2 md:col-6 sm:col-6">
+                    <label for="perfil">{{ t('end_date') }}:</label>
+                    <VueDatePicker
+                        class="drop"
+                        v-model="relatorioDesk.data_final"
+                        showIcon
+                        :showOnFocus="false"
+                        :format="format"
+                        auto-apply
+                        locale="pt-BR"
+                        @open="handleDatepickerOpen"
+                        :enable-time-picker="false"
+                        teleport="body"
+                        :placeholder="$t('end_date_placeholder')"
+                    />
                 </div>
-                <div class="field lg:col-12 md:col-12 sm:col-12">
-                    <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info"
-                        @click="buscar" /> <!-- Botão para acionar a busca -->
-                </div>
+            </div>
+            <div class="field p-0 m-0 lg:col-12 md:col-12 sm:col-12">
+                <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+                <!-- Botão para acionar a busca -->
             </div>
         </div>
         <!-- Tabela para exibição dos logs -->
-        <DataTable 
-        v-model:filters="filters"
-        :value="historico" 
-        stripedRows 
-        showGridlines 
-        paginator 
-        :rows="10"
-        :rowsPerPageOptions="[5, 10, 20, 50]"
-        rowHover
-        :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log', 'Resultado']"  
-        dataKey="Operacao"
-        :tableStyle="{ width: '100%' }"
-        :sortOrder="1"
-        :sortField="'Operacao'"  >
-
-        <template #header>
-                            <div class="flex justify-content-between align-items-center">
-                                <div class="flex justify-content-start">
-                                    <span>{{$t('total_records',{count: filteredCount})}}</span>
-                                </div>
-                                <div>
-                                    <IconField iconPosition="left">
-                                        <InputIcon>
-                                            <i class="pi pi-search" />
-                                        </InputIcon>
-                                        <InputText v-model="filters['global'].value"  :placeholder="t('search')" type="search" />
-                                    </IconField>
-                                </div>
-                            </div>
-                        </template>
-                        <template #empty> {{ emptyMessage }} </template>
+        <DataTable
+            class="mt-4"
+            v-model:filters="filters"
+            :value="historico"
+            stripedRows
+            showGridlines
+            paginator
+            :rows="10"
+            :rowsPerPageOptions="[5, 10, 20, 50]"
+            rowHover
+            :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log', 'Resultado']"
+            dataKey="Operacao"
+            :tableStyle="{ width: '100%' }"
+            :sortOrder="1"
+            :sortField="'Operacao'"
+        >
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div class="flex justify-content-start">
+                        <span>{{ $t('total_records', { count: filteredCount }) }}</span>
+                    </div>
+                    <div>
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
+                        </IconField>
+                    </div>
+                </div>
+            </template>
+            <template #empty> {{ emptyMessage }} </template>
 
             <!-- Definição das colunas da tabela -->
             <Column field="dataHora" sortable :header="t('date')">
