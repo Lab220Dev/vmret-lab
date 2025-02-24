@@ -567,5 +567,5 @@ export default {
     AUTHENTICATION_DOC:"AUTENTICAÇÃO",
     validate_external_data:"Validar Dados",
     validate_external_data_text: 'Validar',
-
+    select_factory_name:' Planta {nome}',
 };

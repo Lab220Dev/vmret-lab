@@ -542,8 +542,5 @@ export default {
     DESCRIPTION_DOC:"DESCRIPTION",
     CA_NUMBER_DOC:"CA",
     AUTHENTICATION_DOC:"AUTHENTICATION",
-
-
-    
-
+    select_factory_name:' Factory {nome}',
 };

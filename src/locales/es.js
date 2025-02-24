@@ -536,4 +536,6 @@ export default {
     validate_external_data: 'validación de datos',
     validate_external_data_text: 'validar',
     docmask:'99-99999999-9',
+    select_factory_name:' Planta {nome}',
+
 };
