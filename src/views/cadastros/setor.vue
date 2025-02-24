@@ -350,7 +350,7 @@ const debouncedFilterChange = debounce(() => {
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">{{ t('cost_center_name') }}:</label>
-                                        <Dropdown class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                                        <Dropdown filter class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
@@ -424,7 +424,7 @@ const debouncedFilterChange = debounce(() => {
                                     <Dialog v-model:visible="visible" modal :header="t('add_items_to_sector')" :draggable="false">
                                         <div class="grid">
                                             <div class="col-12">
-                                                <label for="Produto" class="font-semibold col-2">{{ t('product') }}: </label>
+                                                <label for="Produto" class="font-semibold col-2 mr-2">{{ t('product') }}: </label>
                                                 <Dropdown
                                                     v-model="produtoSelecionado.id_produto"
                                                     :options="ListaItensSetor"
@@ -436,8 +436,8 @@ const debouncedFilterChange = debounce(() => {
                                                 />
                                             </div>
                                             <div class="col-12">
-                                                <label for="Quantidade" class="font-semibold w-6rem mr-2">{{ t('quantity') }}: </label>
-                                                <InputNumber id="Quantidade" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                                                <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{ t('quantity') }}: </label>
+                                                <InputNumber id="Quantidade" class="ml-5" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                                             </div>
                                         </div>
                                         <div class="flex justify-content-end gap-2">

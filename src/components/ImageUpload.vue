@@ -19,7 +19,7 @@
   <script setup>
   import { ref, watch } from 'vue'; // ref para reatividade, watch para observar mudanças em valores reativos
   import { defineProps, defineEmits, defineExpose } from 'vue'; // defineProps para declarar propriedades, defineEmits para declarar eventos e defineExpose para expor funções
-  import imageUrl from '@/assets/images/placeholder4.png'; // Importa imagem de placeholder
+  import imageUrl from '@/assets/images/placeholder4.1.jpg'; // Importa imagem de placeholder
   import { useToast } from 'primevue/usetoast'; // Função para mostrar notificações
   import { useI18n } from 'vue-i18n';
   const { t } = useI18n();

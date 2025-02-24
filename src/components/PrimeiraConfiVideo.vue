@@ -66,9 +66,7 @@
 import axios from '@/axios.js'; // Importa o axios para realizar requisições HTTP
 import { ref, computed, defineProps, defineEmits } from 'vue'; // Funções do Vue para reatividade e manipulação de props
 import { useToast } from 'primevue/usetoast'; // Importa a função de toast para exibir notificações
-import videoService from '@/services/videoService';
-import { isValidVideoFile } from '@/helpers/HelperValidacao';
-import { generateCustomVideoName } from '@/helpers/HelperUtils';
+import videoService from '@/services/videoService';// Importa o serviço de vídeo para fazer upload
 
 const toast = useToast(); // Instancia o objeto de notificações de toast
 
@@ -80,38 +78,38 @@ const props = defineProps({
 const selectedDM = ref(null); // DM selecionada pelo usuário
 const filesToUpload = ref([]); // Lista de arquivos que serão enviados
 const isUploading = ref(false); // Flag que indica se o upload está em andamento
-const showDialog = ref(false);
+const showDialog = ref(false);// Flag que controla a visibilidade do diálogo de erro
 const fileError = ref(''); // Mensagem de erro caso o usuário tente adicionar arquivos inválidos
 const uploadedVideos = ref(0); // Contador de vídeos enviados com sucesso
 
 // Computed para gerar as opções da lista de DMs (Identificação e ID)
-const dmOptions = computed(() =>
-    props.dmList.map((dm) => ({
+const dmOptions = computed(() =>//computed é usado para criar variáveis computadas
+    props.dmList.map((dm) => ({//mapeia a lista de DMs
         label: dm.Identificacao, // Nome do dispositivo
         value: dm.ID_DM // ID do dispositivo
     }))
 );
 
 // Função para remover um vídeo da lista de arquivos a serem enviados
-const removeVideo = (index) => {
+const removeVideo = (index) => {//removeVideo é uma função que recebe um índice como parâmetro
     // Remove o vídeo da lista de arquivos
     filesToUpload.value.splice(index, 1); // Remove 1 item no índice especificado
 };
 
 // Função para emitir o evento de término do setup de vídeo
-const emit = defineEmits(['setup-concluido']);
+const emit = defineEmits(['setup-concluido']);//defineEmits é usado para definir os eventos emitidos pelo componente
 const isAnyVideoUploaded = computed(() => uploadedVideos.value > 0); // Computed para verificar se ao menos um vídeo foi enviado
 
 // Função que dispara o input de seleção de arquivos
-const triggerFileInput = () => {
+const triggerFileInput = () => {//triggerFileInput é uma função que dispara o input de seleção de arquivos
     // Verifica se uma DM foi selecionada
-    if (!selectedDM.value) {
+    if (!selectedDM.value) {//se não houver DM selecionada
         // Define a mensagem de erro com uma mensagem genérica
         toast.add({
-            severity: 'warn',
-            summary: 'Aviso',
-            detail: t('video_associated_dm'),
-            life: 3000
+            severity: 'warn',  // Define a severidade da notificação como aviso
+            summary: 'Aviso',// Define o título da notificação
+            detail: t('video_associated_dm'),// Define o conteúdo da notificação
+            life: 3000// Define o tempo de exibição da notificação
         });
 
         return; // Impede o processo de seleção de arquivos
@@ -119,80 +117,80 @@ const triggerFileInput = () => {
 
     // Caso uma DM esteja selecionada, abre o seletor de arquivos
     const fileInput = document.querySelector('input[type="file"]');
-    if (fileInput) {
+    if (fileInput) {//se o input de arquivo existir
         fileInput.click(); // Abre a janela para selecionar arquivos
     }
 };
 
 // Função que emite o evento 'setup-concluido' para informar que o setup foi concluído
-const finalizarSetup = () => {
-    emit('setup-concluido');
+const finalizarSetup = () => {//finalizarSetup é uma função que emite o evento 'setup-concluido'
+    emit('setup-concluido');//emite o evento 'setup-concluido'
 };
 
 // Função que manipula a seleção de arquivos de vídeo
-const handleFiles = (event) => {
+const handleFiles = (event) => {//handleFiles é uma função que manipula a seleção de arquivos de vídeo
     const files = event.target.files; // Obtém os arquivos selecionados
 
     // Verifica se já existe um arquivo para a DM selecionada
     const dmIdSelected = selectedDM.value.value; // ID da DM selecionada
 
-    const existingFile = filesToUpload.value.find((file) => file.dmId === dmIdSelected);
-    if (existingFile) {
-        toast.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: `Já existe um vídeo selecionado para a DM "${selectedDM.value.label}".`,
-            life: 3000
+    const existingFile = filesToUpload.value.find((file) => file.dmId === dmIdSelected);//verifica se já existe um arquivo para a DM selecionada
+    if (existingFile) {//se já existir um arquivo para a DM selecionada
+        toast.add({//exibe uma notificação de erro
+            severity: 'error',// Define a severidade da notificação como erro
+            summary: 'Erro',// Define o título da notificação
+            detail: `Já existe um vídeo selecionado para a DM "${selectedDM.value.label}".`,// Define o conteúdo da notificação
+            life: 3000// Define o tempo de exibição da notificação
         });
         return; // Impede a adição de um novo arquivo para a mesma DM
     }
 
     // Verifica e valida cada arquivo
-    for (const file of files) {
+    for (const file of files) {//itera sobre os arquivos selecionados
         // Verifica se o arquivo não é do tipo mp4
-        if (!file.type.includes('mp4')) {
-            toast.add({
-                severity: 'error',
-                summary: 'Erro de Arquivo',
-                detail: 'Apenas arquivos .mp4 são permitidos.',
-                life: 3000
+        if (!file.type.includes('mp4')) {//se o arquivo não for do tipo mp4
+            toast.add({//exibe uma notificação de erro
+                severity: 'error',// Define a severidade da notificação como erro
+                summary: 'Erro de Arquivo',// Define o título da notificação
+                detail: 'Apenas arquivos .mp4 são permitidos.',// Define o conteúdo da notificação
+                life: 3000// Define o tempo de exibição da notificação
             });
             continue; // Pula o arquivo inválido
         }
 
         // Verifica se o arquivo é maior que 5MB
-        if (file.size > 50 * 1024 * 1024) {
-            toast.add({
-                severity: 'error',
-                summary: 'Erro de Arquivo',
-                detail: 'O tamanho do arquivo não pode exceder 50MB.',
-                life: 3000
+        if (file.size > 50 * 1024 * 1024) {//se o arquivo for maior que 50MB
+            toast.add({//exibe uma notificação de erro
+                severity: 'error',// Define a severidade da notificação como erro
+                summary: 'Erro de Arquivo',// Define o título da notificação
+                detail: 'O tamanho do arquivo não pode exceder 50MB.',// Define o conteúdo da notificação
+                life: 3000// Define o tempo de exibição da notificação
             });
             continue; // Pula o arquivo inválido
         }
 
         // Gera um nome customizado para o arquivo
-        const generatedName = `DM-${selectedDM.value.label}-v1`;
+        const generatedName = `DM-${selectedDM.value.label}-v1`;//gera um nome customizado para o arquivo
 
         // Adiciona o arquivo à lista de arquivos a serem enviados
-        filesToUpload.value.push({
-            file,
-            dmId: selectedDM.value.value,
-            customName: generatedName,
-            fileName: file.name,
+        filesToUpload.value.push({//adiciona o arquivo à lista de arquivos a serem enviados
+            file,// Adiciona o arquivo
+            dmId: selectedDM.value.value,// Adiciona a ID da DM
+            customName: generatedName,// Adiciona o nome customizado do arquivo
+            fileName: file.name,// Adiciona o nome original do arquivo
             progress: 0 // Inicializa o progresso do upload
         });
     }
 };
 
 // Função que faz o upload dos vídeos selecionados
-const uploadVideos = async () => {
-    if (filesToUpload.value.length === 0) {
-        toast.add({
-            severity: 'warn',
-            summary: 'Nenhum Arquivo',
-            detail: 'Adicione arquivos antes de enviar.',
-            life: 3000
+const uploadVideos = async () => {//uploadVideos é uma função que faz o upload dos vídeos selecionados
+    if (filesToUpload.value.length === 0) {//se não houver arquivos para enviar
+        toast.add({//exibe uma notificação de aviso
+            severity: 'warn',// Define a severidade da notificação como aviso
+            summary: 'Nenhum Arquivo',//    Define o título da notificação
+            detail: 'Adicione arquivos antes de enviar.',// Define o conteúdo da notificação
+            life: 3000// Define o tempo de exibição da notificação
         });
         return; // Retorna se não houver arquivos para enviar
     }

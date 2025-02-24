@@ -1,11 +1,11 @@
 <template>
   <!-- Componente de diálogo para confirmação de exclusão -->
-  <Dialog header="Deletar Item" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false">
+  <Dialog header="Deletar Item" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false"><!-- Propriedades do diálogo -->
     <p>{{ dialogMessage }}</p>
     <!-- Rodapé do diálogo com botões para cancelar ou confirmar -->
     <template #footer>
-      <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" />
-      <Button label="OK" icon="pi pi-check" @click="confirmDelete" />
+      <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" /><!-- Botão de cancelar -->
+      <Button label="OK" icon="pi pi-check" @click="confirmDelete" /><!-- Botão de confirmar -->
     </template>
   </Dialog>
 </template>

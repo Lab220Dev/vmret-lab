@@ -10,6 +10,7 @@ import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de Spinner de carregamento
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import { useI18n } from 'vue-i18n';
 
 // Definindo as variáveis reativas do componente
 const filteredCount = ref(0); // Contagem filtrada de itens na tabela
@@ -153,56 +154,53 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <!-- Grid de layout -->
-            <div class="grid mt-3 mx-1 px-1">
-                <!-- Título principal -->
-                <h5 class="my-4 text-2xl">Retiradas Avulsas</h5>
-
+            <div class="text-center">
                 <!-- Formulário de busca para o relatório, exibido quando "show" for true -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- Campo de filtro para DM -->
-                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class=" py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
                         <!-- Dropdown para selecionar DM -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
                     </div>
 
                     <!-- Campo de filtro para Planta -->
-                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class=" py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
                         <!-- Dropdown para selecionar Planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Setor -->
-                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Setor:</label>
                         <!-- Dropdown para selecionar Setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Centro de Custo -->
-                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-6">
+                    <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">Centro de Custo:</label>
                         <!-- Dropdown para selecionar Centro de Custo -->
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Funcionário -->
-                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Funcionário:</label>
                         <!-- Dropdown para selecionar Funcionário -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
                     </div>
 
                     <!-- Campo de filtro para Voucher -->
-                    <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Voucher:</label>
                         <!-- Dropdown para selecionar Voucher -->
-                        <Dropdown class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown6" />
+                        <Dropdown filter class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown6" />
                     </div>
 
                     <!-- Campo de filtro para Data Inicial -->
-                    <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
                         <!-- DatePicker para selecionar Data Inicial -->
                         <VueDatePicker
@@ -222,7 +220,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Campo de filtro para Data Final -->
-                    <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                    <div class=" py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">Data Final:</label>
                         <!-- DatePicker para selecionar Data Final -->
                         <VueDatePicker
@@ -242,7 +240,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Botão de Filtrar -->
-                    <div class="field xl:col-4 lg:col-4 md:col-4 sm:col-12 justify-self-end">
+                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12 justify-self-end">
                         <!-- Botão para filtrar dados do relatório -->
                         <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
@@ -256,7 +254,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Tabela de Dados do Relatório -->
-                <div class="datatable-wrapper">
+                <div class="datatable-wrapper mt-5">
                     <!-- DataTable que exibe os dados das retiradas -->
                     <DataTable
                         v-model:filters="filters"

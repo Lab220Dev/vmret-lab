@@ -113,13 +113,13 @@ onMounted(() => {
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para selecionar a planta, com lista de opções fornecida por 'plantas' -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" @change="filterFuncionarios" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" @change="filterFuncionarios" />
                     </div>
                     <!-- Campo de seleção para Funcionário -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">{{t('employee')}}:</label>
                         <!-- Componente Dropdown para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" :placeholder="$t('all')" @change="selecionaFuncionario"/>
+                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" :placeholder="$t('all')" @change="selecionaFuncionario"/>
                     </div>
                     <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">

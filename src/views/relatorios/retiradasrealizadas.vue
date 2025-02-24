@@ -185,35 +185,35 @@ onMounted(() => {
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">{{ $t('dm') }}</label>
                         <!-- Dropdown para selecionar DM (vinculado a 'relatorio.id_dm') -->
-                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1"></Dropdown>
+                        <Dropdown class="drop" filter v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1"></Dropdown>
                     </div>
 
                     <!-- Filtro Centro de Custo -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{ $t('cost_center') }}</label>
                         <!-- Dropdown para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
-                        <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
+                        <Dropdown class="drop" filter v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro Setor -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{ $t('sector') }}</label>
                         <!-- Dropdown para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
+                        <Dropdown class="drop" filter v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro Planta -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{ $t('factory') }}:</label>
                         <!-- Dropdown para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
+                        <Dropdown class="drop" filter v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro Funcionário -->
                     <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{ t('employee') }}:</label>
                         <!-- Dropdown para selecionar Funcionário -->
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                        <Dropdown class="drop" filter v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
                     </div>
 
                     <!-- Filtro Data Inicial -->

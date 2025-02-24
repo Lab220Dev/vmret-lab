@@ -223,32 +223,32 @@ onMounted(() => {
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">{{t('dm')}}:</label>
                         <!-- Componente Dropdown para escolher o DM -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
+                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
                     </div>
                     <!-- Filtro de Planta -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para escolher a planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
                     </div>
                     <!-- Filtro de Setor -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
                         <!-- Componente Dropdown para escolher o setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Componente Dropdown para escolher o centro de custo -->
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" />
                     </div>
 
                     <!-- Filtro de Operador -->
                     <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('operator')}}:</label>
                         <!-- Componente Dropdown para escolher o operador -->
-                        <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
                     </div>
                     <!-- Filtro de Data Inicial -->
                     <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">

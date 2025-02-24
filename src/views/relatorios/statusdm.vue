@@ -89,7 +89,7 @@ const handleDatepickerOpen = () => {
         
         <div class="flex flex-row gap-3 mb-5">
             <!-- Dropdown para selecionar DM -->
-            <Dropdown id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
+            <Dropdown filter id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
             <!-- DatePicker para selecionar a data -->
             <VueDatePicker
                 class="drop w-full md:w-14rem"

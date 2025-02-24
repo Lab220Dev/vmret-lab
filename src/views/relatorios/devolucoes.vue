@@ -207,25 +207,25 @@ onMounted(() => {
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <label for="id_dm">{{t('dm')}}</label>
-                        <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" :placeholder="$t('all')" ></Dropdown>
+                        <label for="id_dm">{{t('dm')}}:</label>
+                        <Dropdown filter class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" :placeholder="$t('all')" ></Dropdown>
                     </div>
 
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}</label>
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown3" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown3" @change="filtroGenerico" />
                     </div>
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}</label>
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value":placeholder="$t('all')"  ref="dropdown4" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value":placeholder="$t('all')"  ref="dropdown4" @change="filtroGenerico" />
                     </div>
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown2" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown2" @change="filtroGenerico" />
                     </div>
                     <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('employee')}}:</label>
-                        <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown5" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown5" />
                     </div>
                     <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('initial_date')}}:</label>

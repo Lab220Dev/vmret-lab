@@ -1,6 +1,6 @@
 <template>
     <!-- Contêiner principal da página, sem classe ou estilo específico aplicado -->
-    <div class="">
+    <div class="card">
 
         <!-- Título da seção, explicando o conteúdo da página -->
         <div>

@@ -114,34 +114,34 @@ const props = defineProps({
 });
 
 // Filtro global para a pesquisa
-const filters = ref({
-    global: { value: '' }
+const filters = ref({//ref é usado para reatividade
+    global: { value: '' }//filtro global
 });
 
 // Mensagem exibida quando não há itens para mostrar
-const emptyMessage = ref('Nenhum item encontrado.');
+const emptyMessage = ref('Nenhum item encontrado.');//ref é usado para reatividade
 
 // Variável reativa que representa o estado de carregamento
-const loading = ref(false);
+const loading = ref(false);//ref é usado para reatividade
 
 // Variável reativa que contém o valor selecionado da DM
-const selectedDM = ref(null);
+const selectedDM = ref(null);//ref é usado para reatividade
 
 // Computed que filtra os itens de estoque com base na DM selecionada
-const filteredEstoque = computed(() => {
-    if (!selectedDM.value) {
+const filteredEstoque = computed(() => {//computed é usado para criar variáveis computadas
+    if (!selectedDM.value) {//se não houver DM selecionada
         emptyMessage.value = 'Nenhum item encontrado.';  // Se nenhuma DM for selecionada, exibe mensagem padrão
         return props.estoque;  // Retorna todos os itens do estoque
     }
     // Obtém o label da DM selecionada
-    const selectedDMLabel = props.dms.find((dm) => dm.value === selectedDM.value)?.label || 'DM desconhecida';
+    const selectedDMLabel = props.dms.find((dm) => dm.value === selectedDM.value)?.label || 'DM desconhecida';//encontra o label da DM selecionada
     
     // Filtra o estoque com base no ID da DM selecionada
-    const resultadoFiltrado = props.estoque.filter((item) => item.ID_DM === selectedDM.value);
+    const resultadoFiltrado = props.estoque.filter((item) => item.ID_DM === selectedDM.value);//filtra o estoque com base no ID da DM selecionada
     
     // Verifica se há itens após o filtro e ajusta a mensagem de vazio
-    if (resultadoFiltrado.length === 0) {
-        emptyMessage.value = `Nenhum item encontrado para a DM selecionada (${selectedDMLabel}).`;
+    if (resultadoFiltrado.length === 0) {//se não houver itens após o filtro
+        emptyMessage.value = `Nenhum item encontrado para a DM selecionada (${selectedDMLabel}).`;//exibe mensagem de vazio personalizada
     } else {
         emptyMessage.value = '';  // Limpa a mensagem de vazio se houver itens
     }
