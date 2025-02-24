@@ -113,7 +113,7 @@ const handleFile = (event) => {
     if (!selectedDM.value) {
         toast.add({
             severity: 'error',
-            summary: -t('title_error'),
+            summary: t('title_error'),
             detail: t('video_associated_dm'),
             life: 3000
         });

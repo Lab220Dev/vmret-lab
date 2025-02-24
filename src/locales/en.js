@@ -525,4 +525,22 @@ export default {
     login_forgot_link: 'Send recovery link',
     return_login: 'Return to login',
     docmask:"999.999.999-99",
+    validate_external_data: 'Validate Data',
+    validate_external_data_text: 'Validate',
+
+
+    EQUIPMENT_DELIVERY_FORM_DOC:"EQUIPMENT AND TOOLS DELIVERY FORM",
+    NAME_DOC:"NAME",
+    REGISTRATION_NUMBER_DOC:"REGISTRATION",
+    ADMISSION_DATE_DOC:"ADMISSION DATE",
+    SECTOR_DOC: 'SECTOR',
+    FUNCTION_DOC:"FUNCTION",
+    ITEM_NAME_DOC:"ITEM NAME",
+    WITHDRAWAL_DATE_DOC:"WITHDRAWAL DATE",
+    QUANT_DOC: "QUANT.",
+    UNIT_DOC:"UNIT",
+    DESCRIPTION_DOC:"DESCRIPTION",
+    CA_NUMBER_DOC:"CA",
+    AUTHENTICATION_DOC:"AUTHENTICATION",
+    select_factory_name:' Factory {nome}',
 };
