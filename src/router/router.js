@@ -76,7 +76,7 @@ const router = createRouter({
                     path: '/cadastros/LiberacaoAvulsa',
                     name: 'Liberação Avulsa',
                     component: () => import('@/views/cadastros/LiberacaoAvulsa.vue'),
-                    meta: { requiresAuth: true, Availability: false }
+                    meta: { requiresAuth: true, Availability: true }
                 },
                 /**
                  * Relatórios, cada um com uma rota diferente.
@@ -181,8 +181,8 @@ const router = createRouter({
                 {
                     path: '/cadastros/usuarios/avulsa',
                     name: 'Cadastro Liberação Avulsa',
-                    component: () => import('@/views/cadastros/usuarios/Avulsa.vue'),
-                    meta: { requiresAuth: true, Availability: false }
+                    component: () => import('@/views/relatorios/ListaRetiradaDisponiveis.vue'),
+                    meta: { requiresAuth: true, Availability: true }
                 },
                 {
                     path: '/cadastros/usuarios/dm',
@@ -256,12 +256,6 @@ const router = createRouter({
                     path: '/relatorios/ConsultaStatus',
                     name: 'Consulta Status',
                     component: () => import('@/views/relatorios/ConsultaStatus.vue')
-                },
-                {
-                    path: '/cadastros/LiberacaoAvulsa',
-                    name: 'Liberação Avulsa',
-                    component: () => import('@/views/cadastros/LiberacaoAvulsa.vue'),
-                    meta: { requiresAuth: true, Availability: false }
                 },
                 {
                     path: '/pages/listaItensNaoAlocados',

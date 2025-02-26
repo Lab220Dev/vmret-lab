@@ -686,3 +686,15 @@ export function isMobileDevice() {
   console.log(navigator.userAgent);
   return /Mobi|Android/i.test(navigator.userAgent);
 }
+
+export const preparelaData = (ListaProdutoFuncionario,libAvulsa) =>{
+    let baseData = {
+      id_usuario: store.userId || null,  
+      id_cliente: store.userIdCliente || null ,
+      id_funcionario:libAvulsa.id_funcionario,
+      ListaProduto:ListaProdutoFuncionario,
+      prazo:libAvulsa.limiteRetirada,
+      notificar:libAvulsa.enviarEmail,
+  }
+  return baseData;
+}
