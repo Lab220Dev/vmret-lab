@@ -46,8 +46,8 @@
         <Dialog v-model:visible="showDeleteDialog" :header="$t('delete_video')" modal class="p-dialog py-2 " style="max-width: 350px; min-width: 330px;" :closable="false" :draggable="false">
             <hr class="my-0" />
             <div class="m-5">
-                <p class="text-sm "><strong>{{$t('delete_video_dialog')}}</strong></p>
-                <p class="text-sm ">{{ selectedDM.Video }}</p>
+                <p class="text-sm text-center"><strong>{{$t('delete_video_dialog')}}</strong> {{ selectedDM.Video }}?</p>
+                <p class="text-sm "></p>
             </div>
 
             <hr />

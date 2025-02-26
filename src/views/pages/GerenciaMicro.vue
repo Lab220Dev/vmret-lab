@@ -1,16 +1,15 @@
 <template>
     <div class="card">
         <h5 class="mt-6 ml-2 text-2xl">{{t('cadastro_de_servicos')}}</h5>
-        <hr />
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
             <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients":placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
         </div>
 
-        <div v-if="selectedClient?.id" class="mt-8 card services-edit">
-            <div class="flex mt-4 justify-content-between align-items-center">
-                <h5 class="mt-3 no-break">
+        <div v-if="selectedClient?.id" class="mt-6 card services-edit">
+            <div class="flex mt-2 justify-content-between align-items-center">
+                <h5 class="mt-1 no-break">
                     {{t('assigned_services')}}:
                     <span v-if="isAdmin">{{ selectedClient.name }}</span>
                 </h5>
@@ -21,7 +20,7 @@
             </div>
 
             <DataTable 
-            class="mt-8" 
+            class="mt-6" 
             :value="clientServices"
             stripedRows
             showGridlines
@@ -54,9 +53,9 @@
 
             <Fieldset :legend="t('settings')" v-if="showConfig" class="configuracao-monitoramento card mt-8 p-8 mx-8">
                 <!---->
-                <h4 class="text-xl mt-3 justify-content-center flex">{{ selectedService.name }}</h4>
+                <h4 class="text-xl mt-1 justify-content-center flex">{{ selectedService.name }}</h4>
 
-                <div class="flex flex-column col-12 mt-6 ml-3">
+                <div class="flex flex-column col-12 mt-4 ml-3">
                     <div class="field grid justify-content-center">
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">{{t('notification_frequency')}}:</label>
                         <Dropdown style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
@@ -76,7 +75,7 @@
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{t('recipient')}}:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
                     </div>
-                <div class="flex justify-content-end flex-wrap mt-8">
+                <div class="flex justify-content-end flex-wrap mt-7">
             <Button class="flex align-items-center justify-content-center" v-if="novo" :label="$t('add_service')" @click="addServiceWithConfig" />
 
             <Button class="flex align-items-center justify-content-center" v-else :label="$t('update_services')" @click="updateServiceConfig" />
@@ -435,6 +434,11 @@ const addServiceWithConfig = async () => {
     }
 };
 
+const closeConfig = () => {
+    showConfig.value = false; // Oculta a configuração do serviço.
+    selectedService.value = null; // Limpa o serviço selecionado.
+};
+
 /**
  * Função para adicionar um novo serviço à lista de serviços do cliente.
  */
@@ -559,6 +563,8 @@ const updateServiceConfig = async () => {
 
         // Envia a atualização dos serviços ao backend.
         await axios.post('/admin/cliente/atualizarServico', data);
+
+        closeConfig(); // Fecha a configuração do serviço após a atualização.
 
         // Exibe notificação de sucesso.
         toast.add({ severity: 'success', summary: t('update_service'), life: 3000 });
