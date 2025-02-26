@@ -316,9 +316,10 @@ const handleDatepickerOpen = () => {
 const isMobile = isMobileDevice();
 
 // Função chamada ao montar o componente
-onMounted(() => {
-    loadData();
+onMounted(async () => {
+  await loadData();
 });
+
 </script>
 
 <template>

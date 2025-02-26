@@ -372,3 +372,9 @@ export const resetUsuario = (usuario) => {
     perfil: '',
   });
 };
+export const resetProdutoSelecionadoSetor = (produtoSelecionado) => {
+  Object.assign(produtoSelecionado.value, {
+    id_produto: '',  
+    quantidade: '',   
+  });
+};

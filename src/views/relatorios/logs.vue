@@ -253,7 +253,7 @@ onMounted(() => {
             :rowsPerPageOptions="[5, 10, 20, 50]"
             rowHover
             :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"
-            dataKey="Operacao"
+            dataKey="ID"
             tableStyle=""
             removableSort
             :sortOrder="1"
@@ -309,16 +309,8 @@ onMounted(() => {
 
             <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="dataHora" sortable :header="t('date')">
-                <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
-                </template></Column
-            >
-            <Column field="Hora" sortable :header="t('time')">
-                <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatTime(new Date(data.Dia)) }}</span>
-                </template></Column
-            >
+            <Column field="Dia" sortable :header="t('date')">
+               </Column>
             <Column field="Operacao" sortable style="max-width: 10%" :header="t('operation')"></Column>
             <Column field="ID_Usuario" sortable style="max-width: 8%" :header="t('user')"></Column>
             <Column field="Log_Web" sortable style="max-width: 500px" :header="t('summary')"></Column>

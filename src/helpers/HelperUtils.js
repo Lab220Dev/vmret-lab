@@ -1,6 +1,7 @@
 import { format ,formatInTimeZone } from 'date-fns-tz';
 import { parseISO, isValid, parse } from 'date-fns';
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
+import { DateTime } from 'luxon';
 const store = useAuthStore();
 /**
  * Gera uma string no formato CSV a partir dos campos e dados fornecidos.
@@ -196,73 +197,26 @@ export function normalizeDateTime(dateTimeString, includeTime = false) {
  * @throws {Error} - Lança um erro caso os dados sejam nulos ou indefinidos.
  */
 export const gerarEbaixarJSON = (filename, data) => {
-  
-  /**
-   * Verifica se os dados foram fornecidos. Se `data` for nulo, indefinido ou vazio,
-   * lança um erro informando que não há dados para exportar.
-   */
+ 
   if (!data) {
     throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);
   }
 
-  /**
-   * Converte os dados em uma string JSON formatada. A função `JSON.stringify`
-   * transforma o objeto em uma string JSON e o segundo argumento `null, 2` é usado
-   * para adicionar uma identação de 2 espaços para facilitar a leitura do arquivo gerado.
-   * 
-   * @type {string}
-   */
   const jsonContent = JSON.stringify(data, null, 2);
 
-  /**
-   * Cria um Blob a partir da string JSON gerada. Um Blob é um objeto que representa 
-   * dados binários imutáveis, que neste caso é o conteúdo JSON que será baixado.
-   * O tipo MIME `application/json;charset=utf-8;` é especificado para indicar que o 
-   * conteúdo é um arquivo JSON.
-   * 
-   * @type {Blob}
-   */
   const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
 
-  /**
-   * Cria um link (`<a>`) no DOM que será usado para iniciar o download do arquivo JSON.
-   * 
-   * @type {HTMLAnchorElement}
-   */
   const link = document.createElement('a');
 
-  /**
-   * Cria uma URL temporária para o Blob, permitindo que ele seja acessado como se fosse um arquivo.
-   * O método `URL.createObjectURL` gera um URL que aponta para o Blob.
-   * 
-   * @type {string}
-   */
   const url = URL.createObjectURL(blob);
 
-  /**
-   * Configura o link para fazer o download do arquivo JSON.
-   * O atributo `href` é definido com a URL do Blob.
-   * O atributo `download` define o nome do arquivo que será baixado.
-   */
   link.setAttribute('href', url);
   link.setAttribute('download', filename);
 
-  /**
-   * Adiciona o link criado ao corpo do documento (DOM). O link precisa estar no DOM para 
-   * que o clique possa ser simulado e o download seja iniciado.
-   */
   document.body.appendChild(link);
 
-  /**
-   * Simula um clique no link, o que aciona o download do arquivo JSON.
-   * O clique é realizado programaticamente sem a interação direta do usuário.
-   */
   link.click();
 
-  /**
-   * Remove o link do DOM após o clique. Isso limpa o DOM, já que o link não é mais necessário 
-   * após o download ser iniciado.
-   */
   document.body.removeChild(link);
 };
 
@@ -401,23 +355,16 @@ export const formatarDataHora = (date) => {
  * @returns {string} A data base com o tempo configurado, no formato ISO.
  */
 export const formatarTempo = (time, baseDate = new Date()) => {
+  let dt = DateTime.fromJSDate(baseDate);
 
-  /**
-   * Modifica a `baseDate` configurando as horas, minutos e segundos fornecidos.
-   * A função `setHours()` define a hora, minuto e segundo da `baseDate`.
-   * 
-   * @param {number} time.hours - A hora a ser configurada.
-   * @param {number} time.minutes - O minuto a ser configurado.
-   * @param {number} time.seconds - O segundo a ser configurado.
-   */
-  baseDate.setHours(time.hours, time.minutes, time.seconds);
+  dt = dt.set({
+    hour: time.hours,
+    minute: time.minutes,
+    second: time.seconds,
+  });
 
-  /**
-   * Retorna a `baseDate` modificada no formato ISO. A função `toISOString()` retorna a data no formato padrão ISO 8601.
-   * 
-   * @returns {string} A data no formato ISO.
-   */
-  return baseDate.toISOString();
+  // Retorna a string ISO, mas com o offset local (por exemplo: 2025-02-27T14:30:00.000-03:00)
+  return dt.toISO();
 };
 
 /**
@@ -428,11 +375,9 @@ export const formatarTempo = (time, baseDate = new Date()) => {
  * @returns {string|null} A data no formato ISO ou `null` se `date` for inválido ou não fornecido.
  */
 export const toISODate = (date) => {
-  
-  /**
-   * Verifica se `date` é válido. Se não for, retorna `null`.
-   */
-  return date ? new Date(date).toISOString() : null;
+  if (!date) return null;
+  const dt = DateTime.fromJSDate(new Date(date)).toLocal();
+  return dt.toISO();
 };
 
 /**
@@ -445,29 +390,15 @@ export const toISODate = (date) => {
  * @returns {void} Não retorna valor. O objeto `tempoRef` é atualizado com as propriedades extraídas da string ISO.
  */
 export const setTempo = (tempoRef, isoString) => {
+  let dt = isoString 
+  ? DateTime.fromISO(isoString).toLocal()
+  : DateTime.now();
 
-  /**
-   * Cria um novo objeto `Date` a partir da string ISO fornecida.
-   * A função `new Date(isoString)` cria uma data válida com base na string ISO.
-   * 
-   * @type {Date}
-   */
-  const date = new Date(isoString);
-
-  /**
-   * Atribui os valores de hora, minuto e segundo ao objeto `tempoRef` usando os métodos `getUTCHours()`, 
-   * `getUTCMinutes()` e `getUTCSeconds()`, que retornam as horas, minutos e segundos em UTC.
-   * 
-   * @param {Object} tempoRef - O objeto onde os valores de tempo serão atribuídos.
-   * @param {number} date.getUTCHours() - A hora extraída da data no formato UTC.
-   * @param {number} date.getUTCMinutes() - Os minutos extraídos da data no formato UTC.
-   * @param {number} date.getUTCSeconds() - Os segundos extraídos da data no formato UTC.
-   */
-  tempoRef.value = {
-    hours: date.getUTCHours(),
-    minutes: date.getUTCMinutes(),
-    seconds: date.getUTCSeconds(),
-  };
+tempoRef.value = {
+  hours: dt.hour,
+  minutes: dt.minute,
+  seconds: dt.second,
+};
 };
 
 /**

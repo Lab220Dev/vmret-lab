@@ -544,5 +544,14 @@ export default {
     AUTHENTICATION_DOC:"AUTHENTICATION",
     select_factory_name:' Factory {nome}',
     load_spinner:'Loading... Please wait',
-
+    no_data_doc:'No data found, based on the selected filters.',
+    login_email_placeholder:'Enter your email',
+    login_password_placeholder:'Enter your password',
+    "termo_de_compromisso_-_ficha_retirada":"Commitment Agreement - Withdrawal Form",
+    dm_config: "Machine Config",
+    dm_config_data: "Do you want to save employee data?",
+    dm_config_with: "Withdrawal Options",
+    employee_name: "Employee Name",
+    employee_id: "Employee ID",
+    dm_config_data_save: "Do you want to save machine data?"
 };

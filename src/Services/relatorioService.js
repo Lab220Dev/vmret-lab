@@ -201,7 +201,7 @@ const relatorioService = {
     },
     async Cabecalho() {
         try {
-            const response = await fetch('/src/assets/cabecalho.html'); 
+            const response = await fetch('/cabecalho.html'); 
             if (!response.ok) {
                 throw new Error('Erro ao carregar o cabeçalho');
             }

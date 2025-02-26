@@ -1,4 +1,3 @@
-@ -1,249 +1,231 @@
 <template>
     <!-- Div que contém a configuração inicial de vídeos -->
     <div class="config-inicial">
@@ -50,7 +49,7 @@
 
                                 <!-- Barra de progresso abaixo <ProgressBar :value="100" class="mt-2 progress-bar min-h-2" style="width: 100%;" v-if="true" />-->
                                  
-                                <ProgressBar :value="file.progress" class="my-2 progress-bar min-h-2" v-if="file.progress > 0" />
+                                <ProgressBar :value="file.progress" class="my-2 progress-bar min-h-2" v-if="isUploading" />
                             </div>
                         </div>
                     </div>
@@ -67,9 +66,9 @@ import axios from '@/axios.js'; // Importa o axios para realizar requisições H
 import { ref, computed, defineProps, defineEmits } from 'vue'; // Funções do Vue para reatividade e manipulação de props
 import { useToast } from 'primevue/usetoast'; // Importa a função de toast para exibir notificações
 import videoService from '@/services/videoService';// Importa o serviço de vídeo para fazer upload
-
+import { useI18n } from 'vue-i18n';
 const toast = useToast(); // Instancia o objeto de notificações de toast
-
+const { t } = useI18n();
 // Propriedades recebidas pelo componente, espera uma lista de DMs
 const props = defineProps({
     dmList: Array // Recebe a lista de DMs (Dispositivos de Mídia) como prop

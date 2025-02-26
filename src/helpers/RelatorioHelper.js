@@ -238,7 +238,7 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         if (!Array.isArray(retiradas.data) || retiradas.data.length === 0) {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
+            doc.text(`${t('no_data_doc')}`, doc.internal.pageSize.width / 2, 90, { align: 'center' });
         } else {
             // Definição da tabela
             const tableColumn = [`${t('ITEM_NAME_DOC')}`, `${t('WITHDRAWAL_DATE_DOC')}`, `${t('QUANT_DOC')}`, `${t('UNIT_DOC')}`, `${t('DESCRIPTION_DOC')}`, `${t('CA_NUMBER_DOC')}`, `${t('AUTHENTICATION_DOC')}`];
@@ -310,13 +310,13 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         }
         const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120; // Posição Y final da tabela
         doc.setFontSize(12);
-        doc.text('Data:', 30, finalY); // Exibe o campo de data
+        doc.text(`${t('date')}:`, 30, finalY); // Exibe o campo de data
         doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
 
         doc.setFontSize(12);
         doc.text('______________________________________', 180, finalY);
-        doc.text('Assinatura do funcionário', 200, finalY + 10);
-        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
+        doc.text(`${t('employee_signature')}`, 200, finalY + 10);
+        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || t('employee')}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
     }

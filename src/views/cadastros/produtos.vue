@@ -216,11 +216,14 @@ const onPageChange = (event) => {
  * @returns {Promise<void>}
  */
 const loadData = async () => {
+   loading.value = true;
     try {
         formatedPlantaOptions.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega as opções de plantas
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Exibe erro no console
+    }finally{
+        loading.value = false;
     }
 };
 
@@ -377,7 +380,7 @@ onMounted(async () => {
     try {
         // Carrega os produtos logo que o componente é montado
         await loadProdutos(); // Carrega a lista de produtos ao montar o componente
-        loadData(); // Carrega dados adicionais (por exemplo, plantas) ao montar o componente
+        await loadData(); // Carrega dados adicionais (por exemplo, plantas) ao montar o componente
         mob.value = isMobEnabled(); // Verifica se a integração com Mob está habilitada
     } catch (error) {
         // Exibe uma mensagem de erro caso algo dê errado durante o carregamento dos produtos ou dados

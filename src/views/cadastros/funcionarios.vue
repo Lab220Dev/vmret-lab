@@ -351,7 +351,7 @@ const adicionarFuncionario = async () => {
         if(!isValid){
             throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
         }
-        await funcionarioService.adicionarFuncionario(funcionario, selectedFile.value);
+        await funcionarioService.adicionarFuncionario(funcionario, selectedFile);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_added'), life: 3000 });
         dataStore.invalidateFuncionariosCache();
         await loadFuncionarios();
@@ -423,7 +423,6 @@ watch(
     },
     { deep: true }
 );
-
 watch(
     TempoFim,
     (newTime) => {
@@ -466,7 +465,16 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
 };
-
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 onMounted(async () => {
     Mob.value = formatservices.isMobEnabled();
     await loadData();
@@ -704,7 +712,7 @@ const hideDialog = () => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" />
+                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" @input="debouncedFilterChange"  />
                                 </IconField>
                             </div>
                         </template>
@@ -733,7 +741,7 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="senha">{{t('password')}}:</label>
-                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" />
+                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" autocomplete="new-password"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="Hash">Hash 1:</label>

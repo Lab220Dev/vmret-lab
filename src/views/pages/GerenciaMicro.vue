@@ -1,16 +1,16 @@
 <template>
     <div class="card">
-        <h5 class="mt-6 ml-2 text-2xl">{{t('cadastro_de_servicos')}}</h5>
+        <h5 class="mt-6 ml-2 text-2xl">{{ t('cadastro_de_servicos') }}</h5>
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
             <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
-            <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients":placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
+            <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" :placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
         </div>
 
         <div v-if="selectedClient?.id" class="mt-6 card services-edit">
             <div class="flex mt-2 justify-content-between align-items-center">
                 <h5 class="mt-1 no-break">
-                    {{t('assigned_services')}}:
+                    {{ t('assigned_services') }}:
                     <span v-if="isAdmin">{{ selectedClient.name }}</span>
                 </h5>
                 <div class="add-service flex align-items-center">
@@ -19,14 +19,8 @@
                 </div>
             </div>
 
-            <DataTable 
-            class="mt-6" 
-            :value="clientServices"
-            stripedRows
-            showGridlines
-            :tableStyle="{ width: '100%' }"
-            >
-                <template #empty>{{t('no_added_services')}}</template>
+            <DataTable class="mt-6" :value="clientServices" stripedRows showGridlines :tableStyle="{ width: '100%' }">
+                <template #empty>{{ t('no_added_services') }}</template>
                 <Column field="name" style="width: 80%" :header="t('service')"></Column>
                 <Column :header="t('action')">
                     <template #body="slotProps">
@@ -35,7 +29,6 @@
                     </template>
                 </Column>
             </DataTable>
-
 
             <!-- Caixa de diálogo para confirmação de deleção -->
             <Dialog :header="t('delete_service')" v-model:visible="deleteServiceDialog" style="width: 400px" :modal="true" :closable="true" :draggable="false">
@@ -57,29 +50,30 @@
 
                 <div class="flex flex-column col-12 mt-4 ml-3">
                     <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">{{t('notification_frequency')}}:</label>
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">{{ t('notification_frequency') }}:</label>
                         <Dropdown style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
                     </div>
 
                     <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">{{t('notification_time')}}:</label>
-                        <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker :placeholder="$t('frequency_placeholder')"  />
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">{{ t('notification_time') }}:</label>
+                        <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker :placeholder="$t('frequency_placeholder')" />
                     </div>
 
                     <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationMethods">{{t('notification_method')}}:</label>
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationMethods">{{ t('notification_method') }}:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
                     </div>
 
                     <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{t('recipient')}}:</label>
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') }}:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
                     </div>
-                <div class="flex justify-content-end flex-wrap mt-7">
-            <Button class="flex align-items-center justify-content-center" v-if="novo" :label="$t('add_service')" @click="addServiceWithConfig" />
+                    <div class="flex justify-content-end flex-wrap mt-7">
+                        <Button class="flex align-items-center justify-content-center" v-if="novo" :label="$t('add_service')" @click="addServiceWithConfig" />
 
-            <Button class="flex align-items-center justify-content-center" v-else :label="$t('update_services')" @click="updateServiceConfig" />
-        </div></div>
+                        <Button class="flex align-items-center justify-content-center" v-else :label="$t('update_services')" @click="updateServiceConfig" />
+                    </div>
+                </div>
             </Fieldset>
         </div>
         <LoadingSpinner v-if="loading" />
@@ -93,7 +87,7 @@
  */
 
 // Importa funções reativas do Vue, como `ref` e `onMounted`.
-import { ref, onMounted,nextTick,computed } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
+import { ref, onMounted, nextTick, computed } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
 
 // Importa a função de toast do PrimeVue, usada para exibir mensagens ao usuário.
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
@@ -108,7 +102,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o store 
 import clientesService from '@/services/clientesService';
 
 import funcionarioService from '@/services/funcionarioService';
-import LoadingSpinner from '@/components/LoadingSpinner.vue'; 
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
@@ -142,7 +136,8 @@ const deleteServiceDialog = ref(false); // Variável booleana para controlar a e
 
 const toast = useToast(); // Instância do sistema de notificações do PrimeVue.
 const availableClients = ref([]); // Lista de clientes disponíveis.
-const availableServices = computed(() => [ // Lista de serviços disponíveis, pré-definida.
+const availableServices = computed(() => [
+    // Lista de serviços disponíveis, pré-definida.
     { id: 1, name: t('status_monitoring_dm') },
     { id: 2, name: t('supply_monitoring') }
 ]);
@@ -153,14 +148,16 @@ const newService = ref(null); // Novo serviço a ser adicionado.
 const selectedService = ref(null); // Serviço atualmente selecionado.
 const serviceConfigs = ref({}); // Configurações dos serviços selecionados.
 const novo = ref(true); // Flag para indicar se o serviço é novo.
-const frequencies = computed(() => [ // Frequências de notificação disponíveis.
+const frequencies = computed(() => [
+    // Frequências de notificação disponíveis.
     { label: t('every_5m'), value: '5m' },
     { label: t('every_30m'), value: '30m' },
     { label: t('every_1h'), value: '1h' },
     { label: t('once_a_day'), value: '1x-dia' }
 ]);
 
-const notificationMethods = computed(() => [ // Métodos de notificação disponíveis.
+const notificationMethods = computed(() => [
+    // Métodos de notificação disponíveis.
     { label: t('email'), value: 'email' },
     { label: t('notification'), value: 'notif' }
 ]);
@@ -203,7 +200,7 @@ const fetchClientes = async () => {
             life: 3000 // Tempo de duração da notificação (3000ms).
         });
         console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
-    }finally{
+    } finally {
         loading.value = false; // Desativa o estado de carregamento após a requisição.
     }
 };
@@ -218,7 +215,7 @@ const fetchServicos = async () => {
         const data = {
             id_cliente: store.userIdCliente // Obtém o ID do cliente do store de autenticação.
         };
-        
+
         // Realiza uma requisição POST para buscar os serviços do cliente.
         const response = await clientesService.listarServicos(data);
 
@@ -235,10 +232,15 @@ const fetchServicos = async () => {
 
             // Mapeia os serviços do cliente.
             clientServices.value = Array.isArray(cliente.servicos)
-                ? cliente.servicos.map((servico) => ({
-                      id: servico.id_servico, // ID do serviço.
-                      name: servico.nome // Nome do serviço.
-                  }))
+                ? cliente.servicos.map((servico) => {
+                      // Procura no availableServices o serviço cujo id corresponda ao id_servico do serviço do cliente
+                      const available = availableServices.value.find((s) => s.id === servico.id_servico);
+                      return {
+                          id: servico.id_servico,
+                          // Se encontrado, utiliza o nome do availableServices; caso contrário, usa o nome do serviço do cliente
+                          name: available ? available.name : servico.nome
+                      };
+                  })
                 : [];
 
             // Chama a função para buscar os destinatários, se o cliente tiver um ID.
@@ -280,7 +282,7 @@ const fetchServicos = async () => {
             life: 3000 // Tempo de duração da notificação (3000ms).
         });
         console.error('Erro ao carregar clientes:', error); // Loga qualquer erro ocorrido.
-    }finally{
+    } finally {
         loading.value = false; // Desativa o estado de carregamento após a requisição.
     }
 };
@@ -293,8 +295,8 @@ const fetchRecipients = async (idCliente) => {
     try {
         // Realiza uma requisição POST para listar os funcionários responsáveis.
         // const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
-        let data = {id_cliente: idCliente};
-        const response= await funcionarioService.listarFuncionariosSimples(data);
+        let data = { id_cliente: idCliente };
+        const response = await funcionarioService.listarFuncionariosSimples(data);
         // Mapeia a resposta para extrair os funcionários.
         availableRecipients.value = response.data.map((funcionario) => ({
             id: funcionario.id_funcionario, // ID do funcionário.
@@ -317,10 +319,14 @@ const fetchRecipients = async (idCliente) => {
  */
 const onClientSelected = async () => {
     // Atualiza a lista de serviços do cliente selecionado.
-    clientServices.value = selectedClient.value.servicos.map((servico) => ({
-        id: servico.id_servico, // ID do serviço.
-        name: servico.nome // Nome do serviço.
-    }));
+    clientServices.value = selectedClient.value.servicos.map((servico) => {
+    // Procura, em availableServices, o serviço cujo id seja igual ao id do serviço do cliente.
+    const available = availableServices.value.find(s => s.id === servico.id_servico);
+    return {
+      id: servico.id_servico,
+      name: available ? available.name : servico.nome
+    };
+  });
 
     // Busca os destinatários para o cliente selecionado.
     await fetchRecipients(selectedClient.value.id);
@@ -348,7 +354,7 @@ const onClientSelected = async () => {
 };
 
 // Função que permite editar um serviço existente.
-const editService = async  (service) => {
+const editService = async (service) => {
     selectedService.value = service; // Define o serviço selecionado.
     showConfig.value = true; // Exibe as configurações do serviço.
     await nextTick();
@@ -457,7 +463,8 @@ const addService = () => {
     // Verifica se o serviço já está na lista de serviços.
     if (!clientServices.value.some((s) => s.id === newService.value.id)) {
         clientServices.value.push(newService.value); // Adiciona o novo serviço à lista.
-        serviceConfigs.value[newService.value.id] = { // Inicializa as configurações para o novo serviço.
+        serviceConfigs.value[newService.value.id] = {
+            // Inicializa as configurações para o novo serviço.
             notificationFrequency: null,
             monitoringFrequency: null,
             notificationMethods: [],
@@ -485,7 +492,7 @@ const removeService = async (service) => {
     try {
         // Remove o serviço da lista local.
         clientServices.value = clientServices.value.filter((s) => s.id !== service.id);
-        
+
         deleteServiceDialog.value = false; // Fecha o diálogo de confirmação.
 
         // Remove as configurações associadas ao serviço.
@@ -508,14 +515,13 @@ const removeService = async (service) => {
         const response = await clientesService.deletarServico(data);
 
         // Verifica a resposta da API.
-        
+
         toast.add({
-                severity: 'success',
-                summary: t('remove_service'),
-                detail: t('remove_service_details',{name:service.name}),
-                life: 3000
-            });
-        
+            severity: 'success',
+            summary: t('remove_service'),
+            detail: t('remove_service_details', { name: service.name }),
+            life: 3000
+        });
     } catch (error) {
         // Exibe erro caso a remoção falhe.
         console.error('Erro ao remover serviço:', error);
@@ -577,7 +583,6 @@ const updateServiceConfig = async () => {
 
 // Chama a função para verificar o perfil do usuário ao montar o componente.
 onMounted(fetchIfAdmin);
-
 </script>
 
 <style scoped>

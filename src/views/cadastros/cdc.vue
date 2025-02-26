@@ -4,6 +4,7 @@ import { reactive, ref, onMounted, watch, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from 'primevue/api';
 import cdcService from '@/services/cdcService';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { resetCDCForm } from '@/helpers/formHelper';
 import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
 import { useI18n } from 'vue-i18n';
@@ -13,6 +14,7 @@ const active = ref(0); // Estado para o índice da aba ativa
 const toast = useToast(); // Hook para usar a funcionalidade de toast
 const centroCusto = ref([]); // Lista dos centros de custo
 const visible = ref(false); // Controle de visibilidade para o formulário de edição/adição
+const spinner = ref(false); // Controle de visibilidade do spinner de carregamento
 const deleteCentroDialog = ref(false); // Controle de visibilidade do diálogo de confirmação de exclusão
 const Mob = ref(false);
 
@@ -80,6 +82,7 @@ const loadCentroCusto = async (page = 1) => {
         filters: lazyParams.value.filters // Filtros aplicados
     };
     const data = prepareListData(params);
+    spinner.value = true; // Exibe o spinner de carregamento
     try {
         const result = await cdcService.listarCentrosDeCustoPaginada(data); // Chama o serviço para listar os centros de custo
         centroCusto.value = result.centrosCusto; // Atualiza a lista de centros de custo
@@ -87,6 +90,8 @@ const loadCentroCusto = async (page = 1) => {
     } catch (error) {
         console.error(error.message); // Exibe o erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_cost_center_error') }); // Exibe mensagem de erro
+    }finally{
+        spinner.value = false; // Esconde o spinner de carregamento
     }
 };
 
@@ -101,6 +106,7 @@ const loadCentroCusto = async (page = 1) => {
  * @throws {Error} Caso haja um erro durante o envio do formulário, o erro será mostrado ao usuário por meio de uma mensagem de erro.
  */
 const submitForm = async () => {
+    spinner.value = true; // Exibe o spinner de carregamento
     try {
         if (visible.value) {
             // Se o formulário estiver no modo de edição, chama a função de atualizar
@@ -116,7 +122,9 @@ const submitForm = async () => {
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('cost_center_update_error_default'), life: 3000 }); // Exibe mensagem de erro caso falhe
-    }
+    }finally{
+        spinner.value = false; // Esconde o spinner de carregamento
+    }	
 };
 
 /**
@@ -130,15 +138,18 @@ const submitForm = async () => {
  * @throws {Error} Caso haja um erro durante a exclusão, o erro será mostrado ao usuário por meio de uma mensagem de erro.
  */
 const deleteCentro = async () => {
+    spinner.value = true; // Exibe o spinner de carregamento
     try {
-        await cdcService.deletarCentro(cdc); // Chama o serviço para deletar o centro de custo
-        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('cost_center_deleted_sucess'), life: 3000 }); // Exibe mensagem de sucesso
+        const response = await cdcService.deletarCentro(cdc); // Chama o serviço para deletar o centro de custo
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: response.data.message || t('cost_center_deleted_sucess'), life: 3000 }); // Exibe mensagem de sucesso
         deleteCentroDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
         active.value = 0; // Volta para a aba de listagem
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('cost_center_delted_error'), life: 3000 }); // Exibe mensagem de erro caso falhe
+    }finally{
+        spinner.value = false; // Esconde o spinner de carregamento
     }
 };
 
@@ -176,7 +187,16 @@ watch(
     },
     { immediate: true } // Executa imediatamente ao montar o componente
 );
-
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 /**
  * Função que é chamada ao montar o componente.
  * Ela carrega os dados dos centros de custo chamando a função `loadCentroCusto`.
@@ -239,7 +259,7 @@ onMounted(() => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" />
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')"  type="search" @input="debouncedFilterChange" />
                                 </IconField>
                             </div>
                         </template>
@@ -304,6 +324,7 @@ onMounted(() => {
                 </div>
             </TabPanel>
         </TabView>
+        <LoadingSpinner v-if="spinner" />
     </div>
 </template>
 <style>

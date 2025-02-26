@@ -185,9 +185,9 @@ export const validarCUIT = (cuit) =>{
 export const isValidDoc = (doc) => {
 const linguaSelecionada = i18n.global.locale.value;
     if (linguaSelecionada === 'es') {
-        validarCUIT(doc);
+        return validarCUIT(doc);
     } else {
-        validarCNPJ(doc);
+        return validarCNPJ(doc);
     }
 }
 /**

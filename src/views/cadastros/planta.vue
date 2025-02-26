@@ -164,6 +164,16 @@ onMounted(() => {
     loadPlanta();
     Mob.value = isMobEnabled();
 });
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 </script>
 
 <template>
@@ -203,7 +213,7 @@ onMounted(() => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
                                     </IconField>
                                 </div>
                             </div>
