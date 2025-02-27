@@ -176,13 +176,13 @@ onMounted(() => {
                             <!-- Campo de email -->
                             <div class="form mb-3">
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">{{ $t('email') }}:</label>
-                                <input type="email" v-model="username" name="email" id="email" class="formstyle" placeholder="Digite o seu email" autocomplete="on" />
+                                <input type="email" v-model="username" name="email" id="email" class="formstyle" :placeholder="t('login_email_placeholder')" autocomplete="on" />
                             </div>
 
                             <!-- Campo de senha -->
                             <div class="form mb-3">
                                 <label class="mb-2 inline font-semibold inline-block texto-cinza-500">{{ $t('password') }}:</label>
-                                <input type="password" v-model="password" name="senha" id="senha" class="formstyle" placeholder="Digite a sua senha" autocomplete="on" />
+                                <input type="password" v-model="password" name="senha" id="senha" class="formstyle" :placeholder="t('login_password_placeholder')" autocomplete="on" />
                             </div>
 
                             <!-- Exibe mensagem de erro, caso haja -->

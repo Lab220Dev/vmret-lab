@@ -191,20 +191,19 @@ onMounted(() => {
 <template>
     <div class="card vh p-fluid">
         <div class="form">
-            <h5 class="my-6 ml-2 text-2xl">Log</h5>
-            <div class="grid mt-3 mx-1 p-1">
+            <div class="grid mb-0 pt-5">
                 <!-- Campos para filtros -->
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">{{t('user')}}:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_usuario" :options="usuario"
+                    <Dropdown filter class="drop" v-model="relatorio.id_usuario" :options="usuario"
                      optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">{{t('operation')}}:</label>
-                    <Dropdown class="drop" v-model="relatorio.id_operacao" :options="operacao" 
+                    <Dropdown filter class="drop" v-model="relatorio.id_operacao" :options="operacao" 
                     optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{t('initial_date')}}:</label>
                     <VueDatePicker
                         class="drop"
@@ -220,7 +219,7 @@ onMounted(() => {
                         :placeholder="$t('initial_date_placeholder')"
                     />
                 </div>
-                <div class="field lg:col-3 md:col-6 sm:col-6">
+                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{t('end_date')}}:</label>
                     <VueDatePicker
                         class="drop"
@@ -236,10 +235,11 @@ onMounted(() => {
                         :placeholder="$t('end_date_placeholder')"
                     />
                 </div>
-                <div class="field lg:col-12 md:col-12 sm:col-12">
+                
+            </div>
+            <div class=" p-0 m-0 field lg:col-12 md:col-12 sm:col-12">
                     <Button class="filtrar" type="button":label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                 </div>
-            </div>
         </div>
 
         <!-- Tabela para exibição dos logs -->
@@ -253,7 +253,7 @@ onMounted(() => {
             :rowsPerPageOptions="[5, 10, 20, 50]"
             rowHover
             :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log_Web', 'Resultado']"
-            dataKey="Operacao"
+            dataKey="ID"
             tableStyle=""
             removableSort
             :sortOrder="1"
@@ -309,16 +309,8 @@ onMounted(() => {
 
             <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="dataHora" sortable :header="t('date')">
-                <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatDate(new Date(data.Dia)) }}</span>
-                </template></Column
-            >
-            <Column field="Hora" sortable :header="t('time')">
-                <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ formatTime(new Date(data.Dia)) }}</span>
-                </template></Column
-            >
+            <Column field="Dia" sortable :header="t('date')">
+               </Column>
             <Column field="Operacao" sortable style="max-width: 10%" :header="t('operation')"></Column>
             <Column field="ID_Usuario" sortable style="max-width: 8%" :header="t('user')"></Column>
             <Column field="Log_Web" sortable style="max-width: 500px" :header="t('summary')"></Column>

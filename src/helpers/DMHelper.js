@@ -14,19 +14,17 @@ const store = useAuthStore();
  * @param {Object} options.motorOptions - Estado reativo para opções de motor disponíveis.
  * @param {Object} options.placaOptions - Estado reativo para opções de placa disponíveis.
  *
-  * @description
+ * @description
  * A função é responsável por ajustar as opções de molas, DIP, andar, posição, motor e placa de acordo com a controladora selecionada,
- * levando em consideração seu tipo (2018, 2023, 2024 ou Locker). Além disso, a função lida com a lógica de edição, removendo as molas 
+ * levando em consideração seu tipo (2018, 2023, 2024 ou Locker). Além disso, a função lida com a lógica de edição, removendo as molas
  * ocupadas se necessário.
  */
 export const handleControladoraChange = (Controladoras, produtoSelecionado, ListaItens, isEditMode, options) => {
-    
-    const { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions } = options;// Extrai as opções de molas, dip, andar, posição, motor e placa do objeto 'options'.
-    
-    const selectedControladora = Controladoras.find((c) => c.id === produtoSelecionado.Controladora);// Encontra a controladora selecionada pela id no array de controladoras.
-    
-    
-    if (!selectedControladora) return;// Se não encontrar a controladora selecionada, retorna imediatamente.
+    const { molasOptions, dipOptions, andarOptions, posicaoOptions, motorOptions, placaOptions } = options; // Extrai as opções de molas, dip, andar, posição, motor e placa do objeto 'options'.
+
+    const selectedControladora = Controladoras.find((c) => c.id === produtoSelecionado.Controladora); // Encontra a controladora selecionada pela id no array de controladoras.
+
+    if (!selectedControladora) return; // Se não encontrar a controladora selecionada, retorna imediatamente.
 
     // Verifica se o tipo da controladora é '2018'.
     if (selectedControladora.tipo === '2018') {
@@ -49,57 +47,71 @@ export const handleControladoraChange = (Controladoras, produtoSelecionado, List
 
         // Filtra as molas disponíveis, removendo as que estão ocupadas.
         const molasDisponiveis = selectedControladora.dados.molas.filter((mola) => !molasOcupadas.includes(mola));
-        
+
+        // Ordena as molas disponíveis.
+        const sortedMolasDisponiveis = molasDisponiveis.sort((a, b) => a - b);
+
         // Atualiza as opções de molas disponíveis.
-        molasOptions.value = molasDisponiveis.map((mola) => ({ label: mola, value: mola }));
+        molasOptions.value = sortedMolasDisponiveis.map((mola) => ({ label: mola, value: mola }));
 
         // Atualiza as opções de placa para a controladora selecionada.
-        placaOptions.value = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }];
-    } 
+        const sortedPlacaOptions = [{ label: selectedControladora.dados.placa, value: selectedControladora.dados.placa }].sort((a, b) => a.label - b.label);
+
+        placaOptions.value = sortedPlacaOptions;
+    }
     // Verifica se o tipo da controladora é '2023'.
     else if (selectedControladora.tipo === '2023') {
         // Atualiza as opções de DIP com os dados da controladora.
         dipOptions.value = [{ label: selectedControladora.dados.dip, value: selectedControladora.dados.dip }];
-        
+
+        const sortedAndarOptions = selectedControladora.dados.andar.sort((a, b) => a - b);
         // Atualiza as opções de andar com os andares da controladora.
-        andarOptions.value = selectedControladora.dados.andar.map((a) => ({ label: a, value: a }));
+        andarOptions.value = sortedAndarOptions.map((a) => ({ label: a, value: a }));
+
+        const sortedPosicaoOptions = selectedControladora.dados.posicao.sort((a, b) => a - b);
 
         // Atualiza as opções de posição com as posições da controladora.
-        posicaoOptions.value = selectedControladora.dados.posicao.map((p) => ({ label: p, value: p }));
-    } 
+        posicaoOptions.value = sortedPosicaoOptions.map((p) => ({ label: p, value: p }));
+    }
     // Verifica se o tipo da controladora é '2024'.
     else if (selectedControladora.tipo === '2024') {
+        const sortedMotorOptions = selectedControladora.dados.motor.sort((a, b) => a - b);
         // Atualiza as opções de motor com o motor da controladora.
-        motorOptions.value = [{ label: selectedControladora.dados.motor, value: selectedControladora.dados.motor }];
-    } 
+        motorOptions.value = sortedMotorOptions.map((motor) => ({ label: motor, value: motor }));
+    }
     // Verifica se o tipo da controladora é um 'Locker'.
-    else if (selectedControladora.tipo === 'Locker'||selectedControladora.tipo === 'Locker-Padrao'||selectedControladora.tipo === 'Locker-Ker') {
+    else if (selectedControladora.tipo === 'Locker' || selectedControladora.tipo === 'Locker-Padrao' || selectedControladora.tipo === 'Locker-Ker') {
+        produtoSelecionado.Capacidade = 1;
+        
         // Atualiza as opções de DIP para a controladora do tipo Locker.
         let posicoesOcupadas = ListaItens.filter((item) => {
             // Separa a posição em tipo e identificador, removendo espaços.
             const [tipo, identificador] = item.Posicao.replace(/\s/g, '').split('/');
             // Retorna os itens que correspondem ao tipo 'Locker' e ao identificador da controladora.
-            return (tipo === 'Locker' || tipo === 'Locker-Padrao' || tipo === 'Locker-Ker') && 
-                   Number(identificador) === selectedControladora.dados.dip;
+            return (tipo === 'Locker' || tipo === 'Locker-Padrao' || tipo === 'Locker-Ker') && Number(identificador) === selectedControladora.dados.dip;
         }).map((item) => {
             // Para cada item, separa a posição e retorna a posição específica do Locker.
             const [_, __, posicao] = item.Posicao.replace(/\s/g, '').split('/');
             return Number(posicao);
         });
-    
+
+        
         // Se estiver no modo de edição e houver uma posição selecionada, remove a posição ocupada.
         if (isEditMode && produtoSelecionado.Posicao) {
             posicoesOcupadas = posicoesOcupadas.filter((pos) => pos !== produtoSelecionado.Posicao);
         }
-    
+
         // Filtra as posições disponíveis, removendo as que estão ocupadas.
         const posicoesDisponiveis = selectedControladora.dados.posicao.filter((pos) => !posicoesOcupadas.includes(pos));
-    
+
+        // Ordena as posições disponíveis.
+        const sortedPosicaoOptions = posicoesDisponiveis.sort((a, b) => a - b);
+
         // Atualiza as opções de DIP para a controladora do tipo Locker.
         dipOptions.value = [{ label: selectedControladora.dados.dip.toString(), value: selectedControladora.dados.dip }];
-    
+
         // Atualiza as opções de posição para a controladora do tipo Locker.
-        posicaoOptions.value = posicoesDisponiveis.map((p) => ({ label: p, value: p }));
+        posicaoOptions.value = sortedPosicaoOptions.map((p) => ({ label: p, value: p }));
     }
 };
 
@@ -130,7 +142,7 @@ export const addControladora = (Controladoras, tipo, nextValues) => {
  * @param {Object[]} Controladoras - Lista de controladoras disponíveis.
  * @param {number} index - Índice da controladora a ser removida.
  * @description
- * A função altera o status da controladora no índice especificado para "deleted: true", 
+ * A função altera o status da controladora no índice especificado para "deleted: true",
  * efetivamente removendo-a da lista sem excluí-la fisicamente.
  */
 export const removeControladora = (Controladoras, index) => {
@@ -160,7 +172,7 @@ export const preencherControladoraOptions = (Controladoras) => {
         if (tipo === '2018' || tipo === '2024') {
             // Para controladoras dos tipos '2018' e '2024', utiliza a placa como identificador.
             identificador = dados.placa;
-        } else if (tipo === '2023' || tipo === 'Locker'|| tipo === 'Locker-Padrao'|| tipo === 'Locker-Ker') {
+        } else if (tipo === '2023' || tipo === 'Locker' || tipo === 'Locker-Padrao' || tipo === 'Locker-Ker') {
             // Para controladoras dos tipos '2023' e 'Locker', utiliza o dip como identificador.
             identificador = dados.dip;
         } else {
@@ -180,15 +192,14 @@ export const preencherControladoraOptions = (Controladoras) => {
  * Ajusta as contagens iniciais de valores das controladoras.
  * @param {Object[]} Controladoras - Lista de controladoras disponíveis.
  * @param {Object} nextValues - Objeto contendo os valores padrão para cada tipo de controladora.
-  * @description
+ * @description
  * A função verifica se já existem controladoras de cada tipo ('2018', '2023', '2024') e ajusta os valores
  * de placa ou dip no objeto `nextValues` de acordo com a maior placa ou dip existente. Se não houver nenhuma controladora
  * do tipo específico, um valor inicial será atribuído a `nextValues` para esse tipo.
  */
 export const ajustarContagemInicial = (Controladoras, nextValues) => {
     // Filtra as controladoras do tipo '2018' e mapeia para uma lista de suas placas.
-    const placasExistentes2018 = Controladoras.filter((controladora) => controladora.tipo === '2018')
-        .map((controladora) => controladora.dados.placa);
+    const placasExistentes2018 = Controladoras.filter((controladora) => controladora.tipo === '2018').map((controladora) => controladora.dados.placa);
 
     // Verifica se existem placas do tipo '2018'.
     if (placasExistentes2018.length > 0) {
@@ -200,8 +211,7 @@ export const ajustarContagemInicial = (Controladoras, nextValues) => {
     }
 
     // Filtra as controladoras do tipo '2023' e mapeia para uma lista de seus dips.
-    const dipsExistentes2023 = Controladoras.filter((controladora) => controladora.tipo === '2023')
-        .map((controladora) => controladora.dados.dip);
+    const dipsExistentes2023 = Controladoras.filter((controladora) => controladora.tipo === '2023').map((controladora) => controladora.dados.dip);
 
     // Verifica se existem dips do tipo '2023'.
     if (dipsExistentes2023.length > 0) {
@@ -213,8 +223,7 @@ export const ajustarContagemInicial = (Controladoras, nextValues) => {
     }
 
     // Filtra as controladoras do tipo '2024' e mapeia para uma lista de suas placas.
-    const placas2024Existentes = Controladoras.filter((controladora) => controladora.tipo === '2024')
-        .map((controladora) => controladora.dados.placa);
+    const placas2024Existentes = Controladoras.filter((controladora) => controladora.tipo === '2024').map((controladora) => controladora.dados.placa);
 
     // Verifica se existem placas do tipo '2024'.
     if (placas2024Existentes.length > 0) {
@@ -244,7 +253,6 @@ export const ajustarContagemInicial = (Controladoras, nextValues) => {
 export const mapControladoras = async (DM) => {
     // Retorna uma lista de controladoras mapeadas a partir de DM.Controladoras.
     return DM.Controladoras.map((controladora) => ({
-
         id: controladora.ID,
         tipo: controladora.Tipo_Controladora,
         deleted: false,
@@ -256,7 +264,7 @@ export const mapControladoras = async (DM) => {
 
             /**
              * Lista de molas associadas à controladora. Se a propriedade Mola1 for uma string, ela é dividida por vírgulas.
-             * 
+             *
              * @type {number[]}
              */
             molas: Array.isArray(controladora.Mola1) ? controladora.Mola1.map(Number) : controladora.Mola1?.split(',').map(Number) || []
@@ -270,14 +278,14 @@ export const mapControladoras = async (DM) => {
  */
 /**
  * Preenche automaticamente as listas de molas, andares e posições de acordo com o tipo da controladora.
- * 
+ *
  * @param {Object} controladora - A controladora que terá seus dados atualizados.
  * @param {string} controladora.tipo - O tipo da controladora, que pode ser '2018', '2023', ou 'Locker'.
  * @param {Object} controladora.dados - Os dados associados à controladora, que serão preenchidos com as listas correspondentes.
  * @param {number[]} controladora.dados.molas - Lista de molas da controladora (somente preenchida se o tipo for '2018').
  * @param {number[]} controladora.dados.andar - Lista de andares da controladora (somente preenchida se o tipo for '2023').
  * @param {number[]} controladora.dados.posicao - Lista de posições da controladora (preenchida conforme o tipo da controladora).
- * 
+ *
  * @description
  * Esta função preenche automaticamente os dados da controladora com base no tipo da controladora.
  * Dependendo do tipo ('2018', '2023', ou 'Locker'), a função preenche as propriedades de molas, andares e posições.
@@ -308,7 +316,6 @@ export const selectAll = (controladora) => {
     }
 };
 
-
 /**
  * Remove a seleção de todas as opções para uma controladora.
  * @param {Object} controladora - Controladora específica.
@@ -328,7 +335,7 @@ export const desselectAll = (controladora) => {
     }
 
     // Verifica se o tipo da controladora é 'Locker'
-    if (controladora.tipo === 'Locker-Padrao'||controladora.tipo === 'Locker-Ker') {
+    if (controladora.tipo === 'Locker-Padrao' || controladora.tipo === 'Locker-Ker') {
         // Limpa a lista de posições da controladora do tipo 'Locker'
         controladora.dados.posicao = [];
     }
@@ -336,28 +343,28 @@ export const desselectAll = (controladora) => {
 
 /**
  * Valida se o andar foi selecionado antes de permitir a seleção de uma posição.
- * 
+ *
  * @param {Object} produtoSelecionado - O objeto do produto que está sendo selecionado.
  * @param {Object} produtoSelecionado.value - O valor do produto selecionado, contendo as propriedades 'Andar' e 'Posicao'.
  * @param {string} produtoSelecionado.value.Andar - O andar selecionado para o produto.
  * @param {string} produtoSelecionado.value.Posicao - A posição selecionada para o produto.
- * 
+ *
  * @throws {Error} Lança um erro caso o andar não tenha sido selecionado.
- * 
+ *
  * @description
- * A função verifica se o andar foi selecionado no objeto 'produtoSelecionado'. Caso não tenha sido selecionado, 
+ * A função verifica se o andar foi selecionado no objeto 'produtoSelecionado'. Caso não tenha sido selecionado,
  * ela limpa o campo de posição e andar e lança um erro solicitando que o andar seja selecionado antes de escolher a posição.
  */
 export const validarAndarSelecionado = (produtoSelecionado) => {
     // Recupera o valor do andar selecionado do objeto produtoSelecionado
     const Andar = produtoSelecionado.value.Andar;
-    
+
     // Verifica se o andar não foi selecionado
     if (!Andar) {
         // Limpa o valor de 'Posicao' e 'Andar' no objeto produtoSelecionado
         produtoSelecionado.value.Posicao = '';
         produtoSelecionado.value.Andar = '';
-        
+
         // Lança um erro com uma mensagem informando que o andar deve ser selecionado antes da posição
         throw Error('Selecione um andar antes de selecionar uma posição.');
     }
@@ -450,12 +457,12 @@ export const preencherOpcoesControladoras = (Controladoras, options) => {
 export const configurarClienteSelecionado = (ListaClientes, DM) => {
     // Encontra o cliente que possui o mesmo ID que o DM.ID_Cliente
     const client = ListaClientes.find((client) => client.value.id_cliente === DM.ID_Cliente);
-    
+
     // Se o cliente for encontrado, retorna seus dados junto com a chave 'usar_api', que será false se não estiver definida
     if (client) {
         return { ...client.value, usar_api: client.value.usar_api || false };
     }
-    
+
     // Caso o cliente não seja encontrado, retorna um objeto com valores padrão
     return { id_cliente: '', nome_cliente: '', usar_api: false };
 };
@@ -470,24 +477,33 @@ export const configurarClienteSelecionado = (ListaClientes, DM) => {
  * @returns {void}
  */
 export const validarCampos = (produtoSelecionado, tipoControladoraSelecionada) => {
-    // Verifica se o campo 'Controladora' do produto selecionado está vazio.
-    if (!produtoSelecionado.Controladora) {
-        throw new Error('Preencha todos os campos obrigatórios para adicionar o item.');
-    }
+    switch (tipoControladoraSelecionada) {
+        case '2018':
+            if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Placa || !produtoSelecionado.Motor1 || !produtoSelecionado.Capacidade) {
+                throw new Error('Preencha todos os campos obrigatórios para a controladora 2018.');
+            }
 
-    // Validação específica para controladoras do tipo '2018'.
-    if (tipoControladoraSelecionada === '2018') {
-        // Verifica se algum dos campos obrigatórios para controladora '2018' está vazio.
-        if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Placa || !produtoSelecionado.Motor1) {
-            throw new Error('Preencha todos os campos obrigatórios para a controladora 2018.');
-        }
-    } 
-    // Validação específica para controladoras do tipo '2023'.
-    else if (tipoControladoraSelecionada === '2023') {
-        // Verifica se algum dos campos obrigatórios para controladora '2023' está vazio.
-        if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Dip || !produtoSelecionado.Andar || !produtoSelecionado.Posicao) {
-            throw new Error('Preencha todos os campos obrigatórios para a controladora 2023.');
-        }
+            break;
+        case '2023':
+            if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Dip || !produtoSelecionado.Andar || !produtoSelecionado.Posicao || !produtoSelecionado.Capacidade) {
+                throw new Error('Preencha todos os campos obrigatórios para a controladora 2023.');
+            }
+
+            break;
+        case 'Locker-Padrao':
+            if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || !produtoSelecionado.Dip || !produtoSelecionado.Posicao) {
+                throw new Error('Preencha todos os campos obrigatórios para a controladora Locker.');
+            }
+
+            break;
+        case 'Locker-Ker':
+            if (!produtoSelecionado.id_produto || !produtoSelecionado.Controladora || produtoSelecionado.Dip == null || !produtoSelecionado.Posicao) {
+                throw new Error('Preencha todos os campos obrigatórios para a controladora Locker.');
+            }
+
+            break;
+        default:
+            throw new Error('Tipo de controladora inválido.');
     }
 };
 /**
@@ -502,19 +518,19 @@ export const validarCampos = (produtoSelecionado, tipoControladoraSelecionada) =
 export const updateTipoControladora = (index, tipo, Controladoras, nextValues) => {
     // Conta quantas controladoras do tipo selecionado já existem na lista
     const count = Controladoras.filter((controladora) => controladora.tipo === tipo).length;
-    
+
     // Recupera a controladora no índice especificado
     const controladora = Controladoras[index];
-    
+
     // Define os limites máximos de controladoras por tipo
     const maxControladoras = {
-        2018: 16,  // Limite de 16 controladoras do tipo '2018'
-        2023: 90,  // Limite de 90 controladoras do tipo '2023'
-        "Locker-Padrao": Infinity,
-        "Locker-Ker": Infinity,  // Sem limite para controladoras do tipo 'Locker'
-        2024: Infinity   // Sem limite para controladoras do tipo '2024'
+        2018: 16, // Limite de 16 controladoras do tipo '2018'
+        2023: 90, // Limite de 90 controladoras do tipo '2023'
+        'Locker-Padrao': Infinity,
+        'Locker-Ker': Infinity, // Sem limite para controladoras do tipo 'Locker'
+        2024: Infinity // Sem limite para controladoras do tipo '2024'
     };
-    
+
     // Verifica se a quantidade atual de controladoras do tipo atingiu o limite máximo
     if (count >= maxControladoras[tipo]) {
         // Se atingiu o limite, remove a controladora da lista e lança um erro
@@ -526,24 +542,24 @@ export const updateTipoControladora = (index, tipo, Controladoras, nextValues) =
     if (tipo === '2018') {
         // Se for do tipo '2018', incrementa o valor de 'placa' e garante que 'molas' seja um array
         controladora.dados.placa = nextValues['2018'].placa++;
-        controladora.dados.molas = controladora.dados.molas || [];  // Garante que 'molas' seja um array
+        controladora.dados.molas = controladora.dados.molas || []; // Garante que 'molas' seja um array
     } else if (tipo === '2023') {
         // Se for do tipo '2023', incrementa o valor de 'dip' e garante que 'andar' e 'posicao' sejam arrays
         controladora.dados.dip = nextValues['2023'].dip++;
-        controladora.dados.andar = controladora.dados.andar || [];  // Garante que 'andar' seja um array
-        controladora.dados.posicao = controladora.dados.posicao || [];  // Garante que 'posicao' seja um array
+        controladora.dados.andar = controladora.dados.andar || []; // Garante que 'andar' seja um array
+        controladora.dados.posicao = controladora.dados.posicao || []; // Garante que 'posicao' seja um array
     } else if (tipo === '2024') {
         // Se for do tipo '2024', incrementa o valor de 'placa' e garante que 'motor' seja um string
         controladora.dados.placa = nextValues['2024'].placa++;
-        controladora.dados.motor = controladora.dados.motor || '';  // Garante que 'motor' seja uma string
+        controladora.dados.motor = controladora.dados.motor || ''; // Garante que 'motor' seja uma string
     } else if (tipo === 'Locker-Padrao') {
         // Se for do tipo 'Locker', incrementa o valor de 'dip' e garante que 'posicao' seja um array
         controladora.dados.dip = nextValues['Locker-Padrao'].dip++;
-        controladora.dados.posicao = controladora.dados.posicao || [];  // Garante que 'posicao' seja um array
+        controladora.dados.posicao = controladora.dados.posicao || []; // Garante que 'posicao' seja um array
     } else if (tipo === 'Locker-Ker') {
         // Se for do tipo 'Locker', incrementa o valor de 'dip' e garante que 'posicao' seja um array
         controladora.dados.dip = nextValues['Locker-Ker'].dip++;
-        controladora.dados.posicao = controladora.dados.posicao || [];  // Garante que 'posicao' seja um array
+        controladora.dados.posicao = controladora.dados.posicao || []; // Garante que 'posicao' seja um array
     }
 };
 /**
@@ -562,9 +578,9 @@ export const findControladora = (tipo, identificador, Controladoras) => {
             // Se o tipo for '2018' ou '2024', verifica se a placa da controladora corresponde ao identificador fornecido
             if (tipo === '2018' || tipo === '2024') {
                 return c.dados.placa === identificador;
-            } 
+            }
             // Se o tipo for '2023' ou 'Locker', verifica se o dip da controladora corresponde ao identificador fornecido
-            else if (tipo === '2023' || tipo === 'Locker-Padrao'|| tipo === 'Locker-Ker') {
+            else if (tipo === '2023' || tipo === 'Locker-Padrao' || tipo === 'Locker-Ker') {
                 return c.dados.dip === identificador;
             }
         }
@@ -587,7 +603,7 @@ export const updateProdutoSelecionado = (produtoSelecionado, tipo, valores) => {
         produtoSelecionado.Placa = Number(valores[0]);
         // Atribui o valor do Motor1 como um número
         produtoSelecionado.Motor1 = Number(valores[1]);
-    } 
+    }
     // Verifica se o tipo é '2023', e atualiza os campos específicos para este tipo de controladora
     else if (tipo === '2023') {
         // Atribui o valor do Dip como um número
@@ -596,12 +612,12 @@ export const updateProdutoSelecionado = (produtoSelecionado, tipo, valores) => {
         produtoSelecionado.Andar = Number(valores[1]);
         // Atribui o valor da posição como um número
         produtoSelecionado.Posicao = Number(valores[2]);
-    } 
+    }
     // Verifica se o tipo é '2024', e atualiza os campos específicos para este tipo de controladora
     else if (tipo === '2024') {
         // Atribui o valor do Motor1 como um número
         produtoSelecionado.Motor1 = Number(valores[0]);
-    } 
+    }
     // Verifica se o tipo é 'Locker', e atualiza os campos específicos para este tipo de controladora
     else if (tipo === 'Locker-Padrao') {
         // Atribui o valor do Dip como um número
@@ -629,8 +645,8 @@ export const updateProdutoSelecionado = (produtoSelecionado, tipo, valores) => {
 export const prepareDMData = (action, DM, Cliente, Controladora) => {
     // Definindo os dados base que serão incluídos em todas as ações, como o id do usuário e id do cliente.
     const baseData = {
-        id_usuario: store.userId || null,  // O ID do usuário (obtido do store ou nulo, se não disponível).
-        id_cliente: store.userIdCliente || null  // O ID do cliente (obtido do store ou nulo, se não disponível).
+        id_usuario: store.userId || null, // O ID do usuário (obtido do store ou nulo, se não disponível).
+        id_cliente: store.userIdCliente || null // O ID do cliente (obtido do store ou nulo, se não disponível).
     };
 
     // Switch para decidir a preparação dos dados com base na ação fornecida.
@@ -648,9 +664,9 @@ export const prepareDMData = (action, DM, Cliente, Controladora) => {
             DM.ClienteNome = Cliente.nome_cliente;
             // Retorna os dados combinados: dados base, os dados do DM e as controladoras associadas.
             return {
-                ...baseData,  // Dados base com id_usuario e id_cliente.
-                ...DM,  // Os dados de DM.
-                Controladoras: Controladora  // As controladoras associadas.
+                ...baseData, // Dados base com id_usuario e id_cliente.
+                ...DM, // Os dados de DM.
+                Controladoras: Controladora // As controladoras associadas.
             };
 
         // Caso a ação seja 'atualizar', prepara os dados para atualizar um DM existente.
@@ -665,17 +681,17 @@ export const prepareDMData = (action, DM, Cliente, Controladora) => {
             }
             // Retorna os dados combinados: dados base, dados de DM atualizados e as controladoras.
             return {
-                ...baseData,  // Dados base com id_usuario e id_cliente.
-                ...DM,  // Os dados de DM atualizados.
-                Controladoras: Controladora  // As controladoras associadas.
+                ...baseData, // Dados base com id_usuario e id_cliente.
+                ...DM, // Os dados de DM atualizados.
+                Controladoras: Controladora // As controladoras associadas.
             };
 
         // Caso a ação seja 'deletar', prepara os dados necessários para deletar um DM.
         case 'deletar':
             // Retorna os dados necessários para a exclusão do DM, incluindo o ID do DM.
             return {
-                ...baseData,  // Dados base com id_usuario e id_cliente.
-                ID_DM: DM.ID_DM  // O ID do DM que será deletado.
+                ...baseData, // Dados base com id_usuario e id_cliente.
+                ID_DM: DM.ID_DM // O ID do DM que será deletado.
             };
 
         // Caso a ação não seja válida, lança um erro.
@@ -698,9 +714,9 @@ export const prepareDMData = (action, DM, Cliente, Controladora) => {
 export const prepareItemDMData = (action, DM, Produto, Controladoras) => {
     // Definição dos dados base que serão incluídos em todas as ações, como o id do usuário, id do cliente e id do DM.
     const baseData = {
-        id_usuario: store.userId || null,  // O ID do usuário (obtido do store ou nulo se não disponível).
-        id_cliente: store.userIdCliente || null,  // O ID do cliente (obtido do store ou nulo se não disponível).
-        id_dm: DM.ID_DM || null  // O ID do DM (obtido do DM ou nulo se não disponível).
+        id_usuario: store.userId || null, // O ID do usuário (obtido do store ou nulo se não disponível).
+        id_cliente: store.userIdCliente || null, // O ID do cliente (obtido do store ou nulo se não disponível).
+        id_dm: DM.ID_DM || null // O ID do DM (obtido do DM ou nulo se não disponível).
     };
 
     // Localiza a controladora selecionada com base no ID da controladora presente no produto.
@@ -710,42 +726,42 @@ export const prepareItemDMData = (action, DM, Produto, Controladoras) => {
     switch (action) {
         // Caso a ação seja 'listar', prepara os dados para exibir os itens.
         case 'listar':
-            return { ...baseData };  // Retorna apenas os dados base.
+            return { ...baseData }; // Retorna apenas os dados base.
 
         // Caso a ação seja 'adicionar', prepara os dados para adicionar um novo item de DM.
         case 'adicionar':
             return {
-                ...baseData,  // Dados base com id_usuario, id_cliente e id_dm.
-                ...Produto.value,  // Os dados do produto que será adicionado.
+                ...baseData, // Dados base com id_usuario, id_cliente e id_dm.
+                ...Produto.value, // Os dados do produto que será adicionado.
                 tipo_controladora: selectedControladora
-                    ? selectedControladora.tipo  // Se a controladora for encontrada, usa o tipo dela.
+                    ? selectedControladora.tipo // Se a controladora for encontrada, usa o tipo dela.
                     : (() => {
-                          throw new Error('Tipo de controladora não definido.');  // Lança um erro caso o tipo de controladora não esteja definido.
-                      })()  // Caso contrário, lança um erro.
+                          throw new Error('Tipo de controladora não definido.'); // Lança um erro caso o tipo de controladora não esteja definido.
+                      })() // Caso contrário, lança um erro.
             };
 
         // Caso a ação seja 'atualizar', prepara os dados para atualizar um item de DM existente.
         case 'atualizar':
             return {
-                ...baseData,  // Dados base com id_usuario, id_cliente e id_dm.
-                ...Produto.value,  // Os dados do produto que será atualizado.
+                ...baseData, // Dados base com id_usuario, id_cliente e id_dm.
+                ...Produto.value, // Os dados do produto que será atualizado.
                 tipo_controladora: selectedControladora
-                    ? selectedControladora.tipo  // Se a controladora for encontrada, usa o tipo dela.
+                    ? selectedControladora.tipo // Se a controladora for encontrada, usa o tipo dela.
                     : (() => {
-                          throw new Error('Tipo de controladora não definido.');  // Lança um erro caso o tipo de controladora não esteja definido.
-                      })()  // Caso contrário, lança um erro.
+                          throw new Error('Tipo de controladora não definido.'); // Lança um erro caso o tipo de controladora não esteja definido.
+                      })() // Caso contrário, lança um erro.
             };
 
         // Caso a ação seja 'deletar', prepara os dados necessários para deletar um item de DM.
         case 'deletar':
             return {
-                ...baseData,  // Dados base com id_usuario, id_cliente e id_dm.
-                id_item: Produto.value.id_item  // O ID do item que será deletado.
+                ...baseData, // Dados base com id_usuario, id_cliente e id_dm.
+                id_item: Produto.value.id_item // O ID do item que será deletado.
             };
 
         // Caso a ação não seja válida, lança um erro.
         default:
-            throw new Error('Ação inválida para preparar os dados do serviço de DM.');  // Lança um erro para ações inválidas.
+            throw new Error('Ação inválida para preparar os dados do serviço de DM.'); // Lança um erro para ações inválidas.
     }
 };
 
@@ -758,12 +774,12 @@ export const prepareItemDMData = (action, DM, Produto, Controladoras) => {
  * @param {Object} ListaClientes[].usar_api - Indicates if the client uses the API.
  * @returns {Array} The formatted list of clients.
  */
-export const FormatarListaCliente = (ListaClientes,simple=false) => {
+export const FormatarListaCliente = (ListaClientes, simple = false) => {
     // Itera sobre a lista de clientes e formata cada um dos itens conforme necessário.
     return ListaClientes.map((cliente) => {
         if (simple) {
             return {
-                value : cliente.id_cliente,
+                value: cliente.id_cliente,
                 label: cliente.nome
             };
         } else {
@@ -772,9 +788,7 @@ export const FormatarListaCliente = (ListaClientes,simple=false) => {
                 label: cliente.nome,
 
                 // 'value' contém os dados do cliente, que serão utilizados internamente para identificar o cliente selecionado.
-                value: {id_cliente: cliente.id_cliente,
-                    nome_cliente: cliente.nome,
-                    usar_api: cliente.usar_api,},
+                value: { id_cliente: cliente.id_cliente, nome_cliente: cliente.nome, usar_api: cliente.usar_api },
                 // O campo 'usar_api' é armazenado diretamente no objeto de nível superior para fácil acesso.
                 usar_api: cliente.usar_api
             };
@@ -782,5 +796,5 @@ export const FormatarListaCliente = (ListaClientes,simple=false) => {
     });
 };
 export const isArmario = (tipo) => {
-    return ["Locker", "Locker-Padrao", "Locker-Ker"].includes(tipo?.toString());
+    return ['Locker', 'Locker-Padrao', 'Locker-Ker'].includes(tipo?.toString());
 };

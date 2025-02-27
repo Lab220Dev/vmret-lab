@@ -8,6 +8,7 @@ import { useDataStore } from '@/store/dataStore.js';
 import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
 import setorService from '@/Services/SetorService.js';
 import { useI18n } from 'vue-i18n';
+import {resetSetorForm ,resetProdutoSelecionadoSetor } from '@/helpers/formHelper.js';
 const { t } = useI18n();
 const Mob = ref(false);
 const active = ref(0);
@@ -191,10 +192,7 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    setor.codigo = '';
-    setor.nome = '';
-    setor.id_centro_custo = '';
-    integracao.value = false;
+    resetSetorForm(setor);
 };
 
 const loadData = async () => {
@@ -224,6 +222,7 @@ const atualizarProdutoSetor = async () => {
             detail: t('product_update_sucess'),
             life: 3000
         });
+        resetProdutoSelecionadoSetor(produtoSelecionado);
     } catch (error) {
         console.error('Erro ao atualizar o produto:', error);
         toast.add({
@@ -243,6 +242,7 @@ const SalvarProduto = async () => {
         await setorService.adicionarProduto(setor, produtoSelecionado.value);
         fetchListaItemSetor();
         visible.value = false;
+        resetProdutoSelecionadoSetor(produtoSelecionado);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_added_sucess'), life: 3000 });
     } catch (error) {
         console.error('Erro ao adicionar item:', error.message);
@@ -257,6 +257,7 @@ const deletarProduto = async () => {
     try {
         await setorService.deletarProduto(item.value);
         fetchListaItemSetor();
+        resetProdutoSelecionadoSetor(produtoSelecionado);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_delete_sucess'), life: 3000 });
         deleteProductDialog.value = false;
     } catch (error) {
@@ -350,7 +351,7 @@ const debouncedFilterChange = debounce(() => {
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">{{ t('cost_center_name') }}:</label>
-                                        <Dropdown class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                                        <Dropdown filter class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
@@ -424,7 +425,7 @@ const debouncedFilterChange = debounce(() => {
                                     <Dialog v-model:visible="visible" modal :header="t('add_items_to_sector')" :draggable="false">
                                         <div class="grid">
                                             <div class="col-12">
-                                                <label for="Produto" class="font-semibold col-2">{{ t('product') }}: </label>
+                                                <label for="Produto" class="font-semibold col-2 mr-2">{{ t('product') }}: </label>
                                                 <Dropdown
                                                     v-model="produtoSelecionado.id_produto"
                                                     :options="ListaItensSetor"
@@ -436,8 +437,8 @@ const debouncedFilterChange = debounce(() => {
                                                 />
                                             </div>
                                             <div class="col-12">
-                                                <label for="Quantidade" class="font-semibold w-6rem mr-2">{{ t('quantity') }}: </label>
-                                                <InputNumber id="Quantidade" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                                                <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{ t('quantity') }}: </label>
+                                                <InputNumber id="Quantidade" class="ml-5" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                                             </div>
                                         </div>
                                         <div class="flex justify-content-end gap-2">

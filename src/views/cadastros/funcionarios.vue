@@ -9,7 +9,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
 // Importando o objeto 'FilterMatchMode' do PrimeVue para configurar os filtros de pesquisa
 import { FilterMatchMode } from 'primevue/api';
 // Importando a imagem de placeholder que será usada caso não haja imagem para um produto
-import imagePlaceholder from '@/assets/images/placeholder4.1.png';
+import imagePlaceholder from '@/assets/images/placeholder4.1.jpg';
 import clockurl from '@/assets/images/OIP.png';
 // Importando o store de autenticação para acessar o estado de autenticação do usuário
 import { useAuthStore } from '@/store/authStore.js';
@@ -351,7 +351,7 @@ const adicionarFuncionario = async () => {
         if(!isValid){
             throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
         }
-        await funcionarioService.adicionarFuncionario(funcionario, selectedFile.value);
+        await funcionarioService.adicionarFuncionario(funcionario, selectedFile);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_added'), life: 3000 });
         dataStore.invalidateFuncionariosCache();
         await loadFuncionarios();
@@ -423,7 +423,6 @@ watch(
     },
     { deep: true }
 );
-
 watch(
     TempoFim,
     (newTime) => {
@@ -466,7 +465,16 @@ const getImagem = async (filename) => {
         return imagePlaceholder;
     }
 };
-
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 onMounted(async () => {
     Mob.value = formatservices.isMobEnabled();
     await loadData();
@@ -704,7 +712,7 @@ const hideDialog = () => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" />
+                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" @input="debouncedFilterChange"  />
                                 </IconField>
                             </div>
                         </template>
@@ -733,7 +741,7 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="senha">{{t('password')}}:</label>
-                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" />
+                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" autocomplete="new-password"/>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="Hash">Hash 1:</label>
@@ -770,25 +778,25 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="perfil">{{t('cost_center')}}:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_centro_custo" 
+                                    <Dropdown class="my-2" filter v-model="funcionario.id_centro_custo" 
                                     :options="centroCusto" optionLabel="label" optionValue="value" 
                                     :placeholder="$t('select_center_cost')" ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="planta">{{t('factory')}}:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_planta" :options="plantas" 
+                                    <Dropdown filter class="my-2" v-model="funcionario.id_planta" :options="plantas" 
                                     optionLabel="label" optionValue="value"
                                     :placeholder="$t('select_factory')" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="setor">{{t('sector')}}:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_setor" :options="setor" 
+                                    <label for="setor">{{t('sector')}}</label>
+                                    <Dropdown filter class="my-2" v-model="funcionario.id_setor" :options="setor" 
                                     optionLabel="label" optionValue="value" :placeholder="$t('select_sector')"
                                      @change="setorChange" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label class="ajustetexto" for="funcao">{{t('function')}}:</label>
-                                    <Dropdown class="my-2" v-model="funcionario.id_funcao" 
+                                    <Dropdown filter class="my-2" v-model="funcionario.id_funcao" 
                                     :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value"
                                      :placeholder="$t('select_function')" ref="dropdown4" />
                                 </div>
@@ -966,8 +974,8 @@ const hideDialog = () => {
         <Dialog v-model:visible="visible" 
         :modal="true" 
         :draggable="false" 
-        :header="$t('add_employee_items')">
-            <div class="grid">
+        :header="$t('add_employee_items')" >
+            <div class="grid my-1">
                 <div class="col-12">
                     <label for="Produto" class="mr-2 font-semibold col-2">{{t('product')}}: </label>
                     <Dropdown 
@@ -977,11 +985,11 @@ const hideDialog = () => {
                     :filterBy="'label'"
                     optionValue="value" 
                     :placeholder="$t('select_product')" 
-                    class="col-8 p-0" />
+                    class="col-8 ml-1 p-0" />
                 </div>
                 <div class="col-12">
-                    <label for="Quantidade" class="font-semibold w-6rem mr-2">{{t('quantity')}}: </label>
-                    <InputNumber variant="filled" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                    <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{t('quantity')}}: </label>
+                    <InputNumber variant="filled" class="ml-5" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
 

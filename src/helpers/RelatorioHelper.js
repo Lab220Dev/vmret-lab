@@ -235,10 +235,10 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
         // **Verifica se há dados para exibir na tabela**
-        if (!Array.isArray(retiradas.data) || retiradas.data.length === 0 ) {
+        if (!Array.isArray(retiradas.data) || retiradas.data.length === 0) {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
+            doc.text(`${t('no_data_doc')}`, doc.internal.pageSize.width / 2, 90, { align: 'center' });
         } else {
             // Definição da tabela
             const tableColumn = [`${t('ITEM_NAME_DOC')}`, `${t('WITHDRAWAL_DATE_DOC')}`, `${t('QUANT_DOC')}`, `${t('UNIT_DOC')}`, `${t('DESCRIPTION_DOC')}`, `${t('CA_NUMBER_DOC')}`, `${t('AUTHENTICATION_DOC')}`];
@@ -310,13 +310,13 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         }
         const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120; // Posição Y final da tabela
         doc.setFontSize(12);
-        doc.text('Data:', 30, finalY); // Exibe o campo de data
+        doc.text(`${t('date')}:`, 30, finalY); // Exibe o campo de data
         doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
 
         doc.setFontSize(12);
         doc.text('______________________________________', 180, finalY);
-        doc.text('Assinatura do funcionário', 200, finalY + 10);
-        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
+        doc.text(`${t('employee_signature')}`, 200, finalY + 10);
+        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || t('employee')}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
     }
@@ -350,7 +350,7 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         document.body.removeChild(div); // Remove o elemento do DOM
 
         // Criar o PDF
-        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdf = new jsPDF('l');
         const pageWidth = pdf.internal.pageSize.width || 210; // Largura total da página
         const margin = 10; // Margem da página
         const imgWidth = pageWidth - 2 * margin; // Mantém a largura da imagem dentro da página
@@ -364,20 +364,21 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         pdf.setDrawColor(0, 0, 0); // Define a cor da borda
         pdf.setFillColor(143, 143, 143); // Define a cor de fundo
         pdf.setLineWidth(0.1); // Largura da linha da borda
-        pdf.rect(10, 33.1, 190, 1, 'FD'); // Desenha o retângulo
+        pdf.rect(10, 43.3, imgWidth, 1, 'FD'); // Desenha o retângulo
 
         // Adicionar borda ao redor da página
-        pdf.rect(10, 10, 190, 280); // Desenha o retângulo ao redor da página
+        pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
 
         let posY = imgHeight + 11; // Posição Y inicial para a tabela
-        const itemsPerPage = 50; // Itens por página
+        const itemsPerPage = 15; // Itens por página
         let itemCount = 0; // Contador de itens
 
         for (let i = 0; i < retiradas.data.length; i += itemsPerPage) {
             if (i > 0) {
                 pdf.addPage(); // Adiciona uma nova página
+
                 // Adicionar borda ao redor da página
-                pdf.rect(10, 10, 190, 280); // Desenha o retângulo ao redor das demais páginas
+                pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
                 posY = 11; // Posição Y inicial para a tabela
             }
 
@@ -453,7 +454,7 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 
             let rodapeWidth = pageWidth - 2 * margin; // Largura da imagem do rodapé
             let rodapeHeight = (rodapeCanvas.height * rodapeWidth) / rodapeCanvas.width; // Mantém proporção
-            let rodapeY = 271; // Posição Y do rodapé no PDF
+            let rodapeY = 168; // Posição Y do rodapé no PDF
 
             pdf.addImage(rodapeImgData, 'PNG', margin, rodapeY, rodapeWidth, rodapeHeight); // Adiciona a imagem ao PDF
 
@@ -486,7 +487,7 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 }
 export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
     const linguaSelecionada = i18n.global.locale.value;
-    
+
     if (linguaSelecionada === 'es') {
         await GerarPdfRetiradaEs(funcionarioSelecionado, relatorio);
     } else {

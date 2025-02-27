@@ -4,15 +4,7 @@ import { useToast } from 'primevue/usetoast'; // Função para exibir notificaç
 import { format } from 'date-fns'; // Função para formatar a data
 import { useI18n } from 'vue-i18n';
 const toast = useToast(); //toast para exibir mensagens de erro ou sucesso
-const { t } = useI18n();
-// Defina os props
-/**
- * @typedef {Object} most
- * @property {string} Identificacao - Identificação da máquina.
- * @property {string} ProdutoSKU - Código do produto (SKU).
- * @property {string} ProdutoDescricao - Descrição do produto.
- * @property {string} Dia - Data e hora da retirada.
- */
+const { t } = useI18n();//t é usado para traduzir textos
 
 /**
  * Propriedades do componente.
@@ -20,17 +12,17 @@ const { t } = useI18n();
  * @typedef {Object} Props
  * @property {Array<most>} most - Lista de produtos mais retirados, contendo a identificação da máquina, SKU, descrição e data/hora.
  */
-const props = defineProps({
-    most: {
-        type: Array,
-        required: true
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
+    most: {//most é um array de objetos
+        type: Array,//define que most é um array
+        required: true//define que most é obrigatório
     }
 });
 </script>
 
+<!-- Template do componente -->
 <template>
     <div class="header" style="display: flex">
-        <!-- Cabeçalho exibindo o título e o ícone de informação sobre os itens mais retirados -->
         <div class="title mb-0" style="display: flex; align-items: center">
             <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5>
         </div>

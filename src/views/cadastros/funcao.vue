@@ -273,7 +273,7 @@ onMounted(() => {
                                     <!-- Campo para selecionar o centro de custo -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="perfil">{{ $t('cost_center') }}:</label>
-                                        <Dropdown class="my-2" v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                                        <Dropdown class="my-2" filter v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                                     </div>
                                 </div>
 

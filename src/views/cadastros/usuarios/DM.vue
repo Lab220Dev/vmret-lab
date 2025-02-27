@@ -92,7 +92,7 @@ const produtoSelecionado = ref({
     Motor1: '',
     Motor2: '',
     Controladora: '',
-    Capacidade: ''
+    Capacidade: 1
 });
 //Listas Reativas
 const filters = ref({
@@ -303,8 +303,8 @@ const handleRowSelection = async (event) => {
     // Extrai valores da posição
     const [controladora, ...valores] = edit.Posicao.split(' / ');
 
-    // Busca pela controladora original
-    const controladoraOriginal = findControladora(controladora, Number(valores[0]), Controladoras.value);
+   // Busca pela controladora original
+   const controladoraOriginal = findControladora(controladora, Number(valores[0]), Controladoras.value);
     if (controladoraOriginal) {
         produtoSelecionado.value.Controladora = controladoraOriginal.id;
     } else {
@@ -802,7 +802,7 @@ onMounted(async () => {
                             <div class="grid mt-5 mx-0 p-fluid">
                                 <!-- Painel Configuração da Máquina -->
                                 <div class="col-12 md:col-6">
-                                    <panel header="Opções de Retirada">
+                                    <panel :header="$t('dm_config_with')">
                                         <div id="fim" class="flex flex-column gap-3 mt-3">
                                             <div class="flex align-items-center">
                                                 <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
@@ -830,10 +830,10 @@ onMounted(async () => {
 
                                 <!-- Painel Opções de Retirada -->
                                 <div class="col-12 md:col-6">
-                                    <panel header="Config Maquina">
+                                    <panel :header="$t('dm_config')">
                                         <div class="flex flex-column gap-3 mt-3">
                                             <div class="flex align-items-center flex-column">
-                                                <label for="switch4" class="mt-0 text-nowrap"> deseja salvar dados de Funcionarios</label>
+                                                <label for="switch4" class="mt-0 text-nowrap"> {{$t('dm_config_data')}}</label>
                                                 <div class="grid mt-3">
                                                     <InputSwitch class="mr-2" v-model="salvardados" inputId="switch4" @change="handleSalvarDadosChange"/>
                                                     <span class="ml-2">{{ salvardados ? $t('yes') : $t('no') }}</span>
@@ -843,17 +843,17 @@ onMounted(async () => {
                                             <div class="flex flex-column gap-3">
                                                 <div class="flex align-items-center">
                                                     <Checkbox v-model="supe" inputId="supe" :binary="true" :disabled="!salvardados" />
-                                                    <label for="supe" class="ml-2"> Nome Funcionario </label>
+                                                    <label for="supe" class="ml-2">{{$t('employee_name')}} </label>
                                                 </div>
                                                 <div class="flex align-items-center">
                                                     <Checkbox v-model="dupe" inputId="dupe" :binary="true" :disabled="!salvardados"/>
-                                                    <label for="dupe" class="ml-2"> Numero de Matricula </label>
+                                                    <label for="dupe" class="ml-2"> {{$t('employee_id')}}  </label>
                                                 </div>
                                             </div>
                                             <hr>
                                             <div class="flex flex-column gap-3">
                                                 <div class="flex align-items-center flex-column">
-                                                <label for="switch4" class="mt-0 text-nowrap"> deseja salvar dados de Maquina</label>
+                                                <label for="switch4" class="mt-0 text-nowrap">{{$t('dm_config_data_save')}}</label>
                                                 <div class="grid mt-3">
                                                     <InputSwitch class="mr-2" v-model="salvardadosMaquina" inputId="switch4"/>
                                                     <span class="ml-2">{{ salvardadosMaquina ? $t('yes') : $t('no') }}</span>
@@ -1213,7 +1213,7 @@ onMounted(async () => {
                     <label for="Capacidade" class="font-semibold">{{ t('capacity') }}:</label>
                 </div>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
-                    <InputNumber inputId="Capacidade" class="w-full" v-model="produtoSelecionado.Capacidade" aria-describedby="username-help" :suffix="$t('capacity_suffix')" />
+                    <InputNumber inputId="Capacidade" :disabled="tipoControladoraSelecionada === 'Locker-Padrao' || tipoControladoraSelecionada === 'Locker-Ker'" class="w-full" v-model="produtoSelecionado.Capacidade" :mask="1" aria-describedby="username-help" :suffix="$t('capacity_suffix')"/>
                 </div>
             </div>
         </div>

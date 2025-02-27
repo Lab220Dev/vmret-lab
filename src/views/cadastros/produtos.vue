@@ -6,7 +6,7 @@ import { useToast } from 'primevue/usetoast';
 // Importando o estilo do componente de data picker
 import '@vuepic/vue-datepicker/dist/main.css';
 // Importando a imagem de placeholder que será usada caso não haja imagem para um produto
-import imagePlaceholder from '@/assets/images/placeholder4.1.png';
+import imagePlaceholder from '@/assets/images/placeholder4.1.jpg';
 // Importando o store de autenticação para acessar o estado de autenticação do usuário
 import { useAuthStore } from '@/store/authStore.js';
 // Importando o componente de upload de imagem para ser usado na interface
@@ -216,11 +216,14 @@ const onPageChange = (event) => {
  * @returns {Promise<void>}
  */
 const loadData = async () => {
+   loading.value = true;
     try {
         formatedPlantaOptions.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega as opções de plantas
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Exibe erro no console
+    }finally{
+        loading.value = false;
     }
 };
 
@@ -377,7 +380,7 @@ onMounted(async () => {
     try {
         // Carrega os produtos logo que o componente é montado
         await loadProdutos(); // Carrega a lista de produtos ao montar o componente
-        loadData(); // Carrega dados adicionais (por exemplo, plantas) ao montar o componente
+        await loadData(); // Carrega dados adicionais (por exemplo, plantas) ao montar o componente
         mob.value = isMobEnabled(); // Verifica se a integração com Mob está habilitada
     } catch (error) {
         // Exibe uma mensagem de erro caso algo dê errado durante o carregamento dos produtos ou dados
@@ -480,7 +483,7 @@ onMounted(async () => {
                                 </div>
                                 <div class="full lg:col-6 md:col-6 sm:col-6">
                                     <label for="tipo">{{t('factory')}}:</label>
-                                    <Dropdown class="my-2" v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" :placeholder="t('select_factory')" />
+                                    <Dropdown class="my-2" filter v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" :placeholder="t('select_factory')" />
                                 </div>
                                 <div class="full med lg:col-4 md:col-4 sm:col-4">
                                     <label for="UndMedida">{{t('unit_measurement')}}:</label>

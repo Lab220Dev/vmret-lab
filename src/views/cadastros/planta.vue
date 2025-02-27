@@ -164,6 +164,16 @@ onMounted(() => {
     loadPlanta();
     Mob.value = isMobEnabled();
 });
+function debounce(func, wait = 300) {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+const debouncedFilterChange = debounce(() => {
+    onFilterChange();
+}, 300);
 </script>
 
 <template>
@@ -203,7 +213,7 @@ onMounted(() => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
                                     </IconField>
                                 </div>
                             </div>
@@ -229,29 +239,7 @@ onMounted(() => {
                                         <label for="nome">{{ t('factory_name') }}:</label>
                                         <InputText class="my-2" id="nome" v-model="planta.nome" required />
                                     </div>
-                                    <InputSwitch class="grid mt-3 ml-3" v-model="integracao" inputId="switch1" />
-                                    <label class="mt-3 ml-4" for="switch1">{{ t('is_integrated') }}</label>
-
-                                    <div v-if="integracao" class="card mt-8">
-                                        <div v-if="integracao" class="my-3 grid">
-                                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="userid">{{ t('userid') }}:</label>
-                                                <InputText class="my-2" id="userid" v-model="planta.userid" required />
-                                            </div>
-                                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="senha">{{ t('password') }}:</label>
-                                                <InputText class="my-2" id="senha" v-model="planta.senha" required />
-                                            </div>
-                                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="urlapi">{{ t('url') }}:</label>
-                                                <InputText class="my-2" id="urlapi" v-model="planta.urlapi" required />
-                                            </div>
-                                            <div class="full lg:col-6 md:col-6 sm:col-12">
-                                                <label for="idcliente">{{ t('client_id') }}:</label>
-                                                <InputText class="my-2" id="idcliente" v-model="planta.clientid" required />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
                                     <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="atualizarPlanta" :disabled="Mob" />

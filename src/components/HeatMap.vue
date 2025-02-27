@@ -95,7 +95,7 @@ import { ref, computed } from 'vue'; // ref é usado para criar variáveis reati
  * @typedef {Object} Props
  * @property {Array<clientes>} clientes - Lista de clientes recebida como propriedade do componente
  */
-const props = defineProps({
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
     clientes: Array // Define que a propriedade 'clientes' será um array, sendo a lista de clientes
 });
 
@@ -110,11 +110,11 @@ const expandedRows = ref([]); // A variável reativa 'expandedRows' mantém o es
  *
  * @param {Object} machine - O objeto da máquina a ser exibido
  */
-const showMachineDetails = (machine) => {
+const showMachineDetails = (machine) => {//função para exibir os detalhes da máquina selecionada
     if (!machine) return; // Se a máquina não for válida (null ou undefined), não faz nada
 
     // Atualiza os dados da máquina selecionada
-    selectedMachine.value = {
+    selectedMachine.value = {//atualiza os dados da máquina selecionada
         ...machine, // Espalha todas as propriedades da máquina selecionada
         lastNotification: machine.lastNotification || 'Não disponível', // Se lastNotification não existir, define um valor padrão
         lastPing: machine.lastPing || 'Desconhecido', // Se lastPing não existir, define um valor padrão
@@ -132,8 +132,8 @@ const showMachineDetails = (machine) => {
  *
  * @returns {number} O número máximo de máquinas baseado na maior quantidade de DM's de um cliente
  */
-const maxMachines = computed(() => {
-    if (!props.clientes || props.clientes.length === 0) {
+const maxMachines = computed(() => {//função para calcular o número máximo de máquinas
+    if (!props.clientes || props.clientes.length === 0) {//se não houver clientes ou a lista de clientes estiver vazia
         return 0; // Se a lista de clientes estiver vazia ou não existir, retorna 0, ou seja, não há máquinas para exibir
     }
     return Math.max(...props.clientes.map((client) => client.dms?.length || 0)); // Calcula o número máximo de DM's para alinhar o grid
@@ -147,7 +147,7 @@ const maxMachines = computed(() => {
  * @param {Object} machine - O objeto que representa a máquina
  * @returns {string} A classe de status da máquina ('online' ou 'offline')
  */
-const getMachineStatusClass = (machine) => {
+const getMachineStatusClass = (machine) => {//função para determinar a classe de estilo com base no status da máquina
     if (!machine) return 'unknown'; // Se a máquina não for válida, retorna 'unknown' (status desconhecido)
     return machine.status === 'online' ? 'online' : 'offline'; // Se o status da máquina for 'online', retorna 'online', caso contrário, 'offline'
 };
@@ -158,7 +158,7 @@ const getMachineStatusClass = (machine) => {
  *
  * @returns {boolean} Retorna verdadeiro se os dados dos clientes estiverem carregados (cliente existe e lista não está vazia)
  */
-const isDataLoaded = computed(() => {
+const isDataLoaded = computed(() => {//função para verificar se os dados dos clientes estão carregados
     return props.clientes && props.clientes.length > 0; // Retorna true se a lista de clientes não for nula e tiver pelo menos um cliente
 });
 
@@ -173,7 +173,7 @@ const clientsPlaceholder = 3; // Número de clientes fictícios para exibição 
  *
  * @returns {Object} Um objeto com dados para o gráfico (labels e datasets)
  */
-const chartData = computed(() => {
+const chartData = computed(() => {//função para fornecer os dados do gráfico no diálogo
     return selectedMachine.value?.chartData || { labels: [], datasets: [] }; // Se houver 'chartData' na máquina selecionada, retorna ele; caso contrário, retorna um objeto vazio
 });
 
@@ -182,31 +182,31 @@ const chartData = computed(() => {
  * Configurações de opções para o gráfico exibido no diálogo.
  * As configurações incluem ajustes no comportamento da legenda, escalas e elementos do gráfico.
  */
-const chartOptions = {
+const chartOptions = {//configurações do gráfico
     maintainAspectRatio: false, // A largura e altura do gráfico podem ser ajustadas de acordo com o tamanho do container
     responsive: true, // O gráfico será responsivo e se ajustará ao tamanho da tela
-    plugins: {
-        legend: {
+    plugins: {//plugins do gráfico
+        legend: {//configurações da legenda
             position: 'top' // A legenda será posicionada no topo do gráfico
         }
     },
-    scales: {
-        y: {
+    scales: {//configurações das escalas
+        y: {//escala Y
             type: 'category', // O eixo Y será categórico
             labels: ['Online', 'Offline'], // As categorias para o eixo Y são 'Online' e 'Offline'
-            ticks: {
+            ticks: {//marcas no eixo Y
                 font: { size: 14 } // Define o tamanho da fonte para as marcas no eixo Y
             },
             grid: { display: true } // Exibe a grade para o eixo Y
         },
-        x: {
-            ticks: {
+        x: {//escala X
+            ticks: {//marcas no eixo X
                 font: { size: 14 } // Define o tamanho da fonte para as marcas no eixo X
             },
             grid: { display: false } // Não exibe a grade para o eixo X
         }
     },
-    elements: {
+    elements: {//configurações dos elementos do gráfico
         point: { radius: 5 } // Define o tamanho dos pontos no gráfico como 5px
     }
 };
@@ -296,11 +296,12 @@ const chartOptions = {
     color: white;
 }
 
+/* Estilos de Status */
 .offline {
     background-color: #f44336;
     color: white;
 }
-
+/* Status Desconhecido */
 .unknown {
     background-color: #e0e0e0;
     color: black;

@@ -18,7 +18,7 @@ import 'quill/dist/quill.snow.css'; // Importa o tema "snow" do Quill
  * @property {string} modelValue - O valor inicial do editor, recebido via `v-model`.
  */
 
-const props = defineProps({
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
   modelValue: String // Valor do v-model que será usado para inicializar o conteúdo do editor
 });
 
@@ -28,7 +28,7 @@ const props = defineProps({
  * @typedef {Object} Emits
  * @property {function} update:modelValue - Evento para atualizar o valor do editor no componente pai.
  */
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue']);//defineEmits é usado para definir os eventos que o componente pode emitir
 
 /**
  * Variáveis reativas do componente.
@@ -48,7 +48,7 @@ let quill = null; // Instância do editor Quill
  */
 onMounted(() => {
   // Inicializa o editor Quill com a referência do elemento e configura a aparência e funcionalidades
-  quill = new Quill(editor.value, {
+  quill = new Quill(editor.value, {//editor.value é a referência do elemento do editor Quill
     theme: 'snow', // Tema do editor
     modules: {
       toolbar: [ // Configuração da barra de ferramentas
@@ -60,7 +60,7 @@ onMounted(() => {
   });
 
   // Inicializa o conteúdo do editor com o valor recebido via v-model
-  quill.root.innerHTML = props.modelValue || '';
+  quill.root.innerHTML = props.modelValue || ''; // Define o conteúdo inicial do editor
 
   // Evento que emite as mudanças de conteúdo para o componente pai
   quill.on('text-change', () => {
@@ -68,12 +68,12 @@ onMounted(() => {
   });
 
   // Observa mudanças no valor do v-model e atualiza o conteúdo do editor
-  watch(() => props.modelValue, (newValue) => {
-    if (newValue !== quill.root.innerHTML) {
+  watch(() => props.modelValue, (newValue) => {//watch é usado para observar mudanças em uma variável reativa
+    if (newValue !== quill.root.innerHTML) {//Verifica se o novo valor é diferente do conteúdo atual do editor
       const range = quill.getSelection(); // Salva a seleção atual
       const scrollTop = quill.root.scrollTop; // Salva a posição de rolagem
       quill.root.innerHTML = newValue; // Atualiza o conteúdo do editor
-      if (range) {
+      if (range) {//Verifica se a seleção foi salva anteriormente
         quill.setSelection(range.index, range.length); // Restaura a seleção
       }
       quill.root.scrollTop = scrollTop; // Restaura a posição de rolagem
@@ -84,7 +84,7 @@ onMounted(() => {
 
 <style scoped>
 /* Estilos do contêiner do editor Quill */
-.quill-editor-container {
+.quill-editor-container {/* Estilos do contêiner do editor Quill */
   border: 1px solid #ddd; /* Borda do editor */
   padding: 10px; /* Espaçamento interno */
   border-radius: 4px; /* Cantos arredondados */

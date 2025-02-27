@@ -20,10 +20,10 @@ const { t } = useI18n();
  * @typedef {Object} Props
  * @property {Array<Product>} products - Lista de produtos retirados, contendo a identificação da máquina, SKU, descrição e data/hora.
  */
-const props = defineProps({
-    products: {
-        type: Array,
-        required: true
+const props = defineProps({//defineProps é usado para definir as propriedades do componente
+    products: {//products é um array de objetos
+        type: Array,//define que products é um array
+        required: true//define que products é obrigatório
     }
 });
 
@@ -34,12 +34,12 @@ const props = defineProps({
  * @param {string} date - Data em formato de string a ser formatada.
  * @returns {string|null} - Data formatada ou null se não houver data.
  */
-const formatDateTime = (date) => {
-    return date ? format(new Date(date), 'dd/MM/yyyy HH:mm') : null;
+const formatDateTime = (date) => {//formatDateTime é uma função que recebe uma data como parâmetro
+    return date ? format(new Date(date), 'dd/MM/yyyy HH:mm') : null;//retorna a data formatada ou null se não houver data
 };
 
-const truncatedText = (text) => {
-    return text.length > 20 ? text.substring(0, 20) + '...' : text;
+const truncatedText = (text) => {//truncatedText é uma função que recebe um texto como parâmetro
+    return text.length > 20 ? text.substring(0, 20) + '...' : text;//retorna o texto truncado se tiver mais de 20 caracteres
 };
 </script>
 
@@ -80,7 +80,7 @@ const truncatedText = (text) => {
     <Column field="ProdutoSKU" style="width: 10%; text-align: center;" :header="t('SKU')" sortable ></Column>
     
     <!-- Coluna de descrição do produto -->
-    <Column field="ProdutoDescricao" class="table-cell" :header="t('description')" sortable style="max-width: 250px;">
+    <Column field="ProdutoDescricao" class="table-cell" :header="t('description')" sortable style="width: 80%"">
       <template #body="{ data }">
         <span class="tooltip-target" v-tooltip="data.ProdutoDescricao">{{ data.ProdutoDescricao }}</span>
       </template>

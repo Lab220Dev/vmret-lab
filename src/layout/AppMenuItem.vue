@@ -73,12 +73,10 @@ const translateMenuItem = (menuItem) => {
 const translatedItem = computed(() => translateMenuItem(props.item));
   /**
    * Variáveis reativas para controle de estado.
-   * @constant {Ref<string>} abletext - Classe para itens de menu habilitados.
    * @constant {Ref<string>} disabledtext - Classe para itens de menu desabilitados.
    * @constant {Ref<boolean>} isActiveMenu - Indica se o item de menu está ativo.
    * @constant {Ref<string|null>} itemKey - Chave única do item de menu.
    */
-  const abletext = ref('layout-menuitem-text'); // Classe para itens de menu habilitados
   const disabledtext = ref('layout-menuitem-text-disabled'); // Classe para itens de menu desabilitados
   const isActiveMenu = ref(false); // Indica se o item de menu está ativo
   const itemKey = ref(null); // Chave única do item de menu
@@ -185,7 +183,7 @@ const translatedItem = computed(() => translateMenuItem(props.item));
       tabindex="0"
     >
       <i :class="translatedItem.icon" class="layout-menuitem-icon"></i>
-      <span :class="[translatedItem.disabled ? disabledtext : abletext]">{{ translatedItem.label }}</span>
+      <span :class="[translatedItem.disabled]">{{ translatedItem.label }}</span>
       <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="translatedItem.items"></i>
     </a>
 
@@ -198,7 +196,7 @@ const translatedItem = computed(() => translateMenuItem(props.item));
   :to="translatedItem.to"
 >
   <i :class="translatedItem.icon" class="layout-menuitem-icon"></i>
-  <span :class="[translatedItem.disabled ? disabledtext : abletext]">{{ translatedItem.label }}</span>
+  <span :class="[translatedItem.disabled]">{{ translatedItem.label }}</span>
   <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="translatedItem.items"></i>
 </router-link>
     <!-- Submenu com animação de transição -->

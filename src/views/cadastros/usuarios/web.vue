@@ -581,7 +581,7 @@ const resetForm = () => {
 
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="planta">{{ t('factory') }}:</label>
-                                <Dropdown class="my-2" id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"></Dropdown>
+                                <Dropdown class="my-2" filter id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"></Dropdown>
                                 <!-- Dropdown para selecionar a planta -->
                             </div>
 

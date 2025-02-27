@@ -216,45 +216,42 @@ onMounted(() => {
 <template>
     <!-- Card container para o conteúdo -->
     <div class="card vh">
-        
-                <!-- Título da página -->
-                <h5 class="my-6 ml-2 text-2xl">{{t('historico_de_abastecimento')}}</h5>
-
-                <!-- Condição para exibir os campos de filtro -->
+        <div class="form">
+            <div class="text-center">
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" >
                     <!-- Filtro de DM (Documento de Movimento) -->
-                    <div class="field lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">{{t('dm')}}:</label>
                         <!-- Componente Dropdown para escolher o DM -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
+                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
                     </div>
                     <!-- Filtro de Planta -->
-                    <div class="field lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Dropdown para escolher a planta -->
-                        <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
                     </div>
                     <!-- Filtro de Setor -->
-                    <div class="field lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
                         <!-- Componente Dropdown para escolher o setor -->
-                        <Dropdown class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
-                    <div class="field lg:col-6 md:col-6 sm:col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Componente Dropdown para escolher o centro de custo -->
-                        <Dropdown class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" />
                     </div>
 
                     <!-- Filtro de Operador -->
-                    <div class="field lg:col-6 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('operator')}}:</label>
                         <!-- Componente Dropdown para escolher o operador -->
-                        <Dropdown class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
                     </div>
                     <!-- Filtro de Data Inicial -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('initial_date')}}:</label>
                         <!-- Componente VueDatePicker para escolher a data inicial -->
                         <VueDatePicker
@@ -272,7 +269,7 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Filtro de Data Final -->
-                    <div class="field lg:col-4 md:col-6 sm:col-6">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('end_date')}}:</label>
                         <!-- Componente VueDatePicker para escolher a data final -->
                         <VueDatePicker
@@ -290,13 +287,15 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Botão para filtrar os dados -->
-                    <div class="field lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
                 </div>
+            </div>
+        </div>
 
                 <!-- DataTable para exibição dos resultados do histórico -->
-                <div class="mt-6">
+                <div class="mt-3">
                     <DataTable
                         v-model:filters="filters"
                         :value="historico"

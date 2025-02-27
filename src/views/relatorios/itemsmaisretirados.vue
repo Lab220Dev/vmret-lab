@@ -316,9 +316,10 @@ const handleDatepickerOpen = () => {
 const isMobile = isMobileDevice();
 
 // Função chamada ao montar o componente
-onMounted(() => {
-    loadData();
+onMounted(async () => {
+  await loadData();
 });
+
 </script>
 
 <template>
@@ -329,42 +330,42 @@ onMounted(() => {
             <!-- Início do formulário de busca de informações para o relatório -->
             <!-- Filtro para DM (Documento de Medição) -->
             <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="id_dm">{{t('dispenser_machine')}}</label>
+                <label for="id_dm">{{t('dispenser_machine')}}:</label>
                 <!-- Dropdown para selecionar o DM (documento de medição) -->
-                <Dropdown class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
+                <Dropdown filter class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
             </div>
 
             <!-- Filtro para Centro de Custo -->
             <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="perfil">{{t('cost_center')}}</label>
                 <!-- Dropdown para selecionar o centro de custo -->
-                <Dropdown class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
+                <Dropdown filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Setor -->
             <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="perfil">{{t('sector')}}:</label>
+                <label for="perfil">{{t('sector')}}</label>
                 <!-- Dropdown para selecionar o setor -->
-                <Dropdown class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
+                <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Planta -->
             <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="planta">{{t('factory')}}:</label>
                 <!-- Dropdown para selecionar a planta -->
-                <Dropdown class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
+                <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
             </div>
 
             <!-- Filtro para Funcionário -->
             <div class="field py-0 mt-2 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                 <label for="perfil">{{t('employee')}}:</label>
                 <!-- Dropdown para selecionar o funcionário -->
-                <Dropdown class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
             </div>
 
             <!-- Filtro para Data Inicial -->
             <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{t('initial_date')}}</label>
+                <label for="perfil">{{t('initial_date')}}:</label>
                 <!-- DataPicker para selecionar a data inicial -->
                 <VueDatePicker
                     class="drop"
@@ -384,7 +385,7 @@ onMounted(() => {
 
             <!-- Filtro para Data Final -->
             <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{t('end_date')}}</label>
+                <label for="perfil">{{t('end_date')}}:</label>
                 <!-- DataPicker para selecionar a data final -->
                 <VueDatePicker
                     class="drop"

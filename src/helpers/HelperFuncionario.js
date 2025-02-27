@@ -17,7 +17,7 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
         const fileExtension = selectedFile.value.name.split('.').pop();
         const nomeArquivo = `funcionario_${funcionario.nome.replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}.${fileExtension}`;
         formData.append('foto', nomeArquivo);
-        formData.append('file', selectedFile);
+        formData.append('file', selectedFile.value);
 
         // Para atualização, sinalize que a foto antiga deve ser removida
         if (isUpdate) {
@@ -41,8 +41,9 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
         formData.append(key, value);
     });
 
-    // Campos obrigatórios
-    formData.append('id_cliente', store.userIdCliente);
+    if (!isUpdate) {
+        formData.append('id_cliente', store.userIdCliente);
+      }
     formData.append('id_usuario', store.userId);
 
     return formData;

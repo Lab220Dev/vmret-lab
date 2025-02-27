@@ -185,9 +185,9 @@ export const validarCUIT = (cuit) =>{
 export const isValidDoc = (doc) => {
 const linguaSelecionada = i18n.global.locale.value;
     if (linguaSelecionada === 'es') {
-        validarCUIT(doc);
+        return validarCUIT(doc);
     } else {
-        validarCNPJ(doc);
+        return validarCNPJ(doc);
     }
 }
 /**
@@ -219,7 +219,7 @@ export const isValidVideoFile = (file) => {
      * 
      * @returns {Object} Se o arquivo exceder o tamanho permitido, retorna um erro.
      */
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 50 * 1024 * 1024) {
         return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };
     }
 
