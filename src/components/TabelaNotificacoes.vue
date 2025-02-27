@@ -1,6 +1,6 @@
 <template>
   <!-- Componente DataTable exibindo a lista de notificações -->
-  <DataTable 
+  <DataTable  
   :value="validListanoti" 
   :responsiveLayout="'scroll'" 
   class="card">
@@ -31,29 +31,29 @@
 
 <script setup>
 import { computed } from 'vue';  // Importa a função 'computed' do Vue para definir uma propriedade computada
-import { useI18n } from 'vue-i18n';
+import { useI18n } from 'vue-i18n';   // Importa a função 'useI18n' do Vue para tradução de textos
 /**
  * Define as propriedades que o componente espera receber.
  * 
  * @typedef {Object} Props
  * @property {Array} listanoti - A lista de notificações, que deve ser um array. Se não fornecida, será um array vazio por padrão.
  */
- const props = defineProps({
+ const props = defineProps({  // Define as propriedades do componente
   listanoti: {  // Propriedade 'listanoti' que deve ser um array
       type: Array,  // Espera um valor do tipo Array
       default: () => []  // Se não for fornecido, o valor padrão será um array vazio
   }
 });
-const { t } = useI18n();
+const { t } = useI18n();  // Função para traduzir textos
 /**
  * Computed property para garantir que 'listanoti' seja um array válido.
  * Verifica se a propriedade 'listanoti' é um array e, se não for, retorna um array vazio.
  * 
  * @type {ComputedRef<Array>} A computed property que retorna a lista de notificações, ou um array vazio.
  */
-const validListanoti = computed(() => {
+const validListanoti = computed(() => { 
   // Verifica se a propriedade 'listanoti' é um array
   // Se for, retorna a lista; se não for, retorna um array vazio
-  return Array.isArray(props.listanoti) ? props.listanoti : [];
+  return Array.isArray(props.listanoti) ? props.listanoti : [];   // Retorna a lista de notificações ou um array vazio
 });
 </script>

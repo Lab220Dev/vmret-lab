@@ -12,32 +12,14 @@ const store = useAuthStore()
 export const prepareProdutoData = (produto, files) => {
     // Cria um novo objeto FormData para envio dos dados e arquivos
     const formData = new FormData();
-
-    /**
-     * Cria uma cópia do objeto `produto` e remove a propriedade `imagemUrl`, que não é necessária.
-     * Essa abordagem evita modificar o objeto original.
-     * @type {Object}
-     */
     const sanitizedProduto = { ...produto };
 
     // Remove a propriedade `imagemUrl` do objeto, pois não será enviada no FormData
     delete sanitizedProduto.imagemUrl;
-
-    /**
-     * Verifica se existe um arquivo selecionado para a imagem principal e, em caso afirmativo,
-     * adiciona o arquivo ao FormData.
-     * O arquivo é nomeado dinamicamente com base no nome e código do produto.
-     */
     if (files?.selectedFile) {
         // Remove a propriedade `imagem1` do produto, que é redundante quando o arquivo está sendo enviado
         delete sanitizedProduto.imagem1;
-
-        /**
-         * Obtém a extensão do arquivo da imagem principal, com base no tipo MIME do arquivo selecionado.
-         * Utiliza a função `getFileExtension` para determinar a extensão correta.
-         * @type {string}
-         */
-        const fileExtension = getFileExtension(files.selectedFile.type);
+        const fileExtension = getFileExtension(files.selectedFile.type);// Obtém a extensão do arquivo.
 
         // Adiciona o arquivo ao FormData com um nome gerado dinamicamente
         formData.append('imagem1', `produto_${produto.nome}_${produto.codigo}_Princ${Date.now()}${fileExtension}`);
@@ -46,19 +28,10 @@ export const prepareProdutoData = (produto, files) => {
         formData.append('file_principal', files.selectedFile);
     }
 
-    /**
-     * Verifica se existe um arquivo selecionado para a imagem secundária e, em caso afirmativo,
-     * adiciona o arquivo ao FormData.
-     */
     if (files?.selectedSecFile) {
         // Remove a propriedade `imagem2` do produto, que é redundante quando o arquivo está sendo enviado
         delete sanitizedProduto.imagem2;
-
-        /**
-         * Obtém a extensão do arquivo da imagem secundária.
-         * @type {string}
-         */
-        const fileExtension = getFileExtension(files.selectedSecFile.type);
+        const fileExtension = getFileExtension(files.selectedSecFile.type);// Obtém a extensão do arquivo.
 
         // Adiciona o arquivo ao FormData com um nome gerado dinamicamente
         formData.append('imagem2', `produto_${produto.nome}_${produto.codigo}_Sec${Date.now()}${fileExtension}`);
@@ -67,18 +40,9 @@ export const prepareProdutoData = (produto, files) => {
         formData.append('file_secundario', files.selectedSecFile);
     }
 
-    /**
-     * Verifica se existe um arquivo selecionado para a imagem de detalhes e, em caso afirmativo,
-     * adiciona o arquivo ao FormData.
-     */
     if (files?.selectedInfoFile) {
         // Remove a propriedade `imagemdetalhe` do produto, que é redundante quando o arquivo está sendo enviado
         delete sanitizedProduto.imagemdetalhe;
-
-        /**
-         * Obtém a extensão do arquivo da imagem de detalhe.
-         * @type {string}
-         */
         const fileExtension = getFileExtension(files.selectedInfoFile.type);
 
         // Adiciona o arquivo ao FormData com um nome gerado dinamicamente
@@ -88,10 +52,6 @@ export const prepareProdutoData = (produto, files) => {
         formData.append('file_info', files.selectedInfoFile);
     }
 
-    /**
-     * Itera sobre as propriedades restantes do objeto `produto` (agora sem `imagemUrl`, `imagem1`, `imagem2`, etc.),
-     * e adiciona cada campo ao FormData, garantindo que valores não string sejam convertidos para string.
-     */
     Object.entries(sanitizedProduto).forEach(([key, value]) => {
         // Adiciona cada propriedade do produto ao FormData
         formData.append(key, typeof value === 'string' ? value : String(value));
@@ -123,40 +83,24 @@ export const validateProdutoData = (produto) => {
     // Cria um objeto `errors` para armazenar os erros de validação
     const errors = {};
 
-    /**
-     * Verifica se o nome do produto está vazio ou não foi informado.
-     * Se for o caso, adiciona um erro ao campo 'nome'.
-     */
-    if (!produto.nome || produto.nome.trim() === '') {
-        errors.nome = 'O nome do produto é obrigatório.';
+    if (!produto.nome || produto.nome.trim() === '') {  // Verifica se o nome do produto foi fornecido.
+        errors.nome = 'O nome do produto é obrigatório.';   // Adiciona uma mensagem de erro ao objeto `errors`.
     }
 
-    /**
-     * Verifica se o código (SKU) do produto está vazio ou não foi informado.
-     * Se for o caso, adiciona um erro ao campo 'codigo'.
-     */
-    if (!produto.codigo || produto.codigo.trim() === '') {
-        errors.codigo = 'O código (SKU) do produto é obrigatório.';
+    if (!produto.codigo || produto.codigo.trim() === '') {  // Verifica se o código (SKU) do produto foi fornecido.
+        errors.codigo = 'O código (SKU) do produto é obrigatório.';   // Adiciona uma mensagem de erro ao objeto `errors`.
     }
 
-    /**
-     * Verifica se o tipo do produto foi selecionado (se `id_tipoProduto` está presente).
-     * Se não estiver, adiciona um erro ao campo 'id_tipoProduto'.
-     */
-    if (!produto.id_tipoProduto) {
-        errors.id_tipoProduto = 'O tipo do produto deve ser selecionado.';
+    if (!produto.id_tipoProduto) {  // Verifica se o tipo do produto foi selecionado.
+        errors.id_tipoProduto = 'O tipo do produto deve ser selecionado.';  // Adiciona uma mensagem de erro ao objeto `errors`.    
     }
 
-    /**
-     * Verifica se a validade do produto é um valor negativo.
-     * Se for o caso, adiciona um erro ao campo 'validadedias'.
-     */
-    if (produto.validadedias < 0) {
-        errors.validadedias = 'A validade não pode ser negativa.';
+    if (produto.validadedias < 0) { // Verifica se o valor de validade é negativo.
+        errors.validadedias = 'A validade não pode ser negativa.';  // Adiciona uma mensagem de erro ao objeto `errors`.
     }
 
     // Retorna o objeto `errors` contendo todos os erros encontrados durante a validação
-    return errors;
+    return errors;  
 };
 
 /**
@@ -171,22 +115,8 @@ export const validateProdutoData = (produto) => {
 export const enrichProdutoData = (produto, userId, clienteId) => {
     // Retorna um novo objeto com os dados do produto e os IDs de cliente e usuário
     return {
-        /**
-         * Copia todas as propriedades do objeto 'produto' para o novo objeto.
-         * Isso mantém as propriedades existentes do produto sem alterações.
-         */
-        ...produto,
-
-        /**
-         * Adiciona o campo 'id_cliente' com o valor fornecido de 'clienteId'.
-         * Representa a associação do produto com um cliente específico.
-         */
-        id_cliente: clienteId,
-
-        /**
-         * Adiciona o campo 'id_usuario' com o valor fornecido de 'userId'.
-         * Representa o usuário que está realizando a ação com o produto.
-         */
-        id_usuario: userId
+        ...produto, // Adiciona todas as propriedades do produto ao novo objeto     
+        id_cliente: clienteId,  // Adiciona o ID do cliente ao objeto
+        id_usuario: userId  // Adiciona o ID do usuário ao objeto
     };
 };

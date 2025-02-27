@@ -29,22 +29,22 @@ export const resetCDCForm = (form) => {
 * Retorna um objeto inicial para o formulário de **Cliente**.
 * @returns {Object} - Objeto com os campos resetados.
 */
-export const resetClienteForm = (cliente) => {
-  Object.assign(cliente, {
-    id_cliente: null,
-    nome: '',
-    cpfcnpj: '',
-    ativo: true,
-    deleted: false,
-    created: null,
-    updated: null,
-    last_login: null,
-    usar_api: false,
-    atualizado: 0,
-    textoretirada: '',
-    Sincronizado: null,
-    menus: [],
-    cnpj: '',
+export const resetClienteForm = (cliente) => {// Reseta o formulário de cliente
+  Object.assign(cliente, {// Atribui valores padrão para as propriedades do cliente
+    id_cliente: null, // ID do cliente
+    nome: '', // Nome do cliente
+    cpfcnpj: '',  // CPF ou CNPJ do cliente
+    ativo: true,  // Status do cliente
+    deleted: false, // Flag indicando se o cliente foi deletado
+    created: null,  // Data de criação do cliente
+    updated: null,  // Data de atualização do cliente
+    last_login: null, // Data do último login do cliente  
+    usar_api: false,  // Flag indicando se o cliente usa API
+    atualizado: 0,  // Flag indicando se o cliente foi atualizado
+    textoretirada: '',  // Texto de retirada do cliente
+    Sincronizado: null, // Flag indicando se o cliente foi sincronizado
+    menus: [],  // Lista de menus associados ao cliente
+    cnpj: '', // CNPJ do cliente
   });
 };
 
@@ -53,7 +53,7 @@ export const resetClienteForm = (cliente) => {
 * Retorna um objeto inicial para o formulário de **Função**.
 * @returns {Object} - Objeto com os campos resetados.
 */
-export const resetFuncaoForm = () => ({
+export const resetFuncaoForm = () => ({ // Reseta o formulário de função
   codigo: '', // Código da função
   nome: '', // Nome da função
   id_centro_custo: '', // ID do centro de custo associado à função
@@ -131,20 +131,20 @@ export const resetGenericForm = (form, initialState) => {
  * @param {string} planta.urlapi - A URL da API associada à planta.
  * @param {string} planta.clientid - O ID do cliente associado à planta.
  */
-export const resetPlantaForm = (planta) => {
-    Object.assign(planta, {
-        nome: '',
-        id_planta: '',
-        userId: '',
-        senha: '',
-        urlapi: '',
-        clienteid: '',
-        codigo:'',
-        userId: '',
-        urlapi: '',
-        senha: '',
-        ordem: 0,
-        id_cliente: '',
+export const resetPlantaForm = (planta) => {  // Reseta o formulário de planta
+    Object.assign(planta, { // Atribui valores padrão para as propriedades da planta
+        nome: '', // O nome da planta será redefinido como uma string vazia.
+        id_planta: '',  // O ID da planta será redefinido como uma string vazia.
+        userId: '', // O ID do usuário será redefinido como uma string vazia.
+        senha: '',  // A senha será redefinida como uma string vazia.
+        urlapi: '', // A URL da API será redefinida como uma string vazia.
+        clienteid: '',  // O ID do cliente será redefinido como uma string vazia.
+        codigo:'',  // O código da planta será redefinido como uma string vazia.
+        userId: '', // O ID do usuário será redefinido como uma string vazia.
+        urlapi: '', // A URL da API será redefinida como uma string vazia.
+        senha: '',  // A senha será redefinida como uma string vazia.
+        ordem: 0, // A ordem será redefinida como 0.
+        id_cliente: '', // O ID do cliente será redefinido como uma string vazia.
     });
 };
 
@@ -175,13 +175,13 @@ export const resetProdutoForm = (produto, imageRefs) => {
       unidade_medida: '',  // A unidade de medida será redefinida como uma string vazia.
       validadedias: 0 ,// O número de dias de validade será redefinido como 0.
       quantidademinima: '',//quantidade minima do produto
-      especificacoes: ''
+      especificacoes: ''  // As especificações do produto serão redefinidas como uma string vazia.
   });
 
-    if (imageRefs) {
-        imageRefs.forEach((imageRef) => {
-            if (imageRef) imageRef.value = null;
-        });
+    if (imageRefs) {  // Se o array de referências de imagem for fornecido
+        imageRefs.forEach((imageRef) => { // Itera sobre cada referência de imagem
+            if (imageRef) imageRef.value = null;  // Se a referência de imagem existir, redefine seu valor para nulo
+        });// Fim do loop
     }
 };
 
@@ -352,23 +352,23 @@ export const resetProdutoSelecionado = (produtoSelecionado) => {
  * @param {boolean} usuario.Status - The status of the usuario.
  * @param {string} usuario.perfil - The profile of the usuario.
  */
-export const resetUsuario = (usuario) => {
-  Object.assign(usuario, {
-    TotalRecords: 0,
-    id_usuario: null,
-    nome: '',
-    email: '',
-    telefone: null,
-    celular: null,
-    senha: '',
-    ativo: true,
-    deleted: false,
-    last_login: null,
-    id_planta: '',
-    id_cliente: null,
-    role: '',
-    nome_cliente: '',
-    Status: false,
-    perfil: '',
+export const resetUsuario = (usuario) => {    // Reseta o formulário de usuário
+  Object.assign(usuario, {  // Atribui valores padrão para as propriedades do usuário
+    TotalRecords: 0,  // O número total de registros será redefinido como 0.
+    id_usuario: null, // O ID do usuário será redefinido
+    nome: '', // O nome do usuário será redefinido como uma string vazia.
+    email: '',  // O e-mail do usuário será redefinido como uma string vazia.
+    telefone: null, // O telefone do usuário será redefinido como nulo.
+    celular: null,  // O celular do usuário será redefinido como nulo.
+    senha: '',  // A senha do usuário será redefinida como uma string vazia.
+    ativo: true,  // O status do usuário será redefinido como verdadeiro.
+    deleted: false, // O status de exclusão do usuário será redefinido como falso.
+    last_login: null,   // A data do último login do usuário será redefinida como
+    id_planta: '',  // O ID da planta associada ao usuário será redefinido como uma string vazia.
+    id_cliente: null, // O ID do cliente associado ao usuário será redefinido como
+    role: '', // A função do usuário será redefinida como uma string vazia.
+    nome_cliente: '', // O nome do cliente associado ao usuário será redefinido como uma string vazia.
+    Status: false,  // O status do usuário será redefinido como falso.
+    perfil: '', // O perfil do usuário será redefinido como uma string vazia.
   });
 };

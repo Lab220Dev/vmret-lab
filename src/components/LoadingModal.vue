@@ -1,16 +1,17 @@
 <template>
   <!-- Exibe o modal de carregamento se a propriedade isLoading for verdadeira -->
-  <div v-if="isLoading" class="loading-modal">
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p>Carregando... Aguarde</p>
+  <div v-if="isLoading" class="loading-modal">  <!-- Exibe o modal de carregamento se isLoading for verdadeiro -->
+    <div class="loading-container"> <!-- Container do modal de carregamento -->
+      <div class="spinner"></div> <!-- Spinner de carregamento -->
+      <p>{{t('load_spinner')}}</p>  <!-- Exibe a mensagem de carregamento -->
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps } from 'vue'; // defineProps para declarar propriedades
-
+import { useI18n } from 'vue-i18n';//useI18n é usado para internacionalização
+const { t } = useI18n();
 // Definindo a propriedade 'isLoading' que controla a exibição do modal
 /**
  * Propriedades do componente
@@ -57,9 +58,9 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
 .spinner {
   border: 8px solid #f3f3f3; /* Cor de fundo do círculo */
   border-top: 8px solid #3b82f6; /* Cor do segmento superior */
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  border-radius: 50%; /* Borda arredondada */
+  width: 40px;  /* Largura do spinner */
+  height: 40px; /* Altura do spinner */
   animation: spin 1s linear infinite; /* Animação de rotação */
   margin-bottom: 10px; /* Espaçamento inferior */
 }

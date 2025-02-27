@@ -401,7 +401,7 @@ const debouncedFilterChange = debounce(() => {
                                     </TabView>
 
                                     <!-- dialogo editar item-->
-                                    <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="t('item_edit')" :modal="true" class="p-2" :draggable="false">
+                                    <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="t('item_edit')" :modal="true" class="p-2" :draggable="false"><hr/>
                                         <div>
                                             <div class="p-fluid formgrid grid">
                                                 <div class="field lg:col-12 md:col-6 sm:col-4">

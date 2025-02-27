@@ -22,13 +22,13 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
 
 <!-- Template do componente -->
 <template>
-    <div class="header" style="display: flex">
-        <div class="title mb-0" style="display: flex; align-items: center">
-            <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5>
+    <div class="header" style="display: flex">  <!-- Cabeçalho da tabela -->
+        <div class="title mb-0" style="display: flex; align-items: center"> <!-- Título do cabeçalho -->
+            <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5> 
         </div>
 
         <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
-    </div>
+    </div>  <!-- Ícone com tooltip explicativo -->
 
     <!-- DataTable exibindo os itens mais retirados -->
     <DataTable 

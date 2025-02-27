@@ -34,7 +34,7 @@ import { ref } from 'vue'; // Importa a função 'ref' do Vue para criar variáv
  */
 const saveProduto = async () => {
   // Emite um evento 'save-produto' para o componente pai
-  emit('save-produto');
+  emit('save-produto');   // Emite evento para o componente pai salvar o produto
 };
 
 /**

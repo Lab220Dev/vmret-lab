@@ -1,15 +1,16 @@
 import { toISODate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
-import relatorioService from '@/Services/relatorioService.js';
+import relatorioService from '@/Services/relatorioService.js';// Importa o serviço de relatórios para realizar operações relacionadas a relatórios.
 import jsPDF from 'jspdf'; // Importa a biblioteca jsPDF para gerar PDFs
-import autoTable from 'jspdf-autotable';
-import html2canvas from "html2canvas";
-import { parse } from 'date-fns';
-import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
+import autoTable from 'jspdf-autotable';// Importa a biblioteca autoTable do jsPDF para gerar tabelas em PDFs.
+import html2canvas from 'html2canvas';// Importa a biblioteca html2canvas para converter HTML em imagens.
 import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
-import clientesService from '../Services/ClientesService';
-import funcionarioService from '../Services/funcionarioService';
-const store = useAuthStore();
+import clientesService from '../Services/ClientesService';// Importa o serviço de clientes para realizar operações relacionadas a clientes.
+import funcionarioService from '../Services/funcionarioService';// Importa o serviço de funcionários para realizar operações relacionadas a funcionários.
+
+const { t } = i18n.global; // Obtém a função de tradução do vue-i18n
+const store = useAuthStore();// Obtém o store de autenticação para acessar informações do usuário autenticado.
+
 
 /**
  * Prepara os dados do relatório com base no tipo de relatório fornecido e nos valores do relatório.
@@ -164,13 +165,13 @@ export function organizarFuncionarios(funcionarios) {
  */
 export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
     try {
+        // Verifica se o funcionário selecionado está definido e não está vazio.
         if (!funcionarioSelecionado?.value || Object.keys(funcionarioSelecionado.value).length === 0) {
-            throw new Error('Funcionário não selecionado');
+            throw new Error('Funcionário não selecionado');  // Lança um erro se o funcionário não estiver selecionado.
         }
-        const textoFicha = await relatorioService.TextoFicha();
-        const retiradas = await relatorioService.fichasRetiradas(relatorio);
-
-        const doc = new jsPDF('l');
+        const textoFicha = await relatorioService.TextoFicha();// Obtém o texto da ficha do serviço de relatórios.
+        const retiradas = await relatorioService.fichasRetiradas(relatorio);// Obtém as retiradas do serviço de relatórios com base no relatório fornecido.
+        const doc = new jsPDF('l'); // Cria um novo documento PDF em modo paisagem.
         doc.setFillColor(255, 255, 255); // Define a cor de fundo do documento como branco
         doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F'); // Desenha o retângulo de fundo
         doc.setTextColor(0, 0, 0); // Define a cor do texto como preto
@@ -222,7 +223,8 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
         // **Verifica se há dados para exibir na tabela**
-        if (!retiradas.data?.data || retiradas.data.data.length === 0) {
+        
+        if (!Array.isArray(retiradas.data) || retiradas.data.length === 0) {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
@@ -326,37 +328,120 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         // Buscar dados da ficha e retiradas
         const retiradas = await relatorioService.fichasRetiradas(relatorio);
 
-        // Criar a tabela de dados no PDF
-        pdf.autoTable({
-            startY: imgHeight + 10,
-            tableWidth: imgWidth, 
-            head: [[
-                "NOME DO ITEM", "DT RETIRADA", "QUANT", "UNID",
-                "DESCRIÇÃO DO EQUIPAMENTO", "N° DO C.A", "AUTENTICAÇÃO"
-            ]],
-            body: retiradas.data.map(item => [
-                item.ProdutoNome || '',
-                item.Dia || '',
-                item.Quantidade || '',
-                item.unidade_medida || '',
-                item.ProdutoDescricao || '',
-                item.ProdutoSKU || '',
-                item.Forma_Autenticacao || ''
-            ]),
-            theme: "grid",
-            styles: { fontSize: 10 },
-            columnStyles: {
-                0: { cellWidth: 30 },
-                1: { cellWidth: 25 },
-                2: { cellWidth: 15 },
-                3: { cellWidth: 15 },
-                4: { cellWidth: 50 },
-                5: { cellWidth: 25 },
-                6: { cellWidth: 30 }
-            }
-        });
+        pdf.setDrawColor(0, 0, 0); // Define a cor da borda
+        pdf.setFillColor(143, 143, 143); // Define a cor de fundo
+        pdf.setLineWidth(0.1); // Largura da linha da borda
+        pdf.rect(10, 43.3, imgWidth, 1, 'FD'); // Desenha o retângulo
 
-        // Salvar o PDF corretamente
+        // Adicionar borda ao redor da página
+        pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
+
+        let posY = imgHeight + 11; // Posição Y inicial para a tabela
+        const itemsPerPage = 15; // Itens por página
+        let itemCount = 0; // Contador de itens
+
+        for (let i = 0; i < retiradas.data.length; i += itemsPerPage) {
+            if (i > 0) {
+                pdf.addPage(); // Adiciona uma nova página
+0
+
+                // Adicionar borda ao redor da página
+                pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
+                posY = 11; // Posição Y inicial para a tabela
+            }
+            const tabelaDiv = document.createElement('div');
+            tabelaDiv.innerHTML = `
+    <table border="1" style="border-collapse: collapse; width: 100%; text-align: left; border-color: rgb(0, 0, 0); color: rgb(0, 0, 0);">
+         <thead>
+             <tr style="background-color:rgb(255, 255, 255); height: 30px; text-align: center">
+                 <th style="width: 35px; background-color:rgb(143, 143, 143);" > </th>
+                 <th>Producto</th>
+                 <th>Tipo // Modelo</th>
+                 <th>Marca</th>
+                 <th>Cantidad</th>
+                 <th>Fecha</th>
+                 <th>Firma</th>
+             </tr>
+         </thead>
+         <tbody>
+                    ${retiradas.data
+                        .slice(i, i + itemsPerPage)
+                        .map(
+                            (item, index) => `
+                                <tr style="height: 35px;">
+                                    <td style="text-align: center">${i + index + 1}</td>
+                     <td style="padding: 5px">${item.ProdutoNome || ''}</td>
+                     <td style="padding: 5px">${item.modelo || ''}</td>
+                     <td style="padding: 5px">${item.marca || ''}</td>
+                     <td style="text-align: center">${item.Quantidade || ''}</td>
+                     <td style="text-align: center">${formatStringDate(item.Dia) || ''}</td>
+                     <td style="padding: 5px; text-align: center">${item.Forma_Autenticacao === 'Senha' ? 'Contraseña' : item.Forma_Autenticacao || ''}</td>                 
+                </tr>
+             `
+                        )
+                        .join('')}
+         </tbody>
+     </table>
+ `;
+
+            document.body.appendChild(tabelaDiv);
+
+            // Capturar a tabela como imagem
+            const tabelaCanvas = await html2canvas(tabelaDiv, { scale: 2 });
+            const tabelaImgData = tabelaCanvas.toDataURL('image/png');
+            document.body.removeChild(tabelaDiv);
+
+            // Definir posição para inserir a tabela abaixo do cabeçalho no PDF
+            //let posY = imgHeight + 11;
+            let tabelaWidth = pageWidth - 2 * margin;
+            let tabelaHeight = (tabelaCanvas.height * tabelaWidth) / tabelaCanvas.width;
+
+            // Adicionar tabela ao PDF
+            pdf.addImage(tabelaImgData, 'PNG', margin, posY, tabelaWidth, tabelaHeight);
+            itemCount += itemsPerPage;
+
+            const rodapediv = document.createElement('div');
+            rodapediv.innerHTML = `
+     <div>
+        <div style="width: 100%; height: 150px; border: 1px solid rgb(0, 0, 0);color: rgb(0, 0, 0);">
+               <p style="margin-left:5px; font-size: 12px; font-weight: bold; font-style: italic;">Información adicional:</p>
+         </div>
+     </div>
+ `;
+            document.body.appendChild(rodapediv);
+
+            const rodapeCanvas = await html2canvas(rodapediv, { scale: 2 });
+            const rodapeImgData = rodapeCanvas.toDataURL('image/png');
+            document.body.removeChild(rodapediv);
+
+            let rodapeWidth = pageWidth - 2 * margin; // Largura da imagem do rodapé
+            let rodapeHeight = (rodapeCanvas.height * rodapeWidth) / rodapeCanvas.width; // Mantém proporção
+            let rodapeY = 168; // Posição Y do rodapé no PDF
+
+            pdf.addImage(rodapeImgData, 'PNG', margin, rodapeY, rodapeWidth, rodapeHeight); // Adiciona a imagem ao PDF
+
+            // Adicionar texto "Generado por Lab 220 by www.lab220.com.br" centralizado
+            const footerText = 'Generado por Lab 220 by www.lab220.com.br';
+            pdf.setFontSize(5);
+            const textWidth = pdf.getTextWidth(footerText);
+            const textX = (pageWidth - textWidth) / 2; // Centraliza o texto horizontalmente
+            const textY = 293; // Posição Y do texto no final da página
+            pdf.text(footerText, textX, textY); // Adiciona o texto ao PDF
+        }
+
+        // Adicionar contagem de páginas
+        const pageCount = pdf.internal.getNumberOfPages();
+        for (let j = 1; j <= pageCount; j++) {
+            pdf.setPage(j);
+            const pageSize = pdf.internal.pageSize;
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+            const text = `${j} de ${pageCount}`;
+            const textWidth = pdf.getTextWidth(text);
+            pdf.setFontSize(6);
+            pdf.text(text, pageWidth - textWidth - margin, pageHeight - 4);
+        }
+
+        // Salvar PDF
         pdf.save(`Entrega_EPI_${funcionarioSelecionado.value.label || 'Empleado'}.pdf`);
 
     } catch (error) {

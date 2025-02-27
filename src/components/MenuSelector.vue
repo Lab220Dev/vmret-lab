@@ -1,31 +1,31 @@
 <template>
-    <div class="card">
-        <div class="container flex justify-content-between align-items-center" style="width: 100%">
-            <h4 class="ml-3" style="white-space: nowrap">{{ t('select_menu') }}:</h4>
-            <div class="button-container">
-                <Button class="mr-2 mt-5 mb-4" @click="toggleSelectAll(true)">{{ t('select_all') }}</Button>
-                <Button class="mt-5 mb-4" @click="toggleSelectAll(false)">{{ t('deselect') }}</Button>
+    <div class="card">  <!-- Card principal -->
+        <div class="container flex justify-content-between align-items-center" style="width: 100%"> <!-- Container com layout flexível -->
+            <h4 class="ml-3" style="white-space: nowrap">{{ t('select_menu') }}:</h4>   <!-- Título do card -->
+            <div class="button-container">  <!-- Container para os botões -->
+                <Button class="mr-2 mt-5 mb-4" @click="toggleSelectAll(true)">{{ t('select_all') }}</Button>    <!-- Botão para selecionar todos -->
+                <Button class="mt-5 mb-4" @click="toggleSelectAll(false)">{{ t('deselect') }}</Button>  <!-- Botão para desmarcar todos -->
             </div>
         </div>
         <!-- Menus Principais -->
         <!-- Menu em 3 colunas -->
         <div class="menu-grid mt-6">
-            <div v-for="(menu, index) in filteredMenus" :key="index" class="menu-column">
-                <div class="menu-checkbox">
-                    <Checkbox class="mb-3" v-model="selectedMenus" :value="menu.name" />
-                    <label class="mx-1 mb-3 inline-flex">{{ menu.name }}</label>
+            <div v-for="(menu, index) in filteredMenus" :key="index" class="menu-column">   <!-- Itera sobre os menus filtrados -->
+                <div class="menu-checkbox"> <!-- Container do menu -->
+                    <Checkbox class="mb-3" v-model="selectedMenus" :value="menu.name" />    <!-- Checkbox para selecionar o menu -->
+                    <label class="mx-1 mb-3 inline-flex">{{ menu.name }}</label>    <!-- Exibe o nome do menu -->
 
                     <!-- Exibir Submenus -->
-                    <div v-if="selectedMenus.includes(menu.name)" class="submenu-checkbox">
-                        <div v-for="submenu in menu.submenus" :key="submenu.name">
-                            <Checkbox class="mb-3" v-model="selectedSubmenus" :value="submenu.name" />
-                            <label class="mx-1 mb-3 inline-flex">{{ submenu.name }}</label>
+                    <div v-if="selectedMenus.includes(menu.name)" class="submenu-checkbox"> <!-- Exibe os submenus se o menu estiver selecionado -->
+                        <div v-for="submenu in menu.submenus" :key="submenu.name">  <!-- Itera sobre os submenus do menu -->
+                            <Checkbox class="mb-3" v-model="selectedSubmenus" :value="submenu.name" />  <!-- Checkbox para selecionar o submenu -->
+                            <label class="mx-1 mb-3 inline-flex">{{ submenu.name }}</label> <!-- Exibe o nome do submenu -->
 
                             <!-- Exibir Subsubmenus -->
-                            <div v-if="selectedSubmenus.includes(submenu.name)" class="subsubmenu-checkbox">
-                                <div v-for="subsubmenu in submenu.subsubmenus" :key="subsubmenu.name">
-                                    <Checkbox class="mb-3" v-model="selectedSubsubmenus" :value="subsubmenu.name" />
-                                    <label class="mx-1 mb-3 inline-flex">{{ subsubmenu.name }}</label>
+                            <div v-if="selectedSubmenus.includes(submenu.name)" class="subsubmenu-checkbox">    <!-- Exibe os subsubmenus se o submenu estiver selecionado -->
+                                <div v-for="subsubmenu in submenu.subsubmenus" :key="subsubmenu.name">  <!-- Itera sobre os subsubmenus do submenu -->
+                                    <Checkbox class="mb-3" v-model="selectedSubsubmenus" :value="subsubmenu.name" />    <!-- Checkbox para selecionar o subsubmenu -->
+                                    <label class="mx-1 mb-3 inline-flex">{{ subsubmenu.name }}</label>  <!-- Exibe o nome do subsubmenu -->
                                 </div>
                             </div>
                         </div>
@@ -33,11 +33,11 @@
                 </div>
             </div>
         </div>
-        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" :label="t('save')" @click="submitMenu" /></div>
+        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" :label="t('save')" @click="submitMenu" /></div> <!-- Botão para salvar as seleções -->
     </div>
 </template>
 
-<script setup>
+<script setup>  // Importa as funções 'defineProps' e 'useI18n' do Vue para criação de propriedades e internacionalização
 import { ref, computed, watch, onMounted } from 'vue'; //reactive e ref são usados para reatividade, onMounted é um hook(função especial) para executar
 import axios from '@/axios.js'; //Instância configurada do Axios para fazer requisições HTTP
 import { useToast } from 'primevue/usetoast'; //Função para mostrar notificações
@@ -266,27 +266,27 @@ watch(
 
 <style scoped>
 /* Menu em 3 colunas */
-.menu-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: left;
+.menu-grid {    /* Define o estilo do grid de menus */
+    display: flex;  /* Exibe os itens em linha */
+    flex-wrap: wrap;    /* Quebra a linha se não houver espaço suficiente */
+    justify-content: left;      /* Alinha os itens à esquerda */
     gap: 20px; /* Espaçamento entre os itens */
-    margin-left: 20px;
+    margin-left: 20px;  /* Margem à esquerda */
 }
 
 .menu-column {
     flex-basis: 40%; /* Cada coluna ocupa 30% da largura */
-    max-width: 50%;
+    max-width: 50%; /* Largura máxima de 50% */
 }
 
 .submenu-checkbox,
-.subsubmenu-checkbox {
-    margin-bottom: 10px;
-    margin-left: 20px;
+.subsubmenu-checkbox {  /* Define o estilo dos submenus e subsubmenus */
+    margin-bottom: 10px;    /* Espaçamento inferior */
+    margin-left: 20px;  /* Margem à esquerda */
 }
 
-.botao {
-    background-color: #0ea5e9;
-    border-color: #2dabe6;
+.botao {    /* Define o estilo do botão */
+    background-color: #0ea5e9;  /* Cor de fundo */
+    border-color: #2dabe6;  /* Cor da borda */
 }
 </style>

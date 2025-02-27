@@ -1,13 +1,13 @@
 <template>
-    <div class="validation-container">
-        <h3 class="text-center">Mapeamento de Campos - Funcionários</h3>
-        <div class="columns-mapping">
-            <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
-                <label class="expected-column">{{ expected }}</label>
-                <Dropdown v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" />
+    <div class="validation-container">  <!-- Container de validação -->
+        <h3 class="text-center">Mapeamento de Campos - Funcionários</h3>    <!-- Título do mapeamento -->
+        <div class="columns-mapping">   <!-- Container de mapeamento de colunas -->
+            <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item"> <!-- Itera sobre as colunas esperadas -->
+                <label class="expected-column">{{ expected }}</label>   <!-- Exibe o nome da coluna esperada -->
+                <Dropdown v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" />  <!-- Dropdown para selecionar a coluna mapeada -->
             </div>
         </div>
-        <p v-if="!isMappingComplete" class="text-red-500">Por favor, complete o mapeamento de todos os campos.</p>
+        <p v-if="!isMappingComplete" class="text-red-500">Por favor, complete o mapeamento de todos os campos.</p>  <!-- Mensagem de erro caso o mapeamento não esteja completo -->
     </div>
 </template>
 
@@ -21,7 +21,7 @@ import { isValidEmail, isValidCPF } from '@/helpers/HelperValidacao.js'; // Impo
  * @type {Object} props
  * @property {Array} fileData - Dados do arquivo enviado pelo componente pai, onde cada item representa uma linha de dados.
  */
-const props = defineProps(['fileData']);
+const props = defineProps(['fileData']);    // Define as propriedades recebidas do componente pai
 
 /**
  * Emite eventos para o componente pai
@@ -30,13 +30,13 @@ const props = defineProps(['fileData']);
  * @event dados-invalidos - Envia os dados inválidos para o componente pai
  * @event mapeamento-completo - Indica se o mapeamento foi completado
  */
-const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-completo']);
+const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-completo']);  // Define os eventos emitidos pelo componente
 
 /**
  * @type {Ref<Array<string>>} expectedColumns
  * Lista das colunas esperadas para o mapeamento dos dados dos funcionários.
  */
-const expectedColumns = ref(['Nome', 'CPF', 'Matrícula', 'Email']);
+const expectedColumns = ref(['Nome', 'CPF', 'Matrícula', 'Email']); // Define as colunas esperadas
 
 /**
  * @type {Ref<Array<{ label: string, value: string }>>} fileColumns
@@ -54,13 +54,13 @@ const mappedColumns = ref({});
  * @type {ComputedRef<boolean>} isMappingComplete
  * Computed que verifica se todas as colunas esperadas estão mapeadas. Retorna 'true' se o mapeamento estiver completo.
  */
-const isMappingComplete = computed(() => expectedColumns.value.every((field) => mappedColumns.value[field]));
+const isMappingComplete = computed(() => expectedColumns.value.every((field) => mappedColumns.value[field]));   // Verifica se o mapeamento está completo
 
 // Observa mudanças no estado do mapeamento
-watch(isMappingComplete, (isComplete) => {
-    if (isComplete) {
+watch(isMappingComplete, (isComplete) => {  // Observa mudanças no estado do mapeamento
+    if (isComplete) {   // Se o mapeamento estiver completo
         validarDados(); // Inicia a validação dos dados automaticamente quando o mapeamento estiver completo
-    } else {
+    } else {    // Se o mapeamento não estiver completo
         emit('mapeamento-completo', false); // Emite 'false' caso o mapeamento seja incompleto
     }
 });
@@ -68,41 +68,41 @@ watch(isMappingComplete, (isComplete) => {
 /**
  * Função que valida os dados do arquivo carregado. Divide os dados em válidos e inválidos.
  */
-const validarDados = () => {
+const validarDados = () => {    // Função para validar os dados
     const validos = []; // Lista de dados válidos
     const invalidos = []; // Lista de dados inválidos
     // Filtra as linhas que não são nulas ou vazias
-    const linhasUteis = props.fileData.filter(row =>
-        Object.values(row).some(value => value !== null && value !== undefined && String(value).trim() !== '')
+    const linhasUteis = props.fileData.filter(row =>    // Filtra as linhas úteis
+        Object.values(row).some(value => value !== null && value !== undefined && String(value).trim() !== '')  // Verifica se há valores não nulos ou vazios
     );
 
     // Itera sobre as linhas úteis para validar cada registro
-    linhasUteis.forEach((row, rowIndex) => {
+    linhasUteis.forEach((row, rowIndex) => {    // Itera sobre as linhas úteis
         const mappedRow = {}; // Armazena os dados mapeados da linha
         const errors = {}; // Armazena os erros encontrados durante a validação
 
         // Mapeia os campos esperados com base no mapeamento
-        expectedColumns.value.forEach((expectedField) => {
+        expectedColumns.value.forEach((expectedField) => {  // Itera sobre os campos esperados
             const mappedField = mappedColumns.value[expectedField];  // Obtém o campo mapeado
             mappedRow[expectedField] = mappedField ? row[mappedField] : null;  // Adiciona o valor ao mappedRow
         });
 
         // Valida os campos
-        if (!mappedRow.Nome || mappedRow.Nome.trim() === '') {
+        if (!mappedRow.Nome || mappedRow.Nome.trim() === '') {  // Valida o campo 'Nome'
             errors.Nome = 'Nome é obrigatório'; // Mensagem de erro caso o nome esteja vazio
         }
-        if (!mappedRow.CPF || !isValidCPF(mappedRow.CPF)) {
+        if (!mappedRow.CPF || !isValidCPF(mappedRow.CPF)) {     // Valida o campo 'CPF'
             errors.CPF = 'CPF inválido'; // Mensagem de erro caso o CPF seja inválido
         }
-        if (!mappedRow.Matrícula || String(mappedRow.Matrícula).trim() === '') {
+        if (!mappedRow.Matrícula || String(mappedRow.Matrícula).trim() === '') {    // Valida o campo 'Matrícula'
             errors.Matrícula = 'Matrícula é obrigatória'; // Mensagem de erro caso a matrícula esteja vazia
         }
-        if (!mappedRow.Email || !isValidEmail(mappedRow.Email)) {
+        if (!mappedRow.Email || !isValidEmail(mappedRow.Email)) {   // Valida o campo 'Email'
             errors.Email = 'Email inválido'; // Mensagem de erro caso o email seja inválido
         }
 
         // Classifica os registros em válidos ou inválidos
-        if (Object.keys(errors).length > 0) {
+        if (Object.keys(errors).length > 0) {   // Se houver erros
             invalidos.push({ rowIndex, ...mappedRow, errors }); // Adiciona os dados inválidos à lista de 'invalidos'
         } else {
             validos.push(mappedRow); // Adiciona os dados válidos à lista de 'validos'

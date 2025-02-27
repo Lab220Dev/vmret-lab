@@ -29,34 +29,34 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
 </script>
 
 <template>
-    <div class="header" style="display: flex">
-        <div class="title" style="display: flex; align-items: center">
-            <h5 style="margin-right: 5px">{{ $t('low_inventory_items') }}</h5>
+    <div class="header" style="display: flex">  <!-- Cabeçalho da tabela -->
+        <div class="title" style="display: flex; align-items: center">  <!-- Título do cabeçalho -->
+            <h5 style="margin-right: 5px">{{ $t('low_inventory_items') }}</h5>  <!-- Título do cabeçalho -->
         </div>
     </div>
-    <DataTable :value="props.low" removableSort :rows="5" size="normal" columnResizeMode="fit" responsiveLayout="scroll" class="mt-3">
-        <Column field="sku" style="width: 10%" :header="t('SKU')" sortable>
-            <template #body="{ data }">
-                <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span>
+    <DataTable :value="props.low" removableSort :rows="5" size="normal" columnResizeMode="fit" responsiveLayout="scroll" class="mt-3">  <!-- Tabela de dados com os produtos em baixo estoque -->
+        <Column field="sku" style="width: 10%" :header="t('SKU')" sortable> <!-- Coluna de SKU -->
+            <template #body="{ data }"> <!-- Template para exibir o SKU com tooltip -->
+                <span class="tooltip-target" v-tooltip="data.sku">{{ data.sku }}</span> <!-- Exibe o SKU com tooltip -->
             </template>
         </Column>
-        <Column field="quantidade" style="width: 10%; text-align: center" :header="t('quantity')" sortable></Column>
+        <Column field="quantidade" style="width: 10%; text-align: center" :header="t('quantity')" sortable></Column>    <!-- Coluna de Quantidade -->
 
-        <Column field="nome" :header="t('item')" sortable>
-            <template #body="{ data }">
-                <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>
-            </template>
+        <Column field="nome" :header="t('item')" sortable>  <!-- Coluna de Produto -->
+            <template #body="{ data }"> <!-- Template para exibir o nome do produto com tooltip -->
+                <span class="tooltip-target" v-tooltip="data.nome">{{ data.nome }}</span>   <!-- Exibe o nome do produto com tooltip -->
+            </template> 
         </Column>
 
-        <template #empty>
-            <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{ $t('estoque_sem_itens') }}</div>
+        <template #empty>   <!-- Template para exibir uma mensagem caso não haja dados -->
+            <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{ $t('estoque_sem_itens') }}</div>   <!-- Exibe a mensagem de vazio definida em 'emptyMessage' -->
         </template>
     </DataTable>
 </template>
 
 <style>
 /* Estilo para os itens com tooltip (informações extras ao passar o mouse) */
-.tooltip-target {
+.tooltip-target {   /* Define o estilo do elemento com tooltip */
     cursor: pointer; /* Aponta o cursor para indicar que é interativo */
     white-space: nowrap; /* Impede a quebra de linha dentro do texto */
     overflow: hidden; /* Oculta qualquer texto que ultrapasse o limite da área */
@@ -66,7 +66,7 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
 }
 
 /* Estilo para o conteúdo do tooltip */
-.v-tooltip {
+.v-tooltip {    /* Define o estilo do tooltip */
     max-width: 400px; /* Limita a largura do conteúdo do tooltip */
     white-space: normal; /* Permite quebra de linha no tooltip */
 }

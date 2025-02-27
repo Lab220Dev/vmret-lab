@@ -54,48 +54,48 @@ export const formatErrors = (rowData) => {
  * @param {string} importType - O tipo de importação ('funcionarios', 'produtos', 'centro_custo').
  * @returns {Object} - Um objeto contendo os rótulos dos campos para o tipo de importação específico.
  */
-export const getFieldLabels = (importType) => {
-    switch (importType) {
+export const getFieldLabels = (importType) => { // Função que retorna os rótulos dos campos com base no tipo de importação.
+    switch (importType) {   // Verifica o tipo de importação.
         // Rótulos para o tipo de importação 'funcionarios'
-        case 'funcionarios':
-            return {
-                Nome: 'Nome Completo',
-                CPF: 'CPF',
-                Matrícula: 'Matrícula',
-                Email: 'Email',
-                Senha: 'Senha',
-                data_admissao: 'Data de Admissão',
-                RG: 'RG',
-                CTPS: 'CTPS',
-                Centro_Custo: 'Centro de Custo',
-                Planta: 'Planta',
-                Setor: 'Setor',
-                Função: 'Função',
-                Status: 'Status',
-                hora_inicial: 'Hora de Início',
-                hora_final: 'Hora Final'
+        case 'funcionarios':    // Caso o tipo de importação seja 'funcionarios'.
+            return {    // Retorna um objeto contendo os rótulos dos campos.
+                Nome: 'Nome Completo',  // Rótulo para o campo 'Nome'.
+                CPF: 'CPF', // Rótulo para o campo 'CPF'.
+                Matrícula: 'Matrícula',   // Rótulo para o campo 'Matrícula'.
+                Email: 'Email',   // Rótulo para o campo 'Email'.
+                Senha: 'Senha',  // Rótulo para o campo 'Senha'.
+                data_admissao: 'Data de Admissão',  // Rótulo para o campo 'Data de Admissão'.
+                RG: 'RG',   // Rótulo para o campo 'RG'.
+                CTPS: 'CTPS',   // Rótulo para o campo 'CTPS'.
+                Centro_Custo: 'Centro de Custo',    // Rótulo para o campo 'Centro de Custo'.
+                Planta: 'Planta',   // Rótulo para o campo 'Planta'.
+                Setor: 'Setor',   // Rótulo para o campo 'Setor'.
+                Função: 'Função',   // Rótulo para o campo 'Função'.
+                Status: 'Status',   // Rótulo para o campo 'Status'.
+                hora_inicial: 'Hora de Início',  // Rótulo para o campo 'Hora de Início'.
+                hora_final: 'Hora Final'    // Rótulo para o campo 'Hora Final'.
             };
 
         // Rótulos para o tipo de importação 'produtos'
-        case 'produtos':
-            return {
-                Nome: 'Nome do Produto',
-                Código: 'Código do Produto',
-                Preço: 'Preço',
-                Estoque: 'Quantidade em Estoque'
+        case 'produtos':    // Caso o tipo de importação seja 'produtos'.
+            return {    // Retorna um objeto contendo os rótulos dos campos.
+                Nome: 'Nome do Produto',    // Rótulo para o campo 'Nome'.
+                Código: 'Código do Produto',    // Rótulo para o campo 'Código'.
+                Preço: 'Preço',   // Rótulo para o campo 'Preço'.
+                Estoque: 'Quantidade em Estoque'    // Rótulo para o campo 'Quantidade em Estoque'.
             };
 
         // Rótulos para o tipo de importação 'centro_custo'
-        case 'centro_custo':
-            return {
-                Código: 'Código',
-                Descrição: 'Descrição',
-                Categoria: 'Categoria'
-            };
+        case 'centro_custo':    // Caso o tipo de importação seja 'centro_custo'.
+            return {    // Retorna um objeto contendo os rótulos dos campos.
+                Código: 'Código',   // Rótulo para o campo 'Código'.
+                Descrição: 'Descrição',   // Rótulo para o campo 'Descrição'.
+                Categoria: 'Categoria'  // Rótulo para o campo 'Categoria'.
+            };  
 
         // Caso o tipo de importação não seja reconhecido, retorna um objeto vazio
         default:
-            return {};
+            return {};  // Retorna um objeto vazio.
     }
 };
 
@@ -106,9 +106,9 @@ export const getFieldLabels = (importType) => {
  * @param {Array<string>} fields - As colunas do CSV (nomes dos campos) que serão exportadas.
  * @param {Array<Object>} invalidData - Dados inválidos a serem exportados (contêm os registros com erros).
  */
-export function exportInvalidData(fields, invalidData) {
+export function exportInvalidData(fields, invalidData) {    // Função que exporta os erros encontrados durante a validação como um arquivo CSV.
     // Verifica se existem dados inválidos para exportar
-    if (!invalidData.length) {
+    if (!invalidData.length) {  // Se não houver dados inválidos
         console.warn('Não há registros inválidos para exportar.');  // Exibe um aviso no console se não houver dados inválidos
         return;
     }
