@@ -8,6 +8,7 @@ import { useDataStore } from '@/store/dataStore.js';
 import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
 import setorService from '@/Services/SetorService.js';
 import { useI18n } from 'vue-i18n';
+import {resetSetorForm ,resetProdutoSelecionadoSetor } from '@/helpers/formHelper.js';
 const { t } = useI18n();
 const Mob = ref(false);
 const active = ref(0);
@@ -191,10 +192,7 @@ watch(active, (newIndex, oldIndex) => {
 });
 
 const resetForm = () => {
-    setor.codigo = '';
-    setor.nome = '';
-    setor.id_centro_custo = '';
-    integracao.value = false;
+    resetSetorForm(setor);
 };
 
 const loadData = async () => {
@@ -224,6 +222,7 @@ const atualizarProdutoSetor = async () => {
             detail: t('product_update_sucess'),
             life: 3000
         });
+        resetProdutoSelecionadoSetor(produtoSelecionado);
     } catch (error) {
         console.error('Erro ao atualizar o produto:', error);
         toast.add({
@@ -243,6 +242,7 @@ const SalvarProduto = async () => {
         await setorService.adicionarProduto(setor, produtoSelecionado.value);
         fetchListaItemSetor();
         visible.value = false;
+        resetProdutoSelecionadoSetor(produtoSelecionado);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_added_sucess'), life: 3000 });
     } catch (error) {
         console.error('Erro ao adicionar item:', error.message);
@@ -257,6 +257,7 @@ const deletarProduto = async () => {
     try {
         await setorService.deletarProduto(item.value);
         fetchListaItemSetor();
+        resetProdutoSelecionadoSetor(produtoSelecionado);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_delete_sucess'), life: 3000 });
         deleteProductDialog.value = false;
     } catch (error) {

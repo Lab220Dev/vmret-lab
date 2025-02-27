@@ -1,4 +1,4 @@
-import { toISODate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
+import { toISODate, formatStringDate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import relatorioService from '@/Services/relatorioService.js';// Importa o serviço de relatórios para realizar operações relacionadas a relatórios.
 import jsPDF from 'jspdf'; // Importa a biblioteca jsPDF para gerar PDFs
@@ -122,6 +122,15 @@ export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
                 data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
                 data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
             };
+        case 'Fichas Retiradas':
+            // Retorna os dados preparados para o relatório de Logs.
+            return {
+                ...baseData, // Inclui a base de dados com o ID do cliente.
+                id_planta: relatorio.value.id_planta || undefined, // Adiciona o ID da planta, ou undefined se não existir.
+                id_funcionario: relatorio.value.id_funcionario, // Adiciona o ID do funcionário.
+                data_inicio: toISODate(relatorio.value.data_inicio), // Converte a data de início para o formato ISO.
+                data_final: toISODate(relatorio.value.data_final) // Converte a data final para o formato ISO.
+            };
         default:
             // Se o tipo do relatório não for reconhecido, retorna apenas a base de dados com o ID do cliente.
             return baseData;
@@ -177,12 +186,16 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         doc.setTextColor(0, 0, 0); // Define a cor do texto como preto
         doc.setDrawColor(0, 0, 0); // Define a cor das linhas do PDF
 
-        doc.setFontSize(12); // Define o tamanho da fonte
-        doc.setFont('helvetica', 'bold'); // Define a fonte como Helvetica em negrito
-        doc.text('LAB220 - Sistema de Gerenciamento de Dispenser Machines', 14, 200); // Título do documento
+        const addFooter = () => {
+            doc.setFontSize(12); // Define o tamanho da fonte
+            doc.setFont('helvetica', 'bold'); // Define a fonte como Helvetica em negrito
+            doc.text(`LAB220 - ${t('dm_management_system')}`, 14, 205); // Título do documento
+        };
+
+        addFooter(); // Adiciona o rodapé ao PDF
 
         doc.setFontSize(14); // Altera o tamanho da fonte
-        doc.text('FICHA DE CONTROLE E ENTREGA DE EQUIPAMENTO', doc.internal.pageSize.width / 2, 20, { align: 'center' }); // Subtítulo centralizado
+        doc.text(`${t('EQUIPMENT_DELIVERY_FORM_DOC')}`, doc.internal.pageSize.width / 2, 20, { align: 'center' }); // Subtítulo centralizado
         doc.setFontSize(12); // Define novamente o tamanho da fonte
         doc.setFont('helvetica', 'normal'); // Define a fonte como normal
 
@@ -193,15 +206,15 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         // Linha 1: NOME, N° DE REGISTRO e DATA DE ADMISSÃO
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('NOME:', 15, 35);
+        doc.text(`${t('NAME_DOC')}:`, 15, 35);
         doc.setFont('helvetica', 'normal');
         doc.text(`${funcionarioSelecionado.value.label || ''}`, 30, 35); // Exibe o nome do funcionário
         doc.setFont('helvetica', 'bold');
-        doc.text('N° DE REGISTRO:', 107, 35);
+        doc.text(`${t('REGISTRATION_NUMBER_DOC')}:`, 107, 35);
         doc.setFont('helvetica', 'normal');
         doc.text(`${funcionarioSelecionado.value.matricula || ''}`, 145, 35); // Exibe o número de matrícula
         doc.setFont('helvetica', 'bold');
-        doc.text('DATA DE ADMISSÃO:', 203, 35);
+        doc.text(`${t('ADMISSION_DATE_DOC')}:`, 203, 35);
         doc.setFont('helvetica', 'normal');
         doc.text(`${funcionarioSelecionado.value.data_admissao ? new Date(funcionarioSelecionado.value.data_admissao).toLocaleDateString('pt-BR') : ''}`, 248, 35); // Exibe a data de admissão
 
@@ -210,13 +223,13 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
 
         // Texto Linha 2: FUNÇÃO e SETOR
         doc.setFont('helvetica', 'bold');
-        doc.text('FUNÇÃO:', 15, 41);
+        doc.text(`${t('FUNCTION_DOC')}:`, 15, 41);
         doc.setFont('helvetica', 'normal');
-        doc.text(` ${funcionarioSelecionado.value.id_funcao || ''}`, 36, 41); // Exibe a função
+        doc.text(` ${funcionarioSelecionado.value.id_funcao || ''}`, 37, 41); // Exibe a função
         doc.setFont('helvetica', 'bold');
-        doc.text('SETOR:', 107, 41);
+        doc.text(`${t('SECTOR_DOC')}:`, 107, 41);
         doc.setFont('helvetica', 'normal');
-        doc.text(` ${funcionarioSelecionado.value.id_setor || ''}`, 123, 41); // Exibe o setor
+        doc.text(` ${funcionarioSelecionado.value.id_setor || ''}`, 126, 41); // Exibe o setor
 
         doc.setFontSize(11); // Define o tamanho da fonte
         const text = `${textoFicha}`; // Obtém o texto da ficha
@@ -227,18 +240,28 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         if (!Array.isArray(retiradas.data) || retiradas.data.length === 0) {
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text('Nenhum dado encontrado para os critérios fornecidos.', doc.internal.pageSize.width / 2, 90, { align: 'center' });
+            doc.text(`${t('no_data_doc')}`, doc.internal.pageSize.width / 2, 90, { align: 'center' });
         } else {
             // Definição da tabela
-            const tableColumn = ['NOME DO ITEM', 'DT RETIRADA', 'QUANT', 'UNID', 'DESCRIÇÃO DO EQUIPAMENTO', 'N° DO C.A', 'AUTENTICAÇÃO'];
+            const tableColumn = [`${t('ITEM_NAME_DOC')}`, `${t('WITHDRAWAL_DATE_DOC')}`, `${t('QUANT_DOC')}`, `${t('UNIT_DOC')}`, `${t('DESCRIPTION_DOC')}`, `${t('CA_NUMBER_DOC')}`, `${t('AUTHENTICATION_DOC')}`];
             const tableRows = retiradas.data.map((item) => {
                 try {
-                    const parsedDate = parse(item.Dia, 'dd/MM/yyyy - HH:mm', new Date());
-                    const formattedDate = formatDateToString(parsedDate, 'dd/MM/yyyy - HH:mm');
-                    return [item.ProdutoNome || '', formattedDate, item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    if (i18n.global.locale.value === 'en') {
+                        return [
+                            item.ProdutoNome || '',
+                            formatStringDate(item.Dia) || '',
+                            item.Quantidade || '',
+                            item.unidade_medida || '',
+                            item.ProdutoDescricao || '',
+                            item.ProdutoSKU || '',
+                            item.Forma_Autenticacao === 'Senha' ? 'Password' : item.Forma_Autenticacao || ''
+                        ];
+                    } else {
+                        return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    }
                 } catch (error) {
-                    console.error('Erro ao formatar data:', error);
-                    return [item.ProdutoNome || '', 'Data inválida', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    console.error('Erro:', error);
+                    return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
                 }
             });
 
@@ -266,64 +289,76 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
                     fillColor: [245, 245, 245]
                 },
                 columnStyles: {
-                    0: { cellWidth: 30 },
-                    1: { cellWidth: 30 },
-                    2: { cellWidth: 20 },
-                    3: { cellWidth: 20 },
+                    0: { cellWidth: 50, halign: 'center' },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 20, halign: 'center' },
+                    3: { cellWidth: 20, halign: 'center' },
                     4: { cellWidth: 70 },
-                    5: { cellWidth: 50 }
+                    5: { cellWidth: 30, halign: 'center' },
+                    6: { cellWidth: 40, halign: 'center' }
+                },
+                didDrawPage: (data) => {
+                    // Adiciona o cabeçalho em cada página
+                    addFooter();
+
+                    // Adiciona o número da página no rodapé
+                    const pageCount = doc.internal.getNumberOfPages();
+                    const pageSize = doc.internal.pageSize;
+                    const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+                    doc.setFontSize(10);
+                    doc.text(`${data.pageNumber} de ${pageCount}`, 280, pageHeight - 200);
                 }
             });
         }
-        const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120;
+        const finalY = doc.autoTable?.previous?.finalY ? doc.autoTable.previous.finalY + 30 : 120; // Posição Y final da tabela
         doc.setFontSize(12);
-        doc.text('Data:', 30, finalY ); // Exibe o campo de data
+        doc.text(`${t('date')}:`, 30, finalY); // Exibe o campo de data
         doc.text('_______/_______/_______', 40, finalY); // Linha para o campo de data
 
         doc.setFontSize(12);
         doc.text('______________________________________', 180, finalY);
-        doc.text('Assinatura do funcionário', 200, finalY+10);
-        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || 'Funcionario'}.pdf`);
+        doc.text(`${t('employee_signature')}`, 200, finalY + 10);
+        doc.save(`LAB220 - ${funcionarioSelecionado.value.label || t('employee')}.pdf`);
     } catch (error) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
     }
 }
 export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
     try {
-        if (!funcionarioSelecionado.value || Object.keys(funcionarioSelecionado.value).length === 0){
+        if (!funcionarioSelecionado.value || Object.keys(funcionarioSelecionado.value).length === 0) {
             throw new Error('Empleado no seleccionado');
         }
 
         const cabecalhoHTML = await relatorioService.Cabecalho(); // Obtém o HTML dinamicamente
         const dadosCliente = await clientesService.fetchDadosCliente(store.userIdCliente); // Obtém os dados do cliente
         const dadosfuncionario = await funcionarioService.fetchdadosfuncionario(funcionarioSelecionado.value.value); // Obtém os dados do funcionário
-        const div = document.createElement("div");
+        const div = document.createElement('div');
         div.innerHTML = cabecalhoHTML;
         document.body.appendChild(div);
-        div.querySelector("#razon-social").textContent = dadosCliente.nome || "No informado";
-        div.querySelector("#cuit").textContent = dadosCliente.cpfcnpj || "No informado";
-        div.querySelector("#direccion").textContent = dadosCliente.endereco || "No informado";
-        div.querySelector("#cp").textContent = dadosCliente.cep || "No informado";
-        div.querySelector("#localidad").textContent = dadosCliente.cidade || "No informado";
-        div.querySelector("#provincia").textContent = dadosCliente.estado || "No informado";
-        div.querySelector("#dni").textContent = dadosfuncionario.cpf || "No informado";
-        div.querySelector("#nombre-trabajador").textContent = funcionarioSelecionado.value.label || "No informado";
-        div.querySelector("#puesto").textContent = dadosfuncionario.funcao_nome || "No informado";
-        div.querySelector("#elementos").textContent = dadosfuncionario.elementos || "No informado";
+        div.querySelector('#razon-social').textContent = dadosCliente.nome || 'No informado';
+        div.querySelector('#cuit').textContent = dadosCliente.cpfcnpj || 'No informado';
+        div.querySelector('#direccion').textContent = dadosCliente.endereco || 'No informado';
+        div.querySelector('#cp').textContent = dadosCliente.cep || 'No informado';
+        div.querySelector('#localidad').textContent = dadosCliente.cidade || 'No informado';
+        div.querySelector('#provincia').textContent = dadosCliente.estado || 'No informado';
+        div.querySelector('#dni').textContent = dadosfuncionario.cpf || 'No informado';
+        div.querySelector('#nombre-trabajador').textContent = funcionarioSelecionado.value.label || 'No informado';
+        div.querySelector('#puesto').textContent = dadosfuncionario.funcao_nome || 'No informado';
+        div.querySelector('#elementos').textContent = dadosfuncionario.elementos || 'No informado';
 
         // Converter HTML do cabeçalho em imagem
         const canvas = await html2canvas(div, { scale: 2 });
-        const imgData = canvas.toDataURL("image/png");
+        const imgData = canvas.toDataURL('image/png');
         document.body.removeChild(div); // Remove o elemento do DOM
 
         // Criar o PDF
-        const pdf = new jsPDF("p", "mm", "a4");
+        const pdf = new jsPDF('l');
         const pageWidth = pdf.internal.pageSize.width || 210; // Largura total da página
-        const margin = 10;
+        const margin = 10; // Margem da página
         const imgWidth = pageWidth - 2 * margin; // Mantém a largura da imagem dentro da página
         const imgHeight = (canvas.height * imgWidth) / canvas.width; // Mantém proporção
 
-        pdf.addImage(imgData, "PNG", margin, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'PNG', margin, 10, imgWidth, imgHeight); // Adiciona a imagem ao PDF
 
         // Buscar dados da ficha e retiradas
         const retiradas = await relatorioService.fichasRetiradas(relatorio);
@@ -343,7 +378,6 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         for (let i = 0; i < retiradas.data.length; i += itemsPerPage) {
             if (i > 0) {
                 pdf.addPage(); // Adiciona uma nova página
-0
 
                 // Adicionar borda ao redor da página
                 pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
@@ -443,13 +477,13 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 
         // Salvar PDF
         pdf.save(`Entrega_EPI_${funcionarioSelecionado.value.label || 'Empleado'}.pdf`);
-
     } catch (error) {
         throw new Error(`Error al generar PDF: ${error.message}`);
     }
 }
 export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
     const linguaSelecionada = i18n.global.locale.value;
+
     if (linguaSelecionada === 'es') {
         await GerarPdfRetiradaEs(funcionarioSelecionado, relatorio);
     } else {

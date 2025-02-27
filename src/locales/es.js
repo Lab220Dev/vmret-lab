@@ -533,5 +533,18 @@ export default {
     site_greet: 'Visita nuestro sitio web',
     login_forgot_link: 'Enviar enlace de recuperación',
     return_login: 'Volver al inicio de sesión',
+    validate_external_data: 'validación de datos',
+    validate_external_data_text: 'validar',
     docmask:'99-99999999-9',
+    select_factory_name:' Planta {nome}',
+    load_spinner:'Cargando... Espere',
+    login_email_placeholder:'Ingrese su correo electrónico',
+    login_password_placeholder:'Ingrese su contraseña',
+    "termo_de_compromisso_-_ficha_retirada": "Término de compromiso - Ficha de retiro",
+    dm_config: "Configuración de Máquina",
+    dm_config_data: "¿Desea guardar los datos de los empleados?",
+    dm_config_with: "Opciones de Retiro",
+    employee_name: "Nombre del Empleado",
+    employee_id: "Número de Matrícula",
+    dm_config_data_save: "¿Desea guardar los datos de la máquina?"
 };

@@ -126,7 +126,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
-                        <span>{{$t('total_records')}}: {{ itens.length }}</span>  <!-- Exibe o número total de registros -->
+                        <span>{{$t('total_records')}} {{ itens.length }}</span>  <!-- Exibe o número total de registros -->
                     </div>
                     <div>
                         <IconField iconPosition="left">

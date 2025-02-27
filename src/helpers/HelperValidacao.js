@@ -180,7 +180,7 @@ export const isValidDoc = (doc) => {
 
     // Se a língua selecionada for espanhol ('es'), valida o documento como CUIT.
     if (linguaSelecionada === 'es') {
-        validarCUIT(doc);
+        return validarCUIT(doc);
     } else {
         // Caso contrário, valida o documento como CNPJ.
         validarCNPJ(doc);

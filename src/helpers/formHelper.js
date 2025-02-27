@@ -372,3 +372,9 @@ export const resetUsuario = (usuario) => {    // Reseta o formulário de usuári
     perfil: '', // O perfil do usuário será redefinido como uma string vazia.
   });
 };
+export const resetProdutoSelecionadoSetor = (produtoSelecionado) => {
+  Object.assign(produtoSelecionado.value, {
+    id_produto: '',  
+    quantidade: '',   
+  });
+};

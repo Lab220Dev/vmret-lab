@@ -154,10 +154,7 @@ const deleteCliente = async (clienteId) => {
     let eventSource = null; 
 
     try {
-        // 🔹 Enviar a requisição para iniciar a exclusão
-        //await clientesService.deletarCliente(clienteId); 
 
-        // 🔹 Agora iniciar a escuta do progresso
         eventSource = new EventSource(`/admin/cliente/deletar`,{id_cliente: clienteId});
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);

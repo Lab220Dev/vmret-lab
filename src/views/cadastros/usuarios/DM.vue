@@ -136,6 +136,10 @@ const operador = ref(false);
 const visible = ref(false);
 const currentPage = ref(1);
 const debounceTimeout = ref(null);
+const salvardados = ref(true);
+const salvardadosMaquina = ref(true);
+const supe = ref(false);
+const dupe = ref(false);
 // Propriedades Computadas
 const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora);
@@ -340,13 +344,36 @@ const fetchDMS = async (page = 1) => {
         ListaDMS.value = response.data.dmsArray; // Atualiza a lista de DMs com a resposta
         totalRecords.value = response.data.totalRecords; // Atualiza o total de registros
     } catch (error) {
-        toast.add({ severity: 'error', summary: t('title_error'), detail:t('load_dm_list'), life: 3000 }); // Exibe uma mensagem de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_dm_list'), life: 3000 }); // Exibe uma mensagem de erro
         console.error('Erro ao carregar usuários:', error); // Loga o erro no console
     } finally {
         loading.value = false; // Desativa o loading após a requisição
     }
 };
-
+ const validarDados = async () =>{
+    const data ={
+        UserID:DM.UserID,
+        Chaveapi:DM.ChaveAPI,
+        ClienteID:DM.ClienteID,
+        URL:DM.URL,
+    }
+    if (!data.UserID || !data.Chaveapi || !data.ClienteID || !data.URL) {
+        toast.add({ severity: 'warn', summary: 'Campos obrigatórios', detail: 'Preencha todos os campos antes de validar.', life: 3000 });
+        return; 
+    }
+    try {
+        const response = await dmService.validarExternalData(data);
+        
+        if (response.data.success) {
+            toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Dados validados com sucesso!', life: 3000 });
+        } else {
+            toast.add({ severity: 'warn', summary: 'Falha na Validação', detail: response.data.message || 'Não foi possível validar os dados.', life: 3000 });
+        }
+    } catch (error) {
+        console.error('Erro ao validar dados:', error);
+        toast.add({ severity: 'error', summary: 'Erro', detail: 'Ocorreu um erro ao validar os dados. Tente novamente.', life: 4000 });
+    }
+ }
 const adicionarDM = async () => {
     loading.value = true;
     // const placaExists = Controladoras.value.some(controladora => controladora.dados.placa === DM.Placa);
@@ -371,7 +398,6 @@ const adicionarDM = async () => {
     }
 };
 const atualizarDM = async () => {
-    
     dataStore.invalidateDMCache();
     loading.value = true;
     const preparedControladoras = Controladoras.value.map((controladora) => ({
@@ -382,12 +408,12 @@ const atualizarDM = async () => {
     const data = prepareDMData('atualizar', DM, selectedClient, preparedControladoras);
     try {
         await dmService.atualizarDM(data);
-        toast.add({ severity: 'success', summary:  t('title_sucess'), detail:  t('dm_update_sucess'), life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_update_sucess'), life: 3000 });
         fetchDMS();
         active.value = 0;
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
-        toast.add({ severity: 'error', summary: t('title_error'),  detail:  t('dm_update_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('dm_update_error'), life: 3000 });
         console.error('Erro ao atualizar DM:', error);
     } finally {
         loading.value = false;
@@ -398,9 +424,9 @@ const atualizarDM = async () => {
  * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
  */
 const deleteDM = async (item) => {
-        dialogMessage.value = `Você tem certeza que deseja excluir a DM: ${item.Identificacao}?`;
-        showDialogDVM.value = true;
-        selectedItem.value = item;
+    dialogMessage.value = `Você tem certeza que deseja excluir a DM: ${item.Identificacao}?`;
+    showDialogDVM.value = true;
+    selectedItem.value = item;
 };
 
 const confirmdeleteDM = async () => {
@@ -409,7 +435,7 @@ const confirmdeleteDM = async () => {
     const data = prepareDMData('deletar', selectedItem.value);
     try {
         showDialogDVM.value = false;
-        loading.value = true;  
+        loading.value = true;
         await dmService.deletarDM(data);
         dataStore.invalidateDMCache();
         toast.add({ severity: 'success', summary: 'Successful', detail: t('dm_delete_sucess'), life: 3000 });
@@ -481,12 +507,12 @@ const adicionarProduto = async () => {
     try {
         loading.value = true;
         await dmService.adicionarItem(data);
-        toast.add({ severity: 'success', summary: t('title_sucess'),detail: t('product_added_sucess'), life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_added_sucess'), life: 3000 });
         showDialogProduto.value = false;
         resetProdutoSelecionado(produtoSelecionado);
         fetchItemDM();
     } catch (error) {
-        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('product_added_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_added_error'), life: 3000 });
         console.error('Erro ao carregar produtos:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -499,12 +525,12 @@ const atualizarProduto = async () => {
         loading.value = true;
         await dmService.atualizarProduto(data);
         showDialogProduto.value = false;
-        toast.add({ severity: 'success', summary: t('title_sucess'),detail: t('product_update_sucess'), life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_update_sucess'), life: 3000 });
         resetProdutoSelecionado(produtoSelecionado);
         fetchItemDM();
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
-        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('product_update_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_update_error'), life: 3000 });
     } finally {
         loading.value = false;
         isEditMode.value = false;
@@ -535,7 +561,7 @@ const confirmDeleteItem = async () => {
         // Atualiza a lista de itens após exclusão
         fetchItemDM();
 
-        toast.add({ severity: 'success', summary:  t('title_sucess'), detail:  t('product_delete_sucess'), life: 3000 });
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_delete_sucess'), life: 3000 });
     } catch (error) {
         console.error('Erro ao excluir item:', error);
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_delete_error'), life: 3000 });
@@ -551,7 +577,7 @@ const fetchCliente = async () => {
         const response = await dmService.listarClientes();
         ListaClientes.value = [todosOption, ...FormatarListaCliente(response.data)];
     } catch (error) {
-        toast.add({ severity: 'error', summary:  t('title_error'), detail:  t('load_client_list'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_client_list'), life: 3000 });
         console.error('Erro ao carregar clientes:', error);
     } finally {
         loading.value = false; // Desativando loading
@@ -562,7 +588,7 @@ const fetchCliente = async () => {
  * Mapeia o cliente para as opções de uso de API.
  */
 const configurarCliente = () => {
-    const cliente = ListaClientes.value.find(c => c.value.id_cliente === DM.id_cliente);
+    const cliente = ListaClientes.value.find((c) => c.value.id_cliente === DM.id_cliente);
     if (cliente) {
         selectedClient.value = cliente; // Agora `selectedClient` terá a estrutura correta
         usarApi.value = cliente.value.usar_api;
@@ -582,7 +608,7 @@ const fetchItemDM = async () => {
         const response = await dmService.fetchItemDM(data);
         ListaItens.value = response.data;
     } catch (error) {
-        toast.add({ severity: 'error', summary:  t('title_error'), detail:  t('load_client_dm_iten_list'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_client_dm_iten_list'), life: 3000 });
         console.error('Erro ao carregar Itens:', error);
     } finally {
         loading.value = false;
@@ -604,10 +630,16 @@ const loadData = async () => {
                 return codigoA - codigoB; // Ordem crescente
             });
     } catch (error) {
-        toast.add({ severity: 'error', summary:  t('title_error'), detail: t('load_initial_data'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);
     } finally {
         loading.value = false;
+    }
+};
+const handleSalvarDadosChange = () => {
+    if (!salvardados.value) {
+        supe.value = false;
+        dupe.value = false;
     }
 };
 watch(
@@ -654,7 +686,7 @@ onMounted(async () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h4 class="my-6 ml-2">{{t('dispenser_machines')}}</h4>
+                <h4 class="my-6 ml-2">{{ t('dispenser_machines') }}</h4>
                 <TabView v-model:activeIndex="active" v-if="!show">
                     <TabPanel :header="$t('dispenser_machine_list')">
                         <div class="col-12">
@@ -683,7 +715,7 @@ onMounted(async () => {
                                 <template #header>
                                     <div class="flex justify-content-between align-items-center">
                                         <div class="flex justify-content-start">
-                                            <span>{{$t('total_records',{count:totalRecords})}}</span>
+                                            <span>{{ $t('total_records', { count: totalRecords }) }}</span>
                                         </div>
                                         <div>
                                             <IconField iconPosition="left">
@@ -695,7 +727,7 @@ onMounted(async () => {
                                         </div>
                                     </div>
                                 </template>
-                                <template #empty>{{$t('no_dm_added')}} </template>
+                                <template #empty>{{ $t('no_dm_added') }} </template>
                                 <Column field="Identificacao" sortable :header="t('identification')">
                                     <template #body="{ data }">
                                         <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
@@ -735,64 +767,103 @@ onMounted(async () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel :header="visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine')"  v-if="admin()">
+                    <TabPanel :header="visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine')" v-if="admin()">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <div class="full lg:col-12 md:col-12 sm:col-12">
-                                <label for="name">{{t('client')}}:</label>
+                                <label for="name">{{ t('client') }}:</label>
                                 <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
                             </div>
 
                             <div class="full lg:col-6 md:col-9 sm:col-12">
-                                <label for="indetificacao">{{t('dm_identification')}}:</label>
+                                <label for="indetificacao">{{ t('dm_identification') }}:</label>
                                 <InputText class="my-2" v-model="DM.Identificacao" id="indetificacao" />
                             </div>
                             <div class="full lg:col-6 md:col-9 sm:col-12">
-                                <label for="numero">{{t('dm_number')}}:</label>
+                                <label for="numero">{{ t('dm_number') }}:</label>
                                 <InputText class="my-2" v-model="DM.Numero" id="numero" />
                             </div>
                             <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">{{t('dm_active')}}</label>
+                                <label class="mt-0 text-nowrap" for="switch2">{{ t('dm_active') }}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
-                                    <span class="ml-2">{{ DM.Ativo ?  $t('yes') : $t('no')  }}</span>
+                                    <span class="ml-2">{{ DM.Ativo ? $t('yes') : $t('no') }}</span>
                                 </div>
                             </div>
                             <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch3">{{t('dm_return')}}</label>
+                                <label class="mt-0 text-nowrap" for="switch3">{{ t('dm_return') }}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
-                                    <span class="ml-2">{{ DM.Devolucao ?  $t('yes') : $t('no')  }}</span>
+                                    <span class="ml-2">{{ DM.Devolucao ? $t('yes') : $t('no') }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <panel header="Opções de DM" class="mt-4">
-                            <div class="mt-5 mx-0 p-fluid grid">
-                                <label for="fim"></label>
-                                <div id="fim" class="checkbox-container flex align-content-end flex-wrap">
-                                    <div class="checkbox-items m-2 flex align-items-end">
-                                        <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
-                                        <label for="Voucher" class="ml-2"> {{t('voucher')}} </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
-                                        <label for="cracha" class="ml-2"> {{t('badge')}}  </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
-                                        <label for="Biometria" class="ml-2"> {{t('biometric_reader')}} </label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
-                                        <label for="Facial" class="ml-2">{{t('facial_recognition')}}</label>
-                                    </div>
-                                    <div class="checkbox-items m-2 flex align-items-center">
-                                        <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
-                                        <label for="Senha" class="ml-2"> {{t('password')}} </label>
-                                    </div>
+                        <panel :header="$t('dm_options')" class="mt-4">
+                            <div class="grid mt-5 mx-0 p-fluid">
+                                <!-- Painel Configuração da Máquina -->
+                                <div class="col-12 md:col-6">
+                                    <panel :header="$t('dm_config_with')">
+                                        <div id="fim" class="flex flex-column gap-3 mt-3">
+                                            <div class="flex align-items-center">
+                                                <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
+                                                <label for="Voucher" class="ml-2"> {{ t('voucher') }} </label>
+                                            </div>
+                                            <div class="flex align-items-center">
+                                                <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
+                                                <label for="cracha" class="ml-2"> {{ t('badge') }} </label>
+                                            </div>
+                                            <div class="flex align-items-center">
+                                                <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
+                                                <label for="Biometria" class="ml-2"> {{ t('biometric_reader') }} </label>
+                                            </div>
+                                            <div class="flex align-items-center">
+                                                <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
+                                                <label for="Facial" class="ml-2">{{ t('facial_recognition') }}</label>
+                                            </div>
+                                            <div class="flex align-items-center">
+                                                <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
+                                                <label for="Senha" class="ml-2"> {{ t('password') }} </label>
+                                            </div>
+                                        </div>
+                                    </panel>
+                                </div>
+
+                                <!-- Painel Opções de Retirada -->
+                                <div class="col-12 md:col-6">
+                                    <panel :header="$t('dm_config')">
+                                        <div class="flex flex-column gap-3 mt-3">
+                                            <div class="flex align-items-center flex-column">
+                                                <label for="switch4" class="mt-0 text-nowrap"> {{$t('dm_config_data')}}</label>
+                                                <div class="grid mt-3">
+                                                    <InputSwitch class="mr-2" v-model="salvardados" inputId="switch4" @change="handleSalvarDadosChange"/>
+                                                    <span class="ml-2">{{ salvardados ? $t('yes') : $t('no') }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex flex-column gap-3">
+                                                <div class="flex align-items-center">
+                                                    <Checkbox v-model="supe" inputId="supe" :binary="true" :disabled="!salvardados" />
+                                                    <label for="supe" class="ml-2">{{$t('employee_name')}} </label>
+                                                </div>
+                                                <div class="flex align-items-center">
+                                                    <Checkbox v-model="dupe" inputId="dupe" :binary="true" :disabled="!salvardados"/>
+                                                    <label for="dupe" class="ml-2"> {{$t('employee_id')}}  </label>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="flex flex-column gap-3">
+                                                <div class="flex align-items-center flex-column">
+                                                <label for="switch4" class="mt-0 text-nowrap">{{$t('dm_config_data_save')}}</label>
+                                                <div class="grid mt-3">
+                                                    <InputSwitch class="mr-2" v-model="salvardadosMaquina" inputId="switch4"/>
+                                                    <span class="ml-2">{{ salvardadosMaquina ? $t('yes') : $t('no') }}</span>
+                                                </div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </panel>
                                 </div>
                             </div>
-                            <Button class="mt-7" icon="pi pi-plus" :label="t('new_controller')" @click="addControladora" />
                         </panel>
 
                         <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
@@ -801,26 +872,32 @@ onMounted(async () => {
                                 <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="userapi">{{t('userid_api')}}</label>
+                                <label for="userapi">{{ t('userid_api') }}</label>
                                 <InputText class="my-2" id="userapi" v-model="DM.UserID" />
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="senhaapi">{{t('api_password')}}</label>
+                                <label for="senhaapi">{{ t('api_password') }}</label>
                                 <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="clienteAPI">{{t('idclient_api')}}</label>
+                                <label for="clienteAPI">{{ t('idclient_api') }}</label>
                                 <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="urlapi">{{t('url_api')}}</label>
+                                <label for="urlapi">{{ t('url_api') }}</label>
                                 <InputText class="my-2" id="urlapi" v-model="DM.URL" />
                             </div>
                             <div class="full lg:col-6 md:col-12 sm:col-6">
-                                <label for="codigo">{{t('key')}}</label>
+                                <label for="codigo">{{ t('key') }}</label>
                                 <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
                             </div>
+                            <div class="full lg:col-6 md:col-12 sm:col-6">
+                                <label for="validar">{{ t('validate_external_data') }}</label>
+                                <Button class="mt-4" icon="pi pi-check" :label="t('validate_external_data_text')" @click="validarDados" />
+                            </div>
                         </div>
+                        <Button class="mt-7" icon="pi pi-plus" :label="t('new_controller')" @click="addControladora" />
+
                         <div>
                             <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
                                 <div class="flex justify-content-between flex-wrap">
@@ -831,7 +908,7 @@ onMounted(async () => {
                                 </div>
 
                                 <div class="field mt-3 col-12">
-                                    <label class="mr-3">{{t('model')}} </label>
+                                    <label class="mr-3">{{ t('model') }} </label>
                                     <Dropdown
                                         class=""
                                         style="width: 250px"
@@ -839,7 +916,7 @@ onMounted(async () => {
                                         optionLabel="label"
                                         optionValue="value"
                                         :options="tipoControladoras"
-                                        :placeholder="$t('select_controller')" 
+                                        :placeholder="$t('select_controller')"
                                         @change="updateTipoControladora(index, controladora.tipo)"
                                     />
                                 </div>
@@ -847,12 +924,12 @@ onMounted(async () => {
                                 <!<!-- Controladora 2018 -->
                                 <div class="" v-if="controladora.tipo === '2018'">
                                     <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">{{t('board')}}: </label>
+                                        <label class="mr-5 p-0">{{ t('board') }}: </label>
                                         <InputText class="" style="width: 250px" v-model="controladora.dados.placa" />
                                     </div>
 
                                     <fieldset class="field card mt-4">
-                                        <legend>{{t('spring')}}</legend>
+                                        <legend>{{ t('spring') }}</legend>
 
                                         <div class="checkbox-group mt-3" style="text-align: center">
                                             <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
@@ -871,12 +948,12 @@ onMounted(async () => {
                                 <!-- Controladora 2023 -->
                                 <div v-if="controladora.tipo === '2023'">
                                     <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">{{t('dip')}}: </label>
+                                        <label class="mr-6 p-0">{{ t('dip') }}: </label>
                                         <InputText style="width: 250px" v-model="controladora.dados.dip" />
                                     </div>
                                     <div class="card mt-5">
                                         <div class="field mt-3">
-                                            <h4>{{t('level_floor')}}:</h4>
+                                            <h4>{{ t('level_floor') }}:</h4>
                                             <div class="checkbox-group">
                                                 <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
                                                     <Checkbox v-model="controladora.dados.andar" :value="i" />
@@ -885,7 +962,7 @@ onMounted(async () => {
                                             </div>
                                         </div>
                                         <div class="field mt-6">
-                                            <h4>{{t('position')}}</h4>
+                                            <h4>{{ t('position') }}</h4>
                                             <div class="checkbox-group">
                                                 <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
                                                     <Checkbox v-model="controladora.dados.posicao" :value="i" />
@@ -894,7 +971,7 @@ onMounted(async () => {
                                             </div>
                                         </div>
                                         <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px":label="$t('select_all')" @click="selectAllCliente(index)" />
+                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
                                             <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
                                         </div>
                                     </div>
@@ -903,11 +980,11 @@ onMounted(async () => {
                                 <!-- Controladora 2024 -->
                                 <div v-if="controladora.tipo === '2024'">
                                     <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">{{t('board')}}: </label>
+                                        <label class="mr-5 p-0">{{ t('board') }}: </label>
                                         <InputText style="width: 250px" v-model="controladora.dados.placa" />
                                     </div>
                                     <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">{{t('motor')}}: </label>
+                                        <label class="mr-5 p-0">{{ t('motor') }}: </label>
                                         <InputText style="width: 250px" v-model="controladora.dados.motor" />
                                     </div>
                                 </div>
@@ -915,11 +992,11 @@ onMounted(async () => {
                                 <!-- Controladora Locker -->
                                 <div v-if="controladora.tipo === 'Locker-Padrao'">
                                     <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">{{t('dip')}}: </label>
+                                        <label class="mr-6 p-0">{{ t('dip') }}: </label>
                                         <InputText style="width: 250px" v-model="controladora.dados.dip" />
                                     </div>
                                     <div class="field card">
-                                        <h4>{{t('position')}}</h4>
+                                        <h4>{{ t('position') }}</h4>
                                         <div class="checkbox-group">
                                             <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
                                                 <Checkbox v-model="controladora.dados.posicao" :value="i" />
@@ -935,11 +1012,11 @@ onMounted(async () => {
                                 </div>
                                 <div v-if="controladora.tipo === 'Locker-Ker'">
                                     <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">{{t('dip')}}: </label>
+                                        <label class="mr-6 p-0">{{ t('dip') }}: </label>
                                         <InputText style="width: 250px" v-model="controladora.dados.dip" />
                                     </div>
                                     <div class="field card">
-                                        <h4>{{t('position')}}</h4>
+                                        <h4>{{ t('position') }}</h4>
                                         <div class="checkbox-group">
                                             <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
                                                 <Checkbox v-model="controladora.dados.posicao" :value="i" />
@@ -966,7 +1043,7 @@ onMounted(async () => {
                     <div class="mx-0 grid">
                         <div class="col-12">
                             <div class="flex mt-5 justify-content-between">
-                                <h5>{{t('itens_dms')}}</h5>
+                                <h5>{{ t('itens_dms') }}</h5>
                                 <Button :label="$t('add_items')" @click="showDialogProduto = true" />
                             </div>
                             <DataTable
@@ -991,18 +1068,18 @@ onMounted(async () => {
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>{{$t('total_records',{count:ListaItens.length})}}</span>
+                                            <span>{{ $t('total_records', { count: ListaItens.length }) }}</span>
                                         </div>
                                         <IconField iconPosition="left">
                                             <InputIcon>
                                                 <i class="pi pi-search" />
                                             </InputIcon>
-                                            <InputText v-model="filters['global'].value":placeholder="t('search')" />
+                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
                                         </IconField>
                                     </div>
                                 </template>
 
-                                <template #empty> {{t('no_added_item')}} </template>
+                                <template #empty> {{ t('no_added_item') }} </template>
 
                                 <Column field="SKU" style="width: 9%" sortable :header="t('sku')">
                                     <template #body="{ data }">
@@ -1016,7 +1093,7 @@ onMounted(async () => {
                                 >
                                 <Column field="Posicao" sortable style="width: 40%" :header="t('position')">
                                     <template #body="{ data }">
-                                        <span  v-tooltip="getTooltipText(data)">
+                                        <span v-tooltip="getTooltipText(data)">
                                             {{ data.Posicao }}
                                         </span>
                                     </template>
@@ -1043,11 +1120,11 @@ onMounted(async () => {
             </div>
         </div>
     </div>
-    <Dialog class="" :header="isEditMode ?  $t('edit_product') : $t('add_product')" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
+    <Dialog class="" :header="isEditMode ? $t('edit_product') : $t('add_product')" :visible.sync="showDialogProduto" :modal="true" :closable="false" :draggable="false">
         <div class="box card">
             <div class="grid">
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Produto" class="font-semibold">{{t('product')}}:</label>
+                    <label for="Produto" class="font-semibold">{{ t('product') }}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <Dropdown
@@ -1065,7 +1142,7 @@ onMounted(async () => {
                     />
                 </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Controladora" class="font-semibold">{{t('controller')}}:</label>
+                    <label for="Controladora" class="font-semibold">{{ t('controller') }}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                     <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" :placeholder="$t('controller_select')" />
@@ -1073,13 +1150,13 @@ onMounted(async () => {
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="tipoControladoraSelecionada === '2018'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">{{t('board')}}:</label>
+                        <label for="Dip" class="font-semibold">{{ t('board') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" :placeholder="$t('board_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="molas" class="font-semibold">{{t('spring')}}:</label>
+                        <label for="molas" class="font-semibold">{{ t('spring') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" :placeholder="$t('spring_select')" />
@@ -1088,21 +1165,21 @@ onMounted(async () => {
 
                 <template v-if="tipoControladoraSelecionada === '2023'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">{{t('dip')}}:</label>
+                        <label for="Dip" class="font-semibold">{{ t('dip') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Andar" class="font-semibold">{{t('level_floor')}}:</label>
+                        <label for="Andar" class="font-semibold">{{ t('level_floor') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" :placeholder="$t('floor_select')" @change="handleAndarChange" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Posicao" class="font-semibold">{{t('position')}}:</label>
+                        <label for="Posicao" class="font-semibold">{{ t('position') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" @change="validarAndarSelecionado" />
@@ -1111,31 +1188,29 @@ onMounted(async () => {
 
                 <template v-if="tipoControladoraSelecionada === '2024'">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Motor" class="font-semibold">{{t('motor')}}:</label>
+                        <label for="Motor" class="font-semibold">{{ t('motor') }}:</label>
                     </div>
-                    <div class="lg:col-8 md:c
-                    
-                    ol-8 sm:col-8 flex justify-content-end">
+                    <div class="lg:col-8 md:c ol-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" :placeholder="$t('motor_select')" />
                     </div>
                 </template>
 
                 <template v-if="isArmario(tipoControladoraSelecionada)">
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Dip" class="font-semibold">{{t('dip')}}:</label>
+                        <label for="Dip" class="font-semibold">{{ t('dip') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
                         <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                        <label for="Posicao" class="font-semibold">{{t('position')}}:</label>
+                        <label for="Posicao" class="font-semibold">{{ t('position') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')"  />
+                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" />
                     </div>
                 </template>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
-                    <label for="Capacidade" class="font-semibold">{{t('capacity')}}:</label>
+                    <label for="Capacidade" class="font-semibold">{{ t('capacity') }}:</label>
                 </div>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-8 md:col-8 sm:col-8 justify-content-end flex">
                     <InputNumber inputId="Capacidade" :disabled="tipoControladoraSelecionada === 'Locker-Padrao' || tipoControladoraSelecionada === 'Locker-Ker'" class="w-full" v-model="produtoSelecionado.Capacidade" :mask="1" aria-describedby="username-help" :suffix="$t('capacity_suffix')"/>
@@ -1145,7 +1220,7 @@ onMounted(async () => {
 
         <div class="flex justify-content-end gap-2 mt-4">
             <Button type="button" :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
-            <Button type="button":label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
+            <Button type="button" :label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
     <Dialog :header="$t('dialog_delete_item')" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">

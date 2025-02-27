@@ -51,7 +51,10 @@ const dmService = {
     },
     async atualizarInfo(data) {
         return postRequest('/DM/updateInfo', data);
-    }
+    },
+    async validarExternalData(data) {
+        return postRequest('/DM/validar', data);
+    },
 };
 
 export default dmService;
