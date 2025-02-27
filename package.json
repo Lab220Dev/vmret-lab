@@ -1,6 +1,6 @@
 {
   "name": "Lab220RetiradaV2",
-  "version": "2.2.16.1",
+  "version": "2.2.18.3",
   "scripts": {
     "prebuild": "node update-version.js patch",
     "build": "vite build",
