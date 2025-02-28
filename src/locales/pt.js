@@ -413,7 +413,7 @@ export default {
     qtd_limite_short: 'qtd_limite',
     item_edit: 'Edição do Item',
     dialog_delete_item_confirm: 'Você tem certeza que deseja deletar o funcionário {id} - {name}',
-    dialog_delete_employee: 'Você tem certeza que quer deletar o Item {name}?',
+    dialog_delete_employee: 'Você tem certeza que quer deletar o Item: {name}?',
     manager: 'Gestor',
     one_time_release: 'Liberação Avulsa',
     invalid_email: 'E-mail inválido',
@@ -579,4 +579,9 @@ export default {
     employee_name:'Nome do Funcionário',
     employee_id:'Numero de Matrícula',
     dm_config_data_save:'deseja salvar dados de Maquina',
+    product_empty_list:'Nenhum Produto selecionado, verique se um produto foi selecionado.',
+    product_not_found:'Produto não encontrado',
+    product_updated:'Produto atualizado com sucesso',
+    product_removed:'Produto removido com sucesso',
+    
 };
