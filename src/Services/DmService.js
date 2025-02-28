@@ -16,6 +16,9 @@ const dmService = {
     async listarDMPaginado(data) {
         return postRequest('/DM/listarPaginado', data);
     },
+    async listarDMSimples(data) {
+        return postRequest('/DM/listarDMResumido', data);
+    },
     async listarDMId() {
         return postRequest('/DM/listaDmId');
     },

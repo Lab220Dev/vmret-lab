@@ -2,16 +2,15 @@ import axios from '@/axios.js'; // Importa a instância configurada do Axios par
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados para manipulação de cache ou dados persistentes.
 
-const store = useAuthStore(); // Cria uma instância do store de autenticação.
-const dataStore = useDataStore(); // Cria uma instância do store de dados.
-
-const cdcService = { // Objeto que contém os métodos relacionados ao Centro de Custo (CDC).
+const cdcService = {
+    // Objeto que contém os métodos relacionados ao Centro de Custo (CDC).
     /**
      * Método para listar todos os centros de custo associados ao cliente.
      * @returns {Promise<Object>} A lista de centros de custo.
      * @throws {Error} Se ocorrer um erro na requisição HTTP.
      */
     async listarCentrosDeCusto() {
+        const store = useAuthStore(); // Cria uma instância do store de autenticação.
         // Cria um objeto de dados com o id_cliente extraído do store de autenticação.
         const data = { id_cliente: store.userIdCliente };
 
@@ -25,8 +24,22 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
             throw error; // Lança o erro para que a chamada possa tratá-lo posteriormente.
         }
     },
-    async listarCentrosDeCustoPaginada(data) {
+    async listarCentrosDeCustoSimples() {
+        // Cria um objeto de dados com o id_cliente extraído do store de autenticação.
+        const store = useAuthStore(); // Cria uma instância do store de autenticação.
+        const data = { id_cliente: store.userIdCliente };
 
+        try {
+            // Realiza a requisição POST para listar os centros de custo.
+            const response = await axios.post('/cdc/listaSimples', data);
+            return response; // Retorna os dados da resposta da requisição.
+        } catch (error) {
+            // Caso ocorra algum erro na requisição, exibe o erro no console.
+            console.error('Erro ao listar centros de custo:', error);
+            throw error; // Lança o erro para que a chamada possa tratá-lo posteriormente.
+        }
+    },
+    async listarCentrosDeCustoPaginada(data) {
         try {
             // Realiza a requisição POST para listar os centros de custo.
             const response = await axios.post('/cdc/listarPaginada', data);
@@ -45,6 +58,8 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
      */
     async adicionarCentro(cdc) {
         // Cria um objeto de dados com o id_cliente, id_usuario e os dados do centro de custo.
+        const dataStore = useDataStore(); // Cria uma instância do store de dados.
+        const store = useAuthStore(); // Cria uma instância do store de autenticação.
         const data = {
             id_cliente: store.userIdCliente, // ID do cliente do usuário autenticado.
             id_usuario: store.userId, // ID do usuário autenticado.
@@ -53,10 +68,9 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
 
         try {
             if (!cdc.Codigo || cdc.Codigo === 0) {
-                console.error('Código do centro de custo é inválido!');  
-                throw new Error('Código do centro de custo é inválido!'); 
-            }
-            else {
+                console.error('Código do centro de custo é inválido!');
+                throw new Error('Código do centro de custo é inválido!');
+            } else {
                 // Realiza a requisição POST para adicionar o centro de custo.
                 await axios.post('/cdc/adicionar', data);
                 dataStore.invalidateCDCCache(); // Invalida o cache de centros de custo no store de dados.
@@ -76,6 +90,8 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
      */
     async atualizarCentro(cdc) {
         // Cria um objeto de dados com o id_cliente, id_usuario e os dados atualizados do centro de custo.
+        const dataStore = useDataStore(); // Cria uma instância do store de dados.
+        const store = useAuthStore(); // Cria uma instância do store de autenticação.
         const data = {
             id_cliente: store.userIdCliente, // ID do cliente do usuário autenticado.
             id_usuario: store.userId, // ID do usuário autenticado.
@@ -101,6 +117,8 @@ const cdcService = { // Objeto que contém os métodos relacionados ao Centro de
      */
     async deletarCentro(cdc) {
         // Cria um objeto de dados com o id_cliente, id_usuario e o ID do centro de custo a ser deletado.
+        const dataStore = useDataStore(); // Cria uma instância do store de dados.
+        const store = useAuthStore(); // Cria uma instância do store de autenticação.
         const data = {
             id_cliente: store.userIdCliente, // ID do cliente do usuário autenticado.
             id_usuario: store.userId, // ID do usuário autenticado.

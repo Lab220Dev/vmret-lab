@@ -21,7 +21,7 @@ const todosOption = { label: 'Todos', value: null }; // Opção de filtro 'Todos
 const centroCusto = ref([todosOption]); // Armazena a lista de centros de custo, com a opção 'Todos'
 const loading = ref(false); // Controla o estado de carregamento (para exibir ou não o spinner)
 const deleteFuncaoDialog = ref(false); // Controla a visibilidade do diálogo de confirmação para exclusão de função
-
+const centroCustoOptions = computed(() => dataStore.cdcsOptions);
 // Filtros para a DataTable
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que verifica se o valor contém o texto pesquisado
@@ -166,7 +166,7 @@ watch(active, (newIndex, oldIndex) => {
  */
 const loadData = async () => {
     try {
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega os centros de custo do store ou faz a chamada ao serviço
+        if (!dataStore.cdcs) await dataStore.fetchCdc();
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Registra o erro no console
@@ -273,7 +273,7 @@ onMounted(() => {
                                     <!-- Campo para selecionar o centro de custo -->
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="perfil">{{ $t('cost_center') }}:</label>
-                                        <Dropdown class="my-2" filter v-model="funcao.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                                        <Dropdown class="my-2" filter v-model="funcao.id_centro_custo" :options="centroCustoOptions" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
                                     </div>
                                 </div>
 

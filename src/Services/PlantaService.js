@@ -5,6 +5,9 @@ const plantaService = {
     const data = { id_cliente: idCliente };
     return axios.post('/plantas/listar', data);
   },
+  async listarPlantasSimples(data) {
+    return axios.post('/plantas/listaSimples', data);
+  },
   async listarPlantasPaginado(data) {
     return axios.post('/plantas/listarPaginando', data);
   },

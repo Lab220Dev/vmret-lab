@@ -1,26 +1,21 @@
-import { format ,formatInTimeZone } from 'date-fns-tz';
+import { format, formatInTimeZone } from 'date-fns-tz';
 import { parseISO, isValid, parse } from 'date-fns';
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import { DateTime } from 'luxon';
-const store = useAuthStore();
 /**
  * Gera uma string no formato CSV a partir dos campos e dados fornecidos.
  *
  * @param {Array<string>} fields - Um array de strings representando os nomes dos campos (colunas) do CSV.
  * @param {Array<Object>} data - Um array de objetos, onde cada objeto contém os dados de uma linha no CSV.
- * 
+ *
  * @returns {string} Uma string formatada no padrão CSV.
  */
 export const generateCSV = (fields, data) => {
+    const header = fields.join(',');
 
-  const header = fields.join(',');
+    const rows = data.map((row) => fields.map((field) => row[field] || '').join(','));
 
-
-  const rows = data.map((row) =>
-    fields.map((field) => row[field] || '').join(',')
-  );
-
-  return [header, ...rows].join('\n');
+    return [header, ...rows].join('\n');
 };
 
 /**
@@ -30,19 +25,18 @@ export const generateCSV = (fields, data) => {
  * @param {string} csvContent - O conteúdo do CSV que será baixado.
  */
 export const downloadCSV = (filename, csvContent) => {
+    const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
+    const link = document.createElement('a');
 
-  const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
-  const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
 
-  link.setAttribute('href', encodedUri);
+    link.setAttribute('download', filename);
 
-  link.setAttribute('download', filename);
+    document.body.appendChild(link);
 
-  document.body.appendChild(link);
+    link.click();
 
-  link.click();
-
-  document.body.removeChild(link);
+    document.body.removeChild(link);
 };
 
 /**
@@ -53,66 +47,62 @@ export const downloadCSV = (filename, csvContent) => {
  * @param {boolean} [warnIfEmpty] - Exibe um aviso no console se `data` estiver vazio (padrão: `false`).
  */
 export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {
-
-  if (!data.length) {
-    if (warnIfEmpty) {
-      // Lança um erro caso a lista de dados esteja vazia e a flag de alerta esteja ativada
-      throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);
+    if (!data.length) {
+        if (warnIfEmpty) {
+            // Lança um erro caso a lista de dados esteja vazia e a flag de alerta esteja ativada
+            throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);
+        }
+        // Retorna se não houver dados e `warnIfEmpty` for falso
+        return;
     }
-    // Retorna se não houver dados e `warnIfEmpty` for falso
-    return;
-  }
 
-  const selectedFields = fields || Object.keys(data[0]);
+    const selectedFields = fields || Object.keys(data[0]);
 
+    const header = selectedFields.join(',');
 
-  const header = selectedFields.join(',');
+    const rows = data.map((row) => selectedFields.map((field) => row[field] || '').join(','));
 
-  const rows = data.map(row =>
-    selectedFields.map(field => row[field] || '').join(',')
-  );
+    const csvContent = [header, ...rows].join('\n');
 
-  const csvContent = [header, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    /**
+     * Cria um link (elemento `<a>`) no DOM que será usado para simular o download do arquivo CSV.
+     */
+    const link = document.createElement('a');
 
-  /**
-   * Cria um link (elemento `<a>`) no DOM que será usado para simular o download do arquivo CSV.
-   */
-  const link = document.createElement('a');
+    /**
+     * Cria uma URL temporária para o Blob. Essa URL será associada ao link para iniciar o download.
+     */
+    const url = URL.createObjectURL(blob);
 
-  /**
-   * Cria uma URL temporária para o Blob. Essa URL será associada ao link para iniciar o download.
-   */
-  const url = URL.createObjectURL(blob);
+    /**
+     * Configura o link para apontar para o conteúdo do CSV gerado.
+     * O atributo `href` é definido como a URL do Blob.
+     */
+    link.setAttribute('href', url);
 
-  /**
-   * Configura o link para apontar para o conteúdo do CSV gerado.
-   * O atributo `href` é definido como a URL do Blob.
-   */
-  link.setAttribute('href', url);
+    /**
+     * Configura o atributo `download` do link para definir o nome do arquivo a ser baixado.
+     */
+    link.setAttribute('download', filename);
 
-  /**
-   * Configura o atributo `download` do link para definir o nome do arquivo a ser baixado.
-   */
-  link.setAttribute('download', filename);
+    /**
+     * Adiciona o link criado ao corpo do documento (DOM) para que o clique possa ser simulado.
+     */
+    document.body.appendChild(link);
 
-  /**
-   * Adiciona o link criado ao corpo do documento (DOM) para que o clique possa ser simulado.
-   */
-  document.body.appendChild(link);
+    /**
+     * Simula um clique no link, o que inicia o download do arquivo CSV.
+     * O arquivo será baixado com o nome especificado no parâmetro `filename`.
+     */
+    link.click();
 
-  /**
-   * Simula um clique no link, o que inicia o download do arquivo CSV.
-   * O arquivo será baixado com o nome especificado no parâmetro `filename`.
-   */
-  link.click();
-
-  /**
-   * Remove o link do DOM após o clique. Isso limpa o ambiente DOM após o uso.
-   */
-  document.body.removeChild(link);
-};
+    /**
+     * Remove o link do DOM após o clique. Isso limpa o ambiente DOM após o uso.
+     */
+    document.body.removeChild(link);
+}
 
 /**
  * Normaliza uma data ou data/hora para o formato `dd/MM/yyyy` ou `dd/MM/yyyy - HH:mm`.
@@ -121,73 +111,72 @@ export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {
  * @returns {string|null} - A data/hora normalizada ou `null` se inválida.
  */
 export function normalizeDateTime(dateTimeString, includeTime = false) {
-  
-  /**
-   * Retorna `null` se a string de data e hora não for fornecida (undefined, null ou string vazia).
-   */
-  if (!dateTimeString) return null;
-
-  /**
-   * Define o fuso horário como "America/Sao_Paulo" para todas as operações de formatação.
-   * Esse fuso horário será utilizado para garantir que a data e hora sejam convertidas corretamente.
-   * 
-   * @type {string}
-   */
-  const timeZone = 'America/Sao_Paulo';
-  
-  try {
     /**
-     * Tenta analisar a string de data usando a função `parseISO` para formatos ISO 8601.
-     * Caso a análise falhe, tenta usar a função `parse` para interpretar a data no formato `dd/MM/yyyy`.
-     * Se ambos os métodos falharem, o valor de `parsedDate` será `undefined` ou inválido.
-     * 
-     * @type {Date}
+     * Retorna `null` se a string de data e hora não for fornecida (undefined, null ou string vazia).
      */
-    const parsedDate = parseISO(dateTimeString) || parse(dateTimeString, 'dd/MM/yyyy', new Date());
+    if (!dateTimeString) return null;
 
     /**
-     * Verifica se a data analisada é válida usando a função `isValid` da biblioteca `date-fns`.
-     * Se não for válida, retorna `null`.
-     */
-    if (!isValid(parsedDate)) return null;
-
-    /**
-     * Formata a parte da data da string no formato `dd/MM/yyyy`, com base no fuso horário de São Paulo.
-     * Utiliza a função `format` para garantir que a data seja formatada de acordo com o padrão desejado.
-     * 
+     * Define o fuso horário como "America/Sao_Paulo" para todas as operações de formatação.
+     * Esse fuso horário será utilizado para garantir que a data e hora sejam convertidas corretamente.
+     *
      * @type {string}
      */
-    const datePart = format(parsedDate, 'dd/MM/yyyy', { timeZone });
+    const timeZone = 'America/Sao_Paulo';
 
-    /**
-     * Se o parâmetro `includeTime` for verdadeiro, formata também a parte de hora da data.
-     * A hora é formatada no padrão de 24 horas `HH:mm`.
-     */
-    if (includeTime) {
-      /**
-       * Formata a parte da hora da string no formato `HH:mm`, com base no fuso horário de São Paulo.
-       * 
-       * @type {string}
-       */
-      const timePart = format(parsedDate, 'HH:mm', { timeZone });
-      
-      /**
-       * Retorna a data e a hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
-       */
-      return `${datePart} - ${timePart}`;
+    try {
+        /**
+         * Tenta analisar a string de data usando a função `parseISO` para formatos ISO 8601.
+         * Caso a análise falhe, tenta usar a função `parse` para interpretar a data no formato `dd/MM/yyyy`.
+         * Se ambos os métodos falharem, o valor de `parsedDate` será `undefined` ou inválido.
+         *
+         * @type {Date}
+         */
+        const parsedDate = parseISO(dateTimeString) || parse(dateTimeString, 'dd/MM/yyyy', new Date());
+
+        /**
+         * Verifica se a data analisada é válida usando a função `isValid` da biblioteca `date-fns`.
+         * Se não for válida, retorna `null`.
+         */
+        if (!isValid(parsedDate)) return null;
+
+        /**
+         * Formata a parte da data da string no formato `dd/MM/yyyy`, com base no fuso horário de São Paulo.
+         * Utiliza a função `format` para garantir que a data seja formatada de acordo com o padrão desejado.
+         *
+         * @type {string}
+         */
+        const datePart = format(parsedDate, 'dd/MM/yyyy', { timeZone });
+
+        /**
+         * Se o parâmetro `includeTime` for verdadeiro, formata também a parte de hora da data.
+         * A hora é formatada no padrão de 24 horas `HH:mm`.
+         */
+        if (includeTime) {
+            /**
+             * Formata a parte da hora da string no formato `HH:mm`, com base no fuso horário de São Paulo.
+             *
+             * @type {string}
+             */
+            const timePart = format(parsedDate, 'HH:mm', { timeZone });
+
+            /**
+             * Retorna a data e a hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
+             */
+            return `${datePart} - ${timePart}`;
+        }
+
+        /**
+         * Se o parâmetro `includeTime` for falso ou não for fornecido, retorna apenas a data formatada.
+         */
+        return datePart;
+    } catch {
+        /**
+         * Em caso de erro durante a execução, retorna `null`.
+         * O bloco `catch` captura qualquer erro inesperado durante a análise ou formatação.
+         */
+        return null;
     }
-
-    /**
-     * Se o parâmetro `includeTime` for falso ou não for fornecido, retorna apenas a data formatada.
-     */
-    return datePart;
-  } catch {
-    /**
-     * Em caso de erro durante a execução, retorna `null`.
-     * O bloco `catch` captura qualquer erro inesperado durante a análise ou formatação.
-     */
-    return null;
-  }
 }
 
 /**
@@ -197,27 +186,26 @@ export function normalizeDateTime(dateTimeString, includeTime = false) {
  * @throws {Error} - Lança um erro caso os dados sejam nulos ou indefinidos.
  */
 export const gerarEbaixarJSON = (filename, data) => {
- 
-  if (!data) {
-    throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);
-  }
+    if (!data) {
+        throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);
+    }
 
-  const jsonContent = JSON.stringify(data, null, 2);
+    const jsonContent = JSON.stringify(data, null, 2);
 
-  const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
 
-  const link = document.createElement('a');
+    const link = document.createElement('a');
 
-  const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
 
-  document.body.appendChild(link);
+    document.body.appendChild(link);
 
-  link.click();
+    link.click();
 
-  document.body.removeChild(link);
+    document.body.removeChild(link);
 };
 
 /**
@@ -226,179 +214,176 @@ export const gerarEbaixarJSON = (filename, data) => {
  * @returns {string} - A data formatada.
  */
 export const formatDate = (value) => {
-
-  if (!value) return '';
-  const date = new Date(value);
-  return format(date, 'dd/MM/yyyy');
+    if (!value) return '';
+    const date = new Date(value);
+    return format(date, 'dd/MM/yyyy');
 };
 
 /**
  * Formata uma data no formato `dd/MM/yyyy`.
- * 
+ *
  * @param {Date} date - O objeto `Date` a ser formatado.
  * @deprecated
  * @returns {string} A data formatada como `dd/MM/yyyy`.
  */
 export const formatDateToString = (date) => {
-  const offsetDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-  const day = String(offsetDate.getDate()).padStart(2, '0');
-  const month = String(offsetDate.getMonth() + 1).padStart(2, '0');
-  const year = offsetDate.getFullYear();
+    const offsetDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    const day = String(offsetDate.getDate()).padStart(2, '0');
+    const month = String(offsetDate.getMonth() + 1).padStart(2, '0');
+    const year = offsetDate.getFullYear();
 
-  return `${day}/${month}/${year}`;
+    return `${day}/${month}/${year}`;
 };
 export const formatStringDate = (dateString) => {
-  const DatePart =   getDateFromString(dateString);
-  const timePart = getTimeFromString(dateString);
+    const DatePart = getDateFromString(dateString);
+    const timePart = getTimeFromString(dateString);
 
-  return `${DatePart} - ${timePart}`;
+    return `${DatePart} - ${timePart}`;
 };
 export const getTimeFromString = (dateTimeString) => {
-  if (!dateTimeString || typeof dateTimeString !== 'string') {
-    throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
-  }
+    if (!dateTimeString || typeof dateTimeString !== 'string') {
+        throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
+    }
 
-  // Divide a string na parte de data e hora
-  const [, time] = dateTimeString.replace('T', ' ').split(' ');
+    // Divide a string na parte de data e hora
+    const [, time] = dateTimeString.replace('T', ' ').split(' ');
 
-  // Retorna apenas horas e minutos (HH:mm)
-  return time.split(':').slice(0, 2).join(':');
+    // Retorna apenas horas e minutos (HH:mm)
+    return time.split(':').slice(0, 2).join(':');
 };
 export const getDateFromString = (dateTimeString) => {
-  if (!dateTimeString || typeof dateTimeString !== 'string') {
-    throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
-  }
+    if (!dateTimeString || typeof dateTimeString !== 'string') {
+        throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
+    }
 
-  // Divide a string na parte de data e hora
-  const [date] = dateTimeString.replace('T', ' ').split(' ');
-  const [year, month, day] = date.split('-');
-  return `${day}/${month}/${year}`;
+    // Divide a string na parte de data e hora
+    const [date] = dateTimeString.replace('T', ' ').split(' ');
+    const [year, month, day] = date.split('-');
+    return `${day}/${month}/${year}`;
 };
 
 /**
  * Formata a hora de uma data no formato `HH:mm`.
- * 
+ *
  * @param {Date} date - O objeto `Date` contendo a hora a ser formatada.
- * 
+ *
  * @returns {string} A hora formatada como `HH:mm`.
  */
 export const formatTimeToString = (date) => {
-  const dataAserCorrigida = new Date(date);
-  const isDev = import.meta.env.VITE_API_URL === 'http://localhost:3000/api';
-  const offsetHours = isDev ? 3 : 5;
-  const offsetMillis = offsetHours * 60 * 60 * 1000;
-  const adjustedDate = new Date(dataAserCorrigida.getTime() - offsetMillis + dataAserCorrigida.getTimezoneOffset() * 60000);
-  const hours = String(adjustedDate.getHours()).padStart(2, '0');
-  const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+    const dataAserCorrigida = new Date(date);
+    const isDev = import.meta.env.VITE_API_URL === 'http://localhost:3000/api';
+    const offsetHours = isDev ? 3 : 5;
+    const offsetMillis = offsetHours * 60 * 60 * 1000;
+    const adjustedDate = new Date(dataAserCorrigida.getTime() - offsetMillis + dataAserCorrigida.getTimezoneOffset() * 60000);
+    const hours = String(adjustedDate.getHours()).padStart(2, '0');
+    const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 };
 export const formatTimeToString2 = (date) => {
-  const dataAserCorrigida = new Date(date);
-  const isDev = import.meta.env.VITE_API_URL === 'http://localhost:3000/api';
-  const offsetHours = isDev ? 3 : 8;
-  const offsetMillis = offsetHours * 60 * 60 * 1000;
-  const adjustedDate = new Date(dataAserCorrigida.getTime() - offsetMillis + dataAserCorrigida.getTimezoneOffset() * 60000);
-  const hours = String(adjustedDate.getHours()).padStart(2, '0');
-  const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+    const dataAserCorrigida = new Date(date);
+    const isDev = import.meta.env.VITE_API_URL === 'http://localhost:3000/api';
+    const offsetHours = isDev ? 3 : 8;
+    const offsetMillis = offsetHours * 60 * 60 * 1000;
+    const adjustedDate = new Date(dataAserCorrigida.getTime() - offsetMillis + dataAserCorrigida.getTimezoneOffset() * 60000);
+    const hours = String(adjustedDate.getHours()).padStart(2, '0');
+    const minutes = String(adjustedDate.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
 };
-export const HoraRelatorio =(date)=>{
-  const dataASerCorrigida = new Date(date);
-  if (isNaN(dataASerCorrigida.getTime())) {
-    throw new Error("A string ou valor fornecido não é uma data válida.");
-  }
-  const hours = String(dataASerCorrigida.getHours()).padStart(2, '0');
-  const minutes = String(dataASerCorrigida.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
+export const HoraRelatorio = (date) => {
+    const dataASerCorrigida = new Date(date);
+    if (isNaN(dataASerCorrigida.getTime())) {
+        throw new Error('A string ou valor fornecido não é uma data válida.');
+    }
+    const hours = String(dataASerCorrigida.getHours()).padStart(2, '0');
+    const minutes = String(dataASerCorrigida.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
 /**
  * Formata uma data e hora no formato `dd/MM/yyyy - HH:mm`.
- * 
+ *
  * @param {Date} date - O objeto `Date` contendo tanto a data quanto a hora.
- * 
+ *
  * @returns {string} A data e hora formatadas como `dd/MM/yyyy - HH:mm`.
  */
 export const formatarDataHora = (date) => {
-  /**
-   * Chama a função `formatDateToString` para formatar a data.
-   * A data formatada será no formato `dd/MM/yyyy`.
-   * 
-   * @type {string}
-   */
-  const dataPart = formatDateToString(date);
+    /**
+     * Chama a função `formatDateToString` para formatar a data.
+     * A data formatada será no formato `dd/MM/yyyy`.
+     *
+     * @type {string}
+     */
+    const dataPart = formatDateToString(date);
 
-  /**
-   * Chama a função `formatTimeToString` para formatar a hora.
-   * A hora formatada será no formato `HH:mm`.
-   * 
-   * @type {string}
-   */
-  const horaPart = formatTimeToString(date);
+    /**
+     * Chama a função `formatTimeToString` para formatar a hora.
+     * A hora formatada será no formato `HH:mm`.
+     *
+     * @type {string}
+     */
+    const horaPart = formatTimeToString(date);
 
-  /**
-   * Retorna a data e hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
-   * A interpolação de string é usada para juntar as partes da data e da hora.
-   */
-  return `${dataPart} - ${horaPart}`;
+    /**
+     * Retorna a data e hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
+     * A interpolação de string é usada para juntar as partes da data e da hora.
+     */
+    return `${dataPart} - ${horaPart}`;
 };
 
 /**
  * Formata um objeto de tempo (`hours`, `minutes`, `seconds`) e o aplica a um objeto `Date` fornecido,
  * retornando a data resultante no formato ISO.
- * 
+ *
  * @param {Object} time - O objeto de tempo contendo as propriedades `hours`, `minutes`, e `seconds`.
  * @param {number} time.hours - A hora a ser configurada (0-23).
  * @param {number} time.minutes - O minuto a ser configurado (0-59).
  * @param {number} time.seconds - O segundo a ser configurado (0-59).
  * @param {Date} [baseDate=new Date()] - A data base sobre a qual o tempo será aplicado. Se não fornecida, usa a data atual.
- * 
+ *
  * @returns {string} A data base com o tempo configurado, no formato ISO.
  */
 export const formatarTempo = (time, baseDate = new Date()) => {
-  let dt = DateTime.fromJSDate(baseDate);
+    let dt = DateTime.fromJSDate(baseDate);
 
-  dt = dt.set({
-    hour: time.hours,
-    minute: time.minutes,
-    second: time.seconds,
-  });
+    dt = dt.set({
+        hour: time.hours,
+        minute: time.minutes,
+        second: time.seconds
+    });
 
-  // Retorna a string ISO, mas com o offset local (por exemplo: 2025-02-27T14:30:00.000-03:00)
-  return dt.toISO();
+    // Retorna a string ISO, mas com o offset local (por exemplo: 2025-02-27T14:30:00.000-03:00)
+    return dt.toISO();
 };
 
 /**
  * Converte uma data fornecida para uma string no formato ISO.
- * 
+ *
  * @param {string|Date} date - A data a ser convertida para o formato ISO. Pode ser uma string ou um objeto `Date`.
- * 
+ *
  * @returns {string|null} A data no formato ISO ou `null` se `date` for inválido ou não fornecido.
  */
 export const toISODate = (date) => {
-  if (!date) return null;
-  const dt = DateTime.fromJSDate(new Date(date)).toLocal();
-  return dt.toISO();
+    if (!date) return null;
+    const dt = DateTime.fromJSDate(new Date(date)).toLocal();
+    return dt.toISO();
 };
 
 /**
  * Extrai um objeto de tempo `{ hours, minutes, seconds }` de uma string ISO e o atribui a uma referência de objeto.
- * 
+ *
  * @param {Object} tempoRef - A referência do objeto de tempo onde as propriedades `hours`, `minutes` e `seconds`
  *                             serão armazenadas.
  * @param {string} isoString - A string ISO da data/hora da qual o tempo será extraído.
- * 
+ *
  * @returns {void} Não retorna valor. O objeto `tempoRef` é atualizado com as propriedades extraídas da string ISO.
  */
 export const setTempo = (tempoRef, isoString) => {
-  let dt = isoString 
-  ? DateTime.fromISO(isoString).toLocal()
-  : DateTime.now();
+    let dt = isoString ? DateTime.fromISO(isoString).toLocal() : DateTime.now();
 
-tempoRef.value = {
-  hours: dt.hour,
-  minutes: dt.minute,
-  seconds: dt.second,
-};
+    tempoRef.value = {
+        hours: dt.hour,
+        minutes: dt.minute,
+        seconds: dt.second
+    };
 };
 
 /**
@@ -407,84 +392,84 @@ tempoRef.value = {
  */
 /**
  * Fecha todos os dropdowns fornecidos.
- * 
+ *
  * @param {Array} dropdowns - Um array de objetos de dropdown.
  * @param {Object} dropdowns[].value - O valor associado ao dropdown. Espera-se que seja um objeto com o método `hide()`.
- * 
+ *
  * @returns {void} Esta função não retorna nada.
  */
 export const closeAllDropdowns = (dropdowns) => {
-  /**
-   * Itera sobre cada dropdown no array `dropdowns` e chama o método `hide()` 
-   * no valor do dropdown, caso o método esteja presente.
-   * 
-   * @param {Object} dropdown - Um objeto de dropdown.
-   */
-  dropdowns.forEach((dropdown) => dropdown.value?.hide());
+    /**
+     * Itera sobre cada dropdown no array `dropdowns` e chama o método `hide()`
+     * no valor do dropdown, caso o método esteja presente.
+     *
+     * @param {Object} dropdown - Um objeto de dropdown.
+     */
+    dropdowns.forEach((dropdown) => dropdown.value?.hide());
 };
 
 /**
  * Gera um nome personalizado para um vídeo com base no número da DM e no vídeo existente.
  * Se o vídeo já existir, incrementa a versão no nome do arquivo.
- * 
+ *
  * @param {string} dm - O número da DM.
  * @param {string} existingVideo - O nome do vídeo existente ou `'N'` se não houver vídeo existente.
- * 
+ *
  * @returns {string} O nome gerado para o vídeo.
  */
 export const generateCustomVideoName = (dm, existingVideo) => {
-  /**
-   * Verifica se não há vídeo existente ou se o nome do vídeo é `'N'`.
-   * Se for o caso, retorna o nome do vídeo no formato `DM-<dm>-v1`.
-   */
-  if (!existingVideo || existingVideo === 'N') {
-    return `DM-${dm}-v1`;
-  }
+    /**
+     * Verifica se não há vídeo existente ou se o nome do vídeo é `'N'`.
+     * Se for o caso, retorna o nome do vídeo no formato `DM-<dm>-v1`.
+     */
+    if (!existingVideo || existingVideo === 'N') {
+        return `DM-${dm}-v1`;
+    }
 
-  /**
-   * Tenta fazer uma correspondência com a versão do vídeo existente.
-   * A expressão regular `/-v(\d+)(\.mp4)?$/` busca por um sufixo que tenha a versão do vídeo no formato `-v<versão>`.
-   * 
-   * @type {Array|null}
-   */
-  const match = existingVideo.match(/-v(\d+)(\.mp4)?$/);
+    /**
+     * Tenta fazer uma correspondência com a versão do vídeo existente.
+     * A expressão regular `/-v(\d+)(\.mp4)?$/` busca por um sufixo que tenha a versão do vídeo no formato `-v<versão>`.
+     *
+     * @type {Array|null}
+     */
+    const match = existingVideo.match(/-v(\d+)(\.mp4)?$/);
 
-  /**
-   * Se houver uma correspondência, a versão extraída é incrementada em 1.
-   * Caso contrário, a versão começa em 1.
-   * 
-   * @type {number}
-   */
-  const nextVersion = match ? parseInt(match[1], 10) + 1 : 1;
+    /**
+     * Se houver uma correspondência, a versão extraída é incrementada em 1.
+     * Caso contrário, a versão começa em 1.
+     *
+     * @type {number}
+     */
+    const nextVersion = match ? parseInt(match[1], 10) + 1 : 1;
 
-  /**
-   * Retorna o nome do vídeo com a nova versão, no formato `DM-<dm>-v<versão>`.
-   */
-  return `DM-${dm}-v${nextVersion}`;
+    /**
+     * Retorna o nome do vídeo com a nova versão, no formato `DM-<dm>-v<versão>`.
+     */
+    return `DM-${dm}-v${nextVersion}`;
 };
 
 /**
  * Retorna a extensão do arquivo com base no tipo de arquivo fornecido.
- * 
+ *
  * @param {string} fileType - O tipo MIME do arquivo, como 'image/jpeg' ou 'image/png'.
- * 
+ *
  * @returns {string} A extensão do arquivo correspondente ao tipo MIME fornecido, ou uma string vazia se não houver correspondência.
  */
 export const getFileExtension = (fileType) => {
-  /**
-   * Verifica se o tipo de arquivo é 'image/jpeg' e retorna a extensão `.jpg`.
-   */
-  if (fileType === 'image/jpeg') return '.jpg';
+    /**
+     * Verifica se o tipo de arquivo é 'image/jpeg' e retorna a extensão `.jpg`.
+     */
+    if (fileType === 'image/jpeg') return '.jpg';
 
-  /**
-   * Verifica se o tipo de arquivo é 'image/png' e retorna a extensão `.png`.
-   */
-  if (fileType === 'image/png') return '.png';
+    /**
+     * Verifica se o tipo de arquivo é 'image/png' e retorna a extensão `.png`.
+     */
+    if (fileType === 'image/png') return '.png';
 
-  /**
-   * Se o tipo de arquivo não for 'image/jpeg' nem 'image/png', retorna uma string vazia.
-   */
-  return '';
+    /**
+     * Se o tipo de arquivo não for 'image/jpeg' nem 'image/png', retorna uma string vazia.
+     */
+    return '';
 };
 
 /**
@@ -494,11 +479,13 @@ export const getFileExtension = (fileType) => {
  * @returns {Object} - Objeto enriquecido.
  */
 export const enrichData = (target) => {
-  return {
-    ...target,
-    id_cliente: store.userIdCliente,
-    id_usuario: store.userId,
-  };
+    const store = useAuthStore();
+
+    return {
+        ...target,
+        id_cliente: store.userIdCliente,
+        id_usuario: store.userId
+    };
 };
 
 /**
@@ -514,14 +501,11 @@ export const enrichData = (target) => {
  * @param {number|null} relatorio.ID_CentroCusto - O ID do Centro de Custo no relatório. Se presente, será usado para filtrar os setores.
  */
 export const filterSetoresByCDC = (relatorio, ListaSetor, ListaSetorOriginal) => {
- 
-  if (relatorio.ID_CentroCusto) {
-    ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
-      setorItem.id_centro_custo === relatorio.ID_CentroCusto || setorItem.value === null
-    );
-  } else {
-    ListaSetor.value = ListaSetorOriginal.value;
-  }
+    if (relatorio.ID_CentroCusto) {
+        ListaSetor.value = ListaSetorOriginal.value.filter((setorItem) => setorItem.id_centro_custo === relatorio.ID_CentroCusto || setorItem.value === null);
+    } else {
+        ListaSetor.value = ListaSetorOriginal.value;
+    }
 };
 
 /**
@@ -538,21 +522,19 @@ export const filterSetoresByCDC = (relatorio, ListaSetor, ListaSetorOriginal) =>
  * @param {number|null} relatorio.id_planta - O ID da planta, usado para filtrar os funcionários (opcional).
  */
 export const filterFuncionariosBySetorAndPlanta = (relatorio, ListaFuncionarios, ListaFuncionarioFiltrado) => {
+    const { id_setor, id_planta } = relatorio;
 
-  const {id_setor, id_planta} = relatorio;
+    if (!(id_setor || id_planta)) {
+        ListaFuncionarioFiltrado.value = ListaFuncionarios.value;
+    }
 
-  if (!(id_setor || id_planta)) {
-    ListaFuncionarioFiltrado.value = ListaFuncionarios.value;
-  }
+    ListaFuncionarioFiltrado.value = ListaFuncionarios.value.filter((funcionario) => {
+        const matchesSetor = id_setor ? funcionario.id_setor === id_setor : true;
 
-  ListaFuncionarioFiltrado.value = ListaFuncionarios.value.filter(funcionario => {
+        const matchesPlanta = id_planta ? funcionario.id_planta === id_planta : true;
 
-    const matchesSetor = id_setor ? funcionario.id_setor === id_setor : true;
-
-    const matchesPlanta = id_planta ? funcionario.id_planta === id_planta : true;
-
-    return matchesSetor && matchesPlanta;
-  });
+        return matchesSetor && matchesPlanta;
+    });
 };
 
 /**
@@ -573,47 +555,47 @@ export const filterFuncionariosBySetorAndPlanta = (relatorio, ListaFuncionarios,
  * @param {Array} ListaSetor.value - O array de objetos de setores que será atualizado.
  */
 export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor) => {
+    const semFiltro = (!relatorio.value.id_centro_custo || relatorio.value.id_centro_custo === '') && (!relatorio.value.id_planta || relatorio.value.id_planta === '') && (!relatorio.value.id_setor || relatorio.value.id_setor === '');
 
-  const semFiltro = (!relatorio.value.id_centro_custo || relatorio.value.id_centro_custo === '')
-   && (!relatorio.value.id_planta || relatorio.value.id_planta === '')
-    && (!relatorio.value.id_setor || relatorio.value.id_setor === '');
+    if (semFiltro) {
+        ListaFuncionarios.value = [...listaFuncionariosOriginal.value];
+        ListaSetor.value = [...ListaSetorOriginal.value];
+        return;
+    }
 
-  if (semFiltro) {
-      ListaFuncionarios.value = [...listaFuncionariosOriginal.value];
-      ListaSetor.value = [...ListaSetorOriginal.value];
-      return;
-  }
+    if (relatorio.value.id_centro_custo) {
+        ListaSetor.value = ListaSetorOriginal.value.filter((setor) => setor.id_centro_custo === relatorio.value.id_centro_custo);
+    } else {
+        ListaSetor.value = [...ListaSetorOriginal.value];
+    }
 
-  if (relatorio.value.id_centro_custo) {
-      ListaSetor.value = ListaSetorOriginal.value.filter((setor) => setor.id_centro_custo === relatorio.value.id_centro_custo);
-  } else {
-      ListaSetor.value = [...ListaSetorOriginal.value];
-  }
+    ListaFuncionarios.value = listaFuncionariosOriginal.value.filter((funcionario) => {
+        const cdcMatch = relatorio.value.id_centro_custo && funcionario.id_dentro_custo === relatorio.value.id_centro_custo;
 
-  ListaFuncionarios.value = listaFuncionariosOriginal.value.filter((funcionario) => {
+        const plantaMatch = relatorio.value.id_planta && funcionario.id_planta === relatorio.value.id_planta;
+        const setorMatch = relatorio.value.id_setor && funcionario.id_setor === relatorio.value.id_setor;
 
-      const cdcMatch = relatorio.value.id_centro_custo && funcionario.id_dentro_custo === relatorio.value.id_centro_custo;
-
-      const plantaMatch = relatorio.value.id_planta && funcionario.id_planta === relatorio.value.id_planta;
-      const setorMatch = relatorio.value.id_setor && funcionario.id_setor === relatorio.value.id_setor;
-
-      return cdcMatch || plantaMatch || setorMatch;
-  });
+        return cdcMatch || plantaMatch || setorMatch;
+    });
 };
 
-export function isMobEnabled (){
-  return store.Integracao;
+export function isMobEnabled() {
+    const store = useAuthStore();
+
+    return store.Integracao;
 }
 
-export const prepareListData =(params)=>{
+export const prepareListData = (params) => {
+    const store = useAuthStore();
+
     let baseData = {
-        id_usuario: store.userId || null,  
-        id_cliente: store.userIdCliente || null 
-    }
-    return store.userRole === 'Administrador' ? { ...params} : { ...baseData , ...params}
-}
+        id_usuario: store.userId || null,
+        id_cliente: store.userIdCliente || null
+    };
+    return store.userRole === 'Administrador' ? { ...params } : { ...baseData, ...params };
+};
 
 export function isMobileDevice() {
-  console.log(navigator.userAgent);
-  return /Mobi|Android/i.test(navigator.userAgent);
+    console.log(navigator.userAgent);
+    return /Mobi|Android/i.test(navigator.userAgent);
 }

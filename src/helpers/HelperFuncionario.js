@@ -1,6 +1,5 @@
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import { isValidDocPessoaFisica, isValidEmail } from '@/helpers/HelperValidacao';
-const store = useAuthStore();
 
 /**
  * Prepara os dados do funcionário para envio ao backend.
@@ -11,6 +10,7 @@ const store = useAuthStore();
  */
 export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdate = false) => {
     const formData = new FormData();
+    const store = useAuthStore();
 
     // Se um arquivo for selecionado, prepare para substituí-lo
     if (selectedFile.value) {
@@ -61,6 +61,8 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
  * @returns {Object} - Retorna um objeto contendo os dados preparados para o envio ou armazenamento.
  */
 export const prepareprodutoData = (funcionario, produto) => {
+const store = useAuthStore();
+    
     return {
         /**
          * ID do cliente associado ao produto. Obtido a partir da variável global `store.userIdCliente`.

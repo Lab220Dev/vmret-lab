@@ -29,7 +29,17 @@ const produtoService = {
       throw error; 
     }
   },
-
+  async listarProdutosSimples(data) {
+    try {
+      return axios.post('/produtos/listarResumo', data);  // Envia uma requisição POST para listar produtos com base nos dados fornecidos.
+    } catch (error) {
+      // Caso ocorra um erro, loga a mensagem de erro no console.
+      console.error('Erro ao listar produtos:', error.message);
+      
+      // Lança o erro novamente, permitindo que o chamador lide com ele.
+      throw error; 
+    }
+  },
   /**
    * Adiciona um novo produto ao sistema, incluindo arquivos (como imagens) se necessário.
    * 

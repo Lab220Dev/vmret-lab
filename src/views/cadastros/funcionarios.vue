@@ -1,6 +1,6 @@
 <script setup>
 // Importando funções e objetos do Vue.js para usar no componente
-import { reactive, ref, onMounted, watch , computed} from 'vue';
+import { reactive, ref, onMounted, watch, computed } from 'vue';
 // Importando a função 'useToast' para exibir notificações de sucesso ou erro
 import { useToast } from 'primevue/usetoast';
 // Importando o estilo do componente de data picker
@@ -23,13 +23,13 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import funcionarioService from '@/Services/funcionarioService.js';
 import * as formatservices from '@/helpers/HelperUtils.js';
 // Importando funções de ajuda relacionadas ao formulário do funcionarios
-import {resetFuncionarioForm,resetItens as resetProduto} from '@/helpers/formHelper.js';
-import { validadorcpf, validadoremail,validateForm } from '@/helpers/HelperFuncionario.js';
+import { resetFuncionarioForm, resetItens as resetProduto } from '@/helpers/formHelper.js';
+import { validadorcpf, validadoremail, validateForm } from '@/helpers/HelperFuncionario.js';
 import { useI18n } from 'vue-i18n';
 const { t, locale } = useI18n();
-const store = useAuthStore();// Acessa o store de autenticação para obter dados sobre o usuário logado
+const store = useAuthStore(); // Acessa o store de autenticação para obter dados sobre o usuário logado
 
-const dataStore = useDataStore();// Acessa o store de dados para obter informações sobre plantas e outros dados
+const dataStore = useDataStore(); // Acessa o store de dados para obter informações sobre plantas e outros dados
 
 const toast = useToast(); // Função para exibir notificações via toast
 const selectedFile = ref(null);
@@ -38,11 +38,11 @@ const handleFileSelected = (file) => {
 };
 
 // Cria uma referência reativa para armazenar erros, inicialmente vazia.
-const errors = ref({}); 
+const errors = ref({});
 
 // Cria uma referência reativa para armazenar o status do funcionário, com duas opções: 'Ativo' e 'Inativo'.
-const status  = computed(() => [
-    { label: t('active'), value: 'Ativo' },   // Opção de status 'Ativo'.
+const status = computed(() => [
+    { label: t('active'), value: 'Ativo' }, // Opção de status 'Ativo'.
     { label: t('inactive'), value: 'Inativo' } // Opção de status 'Inativo'.
 ]);
 const lazyParams = ref({
@@ -50,7 +50,7 @@ const lazyParams = ref({
     rows: 10, // Número de registros por página
     sortField: 'nome', // Campo padrão para ordenação
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {}, // Filtros aplicados
+    filters: {} // Filtros aplicados
 });
 //IMAGEM
 const imageUploader = ref(null);
@@ -75,50 +75,56 @@ let formatedHierarquiaOptions = ref([]);
 
 // Cria uma referência reativa para armazenar as plantas, inicialmente um array vazio.
 let plantas = ref([]);
-
+const centroCustoOptions = computed(() => dataStore.cdcsOptions);
+const plantaOptions = computed(() => dataStore.plantasOptions);
+const setorOptions = computed(() => dataStore.setoresOptions);
+const produtosOptions = computed(() => dataStore.produtosOptions);
+const ListaProdutos = computed(() => {
+    return produtosOptions.value.filter((produto) => produto.value !== null);
+});
 /**
  * Cria um objeto reativo para armazenar os dados de um funcionário, com as propriedades iniciais.
- * 
+ *
  * @type {Object}
  */
 let funcionario = reactive({
-    id_funcionario: '',     // ID do funcionário.
-    matricula: '',          // Matrícula do funcionário.
-    senha: '',              // Senha do funcionário.
-    nome: '',               // Nome do funcionário.
-    biometria: '',          // Primeira digital do funcionário.
-    biometria2: '',         // Segunda digital do funcionário.
-    data_admissao: null,    // Data de admissão do funcionário.
-    CPF: '',                // CPF do funcionário.
-    RG: '',                 // RG do funcionário.
-    CTPS: '',               // CTPS (Carteira de Trabalho e Previdência Social) do funcionário.
-    email: '',              // E-mail do funcionário.
-    status: '',             // Status do funcionário, como 'Ativo' ou 'Inativo'.
-    hora_inicial: '',       // Hora de início do expediente.
-    hora_final: '',         // Hora de término do expediente.
-    id_centro_custo: '',    // ID do centro de custo.
-    id_funcao: '',          // ID da função.
-    id_planta: '',          // ID da planta onde o funcionário está alocado.
-    id_setor: '',           // ID do setor onde o funcionário está alocado.
-    segunda: false,         // Se o funcionário trabalha na segunda-feira.
-    terca: false,           // Se o funcionário trabalha na terça-feira.
-    quarta: false,          // Se o funcionário trabalha na quarta-feira.
-    quinta: false,          // Se o funcionário trabalha na quinta-feira.
-    sexta: false,           // Se o funcionário trabalha na sexta-feira.
-    sabado: false,          // Se o funcionário trabalha no sábado.
-    domingo: false,         // Se o funcionário trabalha no domingo.
-    nomearquivo: '',        // Nome do arquivo do funcionário (por exemplo, foto ou documento).
-    itens: []               // Lista de itens relacionados ao funcionário.
+    id_funcionario: '', // ID do funcionário.
+    matricula: '', // Matrícula do funcionário.
+    senha: '', // Senha do funcionário.
+    nome: '', // Nome do funcionário.
+    biometria: '', // Primeira digital do funcionário.
+    biometria2: '', // Segunda digital do funcionário.
+    data_admissao: null, // Data de admissão do funcionário.
+    CPF: '', // CPF do funcionário.
+    RG: '', // RG do funcionário.
+    CTPS: '', // CTPS (Carteira de Trabalho e Previdência Social) do funcionário.
+    email: '', // E-mail do funcionário.
+    status: '', // Status do funcionário, como 'Ativo' ou 'Inativo'.
+    hora_inicial: '', // Hora de início do expediente.
+    hora_final: '', // Hora de término do expediente.
+    id_centro_custo: '', // ID do centro de custo.
+    id_funcao: '', // ID da função.
+    id_planta: '', // ID da planta onde o funcionário está alocado.
+    id_setor: '', // ID do setor onde o funcionário está alocado.
+    segunda: false, // Se o funcionário trabalha na segunda-feira.
+    terca: false, // Se o funcionário trabalha na terça-feira.
+    quarta: false, // Se o funcionário trabalha na quarta-feira.
+    quinta: false, // Se o funcionário trabalha na quinta-feira.
+    sexta: false, // Se o funcionário trabalha na sexta-feira.
+    sabado: false, // Se o funcionário trabalha no sábado.
+    domingo: false, // Se o funcionário trabalha no domingo.
+    nomearquivo: '', // Nome do arquivo do funcionário (por exemplo, foto ou documento).
+    itens: [] // Lista de itens relacionados ao funcionário.
 });
 
 // Cria uma referência reativa para armazenar a lista de produtos, inicialmente um array vazio.
-const ListaProdutos = ref([]);
+// const ListaProdutos = ref([]);
 
 /**
  * Cria uma referência reativa para armazenar a lista de produtos disponíveis,
  * utilizando `reactive` para garantir que as alterações sejam rastreadas e reativas.
  * Inicialmente, é um array vazio.
- * 
+ *
  * @type {Array} Inicializa como um array vazio.
  */
 const ListaProdutosDisponiveis = reactive([]);
@@ -131,17 +137,17 @@ const ListaItemsSetor = ref([]);
 
 // Cria uma referência reativa para controlar a visibilidade da edição, inicialmente como `false` (oculto).
 const editVisible = ref(false);
-const Mob = ref(false)
+const Mob = ref(false);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Configuração para o filtro global de busca.
 });
 
 // Cria uma referência reativa para armazenar o produto selecionado, com propriedades padrão vazias.
 const selectedProduct = ref({
-    id_produto: '',        // ID do produto selecionado.
-    nome: '',              // Nome do produto selecionado.
-    sku: '',               // SKU (Stock Keeping Unit) do produto selecionado.
-    quantidade: 1          // Quantidade do produto selecionado, inicialmente configurada para 1.
+    id_produto: '', // ID do produto selecionado.
+    nome: '', // Nome do produto selecionado.
+    sku: '', // SKU (Stock Keeping Unit) do produto selecionado.
+    quantidade: 1 // Quantidade do produto selecionado, inicialmente configurada para 1.
 });
 
 // Cria uma referência reativa para armazenar a lista de funcionários, inicialmente um array vazio.
@@ -164,7 +170,7 @@ const active = ref(0);
 
 // Cria uma referência reativa para armazenar o valor de "itens ativos", inicialmente configurado para 0.
 const activeItens = ref(0);
-const totalRecords = ref(0); 
+const totalRecords = ref(0);
 
 const loading = ref(false);
 
@@ -185,13 +191,13 @@ const dropdown5 = ref(null);
 
 /**
  * Formata a data usando o serviço de formatação para transformá-la em uma string.
- * 
+ *
  * @param {Date} date - A data a ser formatada.
  * @returns {string} Retorna a data formatada como uma string.
  */
- const format = (date) => {
-   // Chama o serviço de formatação para formatar a data em uma string.
-   return formatservices.formatDateToString(date);
+const format = (date) => {
+    // Chama o serviço de formatação para formatar a data em uma string.
+    return formatservices.formatDateToString(date);
 };
 
 /**
@@ -214,10 +220,10 @@ const filteredCount = ref(0);
 
 /**
  * Função que é chamada quando uma linha é selecionada em uma tabela ou lista.
- * 
+ *
  * @param {Object} event - O evento gerado pela seleção da linha.
  * @property {Object} event.data - Os dados do funcionário selecionado.
- * 
+ *
  * @returns {Promise<void>} Retorna uma Promise, pois executa ações assíncronas, como chamadas de API.
  */
 const onRowSelect = async (event) => {
@@ -254,10 +260,10 @@ const onRowSelect = async (event) => {
 
 /**
  * Função chamada quando o setor selecionado é alterado.
- * 
+ *
  * @param {Object} event - O evento gerado pela mudança no setor.
  * @property {any} event.value - O valor do setor selecionado.
- * 
+ *
  * @returns {Promise<void>} Retorna uma Promise, pois faz uma requisição assíncrona.
  */
 const setorChange = async (event) => {
@@ -300,23 +306,23 @@ const onSortChange = async (event) => {
 const onPageChange = async (event) => {
     lazyParams.value.first = event.first; // Atualiza o índice inicial
     lazyParams.value.rows = event.rows; // Atualiza o número de registros por página
-   await  loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
+    await loadFuncionarios(Math.ceil(event.first / event.rows) + 1); // Recalcula a página atual e busca os dados
 };
 const loadFuncionarios = async (page = 1) => {
     const params = {
-            first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
-            rows: lazyParams.value.rows, // Número de registros por página
-            sortField: lazyParams.value.sortField, // Campo para ordenação
-            sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
-            filters: lazyParams.value.filters, // Filtros aplicados
-        };
-        const data = formatservices.prepareListData(params);
+        first: (page - 1) * lazyParams.value.rows, // Calcula o índice inicial com base na página
+        rows: lazyParams.value.rows, // Número de registros por página
+        sortField: lazyParams.value.sortField, // Campo para ordenação
+        sortOrder: lazyParams.value.sortOrder, // Ordem (1 = ascendente, -1 = descendente)
+        filters: lazyParams.value.filters // Filtros aplicados
+    };
+    const data = formatservices.prepareListData(params);
     try {
         // Define a referência reativa `loading.value` para `true` para indicar que os dados estão sendo carregados.
         loading.value = true;
         const response = await funcionarioService.listarFuncionariosPaginado(data);
         ListaFuncionarios.value = response.data.funcionarios;
-        totalRecords.value = response.data.totalRecords
+        totalRecords.value = response.data.totalRecords;
 
         // Chama a função `resetTable` para resetar a tabela (ou reiniciar a visualização da lista).
         resetTable();
@@ -331,7 +337,6 @@ const loadFuncionarios = async (page = 1) => {
         loading.value = false;
     }
 };
-
 
 watch(
     () => filters.value.global.value,
@@ -348,7 +353,7 @@ const adicionarFuncionario = async () => {
     try {
         loading.value = true;
         const { isValid, errors } = validateForm(funcionario);
-        if(!isValid){
+        if (!isValid) {
             throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
         }
         await funcionarioService.adicionarFuncionario(funcionario, selectedFile);
@@ -359,7 +364,7 @@ const adicionarFuncionario = async () => {
         resetForm();
         resetFuncionarioForm(funcionario);
     } catch (error) {
-        toast.add({ severity: 'error', summary: t('title_error'), detail:  error.message || t('employee_form_default_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('employee_form_default_error'), life: 3000 });
     } finally {
         loading.value = false; // Desativando loading
     }
@@ -367,13 +372,10 @@ const adicionarFuncionario = async () => {
 
 const loadData = async () => {
     try {
-        plantas = dataStore.plantas || (await dataStore.fetchPlantas());
-        setor = dataStore.setores || (await dataStore.fetchSetores());
-        centroCusto = dataStore.cdcs || (await dataStore.fetchCdc());
-        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
-
-        //excluindo a opção 'Todos' e obtendo os outros dados
-        ListaProdutos.value = produtos.filter((produto) => produto.label !== 'Todos');
+        if (!dataStore.plantas) await dataStore.fetchPlantas();
+        if (!dataStore.setores) await dataStore.fetchSetores();
+        if (!dataStore.cdcs) await dataStore.fetchCdc();
+        if (!dataStore.produtos) await dataStore.fetchProdutos();
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
     }
@@ -403,7 +405,7 @@ const listarProdutosDisponiveis = () => {
 
 const fetchHieraquiaOptions = async () => {
     try {
-        const response = await funcionarioService.fetchHieraquiaOptions();  
+        const response = await funcionarioService.fetchHieraquiaOptions();
         hieraquiaoptions = response.data;
         formatedHierarquiaOptions = hieraquiaoptions.map((hieraquiaoptions) => ({
             label: ` ${hieraquiaoptions.id_funcao}`,
@@ -458,8 +460,8 @@ const getImagem = async (filename) => {
     try {
         const response = await funcionarioService.obterImagem(store.userIdCliente, filename);
         if (response.status === 200) {
-        const { image, mimeType } = response.data;
-        imageUrl.value = `data:${mimeType};base64,${image}`;
+            const { image, mimeType } = response.data;
+            imageUrl.value = `data:${mimeType};base64,${image}`;
         }
     } catch (error) {
         return imagePlaceholder;
@@ -516,7 +518,7 @@ const resetForm = () => {
 };
 
 const resetItens = () => {
-    resetProduto(selectedProduct)
+    resetProduto(selectedProduct);
 };
 
 const SalvarProduto = async () => {
@@ -536,7 +538,6 @@ const SalvarProduto = async () => {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('employee_product_error'), life: 3000 });
     } finally {
         loading.value = false;
-        
     }
 };
 
@@ -575,7 +576,7 @@ const atualizarFuncionario = async () => {
     try {
         loading.value = true;
         const { isValid, errors } = validateForm(funcionario);
-        if(!isValid){
+        if (!isValid) {
             throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
         }
         await funcionarioService.atualizarFuncionario(funcionario, selectedFile);
@@ -585,7 +586,7 @@ const atualizarFuncionario = async () => {
         active.value = 0;
         resetForm();
     } catch (error) {
-        toast.add({ severity: 'error', summary:t('title_error'), detail:  error.message||t('employee_update_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('employee_update_error'), life: 3000 });
     } finally {
         loading.value = false;
     }
@@ -662,8 +663,8 @@ const validarCampos = () => {
         console.error(error); // Para depuração
         toast.add({
             severity: 'error',
-                summary: t('title_error'),
-                detail: t('employee_product_fileds'),
+            summary: t('title_error'),
+            detail: t('employee_product_fileds'),
             life: 3000
         });
         return false;
@@ -678,7 +679,7 @@ const hideDialog = () => {
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active" >
+        <TabView v-model:activeIndex="active">
             <TabPanel :header="$t('employee_list')">
                 <div class="col-12">
                     <DataTable
@@ -693,31 +694,30 @@ const hideDialog = () => {
                         removableSort
                         :rowsPerPageOptions="[5, 10, 20, 50]"
                         dataKey="id"
-                        :sortOrder="lazyParams.value?.sortOrder||1"
-                        :sortField="lazyParams.value?.sortField ||'nome'"
+                        :sortOrder="lazyParams.value?.sortOrder || 1"
+                        :sortField="lazyParams.value?.sortField || 'nome'"
                         @filter="onFilterChange($event)"
                         @page="onPageChange($event)"
                         @sort="onSortChange($event)"
                         :globalFilterFields="['nome', 'matricula']"
                         :metaKeySelection="false"
                         @rowSelect="onRowSelect"
-                        
                     >
                         <template #header>
                             <div class="flex justify-content-between align-items-center mt-4">
                                 <div class="font-semibold">
-                                    <span>{{$t('total_records',{count: totalRecords})}}</span>
+                                    <span>{{ $t('total_records', { count: totalRecords }) }}</span>
                                 </div>
                                 <IconField iconPosition="left">
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" @input="debouncedFilterChange"  />
+                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" @input="debouncedFilterChange" />
                                 </IconField>
                             </div>
                         </template>
 
-                        <template #empty> {{t('no_employee')}} </template>
+                        <template #empty> {{ t('no_employee') }} </template>
 
                         <Column field="nome" sortable :header="t('name')" class="col-6"></Column>
                         <Column field="matricula" sortable :header="t('employee_id')" class="col-6"></Column>
@@ -732,16 +732,16 @@ const hideDialog = () => {
                             <!--form de cadastro de novo funcionario-->
                             <div class="p-fluid formgrid grid m-0 p-0">
                                 <div class="full lg:col-8 md:col-6 sm:col-12">
-                                    <label for="name">{{t('name')}}:</label>
+                                    <label for="name">{{ t('name') }}:</label>
                                     <InputText class="my-2" v-model="funcionario.nome" id="name" type="text"> </InputText>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="matricula">{{t('employee_id')}}:</label>
+                                    <label for="matricula">{{ t('employee_id') }}:</label>
                                     <InputText class="my-2" id="matricula" v-model="funcionario.matricula" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="senha">{{t('password')}}:</label>
-                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" autocomplete="new-password"/>
+                                    <label for="senha">{{ t('password') }}:</label>
+                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" autocomplete="new-password" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="Hash">Hash 1:</label>
@@ -752,62 +752,49 @@ const hideDialog = () => {
                                     <InputText class="my-2" disabled id="Hash2" v-model="funcionario.biometria2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="DataAdmissao">{{t('admission_date')}}:</label>
+                                    <label for="DataAdmissao">{{ t('admission_date') }}:</label>
                                     <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="cpf">{{t('ssn')}}:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" :mask="$t('docmask')" 
-                                    :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false"/>
+                                    <label for="cpf">{{ t('ssn') }}:</label>
+                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" :mask="$t('docmask')" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false" />
                                     <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="rg">{{t('identity_document')}}:</label>
-                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" :autoClear="false"/>
+                                    <label for="rg">{{ t('identity_document') }}:</label>
+                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" :autoClear="false" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="ctps">{{t('work_card')}}:</label>
-                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" 
-                                    mask="9999999/9999" :unmask="true" :autoClear="false" />
+                                    <label for="ctps">{{ t('work_card') }}:</label>
+                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" :autoClear="false" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="email">{{t('email')}}:</label>
-                                    <InputText class="my-2" id="email" v-model="funcionario.email" 
-                                    :invalid="!!errors.email" @blur="validateEmail" />
+                                    <label for="email">{{ t('email') }}:</label>
+                                    <InputText class="my-2" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
                                     <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="perfil">{{t('cost_center')}}:</label>
-                                    <Dropdown class="my-2" filter v-model="funcionario.id_centro_custo" 
-                                    :options="centroCusto" optionLabel="label" optionValue="value" 
-                                    :placeholder="$t('select_center_cost')" ref="dropdown1" />
+                                    <label for="perfil">{{ t('cost_center') }}:</label>
+                                    <Dropdown class="my-2" filter v-model="funcionario.id_centro_custo" :options="centroCustoOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_center_cost')" ref="dropdown1" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="planta">{{t('factory')}}:</label>
-                                    <Dropdown filter class="my-2" v-model="funcionario.id_planta" :options="plantas" 
-                                    optionLabel="label" optionValue="value"
-                                    :placeholder="$t('select_factory')" ref="dropdown2" />
+                                    <label for="planta">{{ t('factory') }}:</label>
+                                    <Dropdown filter class="my-2" v-model="funcionario.id_planta" :options="plantaOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_factory')" ref="dropdown2" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="setor">{{t('sector')}}</label>
-                                    <Dropdown filter class="my-2" v-model="funcionario.id_setor" :options="setor" 
-                                    optionLabel="label" optionValue="value" :placeholder="$t('select_sector')"
-                                     @change="setorChange" ref="dropdown3" />
+                                    <label for="setor">{{ t('sector') }}</label>
+                                    <Dropdown filter class="my-2" v-model="funcionario.id_setor" :options="setorOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_sector')" @change="setorChange" ref="dropdown3" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label class="ajustetexto" for="funcao">{{t('function')}}:</label>
-                                    <Dropdown filter class="my-2" v-model="funcionario.id_funcao" 
-                                    :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value"
-                                     :placeholder="$t('select_function')" ref="dropdown4" />
+                                    <label class="ajustetexto" for="funcao">{{ t('function') }}:</label>
+                                    <Dropdown filter class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_function')" ref="dropdown4" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="status">{{t('status')}}:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" 
-                                    :options="status" optionLabel="label" optionValue="value" 
-                                    :placeholder="$t('select_status')" ref="dropdown5"></Dropdown>
+                                    <label for="status">{{ t('status') }}:</label>
+                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" :placeholder="$t('select_status')" ref="dropdown5"></Dropdown>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="inicio">{{t('start_time')}}:</label>
+                                    <label for="inicio">{{ t('start_time') }}:</label>
                                     <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
@@ -815,7 +802,7 @@ const hideDialog = () => {
                                     </VueDatePicker>
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="inicio">{{t('end_time')}}:</label>
+                                    <label for="inicio">{{ t('end_time') }}:</label>
                                     <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
                                         <template #input-icon>
                                             <img class="input-slot-image" :src="clockurl" />
@@ -824,39 +811,36 @@ const hideDialog = () => {
                                 </div>
                                 <!-- primeira parte do nested -->
                                 <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
-                                    <Fieldset
-                                         :legend="t('select_days_for_employee')"
-                                        class="mt-5 p-1 lg:col-12 md:col-12 sm:col-12"
-                                    >
+                                    <Fieldset :legend="t('select_days_for_employee')" class="mt-5 p-1 lg:col-12 md:col-12 sm:col-12">
                                         <label for="fim"></label>
                                         <div id="fim" class="checkbox-container flex align-content-end flex-wrap mx-4">
                                             <div class="checkbox-items m-2 flex align-items-end">
                                                 <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
-                                                <label for="Segunda" class="ml-2"> {{t('monday')}} </label>
+                                                <label for="Segunda" class="ml-2"> {{ t('monday') }} </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
                                                 <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
-                                                <label for="Terca" class="ml-2"> {{t('tuesday')}} </label>
+                                                <label for="Terca" class="ml-2"> {{ t('tuesday') }} </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
                                                 <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
-                                                <label for="Quarta" class="ml-2"> {{t('wednesday')}} </label>
+                                                <label for="Quarta" class="ml-2"> {{ t('wednesday') }} </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
                                                 <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
-                                                <label for="Quinta" class="ml-2"> {{t('thursday')}} </label>
+                                                <label for="Quinta" class="ml-2"> {{ t('thursday') }} </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
                                                 <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
-                                                <label for="Sexta" class="ml-2">{{t('friday')}} </label>
+                                                <label for="Sexta" class="ml-2">{{ t('friday') }} </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
                                                 <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
-                                                <label for="Sabado" class="ml-2"> {{t('saturday')}} </label>
+                                                <label for="Sabado" class="ml-2"> {{ t('saturday') }} </label>
                                             </div>
                                             <div class="checkbox-items m-2 flex align-items-center">
                                                 <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
-                                                <label for="Domingo" class="ml-2">{{t('sunday')}}</label>
+                                                <label for="Domingo" class="ml-2">{{ t('sunday') }}</label>
                                             </div>
                                         </div>
                                     </Fieldset>
@@ -867,10 +851,37 @@ const hideDialog = () => {
                                 </div>
                             </div>
                             <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="atualizarFuncionario" :disabled="Mob"/>
-                                <Button v-if="editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('delete')" icon="pi pi-trash" severity="danger" @click="deleteFuncionarioDialog = true" :disabled="Mob"/>
+                                <Button
+                                    v-if="editVisible"
+                                    style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2"
+                                    :label="$t('save')"
+                                    icon="pi pi-check"
+                                    severity="primary"
+                                    @click="atualizarFuncionario"
+                                    :disabled="Mob"
+                                />
+                                <Button
+                                    v-if="editVisible"
+                                    style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2"
+                                    :label="$t('delete')"
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    @click="deleteFuncionarioDialog = true"
+                                    :disabled="Mob"
+                                />
 
-                                <Button v-if="!editVisible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarFuncionario()" :disabled="Mob"/>
+                                <Button
+                                    v-if="!editVisible"
+                                    style="width: 15%"
+                                    class="buttons flex align-items-center justify-content-center m-2"
+                                    :label="$t('save')"
+                                    icon="pi pi-check"
+                                    severity="info"
+                                    @click="adicionarFuncionario()"
+                                    :disabled="Mob"
+                                />
                             </div>
                             <!--Datatables com os items do setor + os que o funcionario pode retirar-->
                             <div class="col-12">
@@ -900,7 +911,7 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
-                                            <template #empty> {{t('employee_itens_empty')}} </template>
+                                            <template #empty> {{ t('employee_itens_empty') }} </template>
                                             <Column field="nome" sortable style="width: 45%" :header="t('name')"></Column>
                                             <Column field="sku" sortable :header="t('sku')"></Column>
                                             <Column field="qtd_limite" :header="t('quantity')"></Column>
@@ -933,7 +944,7 @@ const hideDialog = () => {
                                                     </div>
                                                 </div>
                                             </template>
-                                            <template #empty>{{t('employee_itens_empty')}} </template>
+                                            <template #empty>{{ t('employee_itens_empty') }} </template>
                                             <Column field="nome_produto" sortable style="width: 45%" :header="t('name')"></Column>
                                             <Column field="sku" sortable :header="t('sku')"></Column>
                                             <Column field="quantidade" :header="t('quantity')"></Column>
@@ -952,15 +963,15 @@ const hideDialog = () => {
                 </div>
             </TabPanel>
         </TabView>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="$t('item_edit')" :draggable="false" :modal="true" class="p-fluid" >
+        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="$t('item_edit')" :draggable="false" :modal="true" class="p-fluid">
             <div>
                 <div class="p-fluid formgrid grid">
                     <div class="field lg:col-12 md:col-6 sm:col-4">
-                        <label for="name">{{t('name')}}:</label>
+                        <label for="name">{{ t('name') }}:</label>
                         <InputText disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
                     </div>
                     <div class="field lg:col-4 md:col-6 sm:col-4">
-                        <label for="Quantidade">{{t('quantity')}}</label>
+                        <label for="Quantidade">{{ t('quantity') }}</label>
                         <InputText id="Quantidade" v-model="selectedProduct.quantidade" />
                     </div>
                 </div>
@@ -971,24 +982,24 @@ const hideDialog = () => {
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="visible" 
-        :modal="true" 
-        :draggable="false" 
-        :header="$t('add_employee_items')" >
+        <Dialog v-model:visible="visible" :modal="true" :draggable="false" :header="$t('add_employee_items')">
             <div class="grid my-1">
                 <div class="col-12">
-                    <label for="Produto" class="mr-2 font-semibold col-2">{{t('product')}}: </label>
-                    <Dropdown 
-                    v-model="selectedProduct.id_produto" :options="ListaProdutosDisponiveis" optionLabel="label" 
-                    :virtualScrollerOptions="{ itemSize: 30 }"
-                    :filter="true"
-                    :filterBy="'label'"
-                    optionValue="value" 
-                    :placeholder="$t('select_product')" 
-                    class="col-8 ml-1 p-0" />
+                    <label for="Produto" class="mr-2 font-semibold col-2">{{ t('product') }}: </label>
+                    <Dropdown
+                        v-model="selectedProduct.id_produto"
+                        :options="ListaProdutosDisponiveis"
+                        optionLabel="label"
+                        :virtualScrollerOptions="{ itemSize: 30 }"
+                        :filter="true"
+                        :filterBy="'label'"
+                        optionValue="value"
+                        :placeholder="$t('select_product')"
+                        class="col-8 ml-1 p-0"
+                    />
                 </div>
                 <div class="col-12">
-                    <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{t('quantity')}}: </label>
+                    <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{ t('quantity') }}: </label>
                     <InputNumber variant="filled" class="ml-5" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
                 </div>
             </div>
@@ -998,15 +1009,12 @@ const hideDialog = () => {
                 <Button type="button" :label="$t('add')" @click="SalvarProduto"></Button>
             </div>
         </Dialog>
-        <Dialog v-model:visible="deleteProductDialog" :draggable="false" 
-        :style="{ width: '450px' }" :header="$t('dialog_delete_item')" 
-        :modal="true">
+        <Dialog v-model:visible="deleteProductDialog" :draggable="false" :style="{ width: '450px' }" :header="$t('dialog_delete_item')" :modal="true">
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
                 <span v-if="selectedProduct.id_produto">
-                    {{ t('dialog_delete_employee',{nome:selectedProduct.nome_produto}) }}
-                  </span
-                >
+                    {{ t('dialog_delete_employee', { nome: selectedProduct.nome_produto }) }}
+                </span>
             </div>
             <template #footer>
                 <Button :label="$t('no')" icon="pi pi-times" text @click="hideDialog()" />
@@ -1017,7 +1025,7 @@ const hideDialog = () => {
             <div class="confirmation-content">
                 <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
                 <span class="">
-                    {{ t('dialog_delete_item_confirm',{id:funcionario.id_funcionario, name:funcionario.nome}) }}
+                    {{ t('dialog_delete_item_confirm', { id: funcionario.id_funcionario, name: funcionario.nome }) }}
                 </span>
             </div>
             <template #footer>
