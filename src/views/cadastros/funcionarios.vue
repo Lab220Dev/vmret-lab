@@ -753,7 +753,7 @@ const hideDialog = () => {
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="DataAdmissao">{{ t('admission_date') }}:</label>
-                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
+                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
                                 </div>
                                 <div class="full lg:col-4 md:col-6 sm:col-12">
                                     <label for="cpf">{{ t('ssn') }}:</label>

@@ -10,7 +10,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de S
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t, locale } = useI18n();
 // Definindo as variáveis reativas do componente
 const filteredCount = ref(0); // Contagem filtrada de itens na tabela
 const showDialog = ref(false); // Controle de visibilidade do diálogo de erro
@@ -205,7 +205,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             ref="datepicker1"
                             :enable-time-picker="false"
@@ -225,7 +225,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             ref="datepicker1"
                             :enable-time-picker="false"

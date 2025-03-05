@@ -10,7 +10,7 @@ import relatorioService from '@/Services/relatorioService.js'; // Importa o serv
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t ,locale } = useI18n();
 
 const showDialog = ref(false); // Controla a exibição de um diálogo
 const dialogMessage = ref(''); // Mensagem exibida no diálogo
@@ -134,7 +134,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             @open="handleDatepickerOpen"
@@ -151,7 +151,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             teleport="body"

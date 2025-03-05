@@ -13,7 +13,7 @@ import { useI18n } from 'vue-i18n';
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const showDialog = ref(false); // Controla a visibilidade do dialog de erro
 const dialogMessage = ref(''); // Armazena a mensagem de erro que será exibida no dialog
@@ -224,7 +224,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             :placeholder="$t('initial_date_placeholder')"
@@ -244,7 +244,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             :placeholder="$t('end_date_placeholder')"

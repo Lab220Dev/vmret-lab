@@ -9,7 +9,7 @@ import laService from '@/Services/laService.js'; // Serviço para buscar logs we
 import {formatDateToString} from '@/helpers/HelperUtils.js'
 import funcionarioService from '@/Services/funcionarioService.js';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t,locale } = useI18n();
 
 const filteredCount = ref(0); // Contador reativo para o número de registros filtrados
 
@@ -139,7 +139,7 @@ onMounted(() => {
                         :showOnFocus="false"
                         :format="formatDateToString"
                         auto-apply
-                        locale="pt-BR"
+                        :locale="locale"
                         @open="handleDatepickerOpen"
                         :enable-time-picker="false"
                         teleport="body"

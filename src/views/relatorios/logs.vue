@@ -11,7 +11,7 @@ import usuarioService from '@/services/usuarioService';
 
 import funcionarioService from '@/Services/funcionarioService.js';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const filteredCount = ref(0); // Contador reativo para o número de registros filtrados
 
@@ -212,7 +212,7 @@ onMounted(() => {
                         :showOnFocus="false"
                         :format="format"
                         auto-apply
-                        locale="pt-BR"
+                        :locale="locale"
                         @open="handleDatepickerOpen"
                         :enable-time-picker="false"
                         teleport="body"
@@ -228,7 +228,7 @@ onMounted(() => {
                         :showOnFocus="false"
                         :format="format"
                         auto-apply
-                        locale="pt-BR"
+                        :locale="locale"
                         @open="handleDatepickerOpen"
                         :enable-time-picker="false"
                         teleport="body"

@@ -13,7 +13,7 @@ import { useI18n } from 'vue-i18n';
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
 
-const { t } = useI18n();
+const { t,locale } = useI18n();
 /**
  * @type {Ref<boolean>}
  * Flag que controla a exibição do modal de mensagem.
@@ -371,7 +371,7 @@ onMounted(async () => {
                     showIcon
                     :showOnFocus="false"
                     :format="formatDateToString"
-                    locale="pt-BR"
+                    :locale="locale"
                     :enable-time-picker="false"
                     auto-apply
                     ref="datepicker1"
@@ -391,7 +391,7 @@ onMounted(async () => {
                     showIcon
                     :showOnFocus="false"
                     :format="formatDateToString"
-                    locale="pt-BR"
+                    :locale="locale"
                     :enable-time-picker="false"
                     auto-apply
                     ref="datepicker2"

@@ -40,7 +40,7 @@ import { useDataStore } from '@/store/dataStore.js'; // Importa o store de auten
 
 // Definindo referências reativas para a UI e lógica do aplicativo.
 
-const { t } = useI18n();
+const { t,locale } = useI18n();
 
 /**
  * Contagem de registros filtrados.
@@ -253,7 +253,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             @open="handleDatepickerOpen"
@@ -271,7 +271,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="formatDateToString"
-                            locale="pt-BR"
+                           :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             @open="handleDatepickerOpen"

@@ -15,7 +15,7 @@ import { useI18n } from 'vue-i18n';
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const dataStore = useDataStore(); // Instancia o store de dados
 const showDialog = ref(false); // Estado reativo para controlar a visibilidade de uma caixa de diálogo
 const dialogMessage = ref(''); // Estado reativo para armazenar a mensagem a ser exibida no diálogo
@@ -239,7 +239,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="format"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             :placeholder="$t('initial_date_placeholder')"
@@ -256,7 +256,7 @@ onMounted(() => {
                             showIcon
                             :showOnFocus="false"
                             :format="format"
-                            locale="pt-BR"
+                            :locale="locale"
                             auto-apply
                             :enable-time-picker="false"
                             :placeholder="$t('end_date_placeholder')"

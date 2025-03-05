@@ -15,7 +15,7 @@ import * as formatservices from '@/helpers/HelperUtils.js';
 import laService from '@/Services/laService.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t ,locale} = useI18n();
 // import servicoGenerico from '@/Services/genericService.js';
 /**
  * Inicializa o toast para exibir notificações ao usuário.
@@ -186,7 +186,7 @@ onMounted(async () => {
             <div class="full lg:col-4 md:col-6 sm:col-12">
                 <label for="prazo"> {{ t('withdrawal_deadline') }}:</label>
                 <!-- Componente AutoComplete para o prazo -->
-                <VueDatePicker class="my-2" v-model="libAvulsa.limiteRetirada" showIcon :showOnFocus="false" :format="format" locale="pt-BR" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
+                <VueDatePicker class="my-2" v-model="libAvulsa.limiteRetirada" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
                 <!-- Mensagem esperada: Campo sempre desabilitado (placeholder fixo). -->
             </div>
             <!-- Campo para o voucher -->

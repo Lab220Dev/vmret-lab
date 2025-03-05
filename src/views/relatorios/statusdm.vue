@@ -8,7 +8,7 @@ import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados
 import { getTimeFromString, getDateFromString } from '@/helpers/HelperUtils.js';
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t, locale } = useI18n();
 // Declarando variáveis reativas
 const filteredCount = ref(0); // Contador de itens filtrados
 const dataStore = useDataStore(); // Cria uma instância do store de dados
@@ -97,7 +97,7 @@ const handleDatepickerOpen = () => {
                 showIcon
                 :showOnFocus="false"
                 :format="formatDate"
-                locale="pt-BR"
+                :locale="locale"
                 auto-apply
                 :enable-time-picker="false"
                 :placeholder="$t('select_date')"
