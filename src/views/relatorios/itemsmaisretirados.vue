@@ -102,49 +102,49 @@ const todosOption = { label: 'Todos', value: null };
  * Lista de DMs (Documentos de Medição).
  * @default [todosOption]
  */
-const dms = ref([todosOption]);
+const dms = computed(() => dataStore.dmsOptions);
 
 /**
  * @type {Ref<Array<any>>}
  * Lista de Plantas.
  * @default [todosOption]
  */
-const plantas = ref([todosOption]);
+const plantas = computed(() => dataStore.plantasOptions);
 
 /**
  * @type {Ref<Array<any>>}
  * Lista de Centros de Custo.
  * @default [todosOption]
  */
-const centroCusto = ref([todosOption]);
+const centroCusto = computed(() => dataStore.cdcsOptions);
 
 /**
  * @type {Ref<Array<any>>}
  * Lista original de funcionários.
  * @default []
  */
-const ListaFuncionariosOriginal = ref([]);
+const ListaFuncionariosOriginal  = computed(() => dataStore.funcionariosOptions);
 
 /**
  * @type {Ref<Array<any>>}
  * Lista filtrada de funcionários.
  * @default []
  */
-const ListaFuncionarios = ref([]);
+const ListaFuncionarios = computed(() => dataStore.funcionariosOptions);
 
 /**
  * @type {Ref<Array<any>>}
  * Lista original de setores.
  * @default []
  */
-const ListaSetorOriginal = ref([]);
+const ListaSetorOriginal= computed(() => dataStore.setoresOptions);
 
 /**
  * @type {Ref<Array<any>>}
  * Lista filtrada de setores.
  * @default []
  */
-const ListaSetor = ref([]);
+const ListaSetor = computed(() => dataStore.setoresOptions);
 
 /**
  * @type {Ref<Object>}
@@ -277,13 +277,11 @@ const exportJSON = () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
-        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
-        ListaSetor.value = ListaSetorOriginal.value; // Carrega a lista de setores
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
-        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
+        if (!dataStore.dms)(await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        if (!dataStore.plantas) await dataStore.fetchPlantas(); // Carrega a lista de plantas
+        if (!dataStore.setores) await dataStore.fetchSetores(); // Carrega a lista de setores
+        if (!dataStore.cdcs) await dataStore.fetchCdc(); // Carrega a lista de centros de custo
+        if (!dataStore.funcionarios) await dataStore.fetchFuncionarios(); // Carrega a lista de funcionários
     } catch (error) {
         toast.add({
             severity: 'error',

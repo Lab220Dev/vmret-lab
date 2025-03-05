@@ -43,7 +43,7 @@ const toast = useToast(); // Função para exibir notificações via toast
 const active = ref(0); // Controle de qual aba está ativa
 const loading = ref(false); // Controle de carregamento de dados
 const mob = ref(false); // Controle da habilidade de manipular produtos baseado na integração com Mob
-let formatedPlantaOptions = ref([]); // Opções formatadas para as plantas
+let formatedPlantaOptions = computed(() => dataStore.plantasOptions); // Opções formatadas para as plantas
 const tipoProduto = computed(() => [
     // Opções de tipos de produtos disponíveis
     { label: t('product_type_epi'), value: 1 }, // Tipo de produto EPI
@@ -218,7 +218,7 @@ const onPageChange = (event) => {
 const loadData = async () => {
    loading.value = true;
     try {
-        formatedPlantaOptions.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega as opções de plantas
+        if (!dataStore.plantas) await dataStore.fetchPlantas();
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Exibe erro no console

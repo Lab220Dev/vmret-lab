@@ -4,21 +4,20 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Componente VueDatePicker 
 import { FilterMatchMode } from 'primevue/api'; // Função da biblioteca PrimeVue para modos de filtro
 import { useToast } from 'primevue/usetoast'; // Hook de notificação Toast da PrimeVue
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilos do VueDatePicker
-import { ref, onMounted, watch } from 'vue'; // Funções do Vue (reactividade, lifecycle, watch)
-import { useAuthStore } from '@/store/authStore.js'; // Composição de store para autenticação
+import { ref, onMounted, watch, computed } from 'vue'; // Funções do Vue (reactividade, lifecycle, watch)
 import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de Spinner de carregamento
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import { useI18n } from 'vue-i18n';
-
+const { t } = useI18n();
 // Definindo as variáveis reativas do componente
 const filteredCount = ref(0); // Contagem filtrada de itens na tabela
 const showDialog = ref(false); // Controle de visibilidade do diálogo de erro
 const dialogMessage = ref(''); // Mensagem a ser exibida no diálogo de erro
 const loading = ref(false); // Controle de carregamento da requisição
 const dataStore = useDataStore(); // Acesso à store de dados
-const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem quando não há dados
+const emptyMessage = computed(() => t('no_search_made')); // Mensagem quando não há dados
 const toast = useToast();
 const retiradas = ref([]); // Dados das retiradas a serem exibidos na tabela
 const dropdown1 = ref(null); // Referências para os dropdowns usados nos filtros
@@ -27,18 +26,16 @@ const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 const dropdown6 = ref(null);
-
-// Definições de opções gerais para dropdowns
-const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dropdowns
-
 // Dados para as opções dos filtros
-const ListaFuncionarios = ref(null); // Lista de funcionários
-const ListaFuncionariosOriginal = ref(null); // Lista de funcionários
-const ListaSetorOriginal = ref(null); // Lista de funcionários
-const dms = ref([todosOption]); // Lista de DMs
-const plantas = ref([todosOption]); // Lista de plantas
-const setor = ref([todosOption]); // Lista de setores
-const centroCusto = ref([todosOption]); // Lista de centros de custo
+const ListaFuncionarios = computed(() => dataStore.funcionariosOptions);
+// Lista de funcionários
+const ListaFuncionariosOriginal = computed(() => dataStore.funcionariosOptions);
+// Lista de funcionários
+const ListaSetorOriginal = computed(() => dataStore.setoresOptions); // Lista de funcionários
+const dms = computed(() => dataStore.dmsOptions); // Lista de DMs
+const plantas = computed(() => dataStore.plantasOptions); // Lista de plantas
+const setor = computed(() => dataStore.setoresOptions); // Lista de setores
+const centroCusto = computed(() => dataStore.cdcsOptions); // Lista de centros de custo
 
 // Filtro global aplicado na DataTable
 const filters = ref({
@@ -130,13 +127,12 @@ const handleDatepickerOpen = () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
-        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
-        setor.value = ListaSetorOriginal.value; // Carrega a lista de setores
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
-        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
+        if (!dataStore.dms) await dataStore.fetchListaDms(); // Carrega a lista de DMs
+        if (!dataStore.plantas) await dataStore.fetchPlantas(); // Carrega a lista de plantas
+        if (!dataStore.setores) await dataStore.fetchSetores(); // Carrega a lista de setores // Carrega a lista de setores
+        if (!dataStore.cdcs) await dataStore.fetchCdc(); // Carrega a lista de centros de custo
+        if (!dataStore.funcionarios) await dataStore.fetchFuncionarios(); // Carrega a lista de funcionários
+        // Carrega a lista de funcionários
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
     } finally {
@@ -158,50 +154,50 @@ onMounted(() => {
                 <!-- Formulário de busca para o relatório, exibido quando "show" for true -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- Campo de filtro para DM -->
-                    <div class=" py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
-                        <label for="dm">DM:</label>
+                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                        <label for="dm">{{t('dispenser_machine')}}:</label>
                         <!-- Dropdown para selecionar DM -->
-                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
                     </div>
 
                     <!-- Campo de filtro para Planta -->
-                    <div class=" py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
-                        <label for="planta">Planta:</label>
+                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                        <label for="planta">{{t('factory')}}:</label>
                         <!-- Dropdown para selecionar Planta -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown2" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Setor -->
                     <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">Setor:</label>
+                        <label for="perfil">{{t('sector')}}:</label>
                         <!-- Dropdown para selecionar Setor -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown3" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Centro de Custo -->
                     <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-6">
-                        <label for="perfil">Centro de Custo:</label>
+                        <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Dropdown para selecionar Centro de Custo -->
-                        <Dropdown filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown4" @change="filtroGenerico" />
+                        <Dropdown filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Funcionário -->
                     <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
-                        <label for="perfil">Funcionário:</label>
+                        <label for="perfil">{{t('employee')}}:</label>
                         <!-- Dropdown para selecionar Funcionário -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown5" />
+                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
                     </div>
 
                     <!-- Campo de filtro para Voucher -->
                     <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Voucher:</label>
                         <!-- Dropdown para selecionar Voucher -->
-                        <Dropdown filter class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown6" />
+                        <Dropdown filter class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown6" />
                     </div>
 
                     <!-- Campo de filtro para Data Inicial -->
                     <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                        <label for="perfil">Data Inicial:</label>
+                        <label for="perfil">{{t('initial_date')}}:</label>
                         <!-- DatePicker para selecionar Data Inicial -->
                         <VueDatePicker
                             class="drop"
@@ -220,8 +216,8 @@ onMounted(() => {
                     </div>
 
                     <!-- Campo de filtro para Data Final -->
-                    <div class=" py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                        <label for="perfil">Data Final:</label>
+                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                        <label for="perfil">{{t('end_date')}}:</label>
                         <!-- DatePicker para selecionar Data Final -->
                         <VueDatePicker
                             class="drop"
@@ -242,7 +238,7 @@ onMounted(() => {
                     <!-- Botão de Filtrar -->
                     <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12 justify-self-end">
                         <!-- Botão para filtrar dados do relatório -->
-                        <Button class="filtrar" type="button" label="Filtrar Dados" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
                     <!-- <div class="field lg:col-3 md:col-6 sm:col-6">
@@ -321,11 +317,11 @@ onMounted(() => {
                         <template #empty> {{ emptyMessage }} </template>
 
                         <!-- Definição das colunas da tabela -->
-                        <Column field="DM" sortable header="DM"></Column>
-                        <Column field="Data" sortable header="Data"></Column>
-                        <Column field="Matricula" sortable header="Matricula"></Column>
+                        <Column field="DM" sortable :header="t('dispenser_machine')"></Column>
+                        <Column field="Data" sortable :header="t('date')"></Column>
+                        <Column field="Matricula" sortable :header="t('employee_id')"></Column>
                         <Column field="Voucher" sortable header="Voucher"></Column>
-                        <Column field="Nome" sortable header="Nome"></Column>
+                        <Column field="Nome" sortable :header="t('name')"></Column>
                         <Column field="CodigoCa" sortable header="CA"></Column>
                         <Column field="Item" sortable header="Item"></Column>
                     </DataTable>
@@ -336,7 +332,7 @@ onMounted(() => {
                     <template #title>{{ selectedItem.dm }}</template>
                     <template #content>
                         <!-- Botão para voltar aos dados principais -->
-                        <Button type="button" label="Voltar" icon="pi pi-arrow-left" severity="info" @click="voltar" />
+                        <Button type="button" :label="t('back')" icon="pi pi-arrow-left" severity="info" @click="voltar" />
                     </template>
                 </Card>
             </div>

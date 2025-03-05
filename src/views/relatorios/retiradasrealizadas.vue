@@ -36,16 +36,16 @@ const retiradas = ref([]); // Lista de retiradas
 const todosOption = { label: 'Todos', value: null }; // Opção padrão para "Todos"
 
 // Refs para armazenar as opções de filtros que serão carregados dinamicamente
-const dms = ref([todosOption]); // Lista de DM (Departamento/Manager)
-const plantas = ref([todosOption]); // Lista de plantas
+const dms  = computed(() => dataStore.dmsOptions); // Lista de DM (Departamento/Manager)
+const plantas = computed(() => dataStore.plantasOptions); // Lista de plantas
 // const setor = ref([todosOption]); // (Comentado) Lista de setores (não está sendo utilizado neste código)
-const centroCusto = ref([todosOption]); // Lista de centros de custo
+const centroCusto = computed(() => dataStore.cdcsOptions);  // Lista de centros de custo
 
 // Refs para armazenar as listas de funcionários e setores
-const ListaFuncionariosOriginal = ref([]); // Lista original de funcionários
-const ListaFuncionarios = ref([]); // Lista de funcionários filtrados
-const ListaSetorOriginal = ref([]); // Lista original de setores
-const ListaSetor = ref([]); // Lista de setores filtrados
+const ListaFuncionariosOriginal = computed(() => dataStore.funcionariosOptions); // Lista original de funcionários
+const ListaFuncionarios = computed(() => dataStore.funcionariosOptions); // Lista de funcionários filtrados
+const ListaSetorOriginal = computed(() => dataStore.setoresOptions); // Lista original de setores
+const ListaSetor = computed(() => dataStore.setoresOptions); // Lista de setores filtrados
 
 // Filtros globais para a tabela
 const filters = ref({
@@ -151,13 +151,11 @@ const handleDatepickerOpen = () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
-        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
-        ListaSetor.value = ListaSetorOriginal.value; // Carrega a lista de setores
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
-        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
+     if (!dataStore.dms) await dataStore.fetchListaDms(); // Carrega a lista de DMs
+     if (!dataStore.plantas) await dataStore.fetchPlantas(); // Carrega a lista de plantas
+     if (!dataStore.setores) await dataStore.fetchSetores();
+     if (!dataStore.cdcs) await dataStore.fetchCdc(); // Carrega a lista de centros de custo
+     if (!dataStore.funcionarios) await dataStore.fetchFuncionarios();// Carrega a lista de funcionários
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Erro ao carregar dados' });
     } finally {

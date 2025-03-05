@@ -107,7 +107,20 @@ const lazyParams = ref({
 });
 const ListaItens = ref([]);
 const ListaClientes = ref([]);
-const ListaProdutos = ref([]);
+const produtos = computed(() => dataStore.produtos);
+const ListaProdutos = computed(() => {
+  return produtos.value
+    .filter((produto) => produto.value !== null)
+    .map(({ value, codigo, label }) => ({
+      label: `${codigo} | ${label}`,
+      value
+    }))
+    .sort((a, b) => {
+      const codigoA = parseInt(a.label.split(' | ')[0], 10);
+      const codigoB = parseInt(b.label.split(' | ')[0], 10);
+      return codigoA - codigoB;
+    });
+});
 const Controladoras = ref([]);
 const controladoraOptions = ref([]);
 const molasOptions = ref([]);
@@ -617,18 +630,8 @@ const fetchItemDM = async () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        const produtos = dataStore.produtos || (await dataStore.fetchProdutos());
-        ListaProdutos.value = produtos
-            .filter(({ codigo, label }) => !(codigo === null && label === 'Todos')) // Remove o item com valor null e label "Todos"
-            .map(({ value, codigo, label }) => ({
-                label: `${codigo} | ${label}`,
-                value: value
-            }))
-            .sort((a, b) => {
-                const codigoA = parseInt(a.label.split(' | ')[0], 10); // Converte para número
-                const codigoB = parseInt(b.label.split(' | ')[0], 10); // Converte para número
-                return codigoA - codigoB; // Ordem crescente
-            });
+        if (!dataStore.produtos) await dataStore.fetchProdutos();
+
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);

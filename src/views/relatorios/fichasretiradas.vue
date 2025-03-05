@@ -3,7 +3,7 @@ import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueD
 import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa a função `useToast` do PrimeVue para mostrar mensagens de notificação
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa os estilos do VueDatePicker
-import { ref, onMounted } from 'vue'; // Importa funções do Vue: `ref` para reatividade e `onMounted` para ciclo de vida do componente
+import { ref, onMounted, computed } from 'vue'; // Importa funções do Vue: `ref` para reatividade e `onMounted` para ciclo de vida do componente
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
@@ -17,9 +17,9 @@ const dialogMessage = ref(''); // Mensagem exibida no diálogo
 const loading = ref(false); // Obtém o store de autenticação
 const toast = useToast(); // Instancia o toast para notificações
 const todosOption = { label: 'Todos', value: null }; // Opção padrão para filtros
-const plantas = ref([todosOption]); // Lista de plantas disponíveis para seleção
-const ListaFuncionariosOriginal = ref([]); // Lista original de funcionários
-const ListaFuncionarios = ref([]); // Lista filtrada de funcionários
+const plantas = computed(() => dataStore.plantasOptions); // Lista de plantas disponíveis para seleção
+const ListaFuncionariosOriginal  = computed(() => dataStore.funcionariosOptions); // Lista original de funcionários
+const ListaFuncionarios  = computed(() => dataStore.funcionariosOptions); // Lista filtrada de funcionários
 const dataStore = useDataStore();
 // Filtros para a DataTable
 const filters = ref({
@@ -83,9 +83,12 @@ const handleDatepickerOpen = () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas());
-        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value;
+        if (!dataStore.plantas) await dataStore.fetchPlantas();
+        if (!dataStore.funcionarios) await dataStore.fetchFuncionarios();
+
+        // plantas.value = dataStore.plantas || (await dataStore.fetchPlantas());
+        // ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+        // ListaFuncionarios.value = ListaFuncionariosOriginal.value;
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
     } finally {

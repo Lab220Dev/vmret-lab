@@ -7,7 +7,7 @@ import { useToast } from 'primevue/usetoast';
 /**
  * Importa as funcionalidades reactive e ref do Vue para gerenciar estados reativos.
  */
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, computed } from 'vue';
 import { useDataStore } from '@/store/dataStore.js';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
@@ -39,8 +39,14 @@ const libAvulsa = reactive({
     limiteRetirada: new Date(),
     enviarEmail: false
 });
-const listaFuncionarios = ref([]);
-const ListaProdutos = ref([]);
+const funcionarioOptions = computed(() => dataStore.funcionariosOptions);
+const listaFuncionarios = computed(() => {
+    return funcionarioOptions.value.filter((f) => f.value !== null);
+});
+const produtosOptions = computed(() => dataStore.produtosOptions);
+const ListaProdutos = computed(() => {
+    return produtosOptions.value.filter((produto) => produto.value !== null);
+});
 const ListaProdutoFuncionario = ref([]);
 const deleteProductDialog = ref(false);
 const itemDialog = ref(false);
@@ -144,8 +150,16 @@ const editItem = (selectedItem) => {
     itemDialog.value = true;
 };
 onMounted(async () => {
-    listaFuncionarios.value = dataStore.funcionarios || (await dataStore.fetchFuncionarios());
-    ListaProdutos.value = dataStore.produtos || (await dataStore.fetchProdutos());
+    loading.value = true;
+    try {
+        listaFuncionarios.value = dataStore.funcionarios || (await dataStore.fetchFuncionarios());
+        ListaProdutos.value = dataStore.produtos || (await dataStore.fetchProdutos());
+    } catch (error) {
+        erroMensagem.value = `Erro ao carregar dados: ${error.message}`;
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
+    } finally {
+        loading.value = false;
+    }
 });
 </script>
 

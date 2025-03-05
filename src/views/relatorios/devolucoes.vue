@@ -34,17 +34,15 @@ const dropdown5 = ref(null); // Referência para o quinto dropdown
 
 const devolucoes = ref([]); // Lista de devoluções retornadas pela API
 
-const todosOption = { label: 'Todos', value: null }; // Opção de "Todos" para dropdowns
+const dms = computed(() => dataStore.dmsOptions); // Lista de DMs (dados de movimentação) para o filtro
+const plantas = computed(() => dataStore.plantasOptions);  // Lista de plantas para o filtro
+const centroCusto= computed(() => dataStore.cdcsOptions);  // Lista de centros de custo para o filtro
 
-const dms = ref([todosOption]); // Lista de DMs (dados de movimentação) para o filtro
-const plantas = ref([todosOption]); // Lista de plantas para o filtro
-const centroCusto = ref([todosOption]); // Lista de centros de custo para o filtro
+const ListaFuncionariosOriginal = computed(() => dataStore.funcionariosOptions); // Lista original de funcionários
+const ListaFuncionarios = computed(() => dataStore.funcionariosOptions);// Lista de funcionários filtrada
 
-const ListaFuncionariosOriginal = ref([]); // Lista original de funcionários
-const ListaFuncionarios = ref([]); // Lista de funcionários filtrada
-
-const ListaSetorOriginal = ref([]); // Lista original de setores
-const ListaSetor = ref([]); // Lista de setores filtrada
+const ListaSetorOriginal = computed(() => dataStore.setoresOptions); // Lista original de setores
+const ListaSetor  = computed(() => dataStore.setoresOptions); // Lista de setores filtrada
 
 // Filtros gerais para a tabela
 const filters = ref({
@@ -167,14 +165,20 @@ const closeAllDropdowns = () => {
 const loadData = async () => {
     loading.value = true;
     try {
+        if (!dataStore.plantas) await dataStore.fetchPlantas();
+        if (!dataStore.dms) await dataStore.fetchListaDms();
+        if (!dataStore.setores) await dataStore.fetchSetores();
+        if (!dataStore.cdcs) await dataStore.fetchCdc();
+        if (!dataStore.produtos) await dataStore.fetchProdutos();
+        if (!dataStore.funcionarios) await dataStore.fetchFuncionarios();
         // O operador || verifica se o valor já está armazenado no store, caso contrário, faz a chamada para obter os dados
-        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
-        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
-        ListaSetor.value = ListaSetorOriginal.value; // Carrega a lista de setores
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
-        ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
-        ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
+        // dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        // plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
+        // ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
+        // ListaSetor.value = ListaSetorOriginal.value; // Carrega a lista de setores
+        // centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        // ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+        // ListaFuncionarios.value = ListaFuncionariosOriginal.value; // Carrega a lista de funcionários
     } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error); // Exibe erro caso haja falha no carregamento dos dados
     } finally {

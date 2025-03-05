@@ -24,7 +24,7 @@ const visible = ref(false); // Variável para controlar a visibilidade do formul
 const senha = ref(''); // Variável reativa para senha.
 const senhaAlterada = ref(false); // Flag para indicar se a senha foi alterada.
 const SenhaBE = ref(''); // Variável para armazenar a senha original do backend.
-const plantas = ref([todosOption]); // Opção inicial de plantas.
+const plantas = computed(() => dataStore.plantasOptions);// Opção inicial de plantas.
 const isAdmin = ref(false); // Flag para verificar se o usuário é administrador.
 const item = ref({}); // Objeto reativo para armazenar informações do item selecionado.
 const errors = ref({}); // Objeto para armazenar mensagens de erro de validação de formulário.
@@ -374,7 +374,7 @@ watch(active, (newIndex, oldIndex) => {
  */
 const loadData = async () => {
     try {
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Tenta obter as plantas do store ou via API.
+        if (!dataStore.plantas) await dataStore.fetchPlantas();// Tenta obter as plantas do store ou via API.
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Log de erro ao carregar dados.

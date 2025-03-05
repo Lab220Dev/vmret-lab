@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 import estoqueService from '@/services/estoqueService';
+import { useDataStore } from '@/store/dataStore.js';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 // Declara as variáveis reativas
@@ -12,9 +13,10 @@ const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro d
 const todosOption = { label: 'Todos', value: null }; // Opção para o filtro de DM para mostrar todos
 const dropdown1 = ref(null); // Referência para o dropdown de DM
 const EstoqueDM = ref([]); // Lista de itens de estoque filtrados
-const dms = ref([todosOption]); // Lista de DM com a opção de "Todos"
+const dms  = computed(() => dataStore.dmsOptions); // Lista de DM com a opção de "Todos"
 const store = useAuthStore(); // Instancia o store de autenticação
 const emptyMessage = computed(() => t('no_search_made')); // Mensagem a ser exibida quando não houver dados
+const dataStore = useDataStore(); // Acessa o store de dados para obter informações sobre plantas e outros dados
 
 // Filtros para a DataTable
 const filters = ref({
@@ -29,23 +31,14 @@ const filteredCount = ref(0);
  * Espera que a resposta da API retorne um array de objetos contendo 'ID_DM' e 'Identificacao'
  */
 const fetchDM = async () => {
-    const data = { id_cliente: store.userIdCliente }; // Dados da requisição, incluindo o ID do cliente do usuário autenticado
-
+    loading.value = true; // Ativa o estado de carregamento
     try {
-        // Envia a requisição para buscar as DM's
-        const response = await estoqueService.listarEstoqueDM(data);
-
-        // Preenche a lista de DM's, adicionando a opção "Todos"
-        dms.value = [
-            todosOption,
-            ...response.data.map(({ ID_DM, Identificacao }) => ({
-                label: `${Identificacao}`, // Exibe a identificação da DM
-                value: ID_DM // Valor da DM
-            }))
-        ];
+        if (!dataStore.dms) await dataStore.fetchListaDms();
     } catch (error) {
         // Se ocorrer erro ao buscar as DM's, exibe no console
         console.error('Erro ao carregar lista de dms:', error);
+    } finally {
+        loading.value = false; // Desativa o estado de carregamento
     }
 };
 

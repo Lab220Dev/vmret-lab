@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue';
+import { reactive, ref, onMounted, watch, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
@@ -15,17 +15,15 @@ const active = ref(0);
 const dataStore = useDataStore();
 const toast = useToast();
 const ListaSetor = ref([]);
-const ListaItensSetor = ref([]);
+const ListaItensSetor= computed(() => dataStore.produtosOptions);
 const ItensSetor = ref([]);
 const itemDialog = ref(false);
 const deleteSetorDialog = ref(false);
 const deleteProductDialog = ref(false);
 const visible = ref(false);
 const editVisible = ref(false);
-const integracao = ref(false);
 const item = ref({});
-const todosOption = { label: 'Todos', value: null };
-const centroCusto = ref([todosOption]);
+const centroCusto = computed(() => dataStore.cdcsOptions);
 const loading = ref(false);
 
 const filters = ref({
@@ -197,8 +195,10 @@ const resetForm = () => {
 
 const loadData = async () => {
     try {
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
-        ListaItensSetor.value = dataStore.produtos || (await dataStore.fetchProdutos());
+        if (!dataStore.cdcs) await dataStore.fetchCdc();
+        if (!dataStore.produtos) await dataStore.fetchProdutos();
+        // centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc());
+        // ListaItensSetor.value = dataStore.produtos || (await dataStore.fetchProdutos());
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error);

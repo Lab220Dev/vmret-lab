@@ -89,12 +89,6 @@ const dropdown5 = ref(null);
 const historico = ref([]);
 
 /**
- * Opção para exibir todos os itens no filtro.
- * @type {object}
- */
-const todosOption = { label: 'Todos', value: null };
-
-/**
  * Lista de operadores disponíveis.
  * @type {ref<Array<object>>}
  */
@@ -105,26 +99,26 @@ const ListaOperadorOriginal = ref(null);
  * Lista de DM's disponíveis.
  * @type {ref<Array<object>>}
  */
-const dms = ref([todosOption]);
+const dms = computed(() => dataStore.dmsOptions);
 
 /**
  * Lista de plantas disponíveis.
  * @type {ref<Array<object>>}
  */
-const plantas = ref([todosOption]);
+const plantas = computed(() => dataStore.plantasOptions);
 
 /**
  * Lista de setores disponíveis.
  * @type {ref<Array<object>>}
  */
-const setor = ref([todosOption]);
-const ListaSetorOriginal = ref([todosOption]);
+const setor  = computed(() => dataStore.setoresOptions);
+const ListaSetorOriginal  = computed(() => dataStore.setoresOptions);
 
 /**
  * Lista de centros de custo disponíveis.
  * @type {ref<Array<object>>}
  */
-const centroCusto = ref([todosOption]);
+const centroCusto = computed(() => dataStore.cdcsOptions);
 
 /**
  * Objeto contendo os filtros globais para o DataTable.
@@ -193,11 +187,10 @@ const handleDatepickerOpen = () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        dms.value = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega a lista de DMs
-        plantas.value = dataStore.plantas || (await dataStore.fetchPlantas()); // Carrega a lista de plantas
-        ListaSetorOriginal.value = dataStore.setores || (await dataStore.fetchSetores()); // Carrega a lista de setores
-        setor.value = ListaSetorOriginal.value; // Carrega a lista de setores
-        centroCusto.value = dataStore.cdcs || (await dataStore.fetchCdc()); // Carrega a lista de centros de custo
+        if (!dataStore.dms)(await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        if (!dataStore.plantas) await dataStore.fetchPlantas(); // Carrega a lista de plantas
+        if (!dataStore.setores) await dataStore.fetchSetores(); // Carrega a lista de setores
+        if (!dataStore.cdcs) await dataStore.fetchCdc();// Carrega a lista de centros de custo
         ListaOperador.value = await relatorioService.listaOperador();
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Erro', life:3000,detail: error.message });
