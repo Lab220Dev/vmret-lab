@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'; // Importa os hooks necessários do Vue para estado reativo e controle de ciclo de vida
+import { reactive, ref, onMounted, watch, computed } from 'vue'; // Importa os hooks necessários do Vue para estado reativo e controle de ciclo de vida
 import { useToast } from 'primevue/usetoast'; // Hook para exibir mensagens de toast (notificações)
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento (spinner)

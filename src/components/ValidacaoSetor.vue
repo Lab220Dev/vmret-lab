@@ -1,7 +1,7 @@
 <template>
     <div class="validation-container">
         <!-- Título da página de mapeamento -->
-        <h3 class="text-center">Mapeamento de Campos - Funcionários</h3>
+        <h3 class="text-center">Mapeamento de Campos - Setor/Diretorias</h3>
 
         <!-- Container das colunas para mapeamento -->
         <div class="columns-mapping">
@@ -44,46 +44,7 @@ const toast = useToast(); // Instância do sistema de notificações do PrimeVue
 const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-completo']); // Emite eventos para o componente pai
 
 // Colunas esperadas para funcionários (dados esperados)
-const expectedColumns = ref([
-    'Nome',
-    'CPF',
-    'Matrícula',
-    'Email',
-    'Senha',
-    'data_admissao',
-    'RG',
-    'CTPS',
-    'Centro_Custo',
-    'Planta',
-    'Setor',
-    'Função',
-    'Status',
-    'hora_inicial',
-    'hora_final',
-    'segunda',
-    'terca',
-    'quarta',
-    'quinta',
-    'sexta',
-    'sabado',
-    'domingo'
-]);
-const requiredColumns = [
-  'Nome',
-  'CPF',
-  'Matrícula',
-  'Email',
-  'data_admissao',
-  'RG',
-  'CTPS',
-  'Centro_Custo',
-  'Planta',
-  'Setor',
-  'Função',
-  'Status',
-  'hora_inicial',
-  'hora_final'
-];
+const expectedColumns = ref(['Nome', 'Codigo','Codigo_Centro_Custo']);
 // Define as colunas que o sistema espera do arquivo carregado. São essas as colunas obrigatórias.
 
 // Colunas disponíveis no arquivo carregado (extraídas dos dados do arquivo)
@@ -100,7 +61,8 @@ const mappedColumns = ref({}); // Armazena o mapeamento das colunas. Cada chave 
  * @type {ComputedRef<boolean>} isMappingComplete
  * Computed property que retorna 'true' se todas as colunas esperadas estiverem mapeadas corretamente.
  */
-const isMappingComplete = computed(() => requiredColumns.every((field) => mappedColumns.value[field])); // Verifica se todas as colunas esperadas foram mapeadas
+ const isMappingComplete = computed(() => expectedColumns.value.every((field) => mappedColumns.value[field]));
+
 
 // Observa se o mapeamento está completo e inicia a validação dos dados
 watch(isMappingComplete, (isComplete) => {
@@ -152,50 +114,17 @@ const validarDados = async () => {
         expectedColumns.value.forEach((expectedField) => {
             const mappedField = mappedColumns.value[expectedField];
             mappedRow[expectedField] = mappedField ? row[mappedField] : null;
-
-            // Se o campo for um dos dias da semana e não estiver mapeado, usa o padrão "Não"
-            if (['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'].includes(expectedField) && (!mappedField || !mappedRow[expectedField])) {
-                mappedRow[expectedField] = 'Não';
-            }
-
-            // Se o campo for "Senha" e não estiver mapeado ou estiver vazio, usa a senha padrão
-            if (expectedField === 'Senha' && (!mappedField || !mappedRow[expectedField] || mappedRow[expectedField].trim() === '')) {
-                mappedRow[expectedField] = '123456';
-                toast.add({ severity: 'warn', summary: 'Senha Padrão', detail: 'Nenhuma coluna de senha mapeada. Será utilizado a senha padrão "123".' });
-                console.log('Nenhuma coluna de senha mapeada. Será utilizado a senha padrão "123456".');
-            }
         });
 
-        // Valida o campo "Nome"
         if (!mappedRow.Nome || mappedRow.Nome.trim() === '') {
-            errors.Nome = 'Nome é obrigatório'; // Mensagem de erro se o nome estiver vazio
+            errors.Nome = 'Nome é obrigatório'; // Mensagem de erro caso o nome esteja vazio
         }
-
-        // Valida o campo "CPF"
-        if (!mappedRow.CPF || !isValidCPF(mappedRow.CPF)) {
-            errors.CPF = 'CPF inválido'; // Mensagem de erro se o CPF for inválido
+        if (!mappedRow.Codigo || mappedRow.Codigo.trim() === '') {
+            errors.Código = 'Código e Obrigatorio'; // Mensagem de erro caso o CPF seja inválido
         }
-
-        // Valida o campo "Matrícula"
-        if (!mappedRow.Matrícula || String(mappedRow.Matrícula).trim() === '') {
-            errors.Matrícula = 'Matrícula é obrigatória'; // Mensagem de erro se a matrícula estiver vazia
+        if (!mappedRow.Codigo_Centro_Custo || mappedRow.Codigo_Centro_Custo.trim() === '') {
+            errors.Código = 'Código do centro de custo e Obrigatorio'; // Mensagem de erro caso o CPF seja inválido
         }
-
-        // Valida o campo "Email"
-        if (!mappedRow.Email || !isValidEmail(mappedRow.Email)) {
-            errors.Email = 'Email inválido'; // Mensagem de erro se o email for inválido
-        }
-
-        // Valida o campo "Planta"
-        if (!mappedRow.Planta || !(await isPlantaExists(mappedRow.Planta))) {
-            errors.Planta = 'Planta não registrada ou Invalida'; // Mensagem de erro se a planta for inválida
-        }
-
-        // Valida o campo "Setor"
-        if (!mappedRow.Setor || !(await isSetorExists(mappedRow.Setor))) {
-            errors.Setor = 'Setor não registrado ou Inválido'; // Mensagem de erro se o setor for inválido
-        }
-
         // Classifica a linha como válida ou inválida
         if (Object.keys(errors).length > 0) {
             invalidos.push({ rowIndex, ...mappedRow, errors }); // Adiciona à lista de inválidos se houver erros
