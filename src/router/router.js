@@ -66,7 +66,7 @@ const router = createRouter({
                     path: '/Importacao',
                     name: 'Importações',
                     component: () => import('@/views/pages/Importacao.vue'),
-                    meta: { requiresAuth: true, Availability: false }
+                    meta: { requiresAuth: true, Availability: true }
                 },
                 /**
                  * Página para a liberação avulsa, que também requer autenticação.

@@ -156,6 +156,7 @@
             </StepperPanel>
         </Stepper>
     </div>
+    <LoadingSpinner v-if="loading" />
 </template>
 
 <script setup>
@@ -170,10 +171,10 @@ import FileUpload from 'primevue/fileupload'; // Componente de upload de arquivo
 import Button from 'primevue/button'; // Componente de botão
 import Chart from 'primevue/chart'; // Componente para renderizar gráficos
 import DataTable from 'primevue/datatable'; // Componente para exibir tabelas de dados
-
-import { normalizeDateTime, generateCSV, downloadCSV } from '@/helpers/HelperUtils'; // Funções auxiliares para normalização de data, geração e download de CSV
+import ImportService from '@/Services/ImportService.js';
 import { processFileUpload, processFileReupload, revalidateData, formatErrors, exportInvalidData } from '@/helpers/HelperImportacao.js'; // Funções para processamento de upload e reupload de arquivos
-import { validateRow, getFieldLabels } from '@/helpers/HelperImportacao.js'; // Funções para validação de dados e obtenção de rótulos de campos
+import { validateRow, getFieldLabels, resetImportacao } from '@/helpers/HelperImportacao.js'; // Funções para validação de dados e obtenção de rótulos de campos
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading spinner para exibição enquanto a página está carregando
 
 // Estados reativos definidos com ref, que armazenam e reagem a mudanças no estado da aplicação
 /**
@@ -181,6 +182,7 @@ import { validateRow, getFieldLabels } from '@/helpers/HelperImportacao.js'; // 
  * Armazena o índice da etapa ativa no componente Stepper
  */
 const active = ref(0);
+const loading = ref(false); // Ref que controla o estado de carregamento
 
 /**
  * @type {import('vue').Ref<string | null>}
@@ -262,6 +264,15 @@ const carregarComponente = () => {
         case 'produtos':
             componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoProduto.vue'));
             break;
+        case 'planta':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoPlanta.vue'));
+            break;
+        case 'setor':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoSetor.vue'));
+            break;
+        case 'funcao':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/Validacaofuncao.vue'));
+            break;
         case 'centro_custo':
             componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoCdc.vue'));
             break;
@@ -292,6 +303,9 @@ const updateValidacaoConcluida = (estado) => {
 const importTypes = ref([
     { label: 'Funcionário', value: 'funcionarios' },
     { label: 'Produto', value: 'produtos' },
+    { label: 'Planta', value: 'planta' },
+    { label: 'Setor', value: 'setor' },
+    { label: 'Função', value: 'funcao' },
     { label: 'Centro de Custo', value: 'centro_custo' }
 ]);
 
@@ -384,13 +398,31 @@ const chartData = computed(() => ({
     ]
 }));
 
-/**
- * Função chamada para submeter os dados válidos ao backend.
- *
- * @returns {void}
- */
-const submitData = () => {
-    console.log('Enviando dados válidos:', validData.value);
+const submitData = async () => {
+    loading.value = true; // Ativa o estado de carregamento
+    try {
+        await ImportService.mass(dadosValidos.value, selectedImportType.value);
+        toast.add({ severity: 'Sucess', summary: t('title_sucess'), detail: t('sucess'), life: 3000 }); // Mensagem de erro
+        resetImportacao({
+            active,
+            selectedImportType,
+            fileUploaded,
+            fileData,
+            dadosValidos,
+            dadosInvalidos,
+            uploadError,
+            componenteAtual,
+            validacaoConcluida,
+            isEditingEnabled,
+            fieldLabels
+        });
+
+        console.log('Enviando dados válidos:', validData.value);
+    } catch (error) {
+        console.error(error);
+    } finally {
+        loading.value = false; // Finaliza o carregamento após a tentativa de sincronização
+    }
 };
 
 /**

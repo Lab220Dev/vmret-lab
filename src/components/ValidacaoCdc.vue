@@ -1,6 +1,6 @@
 <template>
     <div class="validation-container">
-        <h3 class="text-center">Mapeamento de Campos - Funcionários</h3>
+        <h3 class="text-center">Mapeamento de Campos - Centro de Custo</h3>
         <div class="columns-mapping">
             <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
                 <label class="expected-column">{{ expected }}</label>
@@ -14,7 +14,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';  // Importa as funcionalidades reativas e de observação do Vue
 import Dropdown from 'primevue/dropdown';  // Importa o componente Dropdown do PrimeVue
-import { isValidEmail, isValidCPF } from '@/helpers/HelperValidacao.js'; // Importa funções para validação de email e CPF
 
 // Props recebidas do componente pai
 /**
@@ -36,7 +35,7 @@ const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-comple
  * @type {Ref<Array<string>>} expectedColumns
  * Lista das colunas esperadas para o mapeamento dos dados dos funcionários.
  */
-const expectedColumns = ref(['Nome', 'CPF', 'Matrícula', 'Email']);
+const expectedColumns = ref(['Nome', 'Codigo']);
 
 /**
  * @type {Ref<Array<{ label: string, value: string }>>} fileColumns
@@ -91,15 +90,10 @@ const validarDados = () => {
         if (!mappedRow.Nome || mappedRow.Nome.trim() === '') {
             errors.Nome = 'Nome é obrigatório'; // Mensagem de erro caso o nome esteja vazio
         }
-        if (!mappedRow.CPF || !isValidCPF(mappedRow.CPF)) {
-            errors.CPF = 'CPF inválido'; // Mensagem de erro caso o CPF seja inválido
+        if (!mappedRow.Codigo || mappedRow.Codigo.trim() === '') {
+            errors.Código = 'Código e Obrigatorio'; // Mensagem de erro caso o CPF seja inválido
         }
-        if (!mappedRow.Matrícula || String(mappedRow.Matrícula).trim() === '') {
-            errors.Matrícula = 'Matrícula é obrigatória'; // Mensagem de erro caso a matrícula esteja vazia
-        }
-        if (!mappedRow.Email || !isValidEmail(mappedRow.Email)) {
-            errors.Email = 'Email inválido'; // Mensagem de erro caso o email seja inválido
-        }
+       
 
         // Classifica os registros em válidos ou inválidos
         if (Object.keys(errors).length > 0) {
