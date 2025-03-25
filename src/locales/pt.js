@@ -399,6 +399,7 @@ export default {
     employee_product_error: 'Erro ao adicionar o produto',
     employee_no_availble_item: 'Nenhum item disponível',
     employee_no_more_availble: 'Todos os itens já foram adicionados ao setor ou ao funcionário.',
+    employee_no_more_availble_setor: 'Todos os itens já foram adicionados ao setor.',
     employee_update: 'Funcionário atualizado',
     employee_update_error: 'Erro ao atualizar o funcionário',
     delete_employee_product_sucess: 'Item deletado com sucesso!',
@@ -577,6 +578,6 @@ export default {
     dm_config_data:'deseja salvar dados de Funcionarios',
     dm_config_with:'Opções de Retirada',
     employee_name:'Nome do Funcionário',
-    employee_id:'Numero de Matrícula',
+    employee_id:'Matrícula',
     dm_config_data_save:'deseja salvar dados de Maquina',
 };

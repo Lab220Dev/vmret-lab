@@ -199,16 +199,16 @@ const relatorioService = {
             throw new Error(`Erro ao consultar dados: ${error.message}`);
         }
     },
-    async Cabecalho() {
-        try {
-            const response = await fetch('/cabecalho.html'); 
-            if (!response.ok) {
-                throw new Error('Erro ao carregar o cabeçalho');
+    async Cabecalho() { // Declara um método assíncrono chamado Cabecalho
+        try { // Inicia um bloco try para capturar possíveis erros
+            const response = await fetch('/cabecalho.html'); // Faz uma requisição para obter o arquivo 'cabecalho.html'
+            if (!response.ok) { // Verifica se a resposta não está OK (status diferente de 200-299)
+                throw new Error('Erro ao carregar o cabeçalho'); // Lança um erro com a mensagem 'Erro ao carregar o cabeçalho'
             }
-            return await response.text();
-        } catch (error) {
-            console.error('Erro ao recuperar o cabeçalho:', error);
-            return '';
+            return await response.text(); // Retorna o conteúdo do cabeçalho como texto
+        } catch (error) { // Captura qualquer erro que ocorrer durante a requisição
+            console.error('Erro ao recuperar o cabeçalho:', error); // Loga a mensagem de erro no console
+            return ''; // Retorna uma string vazia em caso de erro
         }
     }
 };

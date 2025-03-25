@@ -3,9 +3,9 @@ import { ref, onMounted, watch ,computed} from 'vue'; // Importa funções do Vu
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados do usuário autenticado
 import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
-import estoqueService from '@/services/estoqueService';
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+import estoqueService from '@/services/estoqueService';//Importa o serviço de estoque (estoqueService) para ser utilizado em diversas partes do código.
+import { useI18n } from 'vue-i18n';//Importa o hook useI18n do Vue I18n, que é responsável por fornecer a funcionalidade de internacionalização (i18n) dentro de um componente Vue. Este hook permite o acesso a funções de tradução e outras funcionalidades de i18n dentro do contexto de um componente.
+const { t } = useI18n();//Função para tradução de texto, que aceita chaves de tradução e retorna o texto traduzido
 // Declara as variáveis reativas
 const loading = ref(false); // Variável para controlar o estado de carregamento
 const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
@@ -24,10 +24,6 @@ const filters = ref({
 // Variável para controlar o número de registros filtrados
 const filteredCount = ref(0);
 
-/**
- * Função para buscar as DM's (Documentos de Movimentação) e preencher a lista `dms`
- * Espera que a resposta da API retorne um array de objetos contendo 'ID_DM' e 'Identificacao'
- */
 const fetchDM = async () => {
     const data = { id_cliente: store.userIdCliente }; // Dados da requisição, incluindo o ID do cliente do usuário autenticado
 
@@ -49,10 +45,6 @@ const fetchDM = async () => {
     }
 };
 
-/**
- * Função para gerar o relatório de estoque das DM's selecionadas
- * Espera que a resposta da API retorne uma lista de itens de estoque
- */
 const relatorioDM = async () => {
     loading.value = true; // Ativa o estado de carregamento
 
@@ -78,20 +70,29 @@ const relatorioDM = async () => {
         loading.value = false; // Desativa o estado de carregamento
     }
 };
-const getTooltipText = (data) => {
+
+/**
+ * @function
+ * @param {Object} data - O objeto contendo as informações do item, com um campo `modelo` que será usado para determinar o texto.
+ * @param {string} data.modelo - O modelo do item, utilizado para decidir qual texto será retornado.
+ * @returns {string} Texto traduzido para a tooltip, dependendo do valor de `modelo`.
+ */
+ const getTooltipText = (data) => {
+    // Verifica se o modelo é 2018 e retorna o texto traduzido correspondente a 'placa_mola'.
     if (data.modelo === '2018') {
         return t('placa_mola');
-    } else if (data.modelo === '2023') {
+    } 
+    // Verifica se o modelo é 2023 e retorna o texto traduzido correspondente a 'andar_posicao'.
+    else if (data.modelo === '2023') {
         return t('andar_posicao');
-    } else {
+    } 
+    // Caso o modelo não seja 2018 nem 2023, retorna o texto traduzido correspondente a 'placa_motor'.
+    else {
         return t('placa_motor');
     }
 };
 
-/**
- * Observa o filtro global e atualiza o contador de registros filtrados.
- * A cada mudança no valor de `filters.global.value`, o contador de registros filtrados é atualizado.
- */
+
 watch(
     () => filters.value.global.value, // Observa o valor do filtro global
     () => {

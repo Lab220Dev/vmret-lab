@@ -413,6 +413,7 @@ export default {
     employee_product_error: 'Error al agregar el producto',
     employee_no_availble_item: 'Ningún artículo disponible',
     employee_no_more_availble: 'Todos los artículos ya han sido agregados al sector o al empleado.',
+    employee_no_more_availble_setor: 'Todos los artículos ya han sido agregados al sector.',
     employee_update: 'Empleado actualizado',
     employee_update_error: 'Error al actualizar el empleado',
     delete_employee_product_sucess: '¡Artículo eliminado con éxito!',
@@ -545,6 +546,6 @@ export default {
     dm_config_data: "¿Desea guardar los datos de los empleados?",
     dm_config_with: "Opciones de Retiro",
     employee_name: "Nombre del Empleado",
-    employee_id: "Número de Matrícula",
+    employee_id: "Matrícula",
     dm_config_data_save: "¿Desea guardar los datos de la máquina?"
 };

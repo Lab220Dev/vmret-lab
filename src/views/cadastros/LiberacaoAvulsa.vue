@@ -1,74 +1,49 @@
 <script setup>
-/**
- * Importa o composable useToast do PrimeVue, usado para exibir mensagens de notificação.
- */
-import { useToast } from 'primevue/usetoast';
+import { useToast } from 'primevue/usetoast'; // Importa o hook useToast da biblioteca primevue para exibir notificações
+import { reactive, ref, onMounted } from 'vue'; // Importa funções reativas e de ciclo de vida do Vue
+import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados
+import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueDatePicker para seleção de datas
+import '@vuepic/vue-datepicker/dist/main.css'; // Importa o estilo do VueDatePicker
+import * as formatservices from '@/helpers/HelperUtils.js'; // Importa todas as funções de ajuda do arquivo HelperUtils.js
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente LoadingSpinner
 
-/**
- * Importa as funcionalidades reactive e ref do Vue para gerenciar estados reativos.
- */
-import { reactive, ref,onMounted } from 'vue';
-import { useDataStore } from '@/store/dataStore.js';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
-import * as formatservices from '@/helpers/HelperUtils.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-// import servicoGenerico from '@/Services/genericService.js';
-/**
- * Inicializa o toast para exibir notificações ao usuário.
- */
-const loading = ref(false);
-const toast = useToast();
-const dataStore = useDataStore();
-/**
- * Objeto reativo que armazena os dados do formulário de liberação avulsa.
- * Campos:
- * - matricula: String que representa a matrícula do funcionário.
- * - voucher: String para o código do voucher.
- * - sku: String que identifica o SKU do produto.
- * - dm: String que identifica o DM selecionado.
- * - mp: String que representa a mola ou porta selecionada.
- * - prazo: String para o prazo de liberação.
- * - email: String para o email do funcionário.
- */
-const libAvulsa = reactive({
-    id_funcionario:'',
-    id_produto:'',
-    limiteRetirada:new Date(),
+const loading = ref(false); // Cria uma referência reativa para controlar o estado de carregamento
+const toast = useToast(); // Inicializa o hook useToast para exibir notificações
+const dataStore = useDataStore(); // Inicializa o store de dados
+
+const libAvulsa = reactive({ // Cria um objeto reativo para armazenar os dados da liberação avulsa
+    id_funcionario: '',
+    id_produto: '',
+    limiteRetirada: new Date(),
     enviarEmail: false,
 });
-const listaFuncionarios = ref([]);
-const ListaProdutos = ref([]);
 
-/**
- * Flag reativa para controlar se o email será enviado.
- * Valores possíveis:
- * - true: o email será enviado.
- * - false: o email não será enviado.
- */
-const codigo = ref('');
-const AbrirDialogoCodigo = ref(false);
-const format = (date) => {
-   return formatservices.formatDateToString(date);
+const listaFuncionarios = ref([]); // Cria uma referência reativa para armazenar a lista de funcionários
+const ListaProdutos = ref([]); // Cria uma referência reativa para armazenar a lista de produtos
+const codigo = ref(''); // Cria uma referência reativa para armazenar o código gerado
+const AbrirDialogoCodigo = ref(false); // Cria uma referência reativa para controlar a visibilidade do diálogo de código
+
+const format = (date) => { // Declara uma função chamada format para formatar datas
+    return formatservices.formatDateToString(date);
 };
-const gerarCodigo = async () =>{
-    loading.value = true;
+
+const gerarCodigo = async () => { // Declara uma função assíncrona chamada gerarCodigo
+    loading.value = true; // Ativa o estado de loading
     try {
         // const response = await servicoGenerico.gerarCodigo(libAvulsa);
-        codigo.value = response.data.codigo;
+        codigo.value = response.data.codigo; // Define o valor do código gerado
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro',life:3000, detail: error.message });
-    }finally{
-        loading.value = false;
-        AbrirDialogoCodigo.value = true;
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message }); // Adiciona uma mensagem de erro ao toast
+    } finally {
+        loading.value = false; // Desativa o estado de loading
+        AbrirDialogoCodigo.value = true; // Abre o diálogo de código
     }
-}
-onMounted(async () => {
-    listaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios();
-    ListaProdutos.value = dataStore.produtos || await dataStore.fetchProdutos();
+};
+
+onMounted(async () => { // Declara uma função assíncrona chamada onMounted
+    listaFuncionarios.value = dataStore.funcionarios || await dataStore.fetchFuncionarios(); // Carrega a lista de funcionários
+    ListaProdutos.value = dataStore.produtos || await dataStore.fetchProdutos(); // Carrega a lista de produtos
 });
-// logquery (mantido como solicitado, caso necessário para logs futuros)
-// console.log('logquery');
 </script>
 
 <template>

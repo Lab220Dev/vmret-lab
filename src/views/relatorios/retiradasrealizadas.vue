@@ -377,13 +377,13 @@ onMounted(() => {
                 </template>
             </Column>
 
-            <!-- <Column field="Hora" sortable class="table-cell" style="width: 7%" :header="t('time')">
+            <!-- <Column field="Hora" sortable class="table-cell"  :header="t('time')">
                 <template #body="{ data }">
                     {{ getTimeFromString(data.Dia) }}
                 </template>
             </Column> -->
 
-            <Column field="Matricula" sortable class="table-cell" :header="t('employee_id')">
+            <Column field="Matricula" sortable class="table-cell"  :header="t('employee_id')">
                 <!-- <template #body="{ data }">
                     <span v-tooltip="data.Matricula">{{ data.Matricula }}</span>
                 </template> -->

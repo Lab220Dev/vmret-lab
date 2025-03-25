@@ -6,13 +6,14 @@ import { useAuthStore } from '@/store/authStore.js'; // Importação do store de
 import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de correspondência.
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
-import { FormatarListaCliente } from '@/helpers/DMHelper.js';
-import { prepareListData } from '@/helpers/HelperUtils.js';
-import usuarioService from '@/services/usuarioService';
-import plantaService from '@/services/plantaService';
-import { resetUsuario } from '@/helpers/formHelper.js';
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+import { FormatarListaCliente } from '@/helpers/DMHelper.js';//Importa a função FormatarListaCliente do arquivo DMHelper.js localizado na pasta helpers
+import { prepareListData } from '@/helpers/HelperUtils.js';//Importa a função prepareListData do arquivo HelperUtils.js localizado na pasta helpers
+import usuarioService from '@/services/usuarioService';//Importa o serviço usuarioService do arquivo usuarioService.js localizado na pasta services
+import plantaService from '@/services/plantaService';//Importa o serviço plantaService do arquivo plantaService.js localizado na pasta services
+import { resetUsuario } from '@/helpers/formHelper.js';//Importa a função resetUsuario do arquivo formHelper.js localizado na pasta helpers
+import { useI18n } from 'vue-i18n';//Importa o hook useI18n da biblioteca vue-i18n para internacionalização
+const { t } = useI18n();//Desestruturação do hook useI18n para obter a função t, que é usada para tradução
+
 // Variáveis reativas para controle da aplicação
 const active = ref(0); // Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore(); // Instância do store de dados.
@@ -29,7 +30,7 @@ const isAdmin = ref(false); // Flag para verificar se o usuário é administrado
 const item = ref({}); // Objeto reativo para armazenar informações do item selecionado.
 const errors = ref({}); // Objeto para armazenar mensagens de erro de validação de formulário.
 const ListaClientes = ref([]); // Lista de clientes.
-let usuario = reactive({
+let usuario = reactive({// Objeto reativo para armazenar informações do usuário.
     nome: '',
     email: '',
     role: '',
@@ -37,7 +38,7 @@ let usuario = reactive({
     senha: '',
     ativo: true,
     id_cliente: ''
-}); // Objeto reativo para armazenar informações do usuário.
+}); 
 const lazyParams = ref({
     first: 0, // Índice inicial
     rows: 10, // Número de registros por página
@@ -184,10 +185,7 @@ const submitForm = () => {
     }
 };
 
-/**
- * Função para adicionar um novo usuário.
- */
-const saveUsuario = async () => {
+const saveUsuario = async () => {//Função para adicionar um novo usuário.
     let data = null;
     if (store.userRole === 'Administrador') {
         data = {}; // Dados para o administrador.
@@ -215,10 +213,7 @@ const saveUsuario = async () => {
     loading.value = false; // Ativa o carregamento.
 };
 
-/**
- * Função para atualizar um usuário.
- */
-const atualizarUsuario = async () => {
+const atualizarUsuario = async () => {//Função para atualizar um usuário.
     loading.value = true; // Ativa o carregamento durante a atualização.
     const data = {
         ...usuario,
@@ -380,22 +375,23 @@ const loadData = async () => {
         console.error('Erro ao carregar dados iniciais:', error); // Log de erro ao carregar dados.
     }
 };
-function debounce(func, wait = 300) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+function debounce(func, wait = 300) { // Declara uma função chamada debounce
+    let timeout; // Declara uma variável para armazenar o timeout
+    return (...args) => { // Retorna uma função que recebe argumentos
+        clearTimeout(timeout); // Limpa o timeout anterior
+        timeout = setTimeout(() => func.apply(this, args), wait); // Define um novo timeout para chamar a função após o tempo de espera
     };
 }
-const debouncedFilterChange = debounce(() => {
+const debouncedFilterChange = debounce(() => { // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
     onFilterChange();
 }, 300);
-onMounted(async () => {
-    if (store.userRole === 'Administrador') {
-        await fetchUsuarios();
+
+onMounted(async () => { // Declara uma função assíncrona chamada onMounted
+    if (store.userRole === 'Administrador') { // Verifica se o papel do usuário é 'Administrador'
+        await fetchUsuarios(); // Busca a lista de usuários
     } else {
-        loadData(); // Carrega os dados ao montar o componente.
-        fetchUsuarios(); // Recarrega a lista de usuários ao montar.
+        loadData(); // Carrega os dados ao montar o componente
+        fetchUsuarios(); // Recarrega a lista de usuários ao montar
     }
 });
 

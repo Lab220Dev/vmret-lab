@@ -8,9 +8,9 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o compo
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { formatDateToString } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
-import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+import {GerarPdfRetirada} from '@/helpers/RelatorioHelper.js';//Importa a função `GerarPdfRetirada` do módulo `RelatorioHelper.js`, que é responsável por gerar relatórios em formato PDF relacionados à retirada de itens. Essa função pode ser utilizada em diferentes partes do código para gerar o PDF conforme necessário
+import { useI18n } from 'vue-i18n';//Importa o hook `useI18n` da biblioteca `vue-i18n`, utilizado para fornecer funcionalidades de internacionalização (i18n) no Vue. Esse hook permite acessar o sistema de traduções para textos dinâmicos dentro da aplicação.
+const { t } = useI18n();//Desestruturação do objeto retornado pelo hook `useI18n` para obter a função `t`, que é responsável por traduzir as chaves para o idioma atual da aplicação. A função `t` pode ser utilizada para exibir texto traduzido de acordo com o idioma selecionado.
 
 const showDialog = ref(false); // Controla a exibição de um diálogo
 const dialogMessage = ref(''); // Mensagem exibida no diálogo
@@ -49,11 +49,7 @@ const filterFuncionarios = () => {
     }
 };
 
-/**
- * Função para gerar o PDF do relatório.
- * Caso o funcionário não tenha sido selecionado, exibe um alerta.
- */
-const generatePDF = async () => {
+const generatePDF = async () => {//Função para gerar o PDF do relatório.
     try {
         loading.value = true;
         await GerarPdfRetirada(selectedItem, relatorio);
@@ -81,14 +77,24 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha os dropdowns ao abrir o Datepicker
 };
 const loadData = async () => {
+    // Define o estado de carregamento como verdadeiro enquanto os dados estão sendo carregados.
     loading.value = true;
+
     try {
+        // Tenta atribuir a variável 'plantas' a partir de 'dataStore.plantas'. Se não estiver disponível, 
+        // tenta buscar as plantas com a função 'fetchPlantas'.
         plantas.value = dataStore.plantas || (await dataStore.fetchPlantas());
+
+        // Atribui a lista de funcionários obtida da função 'listaFuncionario' do serviço 'relatorioService'.
         ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
+
+        // Atribui a lista original de funcionários para 'ListaFuncionarios'.
         ListaFuncionarios.value = ListaFuncionariosOriginal.value;
     } catch (error) {
+        // Exibe uma mensagem de erro caso ocorra algum erro durante o carregamento dos dados.
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
     } finally {
+        // Define o estado de carregamento como falso após a execução (independente de sucesso ou falha).
         loading.value = false;
     }
 };

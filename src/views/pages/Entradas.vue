@@ -1,9 +1,4 @@
 <script setup>
-/**
- * Importações necessárias para o funcionamento do componente.
- * 
- * @module
- */
 
 // Importa as funções reativas do Vue, como 'ref', 'reactive' e 'onMounted'.
 import { ref, reactive, onMounted } from 'vue'; // Usado para gerenciar o estado reativo e os hooks de ciclo de vida.

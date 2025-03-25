@@ -1,14 +1,14 @@
-import axios from '@/axios.js'; 
-import { useAuthStore } from '@/store/authStore.js';
-const authStore = useAuthStore();
-const  prepareData = (...sources) => {
-  let BaseData = {
-    id_cliente:authStore.userIdCliente,
+import axios from '@/axios.js'; // Importa a instância do axios configurada a partir do caminho especificado
+import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação
+const authStore = useAuthStore(); // Obtém a instância do store de autenticação
+const prepareData = (...sources) => { // Declara uma função chamada prepareData que recebe múltiplos parâmetros
+  let BaseData = { // Cria um objeto BaseData com as propriedades id_cliente e id_usuario do authStore
+    id_cliente: authStore.userIdCliente,
     id_usuario: authStore.userId,
   }
-  return sources
-    .filter(source => typeof source === 'object' && source !== null)
-    .reduce((acc, source) => ({ ...acc, ...source }), BaseData);
+  return sources // Retorna os sources filtrados e reduzidos
+    .filter(source => typeof source === 'object' && source !== null) // Filtra os sources para incluir apenas objetos não nulos
+    .reduce((acc, source) => ({ ...acc, ...source }), BaseData); // Reduz os sources em um único objeto, mesclando-os com BaseData
 };
 const setorService = {
 

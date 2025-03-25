@@ -2,7 +2,6 @@
     <div class="card">
         <h5 class="mt-6 ml-2 text-2xl">{{ t('cadastro_de_servicos') }}</h5>
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
-            <!--<label class = "mt-6 mr-4" for="cliente">Selecione o Cliente:</label>-->
 
             <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" :placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
         </div>
@@ -81,10 +80,6 @@
 </template>
 
 <script setup>
-/**
- * Importa as funções e componentes necessários para a lógica do componente.
- * @module
- */
 
 // Importa funções reativas do Vue, como `ref` e `onMounted`.
 import { ref, onMounted, nextTick, computed } from 'vue'; // Utilizado para criar variáveis reativas e realizar ações ao montar o componente.
@@ -99,10 +94,15 @@ import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do componente de
 // Importa a store de autenticação, que contém informações sobre o usuário e cliente.
 import { useAuthStore } from '@/store/authStore.js'; // Permite acessar o store para obter o ID do usuário e do cliente.
 
-import clientesService from '@/services/clientesService';
+// Importa o serviço 'clientesService' para interagir com a API ou lógica relacionada aos clientes
+import clientesService from '@/services/clientesService';  
 
-import funcionarioService from '@/services/funcionarioService';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+// Importa o serviço 'funcionarioService' para interagir com a API ou lógica relacionada aos funcionários
+import funcionarioService from '@/services/funcionarioService';  
+
+// Importa o componente 'LoadingSpinner', que provavelmente é usado para mostrar um indicador de carregamento na interface
+import LoadingSpinner from '@/components/LoadingSpinner.vue';  
+
 
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.

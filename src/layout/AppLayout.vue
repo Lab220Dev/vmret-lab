@@ -87,10 +87,7 @@ const bindOutsideClickListener = () => {
     }
 };
 
-/**
- * Função para remover o listener de clique externo.
- */
-const unbindOutsideClickListener = () => {
+const unbindOutsideClickListener = () => {//Função para remover o listener de clique externo.
     if (outsideClickListener.value) {
         document.removeEventListener('click', outsideClickListener.value); // Remove o listener
         outsideClickListener.value = null;

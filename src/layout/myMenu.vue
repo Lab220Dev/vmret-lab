@@ -25,23 +25,15 @@
    */
   const model = ref([{ items: [] }]); // Inicializa a variável reativa 'model' com um objeto que contém um array de itens vazio.
 
-  /**
-   * Função para construir o menu.
-   * Popula o modelo com os itens de menu obtidos do store de autenticação.
-   */
-  const buildMenu = () => {
-    model.value = [
+  const buildMenu = () => {//Função para construir o menu.
+    model.value = [//Popula o modelo com os itens de menu obtidos do store de autenticação.
       {
         items: store.menuItems // Atribui os itens de menu do store à propriedade 'items' no modelo.
       }
     ];
   };
 
-  /**
-   * Chama a função 'buildMenu' após o componente ser montado.
-   * Executado assim que o Vue terminar de montar o componente.
-   */
-  onMounted(() => {
+  onMounted(() => {//
     buildMenu(); // Chama a função para preencher o modelo com os itens de menu, quando o componente for montado
   });
 </script>

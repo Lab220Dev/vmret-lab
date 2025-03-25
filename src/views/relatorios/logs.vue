@@ -7,11 +7,11 @@ import { ref, onMounted, watch , computed} from 'vue'; // Importação dos hooks
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store para gerenciar o estado de autenticação
 import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs web
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
-import usuarioService from '@/services/usuarioService';
+import usuarioService from '@/services/usuarioService';//Importa o serviço `usuarioService` localizado no diretório `@/services/usuarioService`
 
-import funcionarioService from '@/Services/funcionarioService.js';
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+import funcionarioService from '@/Services/funcionarioService.js';//Importa o serviço `funcionarioService`
+import { useI18n } from 'vue-i18n';//Importa o hook `useI18n` do Vue I18n, que oferece as funcionalidades de internacionalização 
+const { t } = useI18n();//Desestrutura o objeto retornado pelo hook `useI18n` para obter a função `t`, que é utilizada para traduzir chaves de texto de acordo com o idioma da aplicação.
 
 const filteredCount = ref(0); // Contador reativo para o número de registros filtrados
 

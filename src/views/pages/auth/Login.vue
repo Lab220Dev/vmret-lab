@@ -85,23 +85,25 @@ const login = async () => {
         isLoading.value = false; // Desativa o carregamento quando o login for concluído (seja com sucesso ou falha)
     }
 };
-const linguas = computed(() => [
+
+ const linguas = computed(() => [  // Cria uma propriedade computada chamada 'linguas', que retorna uma lista de objetos
     {
-        label: t('portuguese'),
-        value: 'pt',
-        icon: brflag
+        label: t('portuguese'),  // O rótulo para o idioma português, traduzido pela função 't'
+        value: 'pt',  // O valor da língua para o idioma português (código do idioma)
+        icon: brflag  // O ícone da bandeira do Brasil representando o português
     },
     {
-        label: t('english'),
-        value: 'en',
-        icon: usflag
+        label: t('english'),  // O rótulo para o idioma inglês, traduzido pela função 't'
+        value: 'en',  // O valor da língua para o idioma inglês (código do idioma)
+        icon: usflag  // O ícone da bandeira dos Estados Unidos representando o inglês
     },
     {
-        label: t('spanish'),
-        value: 'es',
-        icon: arflag
+        label: t('spanish'),  // O rótulo para o idioma espanhol, traduzido pela função 't'
+        value: 'es',  // O valor da língua para o idioma espanhol (código do idioma)
+        icon: arflag  // O ícone da bandeira da Argentina representando o espanhol
     }
 ]);
+
 onMounted(() => {
     const browserLang = navigator.language.split('-')[0]; // Pega apenas o "pt", "en", "es"
     const matchedLang = linguas.value.find(lang => lang.value === browserLang); // Encontra no array

@@ -545,34 +545,33 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.overflow-scroll {
-    overflow-x: auto !important;
-
-    resize: none;
+.overflow-scroll { /* Define uma classe para permitir rolagem horizontal e desativar o redimensionamento */
+    overflow-x: auto !important; /* Permite rolagem horizontal */
+    resize: none; /* Desativa o redimensionamento */
 }
 
-@media (max-width: 1024px) {
-    .text-center {
-        margin: 2px;
+@media (max-width: 1024px) { /* Define estilos para telas com largura máxima de 1024px */
+    .text-center { /* Define uma classe para centralizar o texto */
+        margin: 2px; /* Define uma margem de 2px */
     }
 }
 
-.full {
-    padding: 4.5px;
+.full { /* Define uma classe para elementos que ocupam toda a largura */
+    padding: 4.5px; /* Define um padding de 4.5px */
 }
 
-.titulo {
-    white-space: pre-wrap;
-    text-align: center;
+.titulo { /* Define uma classe para títulos */
+    white-space: pre-wrap; /* Permite quebra de linha dentro do texto */
+    text-align: center; /* Centraliza o texto */
 }
 
-@media (max-width: 580px) {
-    .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
+@media (max-width: 580px) { /* Define estilos para telas com largura máxima de 580px */
+    .full { /* Define uma classe para elementos que ocupam toda a largura */
+        flex: 0 0 100%; /* Define o flex-grow, flex-shrink e flex-basis */
+        max-width: 100%; /* Define a largura máxima como 100% */
+        margin-bottom: 1rem; /* Define uma margem inferior de 1rem */
+        width: 100%; /* Define a largura como 100% */
+        margin: 1px; /* Define uma margem de 1px */
     }
 }
 </style>

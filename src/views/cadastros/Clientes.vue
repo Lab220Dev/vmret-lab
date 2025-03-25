@@ -8,11 +8,9 @@ import clientesService from '@/services/clientesService'; // Serviço para manip
 import { isValidDoc } from '@/helpers/HelperValidacao.js'; // Função para validar CNPJ
 import { resetClienteForm } from '@/helpers/formHelper'; // Função para resetar o formulário de cliente
 import { formatDate,prepareListData } from '@/helpers/HelperUtils.js'; // Função para formatação de datas (não utilizada diretamente)
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
-/**
- * Declaração de variáveis reativas com `ref` e `reactive` do Vue
- */
+import { useI18n } from 'vue-i18n';//Importa o hook useI18n da biblioteca vue-i18n para internacionalização.
+const { t } = useI18n();//Desestruturação do hook useI18n para obter a função t, que é usada para tradução.
+
 const active = ref(0); // Controle do índice ativo (0 indica nenhuma etapa selecionada)
 const show = ref(false); // Controle da visibilidade de algum componente (não utilizado diretamente)
 const toast = useToast(); // Instância da função de notificação
@@ -35,10 +33,7 @@ const lazyParams = ref({
     sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
     filters: {} // Filtros aplicados
 });
-/**
- * Objeto `cliente` reativo para armazenar os dados do cliente atual.
- * Cada propriedade é reativa, ou seja, qualquer alteração nas propriedades atualizará a interface automaticamente.
- */
+
 let cliente = reactive({
     nome: '', // Nome do cliente
     cnpj: '', // CNPJ do cliente
@@ -47,20 +42,18 @@ let cliente = reactive({
     textoretirada: '' // Campo de texto associado ao cliente (não especificado)
 });
 
-/**
- * Lista de opções de perfil que pode ser selecionada para o cliente.
- * As opções são 'Master', 'Operador', e 'Avulso' com valores associados.
- */
+
 const perfilOptions  = computed(() => [
     { label: t('master'), value: 1 }, // Perfil Master
     { label: t('operator'), value: 3 }, // Perfil Operador
     { label: t('one_time'), value: 4 } // Perfil Avulso
 ]);
-function debounce(func, wait = 300) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+
+function debounce(func, wait = 300) { // Declara uma função chamada debounce
+    let timeout; // Declara uma variável para armazenar o timeout
+    return (...args) => { // Retorna uma função que recebe argumentos
+        clearTimeout(timeout); // Limpa o timeout anterior
+        timeout = setTimeout(() => func.apply(this, args), wait); // Define um novo timeout para chamar a função após o tempo de espera
     };
 }
 /**
@@ -103,14 +96,8 @@ const submitForm = () => {
         // Caso contrário, trata-se da adição de um novo cliente
         adicionarCliente();
     }
-};
+}; 
 
-/**
- * Função assíncrona para adicionar um novo cliente.
- * Chama o serviço `clientesService.adicionarCliente` para salvar os dados no servidor.
- *
- * @async
- */
 const adicionarCliente = async () => {
     try {
         await clientesService.adicionarCliente(cliente); // Chama o serviço para adicionar o cliente
@@ -124,12 +111,6 @@ const adicionarCliente = async () => {
     }
 };
 
-/**
- * Função assíncrona para atualizar os dados de um cliente existente.
- * Chama o serviço `clientesService.atualizarCliente` para salvar as alterações no servidor.
- *
- * @async
- */
 const atualizarCliente = async () => {
     try {
         await clientesService.atualizarCliente(cliente); // Chama o serviço para atualizar o cliente
@@ -149,7 +130,7 @@ const deleteClientedes = (itm) => {
     deleteClienteDialog.value = true; // Exibe o diálogo de confirmação de exclusão
 };
 
-const deleteCliente = async (clienteId) => {
+const deleteCliente = async (clienteId) => { // Declara uma função assíncrona chamada deleteCliente
     progressValue.value = 0; // Reseta a barra de progresso
     try {
         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
@@ -213,13 +194,11 @@ const loadClientes = async (page = 1) => {
 const errors = reactive({
     cnpj: '' // Erro relacionado ao CNPJ, se houver
 });
-const debouncedFilterChange = debounce(() => {
+
+const debouncedFilterChange = debounce(() => { // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
     onFilterChange();
 }, 300);
-/**
- * Função para validar o campo CNPJ.
- * Se o CNPJ for inválido, a mensagem de erro é atualizada.
- */
+
 const validateCNPJField = () => {
     errors.cnpj = isValidDoc(cliente.cnpj) ? '' : t('error_invalid_cnpj'); // Se o CNPJ for inválido, exibe a mensagem de erro
 };
@@ -238,10 +217,6 @@ watch(active, (newIndex, oldIndex) => {
     }
 });
 
-/**
- * `onMounted` do Vue: Executa quando o componente é montado.
- * Carrega a lista de clientes ao montar a página.
- */
 onMounted(() => {
     loadClientes(); // Chama a função para carregar os clientes assim que o componente for montado
 });
@@ -409,8 +384,7 @@ onMounted(() => {
         </Dialog>
         <!-- ProgressBar para mostrar o progresso -->
         <ProgressBar v-if="progressValue > 0"  :value="progressValue" style="height: 20px" />
-
-        
+            
         <!-- Componente de carregamento -->
         <LoadingSpinner v-if="loading" />
     </div>

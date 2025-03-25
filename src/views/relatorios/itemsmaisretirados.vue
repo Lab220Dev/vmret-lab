@@ -14,172 +14,58 @@ import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
 
 const { t } = useI18n();
-/**
- * @type {Ref<boolean>}
- * Flag que controla a exibição do modal de mensagem.
- * @default false
- */
-const showDialog = ref(false);
 
-/**
- * @type {Ref<string>}
- * Armazena a mensagem a ser exibida no modal de mensagem.
- * @default ''
- */
-const dialogMessage = ref('');
+const showDialog = ref(false);//Flag que controla a exibição do modal de mensagem.
 
-/**
- * @type {Ref<number>}
- * Contador de registros filtrados para exibição na interface.
- * @default 0
- */
-const filteredCount = ref(0);
+const dialogMessage = ref('');//Armazena a mensagem a ser exibida no modal de mensagem.
 
-/**
- * @type {ReturnType<typeof useAuthStore>}
- * Armazena a instância do store de autenticação.
- */
-const dataStore = useDataStore();
-/**
- * @type {ReturnType<typeof useToast>}
- * Armazena o serviço de toast para exibir notificações de sucesso ou erro.
- */
-const toast = useToast();
+const filteredCount = ref(0);//Contador de registros filtrados para exibição na interface.
 
-/**
- * @type {Ref<string>}
- * Mensagem padrão exibida quando não há dados encontrados.
- * @default 'Ainda não foi feita nenhuma busca'
- */
- const emptyMessage = computed(() => t('no_search_made'));
+const dataStore = useDataStore();//Armazena a instância do store de autenticação.
 
-/**
- * @type {Ref<any>}
- * Referência para o primeiro dropdown (DM).
- */
-const dropdown1 = ref(null);
+const toast = useToast();//Armazena o serviço de toast para exibir notificações de sucesso ou erro.
 
-/**
- * @type {Ref<any>}
- * Referência para o segundo dropdown (Planta).
- */
-const dropdown2 = ref(null);
+ const emptyMessage = computed(() => t('no_search_made'));//Mensagem padrão exibida quando não há dados encontrados.
 
-/**
- * @type {Ref<any>}
- * Referência para o terceiro dropdown (Setor).
- */
-const dropdown3 = ref(null);
+const dropdown1 = ref(null);//Referência para o primeiro dropdown (DM).
 
-/**
- * @type {Ref<any>}
- * Referência para o quarto dropdown (Centro de Custo).
- */
-const dropdown4 = ref(null);
+const dropdown2 = ref(null);//Referência para o segundo dropdown (Planta).
 
-/**
- * @type {Ref<any>}
- * Referência para o quinto dropdown (Funcionário).
- */
-const dropdown5 = ref(null);
+const dropdown3 = ref(null);//Referência para o terceiro dropdown (Setor).
 
-/**
- * @type {Ref<Array<any>>}
- * Armazena os dados de retiradas recuperados.
- * @default []
- */
-const retiradas = ref([]);
+const dropdown4 = ref(null);//Referência para o quarto dropdown (Centro de Custo).
 
-/**
- * @type {Object}
- * Define a opção "Todos" como valor padrão para filtros de seleção.
- */
-const todosOption = { label: 'Todos', value: null };
+const dropdown5 = ref(null);//Referência para o quinto dropdown (Funcionário).
 
-// Declarações das listas de dados filtráveis (DMs, Plantas, Setores, Centros de Custo, Funcionários)
-/**
- * @type {Ref<Array<any>>}
- * Lista de DMs (Documentos de Medição).
- * @default [todosOption]
- */
-const dms = ref([todosOption]);
+const retiradas = ref([]);//Armazena os dados de retiradas recuperados
 
-/**
- * @type {Ref<Array<any>>}
- * Lista de Plantas.
- * @default [todosOption]
- */
-const plantas = ref([todosOption]);
+const todosOption = { label: 'Todos', value: null };//Define a opção "Todos" como valor padrão para filtros de seleção.
 
-/**
- * @type {Ref<Array<any>>}
- * Lista de Centros de Custo.
- * @default [todosOption]
- */
-const centroCusto = ref([todosOption]);
+const dms = ref([todosOption]);//Lista de DMs (Documentos de Medição).
 
-/**
- * @type {Ref<Array<any>>}
- * Lista original de funcionários.
- * @default []
- */
-const ListaFuncionariosOriginal = ref([]);
+const plantas = ref([todosOption]);//Lista de Plantas.
 
-/**
- * @type {Ref<Array<any>>}
- * Lista filtrada de funcionários.
- * @default []
- */
-const ListaFuncionarios = ref([]);
+const centroCusto = ref([todosOption]);//Lista de Centros de Custo.
 
-/**
- * @type {Ref<Array<any>>}
- * Lista original de setores.
- * @default []
- */
-const ListaSetorOriginal = ref([]);
+const ListaFuncionariosOriginal = ref([]);//Lista original de funcionários.
 
-/**
- * @type {Ref<Array<any>>}
- * Lista filtrada de setores.
- * @default []
- */
-const ListaSetor = ref([]);
+const ListaFuncionarios = ref([]);//Lista filtrada de funcionários.
 
-/**
- * @type {Ref<Object>}
- * Filtro global para a tabela. O filtro é baseado no valor digitado pelo usuário.
- */
-const filters = ref({
+const ListaSetorOriginal = ref([]);//Lista original de setores.
+
+const ListaSetor = ref([]);//Lista filtrada de setores.
+
+const filters = ref({//Filtro global para a tabela. O filtro é baseado no valor digitado pelo usuário.
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-/**
- * @type {Ref<boolean>}
- * Flag que controla a exibição da tabela de resultados.
- * @default false
- */
-const show = ref(false);
+const show = ref(false);//Flag que controla a exibição da tabela de resultados.
 
-/**
- * @type {Ref<any[]>}
- * Armazena o item selecionado para exibição de detalhes.
- * @default []
- */
-const selectedItem = ref([]);
+const selectedItem = ref([]);//Armazena o item selecionado para exibição de detalhes.
 
-/**
- * @type {Ref<boolean>}
- * Flag que controla a exibição do spinner de carregamento.
- * @default false
- */
-const loading = ref(false);
+const loading = ref(false);//Flag que controla a exibição do spinner de carregamento.
 
-/**
- * @type {Ref<Object>}
- * Relatório que contém os filtros selecionados para a consulta (DM, Planta, Setor, Centro de Custo, etc).
- */
-const relatorio = ref({
+const relatorio = ref({//Relatório que contém os filtros selecionados para a consulta (DM, Planta, Setor, Centro de Custo, etc).
     id_dm: '',
     id_planta: null,
     ID_CentroCusto: '',
@@ -189,10 +75,7 @@ const relatorio = ref({
     data_final: new Date() // data atual
 });
 
-/**
- * Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
- */
-const buscar = async () => {
+const buscar = async () => {//Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
     try {
         loading.value = true; // Ativa a flag de carregamento
         retiradas.value = await relatorioService.itemsMaisRetiradas(relatorio);
@@ -224,10 +107,7 @@ const buscar = async () => {
     }
 };
 
-/**
- * Reage à mudança no filtro global e atualiza a contagem de itens filtrados.
- */
-watch(
+watch(//Reage à mudança no filtro global e atualiza a contagem de itens filtrados.
     () => filters.value.global.value,
     () => {
         filteredCount.value = retiradas.value.filter((item) => {
@@ -313,7 +193,7 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
 };
 
-const isMobile = isMobileDevice();
+const isMobile = isMobileDevice();//Retorna `true` se o dispositivo for móvel, ou `false` caso contrário.
 
 // Função chamada ao montar o componente
 onMounted(async () => {

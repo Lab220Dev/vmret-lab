@@ -1,10 +1,4 @@
 <script setup>
-/**
- * Importações necessárias para o funcionamento do componente.
- *
- * @module
- */
-
 // Importa os modos de correspondência de filtro para a tabela de dados.
 import { FilterMatchMode } from 'primevue/api';
 

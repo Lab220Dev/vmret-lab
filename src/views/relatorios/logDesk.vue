@@ -8,13 +8,14 @@ import { ref, onMounted, watch, computed } from 'vue'; // Funções do Vue para 
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação e dados do usuário
 
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
-import usuarioDMService from '@/services/usuarioDMService';
+import usuarioDMService from '@/services/usuarioDMService';//Importa o serviço `usuarioDMService` localizado no diretório `@/services/usuarioDMService`. Este serviço provavelmente lida com a gestão de usuários, realizando operações como criação, leitura, atualização e exclusão (CRUD) de dados de usuários.
 
-import funcionarioService from '@/Services/funcionarioService.js';
+import funcionarioService from '@/Services/funcionarioService.js';// * Importa o serviço `funcionarioService` localizado no diretório `@/Services/funcionarioService.js`. Este serviço provavelmente gerencia as operações relacionadas aos funcionários, como consulta, adição ou atualização de informações dos funcionários.
 
 import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs de desktop
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+
+import { useI18n } from 'vue-i18n';//Importa o hook `useI18n` do Vue I18n, que fornece as funcionalidades de internacionalização para o Vue. Este hook permite acessar as funções necessárias para traduzir as chaves de texto da aplicação, de acordo com o idioma configurado.
+const { t } = useI18n();//Chama o hook `useI18n` para acessar a função `t`, que é usada para traduzir chaves de texto com base no idioma configurado na aplicação.
 
 // Contadores e mensagens reativas
 const filteredCount = ref(0); // Contador de registros filtrados

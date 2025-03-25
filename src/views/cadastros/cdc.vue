@@ -303,7 +303,6 @@ onMounted(() => {
                                     />
                                     <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
                                 </div>
-                                <!-- </div> -->
                             </form>
                         </div>
 

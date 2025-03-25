@@ -1,76 +1,32 @@
 <script setup>
-/**
- * Importa o componente `VueDatePicker` para exibição de seletor de data.
- * @module @vuepic/vue-datepicker
- */
-import VueDatePicker from '@vuepic/vue-datepicker';
 
-/**
- * Importa o tipo `FilterMatchMode` para configurar os filtros no componente DataTable.
- * @module primevue/api
- */
-import { FilterMatchMode } from 'primevue/api';
+import VueDatePicker from '@vuepic/vue-datepicker';//Importa o componente `VueDatePicker` para exibição de seletor de data
 
-/**
- * Importa o serviço de Toast para exibição de mensagens rápidas para o usuário.
- * @module primevue/usetoast
- */
-import { useToast } from 'primevue/usetoast';
+import { FilterMatchMode } from 'primevue/api';//Importa o tipo `FilterMatchMode` para configurar os filtros no componente DataTable.
 
-/**
- * Importa o CSS necessário para o VueDatePicker.
- * @module @vuepic/vue-datepicker/dist/main.css
- */
-import '@vuepic/vue-datepicker/dist/main.css';
+import { useToast } from 'primevue/usetoast';//Importa o serviço de Toast para exibição de mensagens rápidas para o usuário.
 
-/**
- * Importa as funções reativas e do ciclo de vida do Vue, como `ref`, `onMounted`, e `watch`.
- * @module vue
- */
-import { ref, onMounted,computed } from 'vue';
+import '@vuepic/vue-datepicker/dist/main.css';//Importa o CSS necessário para o VueDatePicker.
+
+import { ref, onMounted,computed } from 'vue';//Importa as funções reativas e do ciclo de vida do Vue, como `ref`, `onMounted`, e `watch`
 import { useI18n } from 'vue-i18n';
-/**
- * Importa o componente de spinner de carregamento.
- * @module components/LoadingSpinner.vue
- */
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+
+import LoadingSpinner from '@/components/LoadingSpinner.vue';//Importa o componente de spinner de carregamento.
 import {  formatDateToString, formatStringDate } from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 
-// Definindo referências reativas para a UI e lógica do aplicativo.
-
 const { t } = useI18n();
 
-/**
- * Contagem de registros filtrados.
- * @type {ref<number>}
- */
-const filteredCount = ref(0);
+const filteredCount = ref(0);//Contagem de registros filtrados.
 
-/**
- * Flag para exibir ou não o spinner de carregamento.
- * @type {ref<boolean>}
- */
-const loading = ref(false);
+const loading = ref(false);//Flag para exibir ou não o spinner de carregamento.
 
-/**
- * Armazena a store de autenticação para o usuário atual.
- * @type {object}
- */
 const dataStore = useDataStore(); // Obtém o store de autenticação (para acessar o token e dados do usuário)
 
-/**
- * Serviço de Toast para exibir mensagens.
- * @type {object}
- */
-const toast = useToast();
+const toast = useToast();//Serviço de Toast para exibir mensagens.
 
-/**
- * Mensagem padrão quando não há dados encontrados.
- * @type {ref<string>}
- */
- const emptyMessage = computed(() => t('no_search_made'));
+ const emptyMessage = computed(() => t('no_search_made'));//Mensagem padrão quando não há dados encontrados.
 
 /**
  * Referências para os dropdowns de filtros.
@@ -82,63 +38,28 @@ const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 
-/**
- * Dados do histórico de abastecimento.
- * @type {ref<Array<object>>}
- */
-const historico = ref([]);
+const historico = ref([]);//Dados do histórico de abastecimento.
 
-/**
- * Opção para exibir todos os itens no filtro.
- * @type {object}
- */
-const todosOption = { label: 'Todos', value: null };
+const todosOption = { label: 'Todos', value: null };//Opção para exibir todos os itens no filtro.
 
-/**
- * Lista de operadores disponíveis.
- * @type {ref<Array<object>>}
- */
-const ListaOperador = ref(null);
+const ListaOperador = ref(null);//Lista de operadores disponíveis.
 const ListaOperadorOriginal = ref(null);
 
-/**
- * Lista de DM's disponíveis.
- * @type {ref<Array<object>>}
- */
-const dms = ref([todosOption]);
+const dms = ref([todosOption]);//Lista de DM's disponíveis.
 
-/**
- * Lista de plantas disponíveis.
- * @type {ref<Array<object>>}
- */
-const plantas = ref([todosOption]);
+const plantas = ref([todosOption]);//Lista de plantas disponíveis.
 
-/**
- * Lista de setores disponíveis.
- * @type {ref<Array<object>>}
- */
-const setor = ref([todosOption]);
-const ListaSetorOriginal = ref([todosOption]);
+const setor = ref([todosOption]);//Lista de setores disponíveis.
 
-/**
- * Lista de centros de custo disponíveis.
- * @type {ref<Array<object>>}
- */
-const centroCusto = ref([todosOption]);
+const ListaSetorOriginal = ref([todosOption]);//
 
-/**
- * Objeto contendo os filtros globais para o DataTable.
- * @type {ref<object>}
- */
+const centroCusto = ref([todosOption]);//Lista de centros de custo disponíveis.
+
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global que procura correspondências parciais
 });
 
-/**
- * Objeto contendo os dados do relatório, com filtros específicos.
- * @type {ref<object>}
- */
-const relatorio = ref({
+const relatorio = ref({//Objeto contendo os dados do relatório, com filtros específicos.
     dm: '',
     id_planta: '',
     id_centro_custo: '',
@@ -148,12 +69,7 @@ const relatorio = ref({
     data_final: new Date() // Data final (data atual)
 });
 
-/**
- * Função para buscar o histórico de abastecimento com base nos filtros.
- * @async
- * @returns {Promise<void>}
- */
- const buscar = async () => {
+ const buscar = async () => {//Função para buscar o histórico de abastecimento com base nos filtros.
     try {
         loading.value = true;
         historico.value = await relatorioService.historicoAbastecimento(relatorio);
@@ -171,11 +87,7 @@ const relatorio = ref({
     }
 };
 
-
-/**
- * Função para fechar todos os dropdowns abertos.
- */
-const closeAllDropdowns = () => {
+const closeAllDropdowns = () => {//Função para fechar todos os dropdowns abertos.
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown do DM
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown da planta
     if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o dropdown do setor
@@ -183,10 +95,6 @@ const closeAllDropdowns = () => {
     if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o dropdown do operador
 };
 
-/**
- * Função para tratar o evento de abertura do date picker.
- * Fecha todos os dropdowns ao abrir o date picker.
- */
 const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns ao abrir o date picker
 };

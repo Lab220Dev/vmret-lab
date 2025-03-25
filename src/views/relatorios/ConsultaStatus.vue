@@ -1,19 +1,27 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import axios from '@/axios.js';
-import { useAuthStore } from '@/store/authStore.js';
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import relatorioService  from '@/services/relatorioService.js';
-const liberAv = ref([
-    { label: 'Matrícula', value: '1' },
-    { label: 'Voucher', value: '2' }
+
+import { ref, onMounted } from 'vue';  // Importa as funções 'ref' e 'onMounted' do Vue para criar variáveis reativas e executar código quando o componente for montado
+
+import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente 'VueDatePicker', provavelmente utilizado para selecionar datas na interface 
+
+import axios from '@/axios.js';  // Importa a instância do axios configurada para realizar requisições HTTP, utilizando o arquivo de configuração '@/axios.js'
+
+import { useAuthStore } from '@/store/authStore.js'; // Importa a função 'useAuthStore' do store de autenticação, usada para acessar o estado de autenticação global da aplicação 
+
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente 'LoadingSpinner', que provavelmente é usado para exibir um indicador de carregamento na interface 
+
+import relatorioService  from '@/services/relatorioService.js'; // Importa o serviço 'relatorioService', utilizado para interagir com a lógica de geração de relatórios 
+
+const liberAv = ref([  // Cria uma referência reativa chamada 'liberAv', que armazena as opções de liberação
+    { label: 'Matrícula', value: '1' },  // A primeira opção, com o rótulo 'Matrícula' e valor '1'
+    { label: 'Voucher', value: '2' }     // A segunda opção, com o rótulo 'Voucher' e valor '2'
 ]);
 
 const loading = ref(false); // Controle do estado de carregamento
 const relatorio = ref({ // Dados para a busca de liberações avulsas
     busca: ''
 });
+
 const LiberacaoAvulsa = ref([]); // Armazenamento dos dados do relatório de liberações avulsas
 
 const modalVisible = ref(false); // Controle de visibilidade do modal para alterar prazo
@@ -29,10 +37,6 @@ const libMock = ref([
     { status: 'Inativo', voucher: 'B456', matricula: 'BTK456', nome: 'Não sei', dataliberacao: '00/00/0000', nome2: 'Ninguém', token: '27', dataret: '32/13/3000', dm: '6', compartimento: '10' }
 ]);
 
-/**
- * Função para gerar o relatório de liberações avulsas.
- * Envia dados do filtro (matrícula ou voucher) para o backend e retorna os dados correspondentes.
- */
 const relatorioLA = async () => {
     loading.value = true; // Inicia o carregamento
 
@@ -96,10 +100,6 @@ const handleRowSelection = async (event) => {
     await onRowSelect(event); // Chama a função para tratar a seleção da linha
 };
 
-// Função chamada quando o componente for montado (comentada pois a fetch ainda não está implementada)
-// onMounted(() => {
-//     // fetchbusca();
-// });
 </script>
 
 <template>

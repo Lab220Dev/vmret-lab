@@ -1,9 +1,9 @@
 import axios from '@/axios.js'; // Importa a instância personalizada do axios para realizar requisições HTTP.
 
-const plantaService = {
-  async listarPlantas(idCliente) {
-    const data = { id_cliente: idCliente };
-    return axios.post('/plantas/listar', data);
+const plantaService = { // Declara um objeto chamado plantaService que contém vários métodos assíncronos
+  async listarPlantas(idCliente) { // Declara um método assíncrono chamado listarPlantas que recebe um idCliente como parâmetro
+    const data = { id_cliente: idCliente }; // Cria um objeto data com a propriedade id_cliente definida como o idCliente fornecido
+    return axios.post('/plantas/listar', data); // Faz uma requisição POST usando axios para a URL '/plantas/listar' com os dados fornecidos e retorna a resposta
   },
   async listarPlantasPaginado(data) {
     return axios.post('/plantas/listarPaginando', data);

@@ -202,7 +202,6 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <div class="text-center">
-        <!--<h5 class="my-6 ml-2 text-2xl">{{t('devolucoes')}}</h5>-->
                 
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->

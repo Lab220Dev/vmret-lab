@@ -1,100 +1,52 @@
 <script setup>
-/**
- * Importações necessárias para o funcionamento do componente
- *
- * Estas importações são responsáveis por trazer funções do Vue, stores, componentes, imagens e utilitários que o componente utiliza.
- */
 
 // Importa as funções reativas e de ciclo de vida do Vue
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-/**
- * Funções importadas:
- * - `ref`: Cria referências reativas para elementos DOM ou variáveis no componente.
- * - `onMounted`: Executa código quando o componente é montado na tela.
- * - `onBeforeUnmount`: Executa código antes do componente ser desmontado.
- */
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';//`ref`: Cria referências reativas para elementos DOM ou variáveis no componente.`onMounted`: Executa código quando o componente é montado na tela.`onBeforeUnmount`: Executa código antes do componente ser desmontado.
 
 // Acessa as funções do layout, como alternar o menu lateral
 import { useLayout } from '@/layout/composables/layout';
-/**
- * `useLayout`: Fornece acesso a funções relacionadas ao layout, como a alternância do menu lateral.
- */
 
 // Usado para navegação entre as rotas
 import { useRouter } from 'vue-router';
-/**
- * `useRouter`: Utilizado para navegar programaticamente entre as páginas.
- */
 
 // Acessa a store de contagem regressiva para obter o tempo restante
 import { useCountdownStore } from '@/store/countdown';
-/**
- * `useCountdownStore`: Acesso à store que controla o tempo de contagem regressiva.
- */
 
 // Importa a URL da imagem do logo
 import imageUrl from '@/assets/images/LogoDMBranco.png';
-/**
- * `imageUrl`: Importa a imagem do logo da empresa para ser exibida no componente.
- */
 
 // Importa o componente VueCountdown para exibir o tempo de contagem regressiva
 import VueCountdown from '@chenfengyuan/vue-countdown';
-/**
- * `VueCountdown`: Componente para exibir a contagem regressiva.
- */
 
 // Acessa a store de autenticação para obter os dados do usuário
 import { useAuthStore } from '@/store/authStore.js';
-/**
- * `useAuthStore`: Fornece acesso aos dados do usuário, como nome e papel, da store de autenticação.
- */
+
+// Importa o arquivo CSS de bandeiras.
 import '@/assets/demo/flags/flags.css';
+
+// Importa a função useI18n da biblioteca vue-i18n para internacionalização.
 import { useI18n } from 'vue-i18n';
+
+// Obtém as funções de tradução (t) e de alteração de idioma (locale) do vue-i18n.
 const { t, locale } = useI18n();
 
-/*
- * Desestruturação de funções do layout, como alternar o menu lateral.
- */
-const { onMenuToggle } = useLayout();
+const { onMenuToggle } = useLayout();//Desestruturação de funções do layout, como alternar o menu lateral.
 
-/**
- * Acessa a store de autenticação para obter dados do usuário.
- */
-const store = useAuthStore();
+const store = useAuthStore();//Acessa a store de autenticação para obter dados do usuário.
 
-/**
- * Usamos o router para navegar entre as páginas.
- */
-const router = useRouter();
+const router = useRouter();//Usamos o router para navegar entre as páginas.
 
-/**
- * Referência para o listener de clique fora do menu. Inicialmente, está definido como `null`.
- */
-const outsideClickListener = ref(null);
+const outsideClickListener = ref(null);//Referência para o listener de clique fora do menu. Inicialmente, está definido como `null`.
 
-/**
- * Controle de visibilidade do menu superior. Inicialmente, o menu está ativo (visível).
- */
-const topbarMenuActive = ref(true);
+const topbarMenuActive = ref(true);//Controle de visibilidade do menu superior. Inicialmente, o menu está ativo (visível).
 
-/**
- * Obtém o nome e a role (papel) do usuário no sistema a partir do store de autenticação.
- */
+//Obtém o nome e a role (papel) do usuário no sistema a partir do store de autenticação.
 const nome = store.userName;
 const role = store.userRole;
 
-/**
- * Acessa a store de contagem regressiva para obter o tempo restante.
- * O valor de `millisecondsRemaining` será utilizado para mostrar a contagem regressiva.
- */
-const countdownStore = useCountdownStore();
-const millisecondsRemaining = countdownStore.millisecondsRemaining;
+const countdownStore = useCountdownStore();//Acessa a store de contagem regressiva para obter o tempo restante.
+const millisecondsRemaining = countdownStore.millisecondsRemaining;//O valor de `millisecondsRemaining` será utilizado para mostrar a contagem regressiva.
 
-/**
- * Método chamado quando o componente é montado.
- * Aqui, ele liga o listener de clique fora do menu e inicia a contagem regressiva, se necessário.
- */
 onMounted(() => {
     bindOutsideClickListener(); // Liga o listener de clique fora do menu
 
@@ -102,91 +54,47 @@ onMounted(() => {
     if (millisecondsRemaining > 0) {
         startCountdown();
     }
-    /**
-     * Se `millisecondsRemaining` for maior que 0, o código entra no bloco condicional.
-     * O método `startCountdown` é chamado para iniciar a contagem regressiva.
-     * Caso contrário, nenhuma ação é tomada.
-     */
 });
 
-/**
- * Método chamado antes do componente ser desmontado.
- * Remove o listener de clique fora do menu.
- */
 onBeforeUnmount(() => {
     unbindOutsideClickListener(); // Desliga o listener de clique fora do menu
 });
 
-/**
- * Função para adicionar o listener de clique fora do menu.
- * O listener verifica se o clique foi fora do menu e fecha o menu.
- */
-const bindOutsideClickListener = () => {
-    if (!outsideClickListener.value) {
-        /**
-         * Verifica se o listener de clique fora do menu já foi adicionado.
-         * Se ainda não foi adicionado, o código entra no bloco condicional e adiciona o listener.
-         */
-        outsideClickListener.value = (event) => {
-            if (isOutsideClicked(event)) {
-                /**
-                 * A função `isOutsideClicked` verifica se o clique foi fora do menu.
-                 * Se verdadeiro, o menu será fechado, definindo `topbarMenuActive` como `false`.
-                 */
-                topbarMenuActive.value = false;
+const bindOutsideClickListener = () => {//Função para adicionar o listener de clique fora do menu.
+    if (!outsideClickListener.value) {//O listener verifica se o clique foi fora do menu e fecha o menu.
+        outsideClickListener.value = (event) => {//Verifica se o listener de clique fora do menu já foi adicionado
+            if (isOutsideClicked(event)) {//Se ainda não foi adicionado, o código entra no bloco condicional e adiciona o listener.
+                topbarMenuActive.value = false;//A função `isOutsideClicked` verifica se o clique foi fora do menu.Se verdadeiro, o menu será fechado, definindo `topbarMenuActive` como `false`.
             }
         };
-        document.addEventListener('click', outsideClickListener.value);
-        /**
-         * Adiciona o evento de clique no documento para que o listener de clique fora do menu seja executado.
-         * O código espera que o `outsideClickListener` seja acionado quando o clique ocorrer.
-         */
+        document.addEventListener('click', outsideClickListener.value);//Adiciona o evento de clique no documento para que o listener de clique fora do menu seja executado.O código espera que o `outsideClickListener` seja acionado quando o clique ocorrer.
     }
 };
 
-/**
- * Função para remover o listener de clique fora do menu.
- */
-const unbindOutsideClickListener = () => {
-    if (outsideClickListener.value) {
-        /**
-         * Verifica se o listener existe antes de removê-lo.
-         * Caso o listener esteja presente, ele é removido e a referência é limpa.
-         */
-        document.removeEventListener('click', outsideClickListener);
+const unbindOutsideClickListener = () => {//Função para remover o listener de clique fora do menu.
+    if (outsideClickListener.value) {//Verifica se o listener existe antes de removê-lo.
+
+        document.removeEventListener('click', outsideClickListener);//Caso o listener esteja presente, ele é removido e a referência é limpa.
         outsideClickListener.value = null;
     }
 };
 
 /**
  * Função para verificar se o clique foi fora do menu.
- * Verifica se o evento de clique ocorreu fora do botão de sair na barra superior.
  *
  * @param {Event} event - O evento de clique.
  * @returns {boolean} Retorna `true` se o clique foi fora do menu.
  */
 const isOutsideClicked = (event) => {
-    if (!topbarMenuActive.value) return false;
-    /**
-     * Se o menu não estiver ativo (visível), a função retorna `false` para não realizar a verificação.
-     * Isso impede a execução da lógica de verificação de clique fora do menu.
-     */
+    if (!topbarMenuActive.value) return false;//Se o menu não estiver ativo (visível), a função retorna `false` para não realizar a verificação.
 
-    const topbarEl = document.querySelector('.layout-topbar-sair-button');
-    /**
-     * Seleciona o botão de sair da barra superior.
-     * O código espera que o botão tenha a classe `layout-topbar-sair-button`.
-     */
-
+    const topbarEl = document.querySelector('.layout-topbar-sair-button');//Seleciona o botão de sair da barra superior.
+   
     // Verifica se o clique foi fora do botão de sair, retornando `true` para fechar o menu.
     return !(topbarEl === event.target || topbarEl.contains(event.target));
 };
 
-/**
- * Função para realizar o logoff do usuário.
- * Realiza o logout, limpa os dados de armazenamento e redireciona para a página de login.
- */
-const fazerLogoff = () => {
+const fazerLogoff = () => {// Função para realizar o logoff do usuário.
     store.$reset(); // Reseta o estado do store de autenticação
 
     // Limpa os dados de armazenamento local e de sessão
@@ -195,11 +103,7 @@ const fazerLogoff = () => {
 
     // Limpa todos os cookies
     document.cookie.split(';').forEach((c) => {
-        document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
-        /**
-         * Limpa todos os cookies definindo a data de expiração no passado, removendo-os.
-         * O código assume que todos os cookies podem ser removidos dessa maneira.
-         */
+        document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';//Limpa todos os cookies definindo a data de expiração no passado, removendo-os.
     });
 
     store.logout(); // Executa o logoff no store de autenticação
@@ -208,22 +112,13 @@ const fazerLogoff = () => {
 
 /**
  * Função que inicia a contagem regressiva.
- * Esta função pode ser expandida com lógica adicional para controlar a contagem, caso necessário.
- *
  * @returns {boolean} Retorna `true` para indicar que a contagem foi iniciada.
  */
 function startCountdown() {
-    return true;
-    /**
-     * Retorna `true`, mas não realiza nenhuma ação adicional.
-     * A lógica de contagem regressiva pode ser expandida aqui conforme necessário.
-     */
+    return true;//Retorna `true`, mas não realiza nenhuma ação adicional.
+
 }
 
-/**
- * Função chamada quando a contagem regressiva chega ao fim.
- * Realiza o logoff do usuário e redireciona para a página de login.
- */
 function onCountdownEnd() {
     store.logout(); // Realiza o logout do usuário
     router.push({ name: 'login' }); // Redireciona para a página de login
@@ -236,75 +131,64 @@ function onCountdownEnd() {
  * @returns {string} O valor formatado com dois dígitos.
  */
 function padZero(value) {
-    return String(value).padStart(2, '0');
-    /**
-     * Garante que o valor tenha pelo menos dois caracteres, preenchendo com zero à esquerda, se necessário.
-     */
+    return String(value).padStart(2, '0');//Garante que o valor tenha pelo menos dois caracteres, preenchendo com zero à esquerda, se necessário.
+
 }
 const alterarLingua = (idioma) => {
     locale.value = idioma; // Altera o idioma globalmente
     const nomeIdioma = t(idiomasMapeados[idioma]);
     store.globalMessage = `${t("languageChanged")}: ${nomeIdioma}`;
 };
-const idiomasMapeados = {
+const idiomasMapeados = {//Idiomas permitidos
     pt: 'portuguese',
     en: 'english',
     es: 'spanish'
 };
-/**
- * Menu de opções, com o item de "Fazer Logoff".
- * Contém a configuração do menu suspenso.
- */
-const menu = ref();
-const menuLingua = ref();
+const menu = ref();//Menu de opções, com o item de "Fazer Logoff".
+const menuLingua = ref();//Contém a configuração do menu suspenso.
+// Computa os itens do menu de opções.
 const items = computed(() => [
     {
-        label: t('options'),
+        label: t('options'), // Rótulo do menu de opções.
         items: [
             {
-                label: t('logout'),
-                icon: 'pi pi-power-off',
-                command: fazerLogoff // Chama a função de logoff quando o item for selecionado
+                label: t('logout'), // Rótulo do item de logoff.
+                icon: 'pi pi-power-off', // Ícone do item de logoff.
+                command: fazerLogoff // Chama a função de logoff quando o item for selecionado.
             }
         ]
     }
 ]);
+
+// Computa os itens do menu de idiomas.
 const linguas = computed(() => [
     {
-        label: t('languageOptions'),
+        label: t('languageOptions'), // Rótulo do menu de opções de idioma.
         items: [
             {
-                label: t('portuguese'),
-                icon: 'custom-icon flag flag-br',
-                command: () => alterarLingua('pt')
+                label: t('portuguese'), // Rótulo para o idioma português.
+                icon: 'custom-icon flag flag-br', // Ícone da bandeira do Brasil.
+                command: () => alterarLingua('pt') // Altera o idioma para português quando o item for selecionado.
             },
             {
-                label: t('english'),
-                icon: 'custom-icon flag flag-us',
-                command: () => alterarLingua('en')
+                label: t('english'), // Rótulo para o idioma inglês.
+                icon: 'custom-icon flag flag-us', // Ícone da bandeira dos Estados Unidos.
+                command: () => alterarLingua('en') // Altera o idioma para inglês quando o item for selecionado.
             },
             {
-                label: t('spanish'),
-                icon: 'custom-icon flag flag-ar',
-                command: () => alterarLingua('es')
+                label: t('spanish'), // Rótulo para o idioma espanhol.
+                icon: 'custom-icon flag flag-ar', // Ícone da bandeira da Argentina.
+                command: () => alterarLingua('es') // Altera o idioma para espanhol quando o item for selecionado.
             }
         ]
     }
 ]);
-/**
- * Função para alternar a visibilidade do menu de opções.
- *
- * @param {Event} event - O evento de clique.
- */
-const toggle = (event) => {
-    menu.value.toggle(event);
-    /**
-     * Alterna a visibilidade do menu usando a referência `menu`.
-     * O evento de clique é passado para a função `toggle` para garantir o controle do estado do menu.
-     */
+
+const toggle = (event) => {//Função para alternar a visibilidade do menu de opções.
+    menu.value.toggle(event);//O evento de clique.
 };
-const toggleLingua = (event) => {
-    menuLingua.value.toggle(event);
+const toggleLingua = (event) => {//Alterna a visibilidade do menu usando a referência `menu`.
+    menuLingua.value.toggle(event);//O evento de clique é passado para a função `toggle` para garantir o controle do estado do menu.
 };
 </script>
 
@@ -357,29 +241,31 @@ const toggleLingua = (event) => {
 
 <style scoped>
 .relogio {
-    font-size: 10pt;
-    font-weight: bold;
-    color: #efae33;
-    padding-top: 0px;
-    margin-left: 0px;
-    margin-right: 10px;
+    font-size: 10pt; /* Define o tamanho da fonte para 10 pontos */
+    font-weight: bold; /* Define o peso da fonte como negrito */
+    color: #efae33; /* Define a cor do texto como um tom de amarelo */
+    padding-top: 0px; /* Define o preenchimento superior como 0 pixels */
+    margin-left: 0px; /* Define a margem esquerda como 0 pixels */
+    margin-right: 10px; /* Define a margem direita como 10 pixels */
 }
 
 .usuario {
-    font-size: 12px;
+    font-size: 12px; /* Define o tamanho da fonte para 12 pixels */
 }
 
 .role {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5); /* Define a cor do texto como branco com 50% de opacidade */
+    font-size: 10px; /* Define o tamanho da fonte para 10 pixels */
 }
+
 .custom-icon {
-    display: inline-block;
-    width: 30px;
-    height: 20px;
-    background-size: contain;
-    margin-right: 8px;
+    display: inline-block; /* Define o elemento como um bloco inline */
+    width: 30px; /* Define a largura como 30 pixels */
+    height: 20px; /* Define a altura como 20 pixels */
+    background-size: contain; /* Define o tamanho do fundo para conter o conteúdo */
+    margin-right: 8px; /* Define a margem direita como 8 pixels */
 }
+
 /* Estilos para telas pequenas (menor que 767px) */
 @media (max-width: 767px) {
     .relogio,
