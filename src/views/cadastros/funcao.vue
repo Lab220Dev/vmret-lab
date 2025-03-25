@@ -172,19 +172,21 @@ const loadData = async () => {
         console.error('Erro ao carregar dados iniciais:', error); // Registra o erro no console
     }
 };
-function debounce(func, wait = 300) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+function debounce(func, wait = 300) { // Declara uma função chamada debounce
+    let timeout; // Declara uma variável para armazenar o timeout
+    return (...args) => { // Retorna uma função que recebe argumentos
+        clearTimeout(timeout); // Limpa o timeout anterior
+        timeout = setTimeout(() => func.apply(this, args), wait); // Define um novo timeout para chamar a função após o tempo de espera
     };
 }
-const debouncedFilterChange = debounce(() => {
+
+const debouncedFilterChange = debounce(() => { // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
     onFilterChange();
 }, 300);
+
 // Chama a função de carregamento de dados ao montar o componente
 onMounted(() => {
-    Mob.value = isMobEnabled();
+    Mob.value = isMobEnabled(); // Define o valor de Mob com base na função isMobEnabled
     loadFuncoes(); // Carrega a lista de funções
     loadData(); // Carrega os dados dos centros de custo
 });

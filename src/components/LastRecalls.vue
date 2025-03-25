@@ -109,18 +109,18 @@ const truncatedText = (text) => {//truncatedText é uma função que recebe um t
 }
 
 /* Estilos para a exibição de tooltip */
-.tooltip-target {
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-    max-width: 100%;
+.tooltip-target { /* Estilo para o elemento que exibirá o tooltip */
+    cursor: pointer;  /* Altera o cursor para indicar que o elemento é clicável */
+    white-space: nowrap;  /* Impede quebra de linha */
+    overflow: hidden; /* Oculta o texto que excede o tamanho */
+    text-overflow: ellipsis;  /* Exibe reticências (...) quando o texto excede o tamanho */
+    display: inline-block;  /* Exibe o elemento como um bloco */
+    max-width: 100%;  /* Define a largura máxima como 100% */
 }
 
 /* Estilos para o tooltip, permitindo múltiplas linhas de texto */
-.v-tooltip {
-    max-width: 400px;
-    white-space: normal;
+.v-tooltip {  /* Estilo para o tooltip */
+    max-width: 400px; /* Define a largura máxima do tooltip */
+    white-space: normal;  /* Permite que o texto quebre em várias linhas */
 }
 </style>

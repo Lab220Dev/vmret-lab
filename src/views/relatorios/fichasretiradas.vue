@@ -49,11 +49,7 @@ const filterFuncionarios = () => {
     }
 };
 
-/**
- * Função para gerar o PDF do relatório.
- * Caso o funcionário não tenha sido selecionado, exibe um alerta.
- */
-const generatePDF = async () => {
+const generatePDF = async () => {//Função para gerar o PDF do relatório.
     try {
         loading.value = true;
         await GerarPdfRetirada(selectedItem, relatorio);
@@ -81,7 +77,9 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha os dropdowns ao abrir o Datepicker
 };
 const loadData = async () => {
+    // Define o estado de carregamento como verdadeiro enquanto os dados estão sendo carregados.
     loading.value = true;
+
     try {
         if (!dataStore.plantas) await dataStore.fetchPlantas();
         if (!dataStore.funcionarios) await dataStore.fetchFuncionarios();
@@ -90,8 +88,10 @@ const loadData = async () => {
         // ListaFuncionariosOriginal.value = await relatorioService.listaFuncionario();
         // ListaFuncionarios.value = ListaFuncionariosOriginal.value;
     } catch (error) {
+        // Exibe uma mensagem de erro caso ocorra algum erro durante o carregamento dos dados.
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
     } finally {
+        // Define o estado de carregamento como falso após a execução (independente de sucesso ou falha).
         loading.value = false;
     }
 };

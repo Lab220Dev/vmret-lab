@@ -1,15 +1,15 @@
 import { toISODate, formatStringDate } from '@/helpers/HelperUtils'; // Supondo que essa função já exista
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
-import relatorioService from '@/Services/relatorioService.js';
+import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para realizar operações relacionadas a relatórios.
 import jsPDF from 'jspdf'; // Importa a biblioteca jsPDF para gerar PDFs
-import autoTable from 'jspdf-autotable';
-import html2canvas from 'html2canvas';
+import autoTable from 'jspdf-autotable'; // Importa a biblioteca autoTable do jsPDF para gerar tabelas em PDFs.
+import html2canvas from 'html2canvas'; // Importa a biblioteca html2canvas para converter HTML em imagens.
 import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
-import clientesService from '../Services/ClientesService';
-import funcionarioService from '../Services/funcionarioService';
+import clientesService from '../Services/ClientesService'; // Importa o serviço de clientes para realizar operações relacionadas a clientes.
+import funcionarioService from '../Services/funcionarioService'; // Importa o serviço de funcionários para realizar operações relacionadas a funcionários.
 
 const { t } = i18n.global; // Obtém a função de tradução do vue-i18n
-const store = useAuthStore();
+const store = useAuthStore(); // Obtém o store de autenticação para acessar informações do usuário autenticado.
 
 /**
  * Prepara os dados do relatório com base no tipo de relatório fornecido e nos valores do relatório.
@@ -173,13 +173,13 @@ export function organizarFuncionarios(funcionarios) {
  */
 export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
     try {
+        // Verifica se o funcionário selecionado está definido e não está vazio.
         if (!funcionarioSelecionado?.value || Object.keys(funcionarioSelecionado.value).length === 0) {
-            throw new Error('Funcionário não selecionado');
+            throw new Error('Funcionário não selecionado'); // Lança um erro se o funcionário não estiver selecionado.
         }
-        const textoFicha = await relatorioService.TextoFicha();
-        const retiradas = await relatorioService.fichasRetiradas(relatorio);
-
-        const doc = new jsPDF('l');
+        const textoFicha = await relatorioService.TextoFicha(); // Obtém o texto da ficha do serviço de relatórios.
+        const retiradas = await relatorioService.fichasRetiradas(relatorio); // Obtém as retiradas do serviço de relatórios com base no relatório fornecido.
+        const doc = new jsPDF('l'); // Cria um novo documento PDF em modo paisagem.
         doc.setFillColor(255, 255, 255); // Define a cor de fundo do documento como branco
         doc.rect(0, 0, doc.internal.pageSize.width, doc.internal.pageSize.height, 'F'); // Desenha o retângulo de fundo
         doc.setTextColor(0, 0, 0); // Define a cor do texto como preto
@@ -234,17 +234,20 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         const text = `${textoFicha}`; // Obtém o texto da ficha
 
         doc.text(text, 14, 55, { maxWidth: 270 }); // Exibe o texto da ficha
-        // **Verifica se há dados para exibir na tabela**
+
+        // Verifica se a resposta das retiradas não é um array ou se está vazia.
         if (!Array.isArray(retiradas.data) || retiradas.data.length === 0) {
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${t('no_data_doc')}`, doc.internal.pageSize.width / 2, 90, { align: 'center' });
+            doc.setFontSize(12); // Define o tamanho da fonte para 12.
+            doc.setFont('helvetica', 'bold'); // Define a fonte como Helvetica em negrito.
+            doc.text(`${t('no_data_doc')}`, doc.internal.pageSize.width / 2, 90, { align: 'center' }); // Adiciona um texto centralizado informando que nenhum dado foi encontrado.
         } else {
             // Definição da tabela
             const tableColumn = [`${t('ITEM_NAME_DOC')}`, `${t('WITHDRAWAL_DATE_DOC')}`, `${t('QUANT_DOC')}`, `${t('UNIT_DOC')}`, `${t('DESCRIPTION_DOC')}`, `${t('CA_NUMBER_DOC')}`, `${t('AUTHENTICATION_DOC')}`];
             const tableRows = retiradas.data.map((item) => {
+                // Mapeia os dados das retiradas para as linhas da tabela.
                 try {
                     if (i18n.global.locale.value === 'en') {
+                        // Se a língua selecionada for inglês, traduz alguns campos.
                         return [
                             item.ProdutoNome || '',
                             formatStringDate(item.Dia) || '',
@@ -255,55 +258,68 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
                             item.Forma_Autenticacao === 'Senha' ? 'Password' : item.Forma_Autenticacao || ''
                         ];
                     } else {
+                        // Caso contrário, retorna os dados no idioma padrão.
                         return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
                     }
                 } catch (error) {
+                    // Loga o erro no console.
                     console.error('Erro:', error);
-                    return [item.ProdutoNome || '', formatStringDate(item.Dia) || '', item.Quantidade || '', item.unidade_medida || '', item.ProdutoDescricao || '', item.ProdutoSKU || '', item.Forma_Autenticacao || ''];
+                    return [
+                        // Retorna os dados mesmo em caso de erro.
+                        item.ProdutoNome || '',
+                        formatStringDate(item.Dia) || '',
+                        item.Quantidade || '',
+                        item.unidade_medida || '',
+                        item.ProdutoDescricao || '',
+                        item.ProdutoSKU || '',
+                        item.Forma_Autenticacao || ''
+                    ];
                 }
             });
 
+            // Configura a tabela no documento PDF usando a biblioteca autoTable.
             autoTable(doc, {
-                head: [tableColumn],
-                body: tableRows,
-                width: 270,
-                startY: 85,
-                theme: 'grid',
+                head: [tableColumn], // Define as colunas do cabeçalho da tabela.
+                body: tableRows, // Define as linhas do corpo da tabela.
+                width: 270, // Define a largura da tabela.
+                startY: 85, // Define a posição Y inicial da tabela.
+                theme: 'grid', // Define o tema da tabela como 'grid'.
                 styles: {
-                    fillColor: [255, 255, 255],
-                    textColor: [0, 0, 0],
-                    lineColor: [0, 0, 0],
-                    lineWidth: 0.25,
-                    fontSize: 10
+                    fillColor: [255, 255, 255], // Define a cor de preenchimento das células como branco.
+                    textColor: [0, 0, 0], // Define a cor do texto como preto.
+                    lineColor: [0, 0, 0], // Define a cor das linhas como preto.
+                    lineWidth: 0.25, // Define a largura das linhas.
+                    fontSize: 10 // Define o tamanho da fonte.
                 },
                 headStyles: {
-                    fillColor: [220, 220, 220],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold',
-                    lineWidth: 0.25,
-                    halign: 'center'
+                    fillColor: [220, 220, 220], // Define a cor de preenchimento do cabeçalho como cinza claro.
+                    textColor: [0, 0, 0], // Define a cor do texto do cabeçalho como preto.
+                    fontStyle: 'bold', // Define o estilo da fonte do cabeçalho como negrito.
+                    lineWidth: 0.25, // Define a largura das linhas do cabeçalho.
+                    halign: 'center' // Alinha o texto do cabeçalho ao centro.
                 },
                 alternateRowStyles: {
-                    fillColor: [245, 245, 245]
+                    fillColor: [245, 245, 245] // Define a cor de preenchimento das linhas alternadas como cinza muito claro.
                 },
                 columnStyles: {
-                    0: { cellWidth: 50, halign: 'center' },
-                    1: { cellWidth: 40 },
-                    2: { cellWidth: 20, halign: 'center' },
-                    3: { cellWidth: 20, halign: 'center' },
-                    4: { cellWidth: 70 },
-                    5: { cellWidth: 30, halign: 'center' },
-                    6: { cellWidth: 40, halign: 'center' }
+                    0: { cellWidth: 50, halign: 'center' }, // Define a largura e o alinhamento da primeira coluna.
+                    1: { cellWidth: 40 }, // Define a largura da segunda coluna.
+                    2: { cellWidth: 20, halign: 'center' }, // Define a largura e o alinhamento da terceira coluna.
+                    3: { cellWidth: 20, halign: 'center' }, // Define a largura e o alinhamento da quarta coluna.
+                    4: { cellWidth: 70 }, // Define a largura da quinta coluna.
+                    5: { cellWidth: 30, halign: 'center' }, // Define a largura e o alinhamento da sexta coluna.
+                    6: { cellWidth: 40, halign: 'center' } // Define a largura e o alinhamento da sétima coluna.
                 },
                 didDrawPage: (data) => {
                     // Adiciona o cabeçalho em cada página
                     addFooter();
 
                     // Adiciona o número da página no rodapé
-                    const pageCount = doc.internal.getNumberOfPages();
-                    const pageSize = doc.internal.pageSize;
-                    const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-                    doc.setFontSize(10);
+                    const pageCount = doc.internal.getNumberOfPages(); // Obtém o número total de páginas
+                    const pageSize = doc.internal.pageSize; // Obtém o tamanho da página
+                    const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight(); // Obtém a altura da página
+                    doc.setFontSize(10); // Define o tamanho da fonte para 10
+                    // Adiciona o número da página no formato "X de Y" no rodapé
                     doc.text(`${data.pageNumber} de ${pageCount}`, 280, pageHeight - 200);
                 }
             });
@@ -321,32 +337,41 @@ export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
         throw new Error(`Erro ao gerar PDF: ${error.message}`);
     }
 }
+
+// Exporta a função GerarPdfRetiradaEs, que gera um PDF de retirada em espanhol.
 export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
     try {
+        // Verifica se o funcionário selecionado está definido e não está vazio.
         if (!funcionarioSelecionado.value || Object.keys(funcionarioSelecionado.value).length === 0) {
-            throw new Error('Empleado no seleccionado');
+            throw new Error('Empleado no seleccionado'); // Lança um erro se o funcionário não estiver selecionado.
         }
 
         const cabecalhoHTML = await relatorioService.Cabecalho(); // Obtém o HTML dinamicamente
         const dadosCliente = await clientesService.fetchDadosCliente(store.userIdCliente); // Obtém os dados do cliente
         const dadosfuncionario = await funcionarioService.fetchdadosfuncionario(funcionarioSelecionado.value.value); // Obtém os dados do funcionário
         const div = document.createElement('div');
+        // Define o conteúdo HTML do cabeçalho.
         div.innerHTML = cabecalhoHTML;
+
+        // Adiciona o elemento div ao corpo do documento.
         document.body.appendChild(div);
-        div.querySelector('#razon-social').textContent = dadosCliente.nome || 'No informado';
-        div.querySelector('#cuit').textContent = dadosCliente.cpfcnpj || 'No informado';
-        div.querySelector('#direccion').textContent = dadosCliente.endereco || 'No informado';
-        div.querySelector('#cp').textContent = dadosCliente.cep || 'No informado';
-        div.querySelector('#localidad').textContent = dadosCliente.cidade || 'No informado';
-        div.querySelector('#provincia').textContent = dadosCliente.estado || 'No informado';
-        div.querySelector('#dni').textContent = dadosfuncionario.cpf || 'No informado';
-        div.querySelector('#nombre-trabajador').textContent = funcionarioSelecionado.value.label || 'No informado';
-        div.querySelector('#puesto').textContent = dadosfuncionario.funcao_nome || 'No informado';
-        div.querySelector('#elementos').textContent = dadosfuncionario.elementos || 'No informado';
+
+        // Preenche os campos do cabeçalho com os dados do cliente e do funcionário.
+        div.querySelector('#razon-social').textContent = dadosCliente.nome || 'No informado'; // Nome do cliente.
+        div.querySelector('#cuit').textContent = dadosCliente.cpfcnpj || 'No informado'; // CPF/CNPJ do cliente.
+        div.querySelector('#direccion').textContent = dadosCliente.endereco || 'No informado'; // Endereço do cliente.
+        div.querySelector('#cp').textContent = dadosCliente.cep || 'No informado'; // CEP do cliente.
+        div.querySelector('#localidad').textContent = dadosCliente.cidade || 'No informado'; // Cidade do cliente.
+        div.querySelector('#provincia').textContent = dadosCliente.estado || 'No informado'; // Estado do cliente.
+        div.querySelector('#dni').textContent = dadosfuncionario.cpf || 'No informado'; // CPF do funcionário.
+        div.querySelector('#nombre-trabajador').textContent = funcionarioSelecionado.value.label || 'No informado'; // Nome do funcionário.
+        div.querySelector('#puesto').textContent = dadosfuncionario.funcao_nome || 'No informado'; // Função do funcionário.
+        div.querySelector('#elementos').textContent = dadosfuncionario.elementos || 'No informado'; // Elementos do funcionário.
 
         // Converter HTML do cabeçalho em imagem
-        const canvas = await html2canvas(div, { scale: 2 });
-        const imgData = canvas.toDataURL('image/png');
+        const canvas = await html2canvas(div, { scale: 2 }); // Converte o conteúdo do elemento div em um canvas com uma escala de 2 para aumentar a resolução.
+
+        const imgData = canvas.toDataURL('image/png'); // Converte o canvas em uma URL de imagem no formato PNG.
         document.body.removeChild(div); // Remove o elemento do DOM
 
         // Criar o PDF
@@ -381,13 +406,8 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
                 pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
                 posY = 11; // Posição Y inicial para a tabela
             }
-
-            //pdf.rect(10, 260, 190, 30);
-            //pdf.text('Información adicional: ', 2, 20, { align: 'center' });
-
-            // Criar um elemento de tabela para gerar a imagem da tabela
-            //linhas deletadas <td>${item.ProdutoSKU || ''}</td><td>${item.unidade_medida || ''}</td><td>${item.ProdutoDescricao || ''}</td>
-            const tabelaDiv = document.createElement('div');
+            const tabelaDiv = document.createElement('div'); // Cria um elemento div para conter a tabela
+            // Define o conteúdo HTML da tabela.
             tabelaDiv.innerHTML = `
     <table border="1" style="border-collapse: collapse; width: 100%; text-align: left; border-color: rgb(0, 0, 0); color: rgb(0, 0, 0);">
          <thead>
@@ -422,7 +442,7 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
      </table>
  `;
 
-            document.body.appendChild(tabelaDiv);
+            document.body.appendChild(tabelaDiv); // Adiciona o elemento div ao corpo do documento.
 
             // Capturar a tabela como imagem
             const tabelaCanvas = await html2canvas(tabelaDiv, { scale: 2 });
@@ -446,11 +466,10 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
          </div>
      </div>
  `;
-            document.body.appendChild(rodapediv);
-
-            const rodapeCanvas = await html2canvas(rodapediv, { scale: 2 });
-            const rodapeImgData = rodapeCanvas.toDataURL('image/png');
-            document.body.removeChild(rodapediv);
+            document.body.appendChild(rodapediv); // Adiciona o elemento rodapediv ao corpo do documento.
+            const rodapeCanvas = await html2canvas(rodapediv, { scale: 2 }); // Converte o conteúdo do elemento rodapediv em um canvas com uma escala de 2 para aumentar a resolução.
+            const rodapeImgData = rodapeCanvas.toDataURL('image/png'); // Converte o canvas em uma URL de imagem no formato PNG.
+            document.body.removeChild(rodapediv); // Remove o elemento rodapediv do corpo do documento.
 
             let rodapeWidth = pageWidth - 2 * margin; // Largura da imagem do rodapé
             let rodapeHeight = (rodapeCanvas.height * rodapeWidth) / rodapeCanvas.width; // Mantém proporção
@@ -461,7 +480,7 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
             // Adicionar texto "Generado por Lab 220 by www.lab220.com.br" centralizado
             const footerText = 'Generado por Lab 220 by www.lab220.com.br';
             pdf.setFontSize(5);
-            const textWidth = pdf.getTextWidth(footerText);
+            const textWidth = pdf.getTextWidth(footerText); // Obtém a largura do texto do rodapé.
             const textX = (pageWidth - textWidth) / 2; // Centraliza o texto horizontalmente
             const textY = 293; // Posição Y do texto no final da página
             pdf.text(footerText, textX, textY); // Adiciona o texto ao PDF
@@ -469,28 +488,35 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 
         // Adicionar contagem de páginas
         const pageCount = pdf.internal.getNumberOfPages();
+        // Itera sobre cada página para adicionar a numeração.
         for (let j = 1; j <= pageCount; j++) {
-            pdf.setPage(j);
-            const pageSize = pdf.internal.pageSize;
-            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-            const text = `${j} de ${pageCount}`;
-            const textWidth = pdf.getTextWidth(text);
-            pdf.setFontSize(6);
+            pdf.setPage(j); // Define a página atual.
+            const pageSize = pdf.internal.pageSize; // Obtém o tamanho da página.
+            const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight(); // Obtém a altura da página.
+            const text = `${j} de ${pageCount}`; // Define o texto da numeração da página.
+            const textWidth = pdf.getTextWidth(text); // Obtém a largura do texto da numeração.
+            pdf.setFontSize(6); // Define o tamanho da fonte para 6.
+            // Adiciona o texto da numeração da página no rodapé.
             pdf.text(text, pageWidth - textWidth - margin, pageHeight - 4);
         }
 
-        // Salvar PDF
+        // Salva o PDF com o nome "Entrega_EPI_" seguido do nome do funcionário ou "Empleado" se o nome não estiver disponível.
         pdf.save(`Entrega_EPI_${funcionarioSelecionado.value.label || 'Empleado'}.pdf`);
     } catch (error) {
+        // Lança um erro se houver um problema ao gerar o PDF, incluindo a mensagem de erro original.
         throw new Error(`Error al generar PDF: ${error.message}`);
     }
 }
+// Exporta a função GerarPdfRetirada, que gera um PDF de retirada com base na língua selecionada.
 export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
+    // Obtém a língua selecionada do objeto i18n.
     const linguaSelecionada = i18n.global.locale.value;
 
+    // Se a língua selecionada for espanhol ('es'), chama a função para gerar o PDF em espanhol.
     if (linguaSelecionada === 'es') {
         await GerarPdfRetiradaEs(funcionarioSelecionado, relatorio);
     } else {
+        // Caso contrário, chama a função para gerar o PDF no idioma padrão.
         await GerarPdfRetiradapt(funcionarioSelecionado, relatorio);
     }
 }

@@ -404,6 +404,7 @@ export default {
     employee_product_error: 'Error adding product',
     employee_no_availble_item: 'No available item',
     employee_no_more_availble: 'All items have already been added to the sector or employee.',
+    employee_no_more_availble_setor: 'All items have already been added to the sector.',
     employee_update: 'Employee updated',
     employee_update_error: 'Error updating employee',
     delete_employee_product_sucess: 'Item deleted successfully!',

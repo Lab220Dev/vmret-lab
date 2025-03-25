@@ -28,28 +28,26 @@ export const isValidCUIT = (cuit) => {
 };
 
 
+// Exporta a função isValidDocPessoaFisica, que valida um documento de pessoa física com base na língua selecionada.
 export const isValidDocPessoaFisica = (doc) => {
+    // Obtém a língua selecionada do objeto i18n.
     const linguaSelecionada = i18n.global.locale.value;
+
+    // Se a língua selecionada for espanhol ('es'), valida o documento como CUIT.
     if(linguaSelecionada === 'es') {
         return isValidCUIT(doc);
-    } else {    
+    } else {
+        // Caso contrário, valida o documento como CPF.
         return isValidCPF(doc);
     }
 }
 /**
  * Valida email com regex.
- * Utiliza uma expressão regular para verificar se o email possui o formato correto.
  * @param {string} email - Email a ser validado.
  * @returns {boolean} Retorna `true` se o email for válido, caso contrário, `false`.
  */
 export const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);  // Valida o email verificando se ele corresponde ao padrão comum de emails.
 
-/**
- * Verifica se o valor é numérico.
- * A função verifica se o valor é um número finito (não infinito e não NaN).
- * @param {*} value - Valor a ser verificado.
- * @returns {boolean} Retorna `true` se o valor for numérico, caso contrário, `false`.
- */
 const isNumeric = (value) => !isNaN(value) && isFinite(value);  // Retorna `true` se o valor for um número finito, caso contrário, `false`.
 
 /**
@@ -73,8 +71,6 @@ export const isCentroCustoExists = async (centroCusto) => {
 };
 
 /**
- * Verifica se o Setor existe no sistema.
- * Aceita tanto IDs quanto nomes para validação.
  * 
  * @param {string|number} setor - Nome ou ID do Setor a ser validado.
  * @returns {Promise<boolean>} Retorna uma promessa que resolve para `true` se o Setor existir, caso contrário, `false`.
@@ -93,8 +89,6 @@ export const isSetorExists = async (setor) => {
 };
 
 /**
- * Verifica se a Planta existe no sistema.
- * Aceita tanto IDs quanto nomes para validação.
  * 
  * @param {string|number} planta - Nome ou ID da Planta a ser validada.
  * @returns {Promise<boolean>} Retorna uma promessa que resolve para `true` se a Planta existir, caso contrário, `false`.
@@ -113,8 +107,6 @@ export const isPlantaExists = async (planta) => {
 };
 
 /**
- * Valida um CNPJ utilizando regras matemáticas.
- * A função remove caracteres não numéricos do CNPJ, valida seu tamanho e faz os cálculos para verificar a validade.
  * 
  * @param {string} cnpj - O CNPJ a ser validado, pode incluir caracteres não numéricos como pontos, barras ou hífens.
  * @returns {boolean} Retorna `true` se o CNPJ for válido, caso contrário, `false`.
@@ -183,11 +175,15 @@ export const validarCUIT = (cuit) =>{
 }
 
 export const isValidDoc = (doc) => {
-const linguaSelecionada = i18n.global.locale.value;
+    // Obtém a língua selecionada do objeto i18n.
+    const linguaSelecionada = i18n.global.locale.value;
+
+    // Se a língua selecionada for espanhol ('es'), valida o documento como CUIT.
     if (linguaSelecionada === 'es') {
         return validarCUIT(doc);
     } else {
-        return validarCNPJ(doc);
+        // Caso contrário, valida o documento como CNPJ.
+        validarCNPJ(doc);
     }
 }
 /**
@@ -202,31 +198,16 @@ const linguaSelecionada = i18n.global.locale.value;
  * @returns {string} [error] - A mensagem de erro, caso o arquivo não seja válido.
  */
 export const isValidVideoFile = (file) => {
-
-    /**
-     * Verifica se o tipo MIME do arquivo inclui a extensão 'mp4'.
-     * Caso contrário, retorna um objeto indicando que o arquivo não é válido.
-     * 
-     * @returns {Object} Se o arquivo não for do tipo .mp4, retorna um erro.
-     */
+    // Verifica se o tipo MIME do arquivo não inclui 'mp4'.
     if (!file.type.includes('mp4')) {
-        return { valid: false, error: 'Apenas arquivos .mp4 são permitidos.' };
+        return { valid: false, error: 'Apenas arquivos .mp4 são permitidos.' };  // Retorna um objeto indicando que o arquivo não é válido e fornece uma mensagem de erro.
     }
 
-    /**
-     * Verifica se o tamanho do arquivo é superior a 5MB (5 * 1024 * 1024 bytes).
-     * Caso o arquivo exceda esse limite, retorna um objeto indicando o erro.
-     * 
-     * @returns {Object} Se o arquivo exceder o tamanho permitido, retorna um erro.
-     */
+    // Verifica se o tamanho do arquivo excede 50MB.
     if (file.size > 50 * 1024 * 1024) {
-        return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };
+        return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };  // Retorna um objeto indicando que o arquivo não é válido e fornece uma mensagem de erro.
     }
 
-    /**
-     * Se o arquivo for do tipo .mp4 e não exceder o tamanho de 5MB, retorna um objeto indicando que o arquivo é válido.
-     * 
-     * @returns {Object} O arquivo é válido.
-     */
+    // Se o arquivo for um vídeo .mp4 e não exceder o tamanho permitido, retorna um objeto indicando que o arquivo é válido.
     return { valid: true };
 };

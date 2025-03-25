@@ -26,20 +26,21 @@ const item = ref({}); // Objeto para armazenar o item selecionado
 const selectedDM = ref(null); // Dados do DM selecionado
 const ListaClientes = ref([]);
 const ListaDMS = ref([]); // Lista de DM
-const isSameSenha = () => { // Função para verificar se a senha inserida é a mesma
-    return usuario.value.senha === SenhaBE.value; 
+const isSameSenha = () => {
+    // Função para verificar se a senha inserida é a mesma
+    return usuario.value.senha === SenhaBE.value;
 };
 const filterUser = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 }); // Filtro global para a busca de usuários
 const filterDM = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-})
+});
 const filteredCount = ref(0); // Contador de resultados filtrados
 
 // Objeto para armazenar os dados do usuário
 const usuario = ref({
-    id_cliente:'',
+    id_cliente: '',
     nome: '',
     login: '',
     senha: '',
@@ -47,20 +48,22 @@ const usuario = ref({
 });
 
 const ListaUsuario = ref([]); // Lista de usuários
-const isAdmin  = () => {  return store.userRole === 'Administrador'}; // Verifica se o usuário é administrador
+const isAdmin = () => {
+    return store.userRole === 'Administrador';
+}; // Verifica se o usuário é administrador
 /**
  * Função chamada ao selecionar uma linha da tabela
  * @param {Object} event - Dados do evento gerado ao selecionar uma linha
  */
- const onRowSelect = (event) => {
+const onRowSelect = (event) => {
     visible.value = true; // Exibe o formulário de edição
     usuario.value = { ...event.data }; // Copia os dados do usuário selecionado
 
     // Verifica se a propriedade DMOptions existe em usuario
     const dmIds = usuario.value?.DMOptions || []; // Se DMOptions não existir, usa um array vazio
     selectedDM.value = ListaDMS.value
-        .filter(dm => dmIds.includes(dm.value)) // Compara os valores de id_dm
-        .map(dm => ({ value: dm.value, label: dm.label })); // Mapeia o objeto final
+        .filter((dm) => dmIds.includes(dm.value)) // Compara os valores de id_dm
+        .map((dm) => ({ value: dm.value, label: dm.label })); // Mapeia o objeto final
 
     senha.value = usuario.value.senha; // Armazena a senha para edição
     SenhaBE.value = usuario.value.senha; // Armazena a senha original para comparação
@@ -68,56 +71,47 @@ const isAdmin  = () => {  return store.userRole === 'Administrador'}; // Verific
     active.value = 1; // Ativa a aba de edição
 };
 
-/**
- * Função para voltar ao estado inicial
- */
 const voltar = () => {
     active.value = 0; // Retorna à aba inicial
     resetForm(); // Reseta o formulário
 };
 
-/**
- * Função para submeter o formulário
- */
- const submitForm = () => {
-    if (validateForm()) { // Valida o formulário
-        if (visible.value) { // Se o formulário está visível (edição)
+const submitForm = () => {
+    if (validateForm()) {
+        // Valida o formulário
+        if (visible.value) {
+            // Se o formulário está visível (edição)
             atualizarUsuario(); // Atualiza o usuário
-        } else { // Se o formulário não está visível (criação)
+        } else {
+            // Se o formulário não está visível (criação)
             saveUsuario(); // Salva o novo usuário
         }
     }
 };
 
-/**
- * Função para validar o formulário
- * @returns {boolean} - Retorna true se o formulário for válido
- */
 const validateForm = () => {
     errors.value = {}; // Reseta os erros
     validateSenha(); // Valida a senha
     return Object.keys(errors.value).every((key) => errors.value[key] === null); // Verifica se todos os erros são nulos
 };
 
-/**
- * Função para validar a senha
- */
 const validateSenha = () => {
-    if (senha.value !== usuario.value.senha) { // Se as senhas não coincidem
+    // Declara uma função chamada validateSenha
+    if (senha.value !== usuario.value.senha) {
+        // Se as senhas não coincidem
         errors.value.senha = 'A senha NÃO é a mesma'; // Mensagem de erro
     } else {
         errors.value.senha = null; // Senha válida, reseta o erro
     }
 };
 
-/**
- * Função para salvar um novo usuário
- */
 const saveUsuario = async () => {
     let data = null;
-    if (isAdmin()) { // Se o usuário for um administrador
+    if (isAdmin()) {
+        // Se o usuário for um administrador
         data = { ...usuario.value, id_usuario: store.userId }; // Adiciona o ID do usuário
-    } else { // Se o usuário for de outro tipo
+    } else {
+        // Se o usuário for de outro tipo
         data = { ...usuario.value, id_cliente: store.userIdCliente, id_usuario: store.userId }; // Adiciona o ID do cliente e usuário
     }
     try {
@@ -135,9 +129,6 @@ const saveUsuario = async () => {
     loading.value = true; // Ativa o carregamento
 };
 
-/**
- * Função para atualizar um usuário
- */
 const atualizarUsuario = async () => {
     loading.value = true; // Ativa o carregamento
     const data = {
@@ -145,7 +136,8 @@ const atualizarUsuario = async () => {
         DMOptions: selectedDM.value, // Adiciona as opções de DM selecionadas
         id_usuario: store.userId // Adiciona o ID do usuário
     };
-    if (isSameSenha()) { // Se a senha não foi alterada
+    if (isSameSenha()) {
+        // Se a senha não foi alterada
         delete data.senha; // Remove a senha do objeto
     }
     try {
@@ -162,16 +154,15 @@ const atualizarUsuario = async () => {
     loading.value = true; // Ativa o carregamento
 };
 
-/**
- * Função para buscar todos os usuários
- */
- const fetchUsuarios = async () => {
+const fetchUsuarios = async () => {
     loading.value = true; // Ativa o carregamento
     let data = null;
 
-    if (isAdmin()) { // Se o usuário for um administrador
+    if (isAdmin()) {
+        // Se o usuário for um administrador
         data = ''; // Não filtra por cliente
-    } else { // Se o usuário não for administrador
+    } else {
+        // Se o usuário não for administrador
         data = { id_cliente: store.userIdCliente }; // Filtra pelo ID do cliente
     }
 
@@ -185,12 +176,12 @@ const atualizarUsuario = async () => {
         loading.value = false; // Desativa o carregamento
     }
 };
+
 const fetchCliente = async () => {
     loading.value = true; // Ativa o carregamento ao buscar clientes.
     try {
-            const response = await usuarioDMService.listaSimplesClientes();
-            ListaClientes.value = [...FormatarListaCliente(response.data, true)]; // Atualiza a lista de clientes.
-
+        const response = await usuarioDMService.listaSimplesClientes();
+        ListaClientes.value = [...FormatarListaCliente(response.data, true)]; // Atualiza a lista de clientes.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
         console.error('Erro ao listar Clientes:', error); // Log de erro.
@@ -198,20 +189,21 @@ const fetchCliente = async () => {
         loading.value = false; // Desativa o carregamento.
     }
 };
-/**
- * Watch para atualizar o contador de resultados filtrados
- */
-watch(() => filterDM.value.global.value, () => {
-    filteredCount.value = ListaUsuario.value.filter(item => {
-        const filterValue = filterDM.value.global.value?.toLowerCase() || '';
-        return Object.values(item).some(val => val && val.toString().toLowerCase().includes(filterValue)); // Filtra os usuários
-    }).length;
-}, { immediate: true }); // Aciona imediatamente
 
-/**
- * Watch para controlar a mudança de abas
- */
- watch(active, (newIndex, oldIndex) => {
+watch(
+    () => filterDM.value.global.value,
+    () => {
+        // Observa mudanças no valor global do filtroDM
+        filteredCount.value = ListaUsuario.value.filter((item) => {
+            // Filtra a lista de usuários
+            const filterValue = filterDM.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro em minúsculas
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum valor do item inclui o valor do filtro
+        }).length; // Atualiza o contador de resultados filtrados
+    },
+    { immediate: true }
+); // Aciona imediatamente
+
+watch(active, (newIndex, oldIndex) => {
     // Quando a aba ativa mudar para "listagem de usuários" (aba 0)
     if (newIndex === 0 && oldIndex !== newIndex) {
         resetForm(); // Reseta o formulário
@@ -220,16 +212,13 @@ watch(() => filterDM.value.global.value, () => {
     }
 });
 
-/**
- * Função para carregar os dados iniciais
- */
-const loadData = async () => {
-    try {
-        const dms = dataStore.dms || await dataStore.fetchListaDms(); // Carrega os DMs
+const loadData = async () => { // Declara uma função assíncrona chamada loadData
+    try { // Inicia um bloco try para capturar possíveis erros
+        const dms = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega os DMs
 
         // Exclui a opção 'Todos' e obtém os outros dados
-        ListaDMS.value = dms.filter(dm => dm.label !== 'Todos'); // Filtra os DMs
-    } catch (error) {
+        ListaDMS.value = dms.filter((dm) => dm.label !== 'Todos'); // Filtra os DMs
+    } catch (error) { // Captura qualquer erro que ocorrer durante a requisição
         console.error('Erro ao carregar dados iniciais:', error); // Mensagem de erro
     }
 };
@@ -238,7 +227,7 @@ const loadData = async () => {
 onMounted(() => {
     loadData(); // Carrega os DMs
     fetchUsuarios(); // Carrega a lista de usuários
-    if(isAdmin()){
+    if (isAdmin()) {//Se for admin
         fetchCliente(); // Carrega a lista de clientes
     }
 });
@@ -273,10 +262,7 @@ const deleteUsuario = async (item) => {
     }
 };
 
-/**
- * Função para resetar o formulário
- */
- const resetForm = () => {
+const resetForm = () => {
     usuario.value.nome = ''; // Reseta o nome
     usuario.value.login = ''; // Reseta o login
     usuario.value.senha = ''; // Reseta a senha
@@ -301,25 +287,24 @@ const deleteUsuario = async (item) => {
                     <TabPanel :header="$t('dm_user_list')">
                         <div class="col-12">
                             <!-- Componente DataTable para exibir os usuários -->
-                            <DataTable 
-                                v-model:filters="filterDM" 
+                            <DataTable
+                                v-model:filters="filterDM"
                                 :value="ListaUsuario"
-                                stripedRows 
-                                paginator 
-                                :rows="10" 
-                                removableSort 
-                                :rowsPerPageOptions="[5, 10, 20, 50]" 
-                                :globalFilterFields="['nome', 'login']" 
-                                selectionMode="single" 
-                                tableStyle="min-width: 50rem; table-layout: fixed;" 
-                                dataKey="id" 
-                                :metaKeySelection="false" 
-                                @rowSelect="onRowSelect" 
-                                :sortOrder="1" 
-                                :sortField="'nome'" 
+                                stripedRows
+                                paginator
+                                :rows="10"
+                                removableSort
+                                :rowsPerPageOptions="[5, 10, 20, 50]"
+                                :globalFilterFields="['nome', 'login']"
+                                selectionMode="single"
+                                tableStyle="min-width: 50rem; table-layout: fixed;"
+                                dataKey="id"
+                                :metaKeySelection="false"
+                                @rowSelect="onRowSelect"
+                                :sortOrder="1"
+                                :sortField="'nome'"
                             >
-
-                            <!-- A tabela exibe os dados provenientes de "ListaUsuario" -->
+                                <!-- A tabela exibe os dados provenientes de "ListaUsuario" -->
                                 <!-- Aplica um estilo de linhas alternadas para melhorar a legibilidade -->
                                 <!-- Permite ao usuário remover a ordenação clicando novamente na coluna que está sendo usada para ordenar -->
                                 <!-- Habilita a funcionalidade de paginação para dividir os dados em várias páginas -->
@@ -330,17 +315,19 @@ const deleteUsuario = async (item) => {
                                 <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
                                 <!-- Quando uma linha é selecionada, a função "onRowSelect" é chamada -->
                                 <!-- A ordenação inicial é definida por "nome" com ordem crescente -->
-                            
+
                                 <!-- Cabeçalho da tabela com filtro e contagem -->
                                 <template #header>
                                     <div class="flex justify-content-between mt-4">
                                         <div class="font-semibold">
-                                            <span>{{$t('total_records',{count: filteredCount})}}</span><!-- Exibe a quantidade de registros filtrados -->
+                                            <span>{{ $t('total_records', { count: filteredCount }) }}</span
+                                            ><!-- Exibe a quantidade de registros filtrados -->
                                         </div>
                                         <!-- Componente para busca global na tabela -->
                                         <IconField iconPosition="left">
                                             <InputIcon>
-                                                <i class="pi pi-search" /> <!-- Ícone de busca -->
+                                                <i class="pi pi-search" />
+                                                <!-- Ícone de busca -->
                                             </InputIcon>
                                             <!-- Campo de texto para busca -->
                                             <InputText v-model="filterDM['global'].value" :placeholder="t('search')" />
@@ -349,13 +336,13 @@ const deleteUsuario = async (item) => {
                                 </template>
 
                                 <!-- Mensagem exibida quando não há dados -->
-                                <template #empty> {{t('empty_user')}} </template>
+                                <template #empty> {{ t('empty_user') }} </template>
 
                                 <!-- Coluna para o nome do usuário -->
-                                <Column field="nome" sortable style="width: 30%;" :header="t('name')"></Column>
+                                <Column field="nome" sortable style="width: 30%" :header="t('name')"></Column>
 
                                 <!-- Coluna para o login do usuário -->
-                                <Column field="login" sortable style="width: 50%;" :header="t('login')">
+                                <Column field="login" sortable style="width: 50%" :header="t('login')">
                                     <template #body="{ data }">
                                         <!-- Exibe o login com tooltip -->
                                         <span v-tooltip="data.login">{{ data.login }}</span>
@@ -363,7 +350,7 @@ const deleteUsuario = async (item) => {
                                 </Column>
 
                                 <!-- Coluna para status de ativo do usuário -->
-                                <Column field="ativo" sortable style="width: 9%; text-align: center;" :header="t('status_active')">
+                                <Column field="ativo" sortable style="width: 9%; text-align: center" :header="t('status_active')">
                                     <template #body="{ data }">
                                         <!-- Ícone condicional para exibir se o usuário está ativo ou inativo -->
                                         <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
@@ -382,25 +369,23 @@ const deleteUsuario = async (item) => {
                     </TabPanel>
 
                     <!-- Aba para editar ou adicionar um usuário DM -->
-                    <TabPanel :header="visible ?  t('edit_dm') : t('add_dm')">
+                    <TabPanel :header="visible ? t('edit_dm') : t('add_dm')">
                         <div class="mt-5 mx-0 p-fluid grid">
                             <!-- Campo para o nome do usuário -->
                             <div class="full xl:col-6 lg:col-6 md:col-8 sm:col-12">
-                                <label for="name">{{$t('name')}}</label>
+                                <label for="name">{{ $t('name') }}</label>
                                 <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
                             </div>
 
-                        
-
                             <!-- Campo para o login do usuário -->
                             <div class="full xl:col-6 lg:col-6 md:col-8 sm:col-12">
-                                <label for="email">{{$t('login')}}</label>
+                                <label for="email">{{ $t('login') }}</label>
                                 <InputText class="my-2" v-model="usuario.login" id="email" />
                             </div>
 
-<!-- Campo para a senha do usuário -->
+                            <!-- Campo para a senha do usuário -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="senha">{{$t('password')}}</label>
+                                <label for="senha">{{ $t('password') }}</label>
                                 <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <!-- Exibe erro se a senha for inválida -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
@@ -408,26 +393,26 @@ const deleteUsuario = async (item) => {
 
                             <!-- Campo para confirmar a senha -->
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="senha">{{$t('confirm_password')}}</label>
+                                <label for="senha">{{ $t('confirm_password') }}</label>
                                 <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                 <!-- Exibe erro se as senhas não coincidirem -->
                                 <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                             </div>
                             <!-- Campo para indicar se o usuário está ativo -->
                             <div class="full flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">{{$t('active_user')}}</label>
+                                <label class="mt-0 text-nowrap" for="switch2">{{ $t('active_user') }}</label>
                                 <div class="grid mt-3">
                                     <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
                                     <span class="ml-2">{{ usuario.ativo ? t('yes') : t('no') }}</span>
                                 </div>
                             </div>
-                            
+
                             <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">{{$t('client')}}</label>
+                                <label for="perfil">{{ $t('client') }}</label>
                                 <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Dropdown>
                                 <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
                             </div>
-                            
+
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('save')" icon="pi pi-check" severity="primary" @click="atualizarUsuario" />
@@ -437,28 +422,29 @@ const deleteUsuario = async (item) => {
                             </div>
 
                             <!-- Divider para separar a seção -->
-                            <Divider class="mt-4"  type="solid" />
+                            <Divider class="mt-4" type="solid" />
                         </div>
 
                         <!-- Tabela de DMs para associar ao usuário -->
                         <div class="col-12" v-if="visible">
-                            <DataTable 
-                                v-model:filters="filterUser" 
-                                v-model:selection="selectedDM" :value="ListaDMS" 
+                            <DataTable
+                                v-model:filters="filterUser"
+                                v-model:selection="selectedDM"
+                                :value="ListaDMS"
                                 stripedRows
                                 paginator
                                 :rows="10"
                                 :rowsPerPageOptions="[5, 10, 20, 50]"
                                 :globalFilterFields="['label']"
-                                dataKey="value" 
-                                tableStyle="min-width: 50rem; table-layout: fixed;" 
+                                dataKey="value"
+                                tableStyle="min-width: 50rem; table-layout: fixed;"
                                 :metaKeySelection="false"
                                 :size="small"
                                 removableSort
-                                :sortOrder="1">
-
+                                :sortOrder="1"
+                            >
                                 <!-- A tabela exibe os dados provenientes de 'ListaDMS' -->
-                                 <!-- As linhas da tabela têm um estilo de alternância (listradas) para facilitar a leitura -->
+                                <!-- As linhas da tabela têm um estilo de alternância (listradas) para facilitar a leitura -->
                                 <!-- A tabela tem uma largura mínima de 50rem e um layout fixo para garantir que as colunas tenham larguras constantes -->
                                 <!-- Permite ao usuário escolher entre várias opções de quantidade de linhas por página: 5, 10, 20 ou 50 -->
                                 <!-- A tabela pode ser filtrada globalmente pelos campos 'label' -->
@@ -470,7 +456,8 @@ const deleteUsuario = async (item) => {
                                     <div class="flex justify-content-end">
                                         <IconField iconPosition="left">
                                             <InputIcon>
-                                                <i class="pi pi-search" /> <!-- Ícone de busca -->
+                                                <i class="pi pi-search" />
+                                                <!-- Ícone de busca -->
                                             </InputIcon>
                                             <InputText v-model="filterUser['global'].value" :placeholder="t('search')" />
                                         </IconField>

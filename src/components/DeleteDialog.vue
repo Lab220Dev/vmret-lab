@@ -1,7 +1,7 @@
 <template>
   <!-- Componente de diálogo para confirmação de exclusão -->
   <Dialog header="Deletar Item" :visible.sync="showDialog" style="width: 30vw" :modal="true" :closable="false" :draggable="false"><!-- Propriedades do diálogo -->
-    <p>{{ dialogMessage }}</p>
+    <p>{{ dialogMessage }}</p><!-- Mensagem de confirmação de exclusão -->
     <!-- Rodapé do diálogo com botões para cancelar ou confirmar -->
     <template #footer>
       <Button label="Cancelar" icon="pi pi-times" class="p-button-secondary" @click="cancelDelete" /><!-- Botão de cancelar -->

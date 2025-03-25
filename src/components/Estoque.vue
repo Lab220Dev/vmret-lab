@@ -153,7 +153,7 @@ const filteredEstoque = computed(() => {//computed é usado para criar variávei
 </script>
 
 <style>
-.card {
+.card {/* Define o estilo da card */
     padding: 1rem;  /* Adiciona um preenchimento de 1rem em todos os lados da card */
     border-radius: 0.5rem;  /* Arredonda os cantos da card */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* Adiciona uma sombra sutil ao redor da card */

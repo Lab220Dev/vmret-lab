@@ -26,10 +26,6 @@ const filters = ref({
 // Variável para controlar o número de registros filtrados
 const filteredCount = ref(0);
 
-/**
- * Função para buscar as DM's (Documentos de Movimentação) e preencher a lista `dms`
- * Espera que a resposta da API retorne um array de objetos contendo 'ID_DM' e 'Identificacao'
- */
 const fetchDM = async () => {
     loading.value = true; // Ativa o estado de carregamento
     try {
@@ -42,10 +38,6 @@ const fetchDM = async () => {
     }
 };
 
-/**
- * Função para gerar o relatório de estoque das DM's selecionadas
- * Espera que a resposta da API retorne uma lista de itens de estoque
- */
 const relatorioDM = async () => {
     loading.value = true; // Ativa o estado de carregamento
 
@@ -71,20 +63,29 @@ const relatorioDM = async () => {
         loading.value = false; // Desativa o estado de carregamento
     }
 };
-const getTooltipText = (data) => {
+
+/**
+ * @function
+ * @param {Object} data - O objeto contendo as informações do item, com um campo `modelo` que será usado para determinar o texto.
+ * @param {string} data.modelo - O modelo do item, utilizado para decidir qual texto será retornado.
+ * @returns {string} Texto traduzido para a tooltip, dependendo do valor de `modelo`.
+ */
+ const getTooltipText = (data) => {
+    // Verifica se o modelo é 2018 e retorna o texto traduzido correspondente a 'placa_mola'.
     if (data.modelo === '2018') {
         return t('placa_mola');
-    } else if (data.modelo === '2023') {
+    } 
+    // Verifica se o modelo é 2023 e retorna o texto traduzido correspondente a 'andar_posicao'.
+    else if (data.modelo === '2023') {
         return t('andar_posicao');
-    } else {
+    } 
+    // Caso o modelo não seja 2018 nem 2023, retorna o texto traduzido correspondente a 'placa_motor'.
+    else {
         return t('placa_motor');
     }
 };
 
-/**
- * Observa o filtro global e atualiza o contador de registros filtrados.
- * A cada mudança no valor de `filters.global.value`, o contador de registros filtrados é atualizado.
- */
+
 watch(
     () => filters.value.global.value, // Observa o valor do filtro global
     () => {

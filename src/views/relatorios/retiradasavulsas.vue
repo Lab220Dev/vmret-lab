@@ -250,7 +250,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Tabela de Dados do Relatório -->
-                <div class="datatable-wrapper mt-5">
+                <div class=" mt-5">
                     <!-- DataTable que exibe os dados das retiradas -->
                     <DataTable
                         v-model:filters="filters"

@@ -1,35 +1,29 @@
 /**
- * Importa as funções necessárias do Vue e outros módulos para configurar as rotas da aplicação.
+ * 
  */
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';//Importa as funções necessárias do Vue e outros módulos para configurar as rotas da aplicação.
 /**
- * Importa o `ref` do Vue, que permite criar variáveis reativas.
+ * 
  */
-import { ref } from 'vue';
+import { ref } from 'vue';//Importa o `ref` do Vue, que permite criar variáveis reativas.
 /**
- * Importa o layout principal da aplicação, onde as páginas serão carregadas.
+ * 
  */
-import AppLayout from '@/layout/AppLayout.vue';
+import AppLayout from '@/layout/AppLayout.vue';//Importa o layout principal da aplicação, onde as páginas serão carregadas.
 /**
- * Importa o store de autenticação, que gerencia o estado de login do usuário.
+ * 
  */
-import { useAuthStore } from '@/store/authStore';
-import i18n from '@/i18n';
+import { useAuthStore } from '@/store/authStore';//Importa o store de autenticação, que gerencia o estado de login do usuário.
+import i18n from '@/i18n'; // Importa o módulo de internacionalização (i18n) para gerenciar traduções e idiomas na aplicação.
+
 /**
  * Variável reativa que controla o estado de carregamento da página.
  * @type {Ref<boolean>}
  */
 export const isLoading = ref(false);
 
-/**
- * Define o roteador da aplicação com as rotas e configurações de navegação.
- * @type {Router}
- */
 const router = createRouter({
-    /**
-     * A função de histórico do roteador para manter a navegação sem recarregar a página.
-     */
-    history: createWebHistory(import.meta.env.BASE_URL),
+    history: createWebHistory(import.meta.env.BASE_URL),//A função de histórico do roteador para manter a navegação sem recarregar a página.
     routes: [
         /**
          * Rota principal, a página de login.
@@ -58,30 +52,18 @@ const router = createRouter({
                     component: () => import('@/views/HomeView.vue'),
                     meta: { requiresAuth: true }
                 },
-                /**
-                 * Página de importação, requer autenticação e está indisponível no momento.
-                 * @type {RouteRecordRaw}
-                 */
                 {
                     path: '/Importacao',
                     name: 'Importações',
                     component: () => import('@/views/pages/Importacao.vue'),
                     meta: { requiresAuth: true, Availability: true }
                 },
-                /**
-                 * Página para a liberação avulsa, que também requer autenticação.
-                 * @type {RouteRecordRaw}
-                 */
                 {
                     path: '/cadastros/LiberacaoAvulsa',
                     name: 'Liberação Avulsa',
                     component: () => import('@/views/cadastros/LiberacaoAvulsa.vue'),
                     meta: { requiresAuth: true, Availability: true }
                 },
-                /**
-                 * Relatórios, cada um com uma rota diferente.
-                 * @type {Array<RouteRecordRaw>}
-                 */
                 {
                     path: '/relatorios/retiradasrealizadas',
                     name: 'retiradasrealizadas',
@@ -344,8 +326,11 @@ router.beforeEach((to, from, next) => {
     }
 });
 
+// Define uma função que será executada após cada navegação de rota.
 router.afterEach(() => {
+    // Define o valor de isLoading como falso, indicando que o carregamento da página terminou.
     isLoading.value = false;
 });
 
+// Exporta o roteador configurado como o padrão do módulo.
 export default router;

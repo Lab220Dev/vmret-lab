@@ -10,12 +10,13 @@ import { DateTime } from 'luxon';
  *
  * @returns {string} Uma string formatada no padrão CSV.
  */
-export const generateCSV = (fields, data) => {
-    const header = fields.join(',');
+export const generateCSV = (fields, data) => {  // Função que gera uma string CSV a partir dos campos e dados fornecidos.
+  const header = fields.join(',');  // Cria o cabeçalho do CSV com base nos campos fornecidos.
+  const rows = data.map((row) =>  // Mapeia os dados fornecidos para criar as linhas do CSV.
+    fields.map((field) => row[field] || '').join(',') // Mapeia os campos de cada linha e os concatena com vírgulas.
+  );
 
-    const rows = data.map((row) => fields.map((field) => row[field] || '').join(','));
-
-    return [header, ...rows].join('\n');
+  return [header, ...rows].join('\n');  // Retorna o CSV completo, com o cabeçalho e as linhas separadas por quebras de linha.
 };
 
 /**
@@ -24,19 +25,17 @@ export const generateCSV = (fields, data) => {
  * @param {string} filename - O nome do arquivo CSV a ser baixado.
  * @param {string} csvContent - O conteúdo do CSV que será baixado.
  */
-export const downloadCSV = (filename, csvContent) => {
-    const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
-    const link = document.createElement('a');
+export const downloadCSV = (filename, csvContent) => {  // Função que gera e faz o download de um arquivo CSV.
+  const encodedUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`; // Codifica o conteúdo do CSV em uma URI.
+  const link = document.createElement('a'); // Cria um elemento <a> para simular o download do arquivo.
+  link.setAttribute('href', encodedUri);  // Define o atributo `href` do link com a URI codificada.
+  link.setAttribute('download', filename);  // Define o atributo `download` do link com o nome do arquivo.
 
-    link.setAttribute('href', encodedUri);
+  document.body.appendChild(link);  // Adiciona o link ao corpo do documento.
 
-    link.setAttribute('download', filename);
+  link.click();   // Simula um clique no link para iniciar o download do arquivo.
 
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
+  document.body.removeChild(link);  // Remove o link do corpo do documento após o download.
 };
 
 /**
@@ -46,63 +45,35 @@ export const downloadCSV = (filename, csvContent) => {
  * @param {string[]} [fields] - Campos específicos para incluir no CSV (opcional).
  * @param {boolean} [warnIfEmpty] - Exibe um aviso no console se `data` estiver vazio (padrão: `false`).
  */
-export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {
-    if (!data.length) {
-        if (warnIfEmpty) {
-            // Lança um erro caso a lista de dados esteja vazia e a flag de alerta esteja ativada
-            throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);
-        }
-        // Retorna se não houver dados e `warnIfEmpty` for falso
-        return;
+export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {  // Função que gera e baixa um arquivo CSV.
+
+  if (!data.length) {   // Verifica se a lista de dados está vazia.
+    if (warnIfEmpty) {  // Se a flag de alerta estiver ativada, exibe um aviso no console.
+      // Lança um erro caso a lista de dados esteja vazia e a flag de alerta esteja ativada
+      throw new Error(`Nenhum dado disponível para exportar para ${filename}.`);  // Exibe uma mensagem de erro.
     }
+    // Retorna se não houver dados e `warnIfEmpty` for falso
+    return;
+  }
 
-    const selectedFields = fields || Object.keys(data[0]);
+  const selectedFields = fields || Object.keys(data[0]);  // Seleciona os campos a serem incluídos no CSV.
+  const header = selectedFields.join(',');  // Cria o cabeçalho do CSV com base nos campos selecionados.
+  const rows = data.map(row =>  // Mapeia os dados fornecidos para criar as linhas do CSV.
+    selectedFields.map(field => row[field] || '').join(',') // Mapeia os campos de cada linha e os concatena com vírgulas.
+  );
 
-    const header = selectedFields.join(',');
+  const csvContent = [header, ...rows].join('\n');  // Concatena o cabeçalho e as linhas do CSV com quebras de linha.
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); // Cria um Blob com o conteúdo do CSV.
 
-    const rows = data.map((row) => selectedFields.map((field) => row[field] || '').join(','));
+  const link = document.createElement('a'); // Cria um elemento <a> no documento.
+  const url = URL.createObjectURL(blob);  // Cria uma URL temporária para o Blob, permitindo que ele seja acessado como se fosse um arquivo.
+  link.setAttribute('href', url);// Define o atributo `href` do link com a URL do Blob.
+  link.setAttribute('download', filename);// Define o atributo `download` do link com o nome do arquivo.
+  document.body.appendChild(link);// Adiciona o link ao corpo do documento (DOM). O link precisa estar no DOM para que o clique possa ser simulado e o download seja iniciado.
+  link.click();// Simula um clique no link, o que aciona o download do arquivo.
+  document.body.removeChild(link);// Remove o link do DOM após o clique. Isso limpa o DOM, já que o link não é mais necessário após o download ser iniciado.
 
-    const csvContent = [header, ...rows].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-    /**
-     * Cria um link (elemento `<a>`) no DOM que será usado para simular o download do arquivo CSV.
-     */
-    const link = document.createElement('a');
-
-    /**
-     * Cria uma URL temporária para o Blob. Essa URL será associada ao link para iniciar o download.
-     */
-    const url = URL.createObjectURL(blob);
-
-    /**
-     * Configura o link para apontar para o conteúdo do CSV gerado.
-     * O atributo `href` é definido como a URL do Blob.
-     */
-    link.setAttribute('href', url);
-
-    /**
-     * Configura o atributo `download` do link para definir o nome do arquivo a ser baixado.
-     */
-    link.setAttribute('download', filename);
-
-    /**
-     * Adiciona o link criado ao corpo do documento (DOM) para que o clique possa ser simulado.
-     */
-    document.body.appendChild(link);
-
-    /**
-     * Simula um clique no link, o que inicia o download do arquivo CSV.
-     * O arquivo será baixado com o nome especificado no parâmetro `filename`.
-     */
-    link.click();
-
-    /**
-     * Remove o link do DOM após o clique. Isso limpa o ambiente DOM após o uso.
-     */
-    document.body.removeChild(link);
-}
+};
 
 /**
  * Normaliza uma data ou data/hora para o formato `dd/MM/yyyy` ou `dd/MM/yyyy - HH:mm`.
@@ -110,73 +81,31 @@ export function gerarEbaixarCSV(filename, data, fields, warnIfEmpty = false) {
  * @param {boolean} includeTime - Se deve incluir a hora no formato.
  * @returns {string|null} - A data/hora normalizada ou `null` se inválida.
  */
-export function normalizeDateTime(dateTimeString, includeTime = false) {
-    /**
-     * Retorna `null` se a string de data e hora não for fornecida (undefined, null ou string vazia).
-     */
-    if (!dateTimeString) return null;
+export function normalizeDateTime(dateTimeString, includeTime = false) {   
+  
+  if (!dateTimeString) return null;//Retorna `null` se a string de data e hora não for fornecida (undefined, null ou string vazia).
 
-    /**
-     * Define o fuso horário como "America/Sao_Paulo" para todas as operações de formatação.
-     * Esse fuso horário será utilizado para garantir que a data e hora sejam convertidas corretamente.
-     *
-     * @type {string}
-     */
-    const timeZone = 'America/Sao_Paulo';
+  const timeZone = 'America/Sao_Paulo';//Define o fuso horário como "America/Sao_Paulo" para todas as operações de formatação.
+  
+  try {
+    const parsedDate = parseISO(dateTimeString) || parse(dateTimeString, 'dd/MM/yyyy', new Date());//Tenta analisar a string de data usando a função `parseISO` para formatos ISO 8601.Caso a análise falhe, tenta usar a função `parse` para interpretar a data no formato `dd/MM/yyyy`.Se ambos os métodos falharem, o valor de `parsedDate` será `undefined` ou inválido.
 
-    try {
-        /**
-         * Tenta analisar a string de data usando a função `parseISO` para formatos ISO 8601.
-         * Caso a análise falhe, tenta usar a função `parse` para interpretar a data no formato `dd/MM/yyyy`.
-         * Se ambos os métodos falharem, o valor de `parsedDate` será `undefined` ou inválido.
-         *
-         * @type {Date}
-         */
-        const parsedDate = parseISO(dateTimeString) || parse(dateTimeString, 'dd/MM/yyyy', new Date());
+    if (!isValid(parsedDate)) return null;//Verifica se a data analisada é válida usando a função `isValid` da biblioteca `date-fns`.Se não for válida, retorna `null`.
 
-        /**
-         * Verifica se a data analisada é válida usando a função `isValid` da biblioteca `date-fns`.
-         * Se não for válida, retorna `null`.
-         */
-        if (!isValid(parsedDate)) return null;
+    const datePart = format(parsedDate, 'dd/MM/yyyy', { timeZone });//Formata a parte da data da string no formato `dd/MM/yyyy`, com base no fuso horário de São Paulo.Utiliza a função `format` para garantir que a data seja formatada de acordo com o padrão desejado.
 
-        /**
-         * Formata a parte da data da string no formato `dd/MM/yyyy`, com base no fuso horário de São Paulo.
-         * Utiliza a função `format` para garantir que a data seja formatada de acordo com o padrão desejado.
-         *
-         * @type {string}
-         */
-        const datePart = format(parsedDate, 'dd/MM/yyyy', { timeZone });
+    if (includeTime) {//Se o parâmetro `includeTime` for verdadeiro, formata também a parte de hora da data.A hora é formatada no padrão de 24 horas `HH:mm`.
 
-        /**
-         * Se o parâmetro `includeTime` for verdadeiro, formata também a parte de hora da data.
-         * A hora é formatada no padrão de 24 horas `HH:mm`.
-         */
-        if (includeTime) {
-            /**
-             * Formata a parte da hora da string no formato `HH:mm`, com base no fuso horário de São Paulo.
-             *
-             * @type {string}
-             */
-            const timePart = format(parsedDate, 'HH:mm', { timeZone });
-
-            /**
-             * Retorna a data e a hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
-             */
-            return `${datePart} - ${timePart}`;
-        }
-
-        /**
-         * Se o parâmetro `includeTime` for falso ou não for fornecido, retorna apenas a data formatada.
-         */
-        return datePart;
-    } catch {
-        /**
-         * Em caso de erro durante a execução, retorna `null`.
-         * O bloco `catch` captura qualquer erro inesperado durante a análise ou formatação.
-         */
-        return null;
+      const timePart = format(parsedDate, 'HH:mm', { timeZone });//Formata a parte da hora da string no formato `HH:mm`, com base no fuso horário de São Paulo.
+      
+      return `${datePart} - ${timePart}`;//Retorna a data e a hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
     }
+
+    return datePart;//Se o parâmetro `includeTime` for falso ou não for fornecido, retorna apenas a data formatada.
+  } catch {
+
+    return null;//Em caso de erro durante a execução, retorna `null`.
+  }
 }
 
 /**
@@ -306,27 +235,11 @@ export const HoraRelatorio = (date) => {
  * @returns {string} A data e hora formatadas como `dd/MM/yyyy - HH:mm`.
  */
 export const formatarDataHora = (date) => {
-    /**
-     * Chama a função `formatDateToString` para formatar a data.
-     * A data formatada será no formato `dd/MM/yyyy`.
-     *
-     * @type {string}
-     */
-    const dataPart = formatDateToString(date);
+  const dataPart = formatDateToString(date);//Chama a função `formatDateToString` para formatar a data.A data formatada será no formato `dd/MM/yyyy`.
 
-    /**
-     * Chama a função `formatTimeToString` para formatar a hora.
-     * A hora formatada será no formato `HH:mm`.
-     *
-     * @type {string}
-     */
-    const horaPart = formatTimeToString(date);
+  const horaPart = formatTimeToString(date);//Chama a função `formatTimeToString` para formatar a hora.A hora formatada será no formato `HH:mm`.
 
-    /**
-     * Retorna a data e hora concatenadas no formato `dd/MM/yyyy - HH:mm`.
-     * A interpolação de string é usada para juntar as partes da data e da hora.
-     */
-    return `${dataPart} - ${horaPart}`;
+  return `${dataPart} - ${horaPart}`;//A interpolação de string é usada para juntar as partes da data e da hora.
 };
 
 /**
@@ -388,10 +301,6 @@ export const setTempo = (tempoRef, isoString) => {
 
 /**
  * Fecha todos os dropdowns fornecidos.
- * @param {Array} dropdowns - Array de referências de dropdowns.
- */
-/**
- * Fecha todos os dropdowns fornecidos.
  *
  * @param {Array} dropdowns - Um array de objetos de dropdown.
  * @param {Object} dropdowns[].value - O valor associado ao dropdown. Espera-se que seja um objeto com o método `hide()`.
@@ -399,53 +308,21 @@ export const setTempo = (tempoRef, isoString) => {
  * @returns {void} Esta função não retorna nada.
  */
 export const closeAllDropdowns = (dropdowns) => {
-    /**
-     * Itera sobre cada dropdown no array `dropdowns` e chama o método `hide()`
-     * no valor do dropdown, caso o método esteja presente.
-     *
-     * @param {Object} dropdown - Um objeto de dropdown.
-     */
-    dropdowns.forEach((dropdown) => dropdown.value?.hide());
+
+  dropdowns.forEach((dropdown) => dropdown.value?.hide());//Itera sobre cada dropdown no array `dropdowns` e chama o método `hide()` no valor do dropdown, caso o método esteja presente.
 };
 
-/**
- * Gera um nome personalizado para um vídeo com base no número da DM e no vídeo existente.
- * Se o vídeo já existir, incrementa a versão no nome do arquivo.
- *
- * @param {string} dm - O número da DM.
- * @param {string} existingVideo - O nome do vídeo existente ou `'N'` se não houver vídeo existente.
- *
- * @returns {string} O nome gerado para o vídeo.
- */
-export const generateCustomVideoName = (dm, existingVideo) => {
-    /**
-     * Verifica se não há vídeo existente ou se o nome do vídeo é `'N'`.
-     * Se for o caso, retorna o nome do vídeo no formato `DM-<dm>-v1`.
-     */
-    if (!existingVideo || existingVideo === 'N') {
-        return `DM-${dm}-v1`;
-    }
+export const generateCustomVideoName = (dm, existingVideo) => {//Gera um nome personalizado para um vídeo com base no número da DM e no vídeo existente.
 
-    /**
-     * Tenta fazer uma correspondência com a versão do vídeo existente.
-     * A expressão regular `/-v(\d+)(\.mp4)?$/` busca por um sufixo que tenha a versão do vídeo no formato `-v<versão>`.
-     *
-     * @type {Array|null}
-     */
-    const match = existingVideo.match(/-v(\d+)(\.mp4)?$/);
+  if (!existingVideo || existingVideo === 'N') {//Verifica se não há vídeo existente ou se o nome do vídeo é `'N'`.
+    return `DM-${dm}-v1`;//Se for o caso, retorna o nome do vídeo no formato `DM-<dm>-v1`.
+  }
 
-    /**
-     * Se houver uma correspondência, a versão extraída é incrementada em 1.
-     * Caso contrário, a versão começa em 1.
-     *
-     * @type {number}
-     */
-    const nextVersion = match ? parseInt(match[1], 10) + 1 : 1;
+  const match = existingVideo.match(/-v(\d+)(\.mp4)?$/);//Tenta fazer uma correspondência com a versão do vídeo existente.
 
-    /**
-     * Retorna o nome do vídeo com a nova versão, no formato `DM-<dm>-v<versão>`.
-     */
-    return `DM-${dm}-v${nextVersion}`;
+  const nextVersion = match ? parseInt(match[1], 10) + 1 : 1;//Se houver uma correspondência, a versão extraída é incrementada em 1.Caso contrário, a versão começa em 1.
+
+  return `DM-${dm}-v${nextVersion}`;//Retorna o nome do vídeo com a nova versão, no formato `DM-<dm>-v<versão>`.
 };
 
 /**
@@ -456,20 +333,12 @@ export const generateCustomVideoName = (dm, existingVideo) => {
  * @returns {string} A extensão do arquivo correspondente ao tipo MIME fornecido, ou uma string vazia se não houver correspondência.
  */
 export const getFileExtension = (fileType) => {
-    /**
-     * Verifica se o tipo de arquivo é 'image/jpeg' e retorna a extensão `.jpg`.
-     */
-    if (fileType === 'image/jpeg') return '.jpg';
+  
+  if (fileType === 'image/jpeg') return '.jpg';//Verifica se o tipo de arquivo é 'image/jpeg' e retorna a extensão `.jpg`.
 
-    /**
-     * Verifica se o tipo de arquivo é 'image/png' e retorna a extensão `.png`.
-     */
-    if (fileType === 'image/png') return '.png';
+  if (fileType === 'image/png') return '.png';//Verifica se o tipo de arquivo é 'image/png' e retorna a extensão `.png`.
 
-    /**
-     * Se o tipo de arquivo não for 'image/jpeg' nem 'image/png', retorna uma string vazia.
-     */
-    return '';
+  return '';//Se o tipo de arquivo não for 'image/jpeg' nem 'image/png', retorna uma string vazia.
 };
 
 /**
@@ -479,20 +348,15 @@ export const getFileExtension = (fileType) => {
  * @returns {Object} - Objeto enriquecido.
  */
 export const enrichData = (target) => {
-    const store = useAuthStore();
-
-    return {
-        ...target,
-        id_cliente: store.userIdCliente,
-        id_usuario: store.userId
-    };
+  // Retorna um novo objeto que combina o objeto original (target) com os dados adicionais.
+  return {
+    ...target, // Espalha as propriedades do objeto original (target).
+    id_cliente: store.userIdCliente, // Adiciona a propriedade id_cliente com o valor de store.userIdCliente.
+    id_usuario: store.userId, // Adiciona a propriedade id_usuario com o valor de store.userId.
+  };
 };
 
 /**
- * Filtra os setores com base no ID de Centro de Custo do relatório.
- * Se o relatório contiver um ID de Centro de Custo, a lista de setores será filtrada de acordo com esse ID.
- * Se o relatório não contiver um ID de Centro de Custo, a lista original de setores será mantida.
- *
  * @param {Object} relatorio - O objeto do relatório que contém informações sobre o Centro de Custo.
  * @param {Object} ListaSetor - O objeto que contém a lista de setores filtrados.
  * @param {Object} ListaSetorOriginal - O objeto que contém a lista original de setores antes de qualquer filtragem.
@@ -500,19 +364,23 @@ export const enrichData = (target) => {
  * @param {Array} ListaSetorOriginal.value - A lista original de setores.
  * @param {number|null} relatorio.ID_CentroCusto - O ID do Centro de Custo no relatório. Se presente, será usado para filtrar os setores.
  */
+// Exporta a função filterSetoresByCDC, que filtra setores com base no ID do Centro de Custo.
 export const filterSetoresByCDC = (relatorio, ListaSetor, ListaSetorOriginal) => {
-    if (relatorio.ID_CentroCusto) {
-        ListaSetor.value = ListaSetorOriginal.value.filter((setorItem) => setorItem.id_centro_custo === relatorio.ID_CentroCusto || setorItem.value === null);
-    } else {
-        ListaSetor.value = ListaSetorOriginal.value;
-    }
+
+  // Verifica se o relatório contém um ID de Centro de Custo.
+  if (relatorio.ID_CentroCusto) {
+    // Filtra a lista original de setores, mantendo apenas aqueles cujo id_centro_custo corresponde ao ID do Centro de Custo do relatório ou cujo valor é nulo.
+    ListaSetor.value = ListaSetorOriginal.value.filter(setorItem => 
+      setorItem.id_centro_custo === relatorio.ID_CentroCusto || setorItem.value === null
+    );
+  } else {
+    // Se não houver ID de Centro de Custo no relatório, mantém a lista original de setores.
+    ListaSetor.value = ListaSetorOriginal.value;
+  }
 };
 
 /**
- * Filtra os funcionários com base no setor e na planta presentes no relatório.
- * Se o relatório contiver um ID de setor ou planta, a função filtra a lista de funcionários.
- * Caso contrário, a lista original de funcionários é mantida.
- *
+ * Exporta a função filterFuncionariosBySetorAndPlanta, que filtra funcionários com base no setor e na planta.
  * @param {Object} relatorio - O objeto do relatório que contém os filtros de setor e planta.
  * @param {Object} ListaFuncionarios - O objeto contendo a lista original de funcionários.
  * @param {Object} ListaFuncionarioFiltrado - O objeto onde a lista filtrada de funcionários será armazenada.
@@ -521,20 +389,24 @@ export const filterSetoresByCDC = (relatorio, ListaSetor, ListaSetorOriginal) =>
  * @param {number|null} relatorio.id_setor - O ID do setor, usado para filtrar os funcionários (opcional).
  * @param {number|null} relatorio.id_planta - O ID da planta, usado para filtrar os funcionários (opcional).
  */
+
 export const filterFuncionariosBySetorAndPlanta = (relatorio, ListaFuncionarios, ListaFuncionarioFiltrado) => {
-    const { id_setor, id_planta } = relatorio;
+  // Desestrutura os IDs de setor e planta do objeto relatorio.
+  const {id_setor, id_planta} = relatorio;
 
-    if (!(id_setor || id_planta)) {
-        ListaFuncionarioFiltrado.value = ListaFuncionarios.value;
-    }
-
-    ListaFuncionarioFiltrado.value = ListaFuncionarios.value.filter((funcionario) => {
-        const matchesSetor = id_setor ? funcionario.id_setor === id_setor : true;
-
-        const matchesPlanta = id_planta ? funcionario.id_planta === id_planta : true;
-
-        return matchesSetor && matchesPlanta;
-    });
+  // Verifica se não há filtros de setor ou planta. Se não houver, copia a lista original de funcionários para a lista filtrada.
+  if (!(id_setor || id_planta)) {
+    ListaFuncionarioFiltrado.value = ListaFuncionarios.value;
+  }
+  // Filtra a lista de funcionários com base nos filtros de setor e planta.
+  ListaFuncionarioFiltrado.value = ListaFuncionarios.value.filter(funcionario => {
+    // Verifica se o funcionário pertence ao setor especificado, se houver.
+    const matchesSetor = id_setor ? funcionario.id_setor === id_setor : true;
+    // Verifica se o funcionário pertence à planta especificada, se houver.
+    const matchesPlanta = id_planta ? funcionario.id_planta === id_planta : true;
+    // Retorna verdadeiro se o funcionário corresponder aos filtros de setor e planta.
+    return matchesSetor && matchesPlanta;
+  });
 };
 
 /**
@@ -554,50 +426,64 @@ export const filterFuncionariosBySetorAndPlanta = (relatorio, ListaFuncionarios,
  * @param {Object} ListaSetor - A lista de setores que será atualizada.
  * @param {Array} ListaSetor.value - O array de objetos de setores que será atualizado.
  */
+// Exporta a função filtroGenericoReltorio, que filtra o relatório com base nos critérios fornecidos e atualiza as listas de funcionários e setores de acordo.
 export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor) => {
-    const semFiltro = (!relatorio.value.id_centro_custo || relatorio.value.id_centro_custo === '') && (!relatorio.value.id_planta || relatorio.value.id_planta === '') && (!relatorio.value.id_setor || relatorio.value.id_setor === '');
 
-    if (semFiltro) {
-        ListaFuncionarios.value = [...listaFuncionariosOriginal.value];
-        ListaSetor.value = [...ListaSetorOriginal.value];
-        return;
-    }
+  // Verifica se não há filtros aplicados (centro de custo, planta ou setor).
+  const semFiltro = (!relatorio.value.id_centro_custo || relatorio.value.id_centro_custo === '')
+   && (!relatorio.value.id_planta || relatorio.value.id_planta === '')
+    && (!relatorio.value.id_setor || relatorio.value.id_setor === '');
 
-    if (relatorio.value.id_centro_custo) {
-        ListaSetor.value = ListaSetorOriginal.value.filter((setor) => setor.id_centro_custo === relatorio.value.id_centro_custo);
-    } else {
-        ListaSetor.value = [...ListaSetorOriginal.value];
-    }
+  // Se não houver filtros, copia as listas originais para as listas filtradas e retorna.
+  if (semFiltro) {
+      ListaFuncionarios.value = [...listaFuncionariosOriginal.value];
+      ListaSetor.value = [...ListaSetorOriginal.value];
+      return;
+  }
 
-    ListaFuncionarios.value = listaFuncionariosOriginal.value.filter((funcionario) => {
-        const cdcMatch = relatorio.value.id_centro_custo && funcionario.id_dentro_custo === relatorio.value.id_centro_custo;
+  // Se houver filtro de centro de custo, filtra a lista de setores com base no ID do centro de custo.
+  if (relatorio.value.id_centro_custo) {
+      ListaSetor.value = ListaSetorOriginal.value.filter((setor) => setor.id_centro_custo === relatorio.value.id_centro_custo);
+  } else {
+      ListaSetor.value = [...ListaSetorOriginal.value];
+  }
 
-        const plantaMatch = relatorio.value.id_planta && funcionario.id_planta === relatorio.value.id_planta;
-        const setorMatch = relatorio.value.id_setor && funcionario.id_setor === relatorio.value.id_setor;
+  // Filtra a lista de funcionários com base nos filtros de centro de custo, planta e setor.
+  ListaFuncionarios.value = listaFuncionariosOriginal.value.filter((funcionario) => {
 
-        return cdcMatch || plantaMatch || setorMatch;
-    });
+      // Verifica se o funcionário pertence ao centro de custo especificado, se houver.
+      const cdcMatch = relatorio.value.id_centro_custo && funcionario.id_dentro_custo === relatorio.value.id_centro_custo;
+
+      // Verifica se o funcionário pertence à planta especificada, se houver.
+      const plantaMatch = relatorio.value.id_planta && funcionario.id_planta === relatorio.value.id_planta;
+
+      // Verifica se o funcionário pertence ao setor especificado, se houver.
+      const setorMatch = relatorio.value.id_setor && funcionario.id_setor === relatorio.value.id_setor;
+
+      // Retorna verdadeiro se o funcionário corresponder a qualquer um dos filtros.
+      return cdcMatch || plantaMatch || setorMatch;
+  });
 };
 
-export function isMobEnabled() {
-    const store = useAuthStore();
-
-    return store.Integracao;
+// Função que verifica se a integração móvel está habilitada.
+export function isMobEnabled (){
+  return store.Integracao;
 }
 
+// Função que prepara os dados da lista com base nos parâmetros fornecidos e no papel do usuário.
 export const prepareListData = (params) => {
-    const store = useAuthStore();
-
     let baseData = {
-        id_usuario: store.userId || null,
-        id_cliente: store.userIdCliente || null
-    };
-    return store.userRole === 'Administrador' ? { ...params } : { ...baseData, ...params };
-};
+        id_usuario: store.userId || null,  // Adiciona o ID do usuário autenticado.
+        id_cliente: store.userIdCliente || null  // Adiciona o ID do cliente autenticado.
+    }
+    // Se o papel do usuário for 'Administrador', retorna apenas os parâmetros fornecidos. Caso contrário, combina os dados base com os parâmetros.
+    return store.userRole === 'Administrador' ? { ...params} : { ...baseData , ...params}
+}
 
+// Função que verifica se o dispositivo é móvel.
 export function isMobileDevice() {
-    console.log(navigator.userAgent);
-    return /Mobi|Android/i.test(navigator.userAgent);
+  console.log(navigator.userAgent);  // Loga o user agent do navegador no console.
+  return /Mobi|Android/i.test(navigator.userAgent);  // Retorna verdadeiro se o user agent indicar um dispositivo móvel.
 }
 
 export const preparelaData = (ListaProdutoFuncionario,libAvulsa) =>{

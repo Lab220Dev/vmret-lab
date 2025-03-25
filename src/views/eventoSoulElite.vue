@@ -209,12 +209,6 @@ onUnmounted(() => {
     }
 });
 
-function rowClass(data) {
-    if (data.isNew) return 'new-row';
-    if (data.updatedColumns && data.updatedColumns.length > 0) return 'updated-row';
-    return '';
-}
-
 // Função para limpar os filtros
 function limparFiltros() {
     // Reseta os filtros para os valores iniciais

@@ -154,32 +154,13 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-/**
- * @type {Ref<boolean>}
- * Flag que controla a exibição da tabela de resultados.
- * @default false
- */
-const show = ref(false);
+const show = ref(false);//Flag que controla a exibição da tabela de resultados.
 
-/**
- * @type {Ref<any[]>}
- * Armazena o item selecionado para exibição de detalhes.
- * @default []
- */
-const selectedItem = ref([]);
+const selectedItem = ref([]);//Armazena o item selecionado para exibição de detalhes.
 
-/**
- * @type {Ref<boolean>}
- * Flag que controla a exibição do spinner de carregamento.
- * @default false
- */
-const loading = ref(false);
+const loading = ref(false);//Flag que controla a exibição do spinner de carregamento.
 
-/**
- * @type {Ref<Object>}
- * Relatório que contém os filtros selecionados para a consulta (DM, Planta, Setor, Centro de Custo, etc).
- */
-const relatorio = ref({
+const relatorio = ref({//Relatório que contém os filtros selecionados para a consulta (DM, Planta, Setor, Centro de Custo, etc).
     id_dm: '',
     id_planta: null,
     ID_CentroCusto: '',
@@ -189,10 +170,7 @@ const relatorio = ref({
     data_final: new Date() // data atual
 });
 
-/**
- * Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
- */
-const buscar = async () => {
+const buscar = async () => {//Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
     try {
         loading.value = true; // Ativa a flag de carregamento
         retiradas.value = await relatorioService.itemsMaisRetiradas(relatorio);
@@ -224,10 +202,7 @@ const buscar = async () => {
     }
 };
 
-/**
- * Reage à mudança no filtro global e atualiza a contagem de itens filtrados.
- */
-watch(
+watch(//Reage à mudança no filtro global e atualiza a contagem de itens filtrados.
     () => filters.value.global.value,
     () => {
         filteredCount.value = retiradas.value.filter((item) => {
@@ -311,7 +286,7 @@ const handleDatepickerOpen = () => {
     closeAllDropdowns(); // Fecha todos os dropdowns
 };
 
-const isMobile = isMobileDevice();
+const isMobile = isMobileDevice();//Retorna `true` se o dispositivo for móvel, ou `false` caso contrário.
 
 // Função chamada ao montar o componente
 onMounted(async () => {

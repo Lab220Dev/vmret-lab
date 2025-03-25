@@ -1,60 +1,28 @@
 <script setup>
-/**
- * Importa o componente VueDatePicker para uso no formulário de seleção de data.
- */
-import VueDatePicker from '@vuepic/vue-datepicker';
 
-/**
- * Importa o FilterMatchMode da biblioteca PrimeVue para utilização na filtragem de dados da tabela.
- */
-import { FilterMatchMode } from 'primevue/api';
+import VueDatePicker from '@vuepic/vue-datepicker';//Importa o componente VueDatePicker para uso no formulário de seleção de data.
 
-/**
- * Importa o hook useToast para exibir notificações de toast.
- */
-import { useToast } from 'primevue/usetoast';
+import { FilterMatchMode } from 'primevue/api';//Importa o FilterMatchMode da biblioteca PrimeVue para utilização na filtragem de dados da tabela.
 
-/**
- * Importa o estilo do VueDatePicker para garantir que o componente seja exibido corretamente.
- */
-import '@vuepic/vue-datepicker/dist/main.css';
+import { useToast } from 'primevue/usetoast';//Importa o hook useToast para exibir notificações de toast.
 
-/**
- * Importa funções do Vue para gerenciamento de estado e efeitos colaterais.
- */
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import '@vuepic/vue-datepicker/dist/main.css';// Importa o estilo do VueDatePicker para garantir que o componente seja exibido corretamente.
 
-/**
- * Importa o axios, que é utilizado para fazer requisições HTTP à API.
- */
-import axios from '@/axios.js';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';//Importa funções do Vue para gerenciamento de estado e efeitos colaterais.
 
-/**
- * Importa o store de autenticação, que contém as informações do usuário e o token de autorização.
- */
-import { useAuthStore } from '@/store/authStore.js';
+import axios from '@/axios.js';//Importa o axios, que é utilizado para fazer requisições HTTP à API.
 
-/**
- * Importa o componente de LoadingSpinner para mostrar um indicador de carregamento enquanto os dados estão sendo processados.
- */
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { useAuthStore } from '@/store/authStore.js';// Importa o store de autenticação, que contém as informações do usuário e o token de autorização.
 
-/**
- * Variáveis reativas do Vue que controlam a visibilidade do diálogo e as mensagens exibidas.
- */
+import LoadingSpinner from '@/components/LoadingSpinner.vue';//Importa o componente de LoadingSpinner para mostrar um indicador de carregamento enquanto os dados estão sendo processados.
+
 const showDialog = ref(false);  // Controle de visibilidade do diálogo de erro
 const dialogMessage = ref('');  // Mensagem exibida no diálogo de erro
 
-/**
- * Variáveis para armazenar dados do store, como o ID do cliente e a função de exibição de toast.
- */
 const store = useAuthStore();  // Acesso ao store de autenticação
 const toast = useToast();  // Função para exibir notificações de toast
 
-/**
- * Mensagem padrão para ser exibida caso não haja dados na tabela.
- */
-const emptyMessage = ref('Ainda não foi feita nenhuma busca');
+const emptyMessage = ref('Ainda não foi feita nenhuma busca');//Mensagem padrão para ser exibida caso não haja dados na tabela.
 
 /**
  * Referências para os dropdowns usados para filtros (funcionário, DM, etc.).
@@ -65,39 +33,24 @@ const dropdown3 = ref(null);
 const dropdown4 = ref(null);
 const dropdown5 = ref(null);
 
-/**
- * Variáveis reativas para armazenar os dados da tabela, como a lista de retiradas e os filtros de pesquisa.
- */
 const retiradas = ref([]);  // Dados das retiradas
 const todosOption = { label: 'Todos', value: null };  // Opção padrão "Todos" para os filtros
 
-/**
- * Variáveis para armazenar listas de funcionários, DMs, plantas, setores e centros de custo.
- */
 const ListaFuncionarios = ref(null);
 const dms = ref([todosOption]);  // Lista de DMs com a opção "Todos"
 const plantas = ref([todosOption]);  // Lista de plantas com a opção "Todos"
 const setor = ref([todosOption]);  // Lista de setores com a opção "Todos"
 const centroCusto = ref([todosOption]);  // Lista de centros de custo com a opção "Todos"
 
-/**
- * Filtros de pesquisa globais para a DataTable.
- */
-const filters = ref({
+const filters = ref({//Filtros de pesquisa globais para a DataTable.
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-/**
- * Variáveis para controlar a exibição de detalhes na DataTable.
- */
 const show = ref(false);  // Controle de visibilidade dos detalhes
 const selectedItem = ref([]);  // Armazena o item selecionado
 const loading = ref(false);  // Controle de carregamento (indicador de espera)
 
-/**
- * Objeto para armazenar os parâmetros de filtragem, como DM, planta, centro de custo, etc.
- */
-const relatorio = ref({
+const relatorio = ref({//Objeto para armazenar os parâmetros de filtragem, como DM, planta, centro de custo, etc.
     dm: '',
     id_planta: '',
     id_centro_custo: '',
@@ -129,10 +82,6 @@ const toISODate = (date) => {
     return date ? new Date(date).toISOString() : null;  // Converte para ISO se a data for válida
 };
 
-/**
- * Função para realizar a busca dos dados conforme os filtros selecionados.
- * Essa função envia uma requisição HTTP para a API e atualiza a lista de retiradas.
- */
 const buscar = async () => {
     // Dados de filtro que serão enviados para a API
     const data = {
@@ -194,17 +143,11 @@ const onRowSelect = (event) => {
     });
 };
 
-/**
- * Função para voltar à visualização original (esconde o card de detalhes).
- */
 const voltar = () => {
     show.value = false;  // Esconde o card de detalhes
     selectedItem.value = {};  // Limpa o item selecionado
 };
 
-/**
- * Referência da DataTable utilizada para manipulação direta da tabela.
- */
 const dt = ref(null);
 
 /**
@@ -218,9 +161,6 @@ const generateCSV = (data) => {
     return `${headers}\n${rows}`;  // Retorna o conteúdo CSV
 };
 
-/**
- * Função para exportar os dados da tabela como um arquivo CSV.
- */
 const exportCSV = () => {
     if (Array.isArray(retiradas.value)) {  // Verifica se retiradas é um array
         // Agrega detalhes de cada produto para gerar o CSV
@@ -250,9 +190,6 @@ const exportCSV = () => {
     }
 };
 
-/**
- * Função para exportar os dados da tabela como um arquivo JSON.
- */
 const exportJSON = () => {
     const jsonContent = JSON.stringify(retiradas.value, null, 2);  // Converte os dados para JSON formatado
     const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
@@ -265,10 +202,7 @@ const exportJSON = () => {
     document.body.removeChild(link);
 };
 
-/**
- * Função para buscar a lista de DMs (Documentos de Movimentação) e atualizá-los na interface.
- */
-const fetchDM = async () => {
+const fetchDM = async () => {//Função para buscar a lista de DMs (Documentos de Movimentação) e atualizá-los na interface
     const data = {
         id_cliente: store.userIdCliente  // Envia o ID do cliente para a requisição
     };
@@ -293,10 +227,7 @@ const fetchDM = async () => {
     }
 };
 
-/**
- * Função para fechar todos os dropdowns abertos na interface.
- */
-const closeAllDropdowns = () => {
+const closeAllDropdowns = () => {//Função para fechar todos os dropdowns abertos na interface.
     if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
     if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
     if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
@@ -304,16 +235,10 @@ const closeAllDropdowns = () => {
     if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
 };
 
-/**
- * Função para fechar todos os dropdowns quando o DatePicker for aberto.
- */
 const handleDatepickerOpen = () => {
     closeAllDropdowns();  // Fecha todos os dropdowns
 };
 
-/**
- * Hook do Vue que executa a função fetchDM ao montar o componente.
- */
 onMounted(() => {
     fetchDM();  // Carrega a lista de DMs ao montar o componente
 });

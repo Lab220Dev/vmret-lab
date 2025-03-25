@@ -215,95 +215,95 @@ const chartOptions = {//configurações do gráfico
 
 <style>
 /* Container Principal */
-.heatmap-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.heatmap-container {/*container principal*/
+    display: flex;/*exibe os elementos em linha*/
+    flex-direction: column;/*alinha os elementos em coluna*/
+    gap: 10px;/*define o espaçamento entre os elementos*/
 }
 /* Card de Detalhes */
-.details-card {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.details-card {/*card de detalhes*/
+    margin-top: 20px;/*margem superior de 20px*/
+    padding: 20px;/*preenchimento de 20px*/
+    border-radius: 8px;/*borda arredondada de 8px*/
+    background-color: #fff;/*fundo branco*/
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);/*sombra sutil*/
 }
 /* Cabeçalho do Card */
-.details-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+.details-header {/*cabeçalho do card*/
+    display: flex;/*exibe os elementos em linha*/
+    justify-content: space-between;/*alinha os elementos ao redor*/
+    align-items: center;/*alinha os elementos ao centro*/
+    margin-bottom: 20px;/*margem inferior de 20px*/
 }
 /* Lista de Retiradas */
-.withdrawals-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 10px 0;
+.withdrawals-list {/*lista de retiradas*/
+    list-style-type: none;/*remove a estilização padrão da lista*/
+    padding: 0;/*remove o preenchimento da lista*/
+    margin: 10px 0;/*margem de 10px acima e abaixo*/
 }
-.withdrawals-list li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-size: 14px;
+.withdrawals-list li {/*elementos da lista*/
+    display: flex;/*exibe os elementos em linha*/
+    align-items: center;/*alinha os elementos ao centro*/
+    margin-bottom: 10px;/*margem inferior de 10px*/
+    font-size: 14px;/*tamanho da fonte de 14px*/
 }
 
-.withdrawals-list i {
-    margin-right: 10px;
-    color: #4caf50;
+.withdrawals-list i {/*ícone da lista*/
+    margin-right: 10px;/*margem à direita de 10px*/
+    color: #4caf50;/*cor verde*/
 }
 /* Linha do Heatmap */
 .heatmap-row {
-    display: grid;
+    display: grid;/*exibe os elementos em grid*/
     grid-template-columns: 200px repeat(var(--max-machines), 1fr); /* Substituir por variável CSS */
-    align-items: center;
-    gap: 5px;
+    align-items: center;/*alinha os elementos ao centro*/
+    gap: 5px;/*espaçamento de 5px*/
 }
 /* Gráfico */
-.chart-container {
-    margin-top: 20px;
-    height: 300px;
+.chart-container {/*container do gráfico*/
+    margin-top: 20px;/*margem superior de 20px*/
+    height: 300px;/*altura de 300px*/
 }
 
 /* Estilos do Heatmap */
-.clickable {
-    cursor: pointer;
+.clickable {/*elementos clicáveis*/
+    cursor: pointer;/*cursor de ponteiro*/
 }
 /* Célula com Status */
-.heatmap-cell {
-    text-align: center;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+.heatmap-cell {/*célula do heatmap*/
+    text-align: center;/*alinha o texto ao centro*/
+    padding: 8px;/*preenchimento de 8px*/
+    border: 1px solid #ddd;/*borda de 1px sólida cinza*/
+    border-radius: 4px;/*borda arredondada de 4px*/
+    font-size: 14px;/*tamanho da fonte de 14px*/
 }
 
 /* Estilo do Cabeçalho */
-.header-row .heatmap-cell {
-    font-weight: bold;
-    background-color: #f4f4f4;
+.header-row .heatmap-cell {/*célula do cabeçalho*/
+    font-weight: bold;  /* Define o texto em negrito */
+    background-color: #f4f4f4;  /* Define a cor de fundo */
 }
 
 /* Nome do Cliente */
-.client-cell {
-    font-weight: bold;
-    background-color: #f9f9f9;
+.client-cell {  /* Define o estilo da célula do cliente */
+    font-weight: bold;  /* Define o texto em negrito */
+    background-color: #f9f9f9;  /* Define a cor de fundo */
 }
 
 /* Status das Máquinas */
-.online {
-    background-color: #4caf50;
-    color: white;
+.online {   /* Define o estilo para máquinas online */
+    background-color: #4caf50;  /* Define a cor de fundo */
+    color: white;   /* Define a cor do texto */
 }
 
 /* Estilos de Status */
-.offline {
-    background-color: #f44336;
-    color: white;
+.offline {  /* Define o estilo para máquinas offline */
+    background-color: #f44336;  /* Define a cor de fundo */
+    color: white;   /* Define a cor do texto */
 }
 /* Status Desconhecido */
-.unknown {
-    background-color: #e0e0e0;
-    color: black;
+.unknown {  /* Define o estilo para status desconhecido */
+    background-color: #e0e0e0;  /* Define a cor de fundo */
+    color: black;   /* Define a cor do texto */
 }
 </style>

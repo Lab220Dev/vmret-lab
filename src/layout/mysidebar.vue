@@ -26,69 +26,30 @@
   // Importa o layout do menu
   import { useLayout } from '@/layout/composables/layout'; // Acesso a funções relacionadas ao layout, como a alternância do menu
 
-  /**
-   * Desestruturação das funções fornecidas pelo layout.
-   * 
-   * `onMenuToggle` é uma função usada para alternar o estado do menu.
-   */
   const { onMenuToggle } = useLayout(); // Função para alternar o estado do menu (aberto/fechado)
 
-  /**
-   * Acesso à store de autenticação para recuperar dados do usuário.
-   * 
-   * `store` é uma instância do store de autenticação, responsável por gerenciar o estado global.
-   */
   const store = useAuthStore(); // Acesso à store de autenticação
 
-  /**
-   * Instancia o roteador para navegação entre as rotas da aplicação.
-   * 
-   * `router` é usado para fazer redirecionamentos programáticos.
-   */
   const router = useRouter(); // Instância do roteador para navegação
 
-  /**
-   * Obtém os dados do usuário, como nome e papel (role) da store de autenticação.
-   * 
-   * `nome` e `role` são extraídos da store para exibição na interface.
-   */
   const nome = store.userName; // Nome do usuário da store de autenticação
   const role = store.userRole; // Papel (role) do usuário da store de autenticação
 
-  /**
-   * Acesso ao store de contagem regressiva para recuperar o tempo restante.
-   * 
-   * `millisecondsRemaining` é o tempo em milissegundos que resta antes de um evento (ex: logoff).
-   */
   const countdownStore = useCountdownStore(); // Acesso à store de contagem regressiva
   const millisecondsRemaining = countdownStore.millisecondsRemaining; // Tempo restante para a contagem regressiva
 
   /**
-   * Função que inicia a contagem regressiva.
-   * 
-   * Esta função é um placeholder, pois o componente VueCountdown já lida com o controle do tempo.
-   * 
    * @returns {boolean} Retorna sempre `true`, indicando que a contagem foi iniciada.
    */
   function startCountdown() {
     return true; // Retorna `true` para indicar que a contagem foi iniciada.
   }
 
-  /**
-   * Função chamada quando a contagem regressiva chega ao fim.
-   * 
-   * Aqui, o usuário será deslogado e redirecionado para a tela de login.
-   */
   function onCountdownEnd() {
     store.logout(); // Chama o método de logout da store de autenticação
     router.push({ name: 'login' }); // Redireciona o usuário para a página de login após o logout
   }
 
-  /**
-   * Função executada quando o componente é montado.
-   * 
-   * Verifica se ainda há tempo restante para a contagem e a inicia, caso haja.
-   */
   onMounted(() => {
     if (millisecondsRemaining > 0) {
       startCountdown(); // Inicia a contagem regressiva, caso haja tempo restante
@@ -105,11 +66,6 @@
     return String(value).padStart(2, '0'); // Formata para ter sempre 2 dígitos
   }
 
-  /**
-   * Função para realizar o logoff do usuário.
-   * 
-   * Reseta o estado da store de autenticação, limpa dados locais e exclui cookies.
-   */
   const fazerLogoff = () => {
     store.$reset(); // Reseta o estado do store de autenticação, removendo informações do usuário
 
@@ -126,18 +82,8 @@
     router.push({ name: 'login' }); // Redireciona para a página de login
   };
 
-  /**
-   * Referência reativa para o menu.
-   * 
-   * A variável `menu` controla o estado do menu (aberto ou fechado).
-   */
   const menu = ref(); // Referência reativa para o menu
 
-  /**
-   * Itens do menu, incluindo a opção de logoff.
-   * 
-   * `items` contém as opções de menu, incluindo o comando de logoff.
-   */
   const items = ref([ // Define o modelo dos itens do menu
     {
       label: 'Opções', // Rótulo do menu
@@ -151,11 +97,6 @@
     }
   ]);
 
-  /**
-   * Função que escuta cliques fora do menu e fecha o menu se um clique fora for detectado.
-   * 
-   * Adiciona um ouvinte de evento que fecha o menu se o usuário clicar fora dele.
-   */
   const bindOutsideClickListener = () => {
     if (!outsideClickListener.value) {
       outsideClickListener.value = (event) => {

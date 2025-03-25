@@ -21,7 +21,7 @@ import { useDataStore } from '@/store/dataStore.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 // Importando o serviço de produto para interagir com a API relacionada aos funcionarios
 import funcionarioService from '@/Services/funcionarioService.js';
-import * as formatservices from '@/helpers/HelperUtils.js';
+import * as formatservices from '@/helpers/HelperUtils.js'; // Importa todas as funções de ajuda do arquivo HelperUtils.js
 // Importando funções de ajuda relacionadas ao formulário do funcionarios
 import { resetFuncionarioForm, resetItens as resetProduto } from '@/helpers/formHelper.js';
 import { validadorcpf, validadoremail, validateForm } from '@/helpers/HelperFuncionario.js';
@@ -32,9 +32,10 @@ const store = useAuthStore(); // Acessa o store de autenticação para obter dad
 const dataStore = useDataStore(); // Acessa o store de dados para obter informações sobre plantas e outros dados
 
 const toast = useToast(); // Função para exibir notificações via toast
-const selectedFile = ref(null);
-const handleFileSelected = (file) => {
-    selectedFile.value = file;
+
+const selectedFile = ref(null); // Cria uma referência reativa para armazenar o arquivo selecionado
+const handleFileSelected = (file) => { // Declara uma função chamada handleFileSelected
+    selectedFile.value = file; // Define o arquivo selecionado na referência reativa
 };
 
 // Cria uma referência reativa para armazenar erros, inicialmente vazia.
@@ -172,7 +173,9 @@ const active = ref(0);
 const activeItens = ref(0);
 const totalRecords = ref(0);
 
-const loading = ref(false);
+const totalRecords = ref(0); // Cria uma referência reativa para armazenar o total de registros
+
+const loading = ref(false); // Cria uma referência reativa para controlar o estado de carregamento
 
 // Cria uma referência reativa para armazenar o dropdown 1, inicialmente configurado para `null` (não atribuído).
 const dropdown1 = ref(null);
@@ -339,14 +342,14 @@ const loadFuncionarios = async (page = 1) => {
 };
 
 watch(
-    () => filters.value.global.value,
+    () => filters.value.global.value, // Observa mudanças no valor global do filtro
     () => {
-        filteredCount.value = ListaFuncionarios.value.filter((item) => {
-            const filterValue = filters.value.global.value?.toLowerCase() || '';
-            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue));
-        }).length;
+        filteredCount.value = ListaFuncionarios.value.filter((item) => { // Filtra a lista de funcionários
+            const filterValue = filters.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro em minúsculas
+            return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum valor do item inclui o valor do filtro
+        }).length; // Atualiza o contador de resultados filtrados
     },
-    { immediate: true }
+    { immediate: true } // Aciona imediatamente
 );
 
 const adicionarFuncionario = async () => {
@@ -366,7 +369,7 @@ const adicionarFuncionario = async () => {
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('employee_form_default_error'), life: 3000 });
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Desativa o estado de loading
     }
 };
 
@@ -381,29 +384,31 @@ const loadData = async () => {
     }
 };
 
-const fetchItensSetor = async (id_setor) => {
+const fetchItensSetor = async (id_setor) => { // Declara uma função assíncrona chamada fetchItensSetor
     const data = {
         id_cliente: store.userIdCliente,
         id_setor: id_setor
     };
 
     try {
-        const response = await funcionarioService.fetchItensSetor(data);
+        const response = await funcionarioService.fetchItensSetor(data); // Faz uma requisição para buscar os itens do setor
         // Armazena os itens do setor em ListaItemsSetor
         ListaItemsSetor.value = response.data;
 
-        listarProdutosDisponiveis();
-    } catch (error) {}
+        listarProdutosDisponiveis(); // Chama a função para listar os produtos disponíveis
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a requisição
+    }
 };
 
-const listarProdutosDisponiveis = () => {
-    const addedIds = new Set(ListaItemsSetor.value.map((item) => item.id_produto));
+const listarProdutosDisponiveis = () => { // Declara uma função chamada listarProdutosDisponiveis
+    const addedIds = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao setor
 
     // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
     ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter((produto) => !addedIds.has(produto.value)));
 };
 
-const fetchHieraquiaOptions = async () => {
+const fetchHieraquiaOptions = async () => { // Declara uma função assíncrona chamada fetchHieraquiaOptions
     try {
         const response = await funcionarioService.fetchHieraquiaOptions();
         hieraquiaoptions = response.data;
@@ -411,51 +416,54 @@ const fetchHieraquiaOptions = async () => {
             label: ` ${hieraquiaoptions.id_funcao}`,
             value: hieraquiaoptions.id_funcao
         }));
-    } catch (error) {}
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a requisição
+    }
 };
 
 watch(
-    TempoInicio,
-    (newTime) => {
+    TempoInicio, // Observa mudanças na referência reativa TempoInicio
+    (newTime) => { // Função de callback chamada quando TempoInicio muda
         if (newTime) {
-            funcionario.hora_inicial = formatservices.formatarTempo(newTime);
+            funcionario.hora_inicial = formatservices.formatarTempo(newTime); // Formata e atribui o novo tempo inicial
         } else {
-            funcionario.hora_inicial = '';
+            funcionario.hora_inicial = ''; // Reseta o tempo inicial se newTime for nulo
         }
     },
-    { deep: true }
+    { deep: true } // Observa mudanças profundas no objeto TempoInicio
 );
+
 watch(
-    TempoFim,
-    (newTime) => {
+    TempoFim, // Observa mudanças na referência reativa TempoFim
+    (newTime) => { // Função de callback chamada quando TempoFim muda
         if (newTime) {
-            funcionario.hora_final = formatservices.formatarTempo(newTime);
+            funcionario.hora_final = formatservices.formatarTempo(newTime); // Formata e atribui o novo tempo final
         } else {
-            funcionario.hora_final = '';
+            funcionario.hora_final = ''; // Reseta o tempo final se newTime for nulo
         }
     },
-    { deep: true }
+    { deep: true } // Observa mudanças profundas no objeto TempoFim
 );
 
 /*resetar informações e botões*/
-watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
-        funcionario = reactive(resetFuncionarioForm());
-        resetForm();
-        resetItens();
-        loadFuncionarios();
-        editVisible.value = false;
+watch(active, (newIndex, oldIndex) => { // Observa mudanças na variável reativa active
+    if (newIndex !== oldIndex && newIndex === 0) { // Verifica se o índice mudou e se o novo índice é 0
+        funcionario = reactive(resetFuncionarioForm()); // Reseta o formulário do funcionário
+        resetForm(); // Reseta o formulário
+        resetItens(); // Reseta os itens
+        loadFuncionarios(); // Carrega a lista de funcionários
+        editVisible.value = false; // Define a visibilidade da edição como false
     }
 });
 
-const resetTable = () => {
-    activeItens.value = 0;
-    resetItens();
+const resetTable = () => { // Declara uma função chamada resetTable
+    activeItens.value = 0; // Define o valor de activeItens como 0
+    resetItens(); // Reseta os itens
 };
 
-const getImagem = async (filename) => {
-    if (filename === '') {
-        return imagePlaceholder;
+const getImagem = async (filename) => { // Declara uma função assíncrona chamada getImagem
+    if (filename === '') { // Verifica se o nome do arquivo é vazio
+        return imagePlaceholder; // Retorna a imagem placeholder
     }
     try {
         const response = await funcionarioService.obterImagem(store.userIdCliente, filename);
@@ -464,95 +472,98 @@ const getImagem = async (filename) => {
             imageUrl.value = `data:${mimeType};base64,${image}`;
         }
     } catch (error) {
-        return imagePlaceholder;
+        return imagePlaceholder; // Retorna a imagem placeholder em caso de erro
     }
 };
-function debounce(func, wait = 300) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+
+function debounce(func, wait = 300) { // Declara uma função chamada debounce
+    let timeout; // Declara uma variável para armazenar o timeout
+    return (...args) => { // Retorna uma função que recebe argumentos
+        clearTimeout(timeout); // Limpa o timeout anterior
+        timeout = setTimeout(() => func.apply(this, args), wait); // Define um novo timeout para chamar a função após o tempo de espera
     };
 }
-const debouncedFilterChange = debounce(() => {
+
+const debouncedFilterChange = debounce(() => { // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
     onFilterChange();
 }, 300);
-onMounted(async () => {
-    Mob.value = formatservices.isMobEnabled();
-    await loadData();
-    await loadFuncionarios();
-    await fetchHieraquiaOptions();
-    await fetchItensSetor();
+
+onMounted(async () => { // Declara uma função assíncrona chamada onMounted
+    Mob.value = formatservices.isMobEnabled(); // Define o valor de Mob com base na função isMobEnabled
+    await loadData(); // Carrega os dados iniciais
+    await loadFuncionarios(); // Carrega a lista de funcionários
+    await fetchHieraquiaOptions(); // Busca as opções de hierarquia
+    await fetchItensSetor(); // Busca os itens do setor
 });
 
-const deleteFuncionario = async () => {
+const deleteFuncionario = async () => { // Declara uma função assíncrona chamada deleteFuncionario
     let data = { id_funcionario: funcionario.id_funcionario, id_usuario: store.userId };
     try {
-        loading.value = true;
-        await funcionarioService.deleteFuncionario(data);
-        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('deleted_employee_form_sucess'), life: 3000 });
-        dataStore.invalidateFuncionariosCache();
-        deleteFuncionarioDialog.value = false;
-        loadFuncionarios();
-        active.value = 0;
-        resetForm();
+        loading.value = true; // Ativa o estado de loading
+        await funcionarioService.deleteFuncionario(data); // Faz uma requisição para deletar o funcionário
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('deleted_employee_form_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
+        dataStore.invalidateFuncionariosCache(); // Invalida o cache de funcionários no dataStore
+        deleteFuncionarioDialog.value = false; // Fecha o diálogo de confirmação de exclusão
+        loadFuncionarios(); // Carrega a lista de funcionários
+        active.value = 0; // Define o valor de active como 0
+        resetForm(); // Reseta o formulário
     } catch {
-        toast.add({ severity: 'error', summary: t('title_error'), detail: t('deleted_employee_form_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('deleted_employee_form_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
     } finally {
-        loading.value = false; // Desativando loading
+        loading.value = false; // Desativa o estado de loading
     }
 };
 
-const resetForm = () => {
-    funcionario.foto = null;
-    imageUrl.value = imagePlaceholder;
-    resetFuncionarioForm(funcionario);
-    funcionario.itemsSelecionadosFuncionario = [];
+const resetForm = () => { // Declara uma função chamada resetForm
+    funcionario.foto = null; // Reseta a foto do funcionário
+    imageUrl.value = imagePlaceholder; // Define a URL da imagem como a imagem placeholder
+    resetFuncionarioForm(funcionario); // Reseta o formulário do funcionário
+    funcionario.itemsSelecionadosFuncionario = []; // Reseta os itens selecionados do funcionário
 
-    selectedFile.value = null;
-    TempoInicio.value = null;
-    TempoFim.value = null;
-    imageUploader.value?.clearImageData();
-    ListaItemsSetor.value = [];
-    ListaProdutoFuncionario.value = [];
+    selectedFile.value = null; // Reseta o arquivo selecionado
+    TempoInicio.value = null; // Reseta o tempo de início
+    TempoFim.value = null; // Reseta o tempo de fim
+    imageUploader.value?.clearImageData(); // Limpa os dados da imagem no uploader
+    ListaItemsSetor.value = []; // Reseta a lista de itens do setor
+    ListaProdutoFuncionario.value = []; // Reseta a lista de produtos do funcionário
 };
 
 const resetItens = () => {
     resetProduto(selectedProduct);
 };
 
-const SalvarProduto = async () => {
-    if (!validarCampos()) {
-        return; //se falhar não continua
+const SalvarProduto = async () => { // Declara uma função assíncrona chamada SalvarProduto
+    if (!validarCampos()) { // Verifica se a validação dos campos falhou
+        return; // Se falhar, não continua
     }
-    loading.value = true;
+    loading.value = true; // Ativa o estado de loading
     try {
-        const response = await funcionarioService.SalvarProduto(funcionario, selectedProduct);
-        ListaProdutoFuncionario.value = [];
-        ListaProdutoFuncionario.value = response.data.dados[0];
-        visible.value = false;
-        resetItens();
-        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_product_sucess'), life: 3000 });
-        itemDialog.value = false;
+        const response = await funcionarioService.SalvarProduto(funcionario, selectedProduct); // Faz uma requisição para salvar o produto
+        ListaProdutoFuncionario.value = []; // Reseta a lista de produtos do funcionário
+        ListaProdutoFuncionario.value = response.data.dados[0]; // Atualiza a lista de produtos do funcionário com a resposta
+        visible.value = false; // Define a visibilidade como false
+        resetItens(); // Reseta os itens
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_product_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
+        itemDialog.value = false; // Fecha o diálogo de item
     } catch (error) {
-        toast.add({ severity: 'error', summary: t('title_error'), detail: t('employee_product_error'), life: 3000 });
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('employee_product_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
     } finally {
         loading.value = false;
     }
 };
 
-const listarProdutosFiltrados = () => {
-    const idsSetor = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); //setor
+const listarProdutosFiltrados = () => { // Declara uma função chamada listarProdutosFiltrados
+    const idsSetor = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao setor
 
-    const idsAdicionados = new Set(ListaProdutoFuncionario.value.map((item) => item.id_produto)); //funcionario(datatable)
+    const idsAdicionados = new Set(ListaProdutoFuncionario.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao funcionário
 
     const itensFiltrados = ListaProdutos.value.filter(
-        (produto) => !idsSetor.has(produto.value) && !idsAdicionados.has(produto.value) //o restante
+        (produto) => !idsSetor.has(produto.value) && !idsAdicionados.has(produto.value) // Filtra os produtos disponíveis excluindo os que já estão no setor ou no funcionário
     );
 
-    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...itensFiltrados); //atualizando a lista
+    ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...itensFiltrados); // Atualiza a lista de produtos disponíveis
 
-    if (itensFiltrados.length === 0) {
+    if (itensFiltrados.length === 0) { // Verifica se não há mais itens disponíveis
         toast.add({
             severity: 'warn',
             summary: t('employee_no_availble_item'),
@@ -562,59 +573,61 @@ const listarProdutosFiltrados = () => {
     }
 };
 
-const abrirDialogAdicionarItem = () => {
-    listarProdutosFiltrados();
-    visible.value = true; // Mostre o diálogo
+const abrirDialogAdicionarItem = () => { // Declara uma função chamada abrirDialogAdicionarItem
+    listarProdutosFiltrados(); // Chama a função para listar os produtos filtrados
+    visible.value = true; // Mostra o diálogo
 };
 
-const editItem = (selectedItem) => {
-    selectedProduct.value = { ...selectedItem };
-    itemDialog.value = true;
+const editItem = (selectedItem) => { // Declara uma função chamada editItem
+    selectedProduct.value = { ...selectedItem }; // Define o produto selecionado
+    itemDialog.value = true; // Mostra o diálogo de item
 };
 
-const atualizarFuncionario = async () => {
+const atualizarFuncionario = async () => { // Declara uma função assíncrona chamada atualizarFuncionario
     try {
         loading.value = true;
         const { isValid, errors } = validateForm(funcionario);
         if (!isValid) {
             throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
         }
-        await funcionarioService.atualizarFuncionario(funcionario, selectedFile);
-        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_update'), life: 3000 });
-        dataStore.invalidateFuncionariosCache();
-        loadFuncionarios();
-        active.value = 0;
-        resetForm();
+        await funcionarioService.atualizarFuncionario(funcionario, selectedFile); // Faz uma requisição para atualizar o funcionário
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_update'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
+        dataStore.invalidateFuncionariosCache(); // Invalida o cache de funcionários no dataStore
+        loadFuncionarios(); // Carrega a lista de funcionários
+        active.value = 0; // Define o valor de active como 0
+        resetForm(); // Reseta o formulário
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('employee_update_error'), life: 3000 });
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativa o estado de loading
     }
 };
 
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+const closeAllDropdowns = () => { // Declara uma função chamada closeAllDropdowns
+    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Verifica e esconde o dropdown1 se estiver visível
+    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Verifica e esconde o dropdown2 se estiver visível
+    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Verifica e esconde o dropdown3 se estiver visível
+    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Verifica e esconde o dropdown4 se estiver visível
+    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Verifica e esconde o dropdown5 se estiver visível
 };
 
-const handleDatepickerOpen = () => {
-    closeAllDropdowns();
+const handleDatepickerOpen = () => { // Declara uma função chamada handleDatepickerOpen
+    closeAllDropdowns(); // Chama a função closeAllDropdowns para fechar todos os dropdowns
 };
-const confirmDeleteProduct = (item) => {
-    selectedProduct.value = { ...item };
-    deleteProductDialog.value = true;
+
+const confirmDeleteProduct = (item) => { // Declara uma função chamada confirmDeleteProduct
+    selectedProduct.value = { ...item }; // Define o produto selecionado
+    deleteProductDialog.value = true; // Mostra o diálogo de confirmação de exclusão de produto
 };
-const deleteProduct = async () => {
+
+const deleteProduct = async () => { // Declara uma função assíncrona chamada deleteProduct
     try {
-        loading.value = true;
-        const res = await funcionarioService.deleteProduct(funcionario, selectedProduct);
+        loading.value = true; // Ativa o estado de loading
+        const res = await funcionarioService.deleteProduct(funcionario, selectedProduct); // Faz uma requisição para deletar o produto
         if (res.data && res.data.items) {
-            ListaProdutoFuncionario.value = res.data.items;
+            ListaProdutoFuncionario.value = res.data.items; // Atualiza a lista de produtos do funcionário com a resposta
         }
-        resetItens();
+        resetItens(); // Reseta os itens
         toast.add({
             severity: 'success',
             summary: t('title_sucess'),
@@ -622,7 +635,7 @@ const deleteProduct = async () => {
             life: 3000
         });
 
-        deleteProductDialog.value = false;
+        deleteProductDialog.value = false; // Fecha o diálogo de confirmação de exclusão de produto
     } catch (error) {
         toast.add({
             severity: 'error',
@@ -632,13 +645,13 @@ const deleteProduct = async () => {
         });
         console.error(error);
     } finally {
-        loading.value = false;
+        loading.value = false; // Desativa o estado de loading
     }
 };
 
-const validarCampos = () => {
+const validarCampos = () => { // Declara uma função chamada validarCampos
     try {
-        if (!selectedProduct.value.id_produto) {
+        if (!selectedProduct.value.id_produto) { // Verifica se o ID do produto selecionado está vazio
             toast.add({
                 severity: 'error',
                 summary: t('title_error'),
@@ -648,7 +661,7 @@ const validarCampos = () => {
             return false;
         }
 
-        if (!selectedProduct.value.quantidade || selectedProduct.value.quantidade <= 0) {
+        if (!selectedProduct.value.quantidade || selectedProduct.value.quantidade <= 0) { // Verifica se a quantidade do produto é inválida
             toast.add({
                 severity: 'error',
                 summary: t('title_error'),
@@ -665,15 +678,16 @@ const validarCampos = () => {
             severity: 'error',
             summary: t('title_error'),
             detail: t('employee_product_fileds'),
+            summary: t('title_error'),
+            detail: t('employee_product_fileds'),
             life: 3000
         });
         return false;
     }
 };
-
-const hideDialog = () => {
-    itemDialog.value = false;
-    deleteProductDialog.value = false;
+const hideDialog = () => { // Declara uma função chamada hideDialog
+    itemDialog.value = false; // Define itemDialog como false para esconder o diálogo de item
+    deleteProductDialog.value = false; // Define deleteProductDialog como false para esconder o diálogo de confirmação de exclusão de produto
 };
 </script>
 

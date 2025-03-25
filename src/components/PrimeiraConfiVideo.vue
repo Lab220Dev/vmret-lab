@@ -197,19 +197,19 @@ const uploadVideos = async () => {//uploadVideos é uma função que faz o uploa
     isUploading.value = true; // Ativa o flag de upload
 
     // Envia cada arquivo individualmente
-    for (const item of filesToUpload.value) {
-        const formData = new FormData();
+    for (const item of filesToUpload.value) {   //itera sobre os arquivos a serem enviados
+        const formData = new FormData();    // Cria um objeto FormData para enviar o arquivo
         formData.append('video', item.file); // Adiciona o arquivo
         formData.append('dmId', item.dmId); // Adiciona a ID da DM
-        formData.append('fileName', item.fileName);
+        formData.append('fileName', item.fileName); // Adiciona o nome original do arquivo
         formData.append('customName', item.customName); // Adiciona o nome customizado do arquivo
 
-        try {
-            await videoService.uploadVideo(
-                item.file,
-                item.dmId,
-                item.customName,
-                (progressEvent) => {
+        try {   //tenta fazer o upload do arquivo
+            await videoService.uploadVideo( // Faz o upload do vídeo
+                item.file,  // Arquivo a ser enviado
+                item.dmId,  // ID da DM
+                item.customName,    // Nome customizado do arquivo
+                (progressEvent) => {    // Função de progresso
                     item.progress = Math.round((progressEvent.loaded / progressEvent.total) * 100); // Atualiza o progresso
                 }
             );
@@ -217,20 +217,20 @@ const uploadVideos = async () => {//uploadVideos é uma função que faz o uploa
             uploadedVideos.value++; // Incrementa o contador de vídeos enviados com sucesso
 
             // Exibe notificação de sucesso
-            toast.add({
-                severity: 'success',
-                summary: 'Upload Concluído',
-                detail: `Arquivo "${item.fileName}" foi enviado como "${item.customName}"`,
-                life: 3000
+            toast.add({   //exibe uma notificação de sucesso
+                severity: 'success',    // Define a severidade da notificação como sucesso
+                summary: 'Upload Concluído',    // Define o título da notificação
+                detail: `Arquivo "${item.fileName}" foi enviado como "${item.customName}"`,   // Define o conteúdo da notificação
+                life: 3000  // Define o tempo de exibição da notificação
             });
-        } catch (error) {
-            console.error('Erro ao fazer upload:', error);
+        } catch (error) {   //captura o erro caso o upload falhe
+            console.error('Erro ao fazer upload:', error);  // Exibe o erro no console
             // Exibe notificação de erro caso o upload falhe
-            toast.add({
-                severity: 'error',
-                summary: 'Erro de Upload',
-                detail: `Falha ao enviar o vídeo "${item.fileName}".`,
-                life: 3000
+            toast.add({  //exibe uma notificação de erro
+                severity: 'error',  // Define a severidade da notificação como erro
+                summary: 'Erro de Upload',  // Define o título da notificação
+                detail: `Falha ao enviar o vídeo "${item.fileName}".`,  // Define o conteúdo da notificação
+                life: 3000  // Define o tempo de exibição da notificação
             });
         }
     }
