@@ -233,6 +233,12 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
+                    path: '/cadastros/UsuarioDash',
+                    name: 'Cadastro de Usuarios Dashboard de Monitoramento',
+                    component: () => import('@/views/cadastros/usuarios/usuariodash.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
                     path: '/pages/timeline',
                     name: 'timeline',
                     component: () => import('@/views/pages/Timeline.vue')

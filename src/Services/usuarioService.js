@@ -27,8 +27,10 @@ const usuarioService = {
     },
     async listarClientes() {
         return postRequest('/admin/cliente/listar', {});
+    },
+    async listarUsuariosSimples(data) {
+        return postRequest('/usuarios/listaSimples', data);
     }
-
 };
 
 export default usuarioService;

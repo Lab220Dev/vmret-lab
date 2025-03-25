@@ -64,6 +64,10 @@
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
                     </div>
 
+                    <div class="field grid justify-content-center" v-if="serviceConfigs[selectedService.id].notificationMethods.includes('notif')">
+                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') + ' web' }}:</label>
+                        <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipientsweb" :options="availableRecipientsWeb" optionLabel="name" optionValue="id" display="chip" />
+                    </div>
                     <div class="field grid justify-content-center">
                         <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') }}:</label>
                         <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
@@ -107,6 +111,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 // Importa a instância do Axios configurada para realizar requisições HTTP.
 import axios from '@/axios'; // Responsável por realizar as requisições HTTP para o backend.
 import { useI18n } from 'vue-i18n';
+import usuarioService from '../../Services/usuarioService';
 const { t } = useI18n();
 /**
  * Função chamada quando o usuário tenta abrir o diálogo de remoção de serviço.
@@ -143,6 +148,7 @@ const availableServices = computed(() => [
 ]);
 const selectedClient = ref(null); // Cliente selecionado.
 const availableRecipients = ref([]); // Destinatários disponíveis.
+const availableRecipientsWeb = ref([]); // Destinatários disponíveis. para notificação web
 const clientServices = ref([]); // Serviços associados ao cliente.
 const newService = ref(null); // Novo serviço a ser adicionado.
 const selectedService = ref(null); // Serviço atualmente selecionado.
@@ -247,6 +253,7 @@ const fetchServicos = async () => {
             const recipientId = cliente.id_cliente || store.userIdCliente;
             if (recipientId) {
                 await fetchRecipients(recipientId); // Busca os destinatários para o cliente.
+                await fetchRecipientsWeb(recipientId); //Busca destinatarios para noticação web
             }
 
             // Se o cliente tiver serviços, processa as configurações de cada um.
@@ -260,7 +267,8 @@ const fetchServicos = async () => {
                                 return method ? method.value : null;
                             })
                             .filter(Boolean),
-                        recipients: servico.notificacoes.map((n) => n.id_funcionario_responsavel),
+                        recipients: servico.notificacoes.filter((n) => n.tipo_notificacao !== 'notif').map((n) => n.id_funcionario_responsavel),
+                        recipientsweb: servico.notificacoes.filter((n) => n.tipo_notificacao === 'notif').map((n) => n.id_funcionario_responsavel),
                         notificationTime: servico.notificacoes[0]?.hora_notificacao || null,
                         monitoringTime: servico.monitoringTime || null
                     };
@@ -312,7 +320,28 @@ const fetchRecipients = async (idCliente) => {
         console.error('Erro ao carregar destinatários:', error); // Loga qualquer erro ocorrido.
     }
 };
-
+const fetchRecipientsWeb = async (idCliente) => {
+    try {
+        // Realiza uma requisição POST para listar os funcionários responsáveis.
+        // const response = await axios.post('/funcionarios/listar', { id_cliente: idCliente });
+        let data = { id_cliente: idCliente };
+        const response = await usuarioService.listarUsuariosSimples(data);
+        // Mapeia a resposta para extrair os funcionários.
+        availableRecipientsWeb.value = response.data.map((usuario) => ({
+            id: usuario.id_usuario, // ID do usuario.
+            name: usuario.nome, // Nome do usuario.
+            email: usuario.email //email do mesmo
+        }));
+    } catch (error) {
+        toast.add({
+            severity: 'error', // Tipo de notificação: erro.
+            summary: t('title_error'), // Título da notificação.
+            detail: t('erro_fetch_recipeient'), // Mensagem de erro detalhada.
+            life: 3000 // Tempo de duração da notificação (3000ms).
+        });
+        console.error('Erro ao carregar destinatários:', error); // Loga qualquer erro ocorrido.
+    }
+};
 /**
  * Função chamada quando um cliente é selecionado.
  * Realiza a atualização da lista de serviços e busca os destinatários.
@@ -320,17 +349,17 @@ const fetchRecipients = async (idCliente) => {
 const onClientSelected = async () => {
     // Atualiza a lista de serviços do cliente selecionado.
     clientServices.value = selectedClient.value.servicos.map((servico) => {
-    // Procura, em availableServices, o serviço cujo id seja igual ao id do serviço do cliente.
-    const available = availableServices.value.find(s => s.id === servico.id_servico);
-    return {
-      id: servico.id_servico,
-      name: available ? available.name : servico.nome
-    };
-  });
+        // Procura, em availableServices, o serviço cujo id seja igual ao id do serviço do cliente.
+        const available = availableServices.value.find((s) => s.id === servico.id_servico);
+        return {
+            id: servico.id_servico,
+            name: available ? available.name : servico.nome
+        };
+    });
 
     // Busca os destinatários para o cliente selecionado.
     await fetchRecipients(selectedClient.value.id);
-
+    await fetchRecipientsWeb(selectedClient.value.id); // Busca destinarios web para o cliente selecionado
     // Processa as configurações dos serviços, se existirem.
     if (selectedClient.value.servicos.length > 0) {
         selectedClient.value.servicos.forEach((servico) => {
@@ -419,7 +448,8 @@ const addServiceWithConfig = async () => {
                 horario_notificacao: serviceConfig.notificationTime,
                 frequencia_monitoramento: serviceConfig.monitoringFrequency,
                 metodos_notificacao: serviceConfig.notificationMethods,
-                destinatarios: serviceConfig.recipients
+                destinatarios: serviceConfig.recipients,
+                destinatariosweb: serviceConfig.recipientsweb
             };
         });
 
@@ -557,7 +587,8 @@ const updateServiceConfig = async () => {
                 horario_notificacao: serviceConfig.notificationTime,
                 frequencia_monitoramento: serviceConfig.monitoringFrequency,
                 metodos_notificacao: serviceConfig.notificationMethods,
-                destinatarios: serviceConfig.recipients
+                destinatarios: serviceConfig.recipients,
+                destinatariosweb: serviceConfig.recipientsweb
             };
         });
 
