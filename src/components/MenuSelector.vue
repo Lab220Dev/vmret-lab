@@ -265,7 +265,7 @@ watch(
 </script>
 
 <style scoped>
-/* Menu em 3 colunas */
+/* Menu em 2 colunas */
 .menu-grid {    /* Define o estilo do grid de menus */
     display: flex;  /* Exibe os itens em linha */
     flex-wrap: wrap;    /* Quebra a linha se não houver espaço suficiente */

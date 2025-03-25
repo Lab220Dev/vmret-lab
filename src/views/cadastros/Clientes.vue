@@ -73,7 +73,7 @@ const onRowSelect = (event) => {
     cliente = reactive({ ...event.data }); // Preenche o objeto `cliente` com os dados da linha selecionada
     active.value = 1; // Altera o índice ativo para 1 (indicando que o cliente está sendo editado)
     visible.value = true; // Torna o formulário visível para edição
-    structuredMenus.value = cliente.menus || []; // Carrega a estrutura de menus (caso exista)
+    structuredMenus.value = cliente.menusPorPerfil || []; // Carrega a estrutura de menus (caso exista)
     console.log('Menus Estruturados:', structuredMenus.value); // Exibe os menus estruturados no console
 };
 
@@ -151,28 +151,6 @@ const deleteClientedes = (itm) => {
 
 const deleteCliente = async (clienteId) => {
     progressValue.value = 0; // Reseta a barra de progresso
-    let eventSource = null; 
-
-    try {
-
-        eventSource = new EventSource(`/admin/cliente/deletar`,{id_cliente: clienteId});
-        eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            progressValue.value = data[clienteId] || 0; // Atualiza progresso
-            console.log('Progresso:', progressValue.value); // Exibe o progresso no console
-        };
-
-        toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente deletado com progresso', life: 3000 });
-        loadClientes();
-    } catch (error) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao deletar cliente', life: 3000 });
-    } finally {
-        if (eventSource) eventSource.close(); // Fecha a conexão SSE
-        deleteClienteDialog.value = false;
-    }
-};
-
-const deleteClienteWithProgress = async (clienteId) => {
     try {
         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
         toast.add({ severity: 'success', summary:  t('title_sucess'), detail: t('client_delete_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
@@ -184,6 +162,19 @@ const deleteClienteWithProgress = async (clienteId) => {
         deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
     }
 };
+
+// const deleteClienteWithProgress = async (clienteId) => {
+//     try {
+//         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
+//         toast.add({ severity: 'success', summary:  t('title_sucess'), detail: t('client_delete_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
+//         loadClientes(); // Recarrega a lista de clientes
+//     } catch {
+//         // Caso ocorra um erro, exibe uma mensagem de erro
+//         toast.add({ severity: 'error', summary:  t('title_sucess'), life:3000,detail: t('client_delete_fail'), life: 3000  });
+//     }finally{
+//         deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
+//     }
+// };
 /**
  * Função assíncrona para carregar a lista de clientes.
  * Chama o serviço `clientesService.listarClientes` para obter os dados dos clientes.

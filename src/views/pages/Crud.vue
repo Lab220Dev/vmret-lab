@@ -12,7 +12,7 @@ import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
 
 // Importa o serviço que lida com dados de produtos.
-import { ProductService } from '@/service/ProductService';
+import { RetiradasService } from '@/service/RetiradasService';
 
 // Importa a função de notificação (toast).
 import { useToast } from 'primevue/usetoast';
@@ -38,7 +38,7 @@ const statuses = ref([
 ]);
 
 // Instancia o serviço de produtos.
-const productService = new ProductService(); // Cria uma instância do serviço ProductService para manipulação dos dados de produtos.
+const RetiradasService = new RetiradasService(); // Cria uma instância do serviço RetiradasService para manipulação dos dados de produtos.
 
 /**
  * Função que retorna a severidade do badge (ícone) de acordo com o status do estoque.
@@ -72,11 +72,11 @@ onBeforeMount(() => {
 
 /**
  * Hook do Vue que é executado após o componente ser montado.
- * Aqui, recupera-se os produtos utilizando o serviço ProductService.
+ * Aqui, recupera-se os produtos utilizando o serviço RetiradasService.
  */
 onMounted(() => {
     // Recupera os produtos do serviço quando o componente é montado.
-    productService
+    RetiradasService
         .getProducts()
         .then((data) => (products.value = data)) // O método getProducts retorna os produtos e os armazena em 'products'.
         .catch((error) => {
