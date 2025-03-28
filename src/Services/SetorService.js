@@ -1,8 +1,8 @@
 import axios from '@/axios.js'; // Importa a instância do axios configurada a partir do caminho especificado
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação
-const authStore = useAuthStore(); // Obtém a instância do store de autenticação
 const prepareData = (...sources) => { // Declara uma função chamada prepareData que recebe múltiplos parâmetros
-  let BaseData = { // Cria um objeto BaseData com as propriedades id_cliente e id_usuario do authStore
+const authStore = useAuthStore(); // Obtém a instância do store de autenticação
+    let BaseData = { // Cria um objeto BaseData com as propriedades id_cliente e id_usuario do authStore
     id_cliente: authStore.userIdCliente,
     id_usuario: authStore.userId,
   }

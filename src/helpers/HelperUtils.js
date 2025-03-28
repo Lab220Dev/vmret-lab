@@ -348,6 +348,8 @@ export const getFileExtension = (fileType) => {
  * @returns {Object} - Objeto enriquecido.
  */
 export const enrichData = (target) => {
+const store = useAuthStore(); // Inicializa o store de autenticação para acessar informações do usuário autenticado.
+
   // Retorna um novo objeto que combina o objeto original (target) com os dados adicionais.
   return {
     ...target, // Espalha as propriedades do objeto original (target).
@@ -467,11 +469,15 @@ export const filtroGenericoReltorio = (relatorio, listaFuncionariosOriginal, Lis
 
 // Função que verifica se a integração móvel está habilitada.
 export function isMobEnabled (){
+const store = useAuthStore(); // Inicializa o store de autenticação para acessar informações do usuário autenticado.
+
   return store.Integracao;
 }
 
 // Função que prepara os dados da lista com base nos parâmetros fornecidos e no papel do usuário.
 export const prepareListData = (params) => {
+const store = useAuthStore(); // Inicializa o store de autenticação para acessar informações do usuário autenticado.
+
     let baseData = {
         id_usuario: store.userId || null,  // Adiciona o ID do usuário autenticado.
         id_cliente: store.userIdCliente || null  // Adiciona o ID do cliente autenticado.
@@ -487,6 +493,8 @@ export function isMobileDevice() {
 }
 
 export const preparelaData = (ListaProdutoFuncionario,libAvulsa) =>{
+const store = useAuthStore(); // Inicializa o store de autenticação para acessar informações do usuário autenticado.
+
     let baseData = {
       id_usuario: store.userId || null,  
       id_cliente: store.userIdCliente || null ,

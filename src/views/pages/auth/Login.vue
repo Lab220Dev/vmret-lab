@@ -147,7 +147,7 @@ onMounted(() => {
             <!-- Logo da empresa -->
             <div class="flex justify-content-between flex-wrap">
                 <div class="justify-content-start">
-                    <img id="img" src="@/assets/images/LogoLabSF.png" alt="Logo da empresa" />
+                    <img id="img" src="@/assets/images/LogoLabSF2.png" alt="Logo da empresa" />
                 </div>
                 <div class="justify-content-end">
                     <Dropdown v-model="selectedLanguage" :options="linguas" optionLabel="label" @change="changeLanguage">

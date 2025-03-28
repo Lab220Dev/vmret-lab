@@ -173,8 +173,6 @@ const active = ref(0);
 const activeItens = ref(0);
 const totalRecords = ref(0);
 
-const totalRecords = ref(0); // Cria uma referência reativa para armazenar o total de registros
-
 const loading = ref(false); // Cria uma referência reativa para controlar o estado de carregamento
 
 // Cria uma referência reativa para armazenar o dropdown 1, inicialmente configurado para `null` (não atribuído).

@@ -1,6 +1,5 @@
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar informações do usuário autenticado.
 import { isValidDocPessoaFisica, isValidEmail } from '@/helpers/HelperValidacao';   // Importa funções de validação de CPF e e-mail.
-const store = useAuthStore();   // Inicializa o store de autenticação para acessar informações do usuário autenticado.
 
 /**
  * Prepara os dados do funcionário para envio ao backend.
@@ -11,6 +10,7 @@ const store = useAuthStore();   // Inicializa o store de autenticação para ace
  */
 export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdate = false) => {
     const formData = new FormData();
+    
     const store = useAuthStore();
 
     // Se um arquivo for selecionado, prepare para substituí-lo

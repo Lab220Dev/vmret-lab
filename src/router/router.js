@@ -295,6 +295,12 @@ const router = createRouter({
             name: 'dados do evento SoulElite24',
             component: () => import('@/views/eventoSoulElite.vue'),
             meta: { requiresAuth: false }
+        },
+        {
+            path: '/evento/nomad',
+            name: 'dados do evento Nomad',
+            component: () => import('@/views/pages/Nomad.vue'),
+            meta: { requiresAuth: false }
         }
     ]
 });
