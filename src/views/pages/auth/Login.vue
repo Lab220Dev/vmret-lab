@@ -72,6 +72,7 @@ const login = async () => {
         if (response.status === 200) {
             // Realiza o login no sistema armazenando o token e os dados do usuário no store
             authStore.login({ token: response.data.token, usuario: response.data.Usuario, menu: response.data.items });
+            authStore.setQtdMessage(response.data.Notificacoes);
             // Inicia a contagem regressiva para expiração de sessão (1 hora)
             countdownStore.startCountdown(60 * 60 * 1000);
             // Redireciona para a página principal (Dashboard)

@@ -59,9 +59,20 @@ const clientesService = {
       console.error('Erro ao listar clientes:', error.message);
       throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
     }
-  }
-  ,
-
+  },
+  async listarNotificacoes() {
+    try {
+      // Realiza uma requisição POST para listar os clientes.
+      const response = await axios.get('/admin/cliente/listarNotificacoes');
+      return response.data; // Retorna os dados da resposta (listagem de clientes).
+    } catch (error) {
+      console.error('Erro ao listar clientes:', error.message);
+      throw error; // Lança o erro novamente para que o chamador possa tratá-lo.
+    }
+  },
+  async lerNotificacao(id_notificacao){
+    await axios.post('/admin/cliente/atualizarNotificacao', {id_notificacao:id_notificacao});
+  },
   async adicionarServico(data) {
     try {
       // Realiza uma requisição POST para listar os clientes.

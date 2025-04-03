@@ -1,5 +1,5 @@
 import axios from '@/axios.js'; // Importa a instância personalizada do axios para realizar requisições HTTP.
-import { prepararDadosRelatorio, organizarFuncionarios } from '@/helpers/RelatorioHelper.js'; // Importa as funções auxiliares `prepararDadosRelatorio` e `organizarFuncionarios` de um helper para manipulação de dados de relatórios.
+import { prepararDadosRelatorio, organizarFuncionarios, htmlComplexoParaTexto } from '@/helpers/RelatorioHelper.js'; // Importa as funções auxiliares `prepararDadosRelatorio` e `organizarFuncionarios` de um helper para manipulação de dados de relatórios.
 
 // Define uma constante com o texto padrão que será utilizado em algum relatório.
 const TextoPadrao =
@@ -191,8 +191,10 @@ const relatorioService = {
             const data = prepararDadosRelatorio('Texto', '');
             // Realiza uma requisição POST para o endpoint 'fichasretiradas/textoFicha' com os dados preparados.
             const response = await axios.post('fichasretiradas/textoFicha', data);
-            // Retorna os dados da resposta da requisição.
-            return response.data[0]?.TextoFicha || TextoPadrao;
+            // dados da resposta da requisição.
+            const html = response.data[0]?.Texto;
+            //Converte o HTML complexo para texto simples
+             return htmlComplexoParaTexto(html) || TextoPadrao;
         } catch (error) {
             // Caso ocorra um erro durante a requisição, lança um novo erro com uma mensagem detalhada.
 

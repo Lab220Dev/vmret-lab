@@ -221,9 +221,10 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
-                    path: '/pages/timeline',
-                    name: 'timeline',
-                    component: () => import('@/views/pages/Timeline.vue')
+                    path: '/Mensagem',
+                    name: 'Mensagens',
+                    component: () => import('@/views/pages/Mensagem.vue'),
+                    meta: { requiresAuth: true }
                 },
                 {
                     path: '/pages/empty',

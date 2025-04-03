@@ -1,7 +1,6 @@
 <script setup>
-
 // Importa as funções reativas e de ciclo de vida do Vue
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';//`ref`: Cria referências reativas para elementos DOM ou variáveis no componente.`onMounted`: Executa código quando o componente é montado na tela.`onBeforeUnmount`: Executa código antes do componente ser desmontado.
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'; //`ref`: Cria referências reativas para elementos DOM ou variáveis no componente.`onMounted`: Executa código quando o componente é montado na tela.`onBeforeUnmount`: Executa código antes do componente ser desmontado.
 
 // Acessa as funções do layout, como alternar o menu lateral
 import { useLayout } from '@/layout/composables/layout';
@@ -20,7 +19,9 @@ import VueCountdown from '@chenfengyuan/vue-countdown';
 
 // Acessa a store de autenticação para obter os dados do usuário
 import { useAuthStore } from '@/store/authStore.js';
-
+import Badge from 'primevue/badge'; // Ensure Badge is imported
+import 'primevue/resources/primevue.min.css'; // Import PrimeVue styles
+import 'primeicons/primeicons.css'; // Import PrimeIcons styles
 // Importa o arquivo CSS de bandeiras.
 import '@/assets/demo/flags/flags.css';
 
@@ -30,26 +31,25 @@ import { useI18n } from 'vue-i18n';
 // Obtém as funções de tradução (t) e de alteração de idioma (locale) do vue-i18n.
 const { t, locale } = useI18n();
 
-const { onMenuToggle } = useLayout();//Desestruturação de funções do layout, como alternar o menu lateral.
+const { onMenuToggle } = useLayout(); //Desestruturação de funções do layout, como alternar o menu lateral.
 
-const store = useAuthStore();//Acessa a store de autenticação para obter dados do usuário.
+const store = useAuthStore(); //Acessa a store de autenticação para obter dados do usuário.
 
-const router = useRouter();//Usamos o router para navegar entre as páginas.
+const router = useRouter(); //Usamos o router para navegar entre as páginas.
 
-const outsideClickListener = ref(null);//Referência para o listener de clique fora do menu. Inicialmente, está definido como `null`.
+const outsideClickListener = ref(null); //Referência para o listener de clique fora do menu. Inicialmente, está definido como `null`.
 
-const topbarMenuActive = ref(true);//Controle de visibilidade do menu superior. Inicialmente, o menu está ativo (visível).
+const topbarMenuActive = ref(true); //Controle de visibilidade do menu superior. Inicialmente, o menu está ativo (visível).
 
 //Obtém o nome e a role (papel) do usuário no sistema a partir do store de autenticação.
 const nome = store.userName;
 const role = store.userRole;
 
-const countdownStore = useCountdownStore();//Acessa a store de contagem regressiva para obter o tempo restante.
-const millisecondsRemaining = countdownStore.millisecondsRemaining;//O valor de `millisecondsRemaining` será utilizado para mostrar a contagem regressiva.
+const countdownStore = useCountdownStore(); //Acessa a store de contagem regressiva para obter o tempo restante.
+const millisecondsRemaining = countdownStore.millisecondsRemaining; //O valor de `millisecondsRemaining` será utilizado para mostrar a contagem regressiva.
 
 onMounted(() => {
     bindOutsideClickListener(); // Liga o listener de clique fora do menu
-
     // Se o tempo restante for maior que zero, inicia a contagem regressiva.
     if (millisecondsRemaining > 0) {
         startCountdown();
@@ -60,21 +60,27 @@ onBeforeUnmount(() => {
     unbindOutsideClickListener(); // Desliga o listener de clique fora do menu
 });
 
-const bindOutsideClickListener = () => {//Função para adicionar o listener de clique fora do menu.
-    if (!outsideClickListener.value) {//O listener verifica se o clique foi fora do menu e fecha o menu.
-        outsideClickListener.value = (event) => {//Verifica se o listener de clique fora do menu já foi adicionado
-            if (isOutsideClicked(event)) {//Se ainda não foi adicionado, o código entra no bloco condicional e adiciona o listener.
-                topbarMenuActive.value = false;//A função `isOutsideClicked` verifica se o clique foi fora do menu.Se verdadeiro, o menu será fechado, definindo `topbarMenuActive` como `false`.
+const bindOutsideClickListener = () => {
+    //Função para adicionar o listener de clique fora do menu.
+    if (!outsideClickListener.value) {
+        //O listener verifica se o clique foi fora do menu e fecha o menu.
+        outsideClickListener.value = (event) => {
+            //Verifica se o listener de clique fora do menu já foi adicionado
+            if (isOutsideClicked(event)) {
+                //Se ainda não foi adicionado, o código entra no bloco condicional e adiciona o listener.
+                topbarMenuActive.value = false; //A função `isOutsideClicked` verifica se o clique foi fora do menu.Se verdadeiro, o menu será fechado, definindo `topbarMenuActive` como `false`.
             }
         };
-        document.addEventListener('click', outsideClickListener.value);//Adiciona o evento de clique no documento para que o listener de clique fora do menu seja executado.O código espera que o `outsideClickListener` seja acionado quando o clique ocorrer.
+        document.addEventListener('click', outsideClickListener.value); //Adiciona o evento de clique no documento para que o listener de clique fora do menu seja executado.O código espera que o `outsideClickListener` seja acionado quando o clique ocorrer.
     }
 };
 
-const unbindOutsideClickListener = () => {//Função para remover o listener de clique fora do menu.
-    if (outsideClickListener.value) {//Verifica se o listener existe antes de removê-lo.
+const unbindOutsideClickListener = () => {
+    //Função para remover o listener de clique fora do menu.
+    if (outsideClickListener.value) {
+        //Verifica se o listener existe antes de removê-lo.
 
-        document.removeEventListener('click', outsideClickListener);//Caso o listener esteja presente, ele é removido e a referência é limpa.
+        document.removeEventListener('click', outsideClickListener); //Caso o listener esteja presente, ele é removido e a referência é limpa.
         outsideClickListener.value = null;
     }
 };
@@ -86,15 +92,16 @@ const unbindOutsideClickListener = () => {//Função para remover o listener de 
  * @returns {boolean} Retorna `true` se o clique foi fora do menu.
  */
 const isOutsideClicked = (event) => {
-    if (!topbarMenuActive.value) return false;//Se o menu não estiver ativo (visível), a função retorna `false` para não realizar a verificação.
+    if (!topbarMenuActive.value) return false; //Se o menu não estiver ativo (visível), a função retorna `false` para não realizar a verificação.
 
-    const topbarEl = document.querySelector('.layout-topbar-sair-button');//Seleciona o botão de sair da barra superior.
-   
+    const topbarEl = document.querySelector('.layout-topbar-sair-button'); //Seleciona o botão de sair da barra superior.
+
     // Verifica se o clique foi fora do botão de sair, retornando `true` para fechar o menu.
     return !(topbarEl === event.target || topbarEl.contains(event.target));
 };
 
-const fazerLogoff = () => {// Função para realizar o logoff do usuário.
+const fazerLogoff = () => {
+    // Função para realizar o logoff do usuário.
     store.$reset(); // Reseta o estado do store de autenticação
 
     // Limpa os dados de armazenamento local e de sessão
@@ -103,7 +110,7 @@ const fazerLogoff = () => {// Função para realizar o logoff do usuário.
 
     // Limpa todos os cookies
     document.cookie.split(';').forEach((c) => {
-        document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';//Limpa todos os cookies definindo a data de expiração no passado, removendo-os.
+        document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/'; //Limpa todos os cookies definindo a data de expiração no passado, removendo-os.
     });
 
     store.logout(); // Executa o logoff no store de autenticação
@@ -115,8 +122,7 @@ const fazerLogoff = () => {// Função para realizar o logoff do usuário.
  * @returns {boolean} Retorna `true` para indicar que a contagem foi iniciada.
  */
 function startCountdown() {
-    return true;//Retorna `true`, mas não realiza nenhuma ação adicional.
-
+    return true; //Retorna `true`, mas não realiza nenhuma ação adicional.
 }
 
 function onCountdownEnd() {
@@ -131,21 +137,21 @@ function onCountdownEnd() {
  * @returns {string} O valor formatado com dois dígitos.
  */
 function padZero(value) {
-    return String(value).padStart(2, '0');//Garante que o valor tenha pelo menos dois caracteres, preenchendo com zero à esquerda, se necessário.
-
+    return String(value).padStart(2, '0'); //Garante que o valor tenha pelo menos dois caracteres, preenchendo com zero à esquerda, se necessário.
 }
 const alterarLingua = (idioma) => {
     locale.value = idioma; // Altera o idioma globalmente
     const nomeIdioma = t(idiomasMapeados[idioma]);
-    store.globalMessage = `${t("languageChanged")}: ${nomeIdioma}`;
+    store.globalMessage = `${t('languageChanged')}: ${nomeIdioma}`;
 };
-const idiomasMapeados = {//Idiomas permitidos
+const idiomasMapeados = {
+    //Idiomas permitidos
     pt: 'portuguese',
     en: 'english',
     es: 'spanish'
 };
-const menu = ref();//Menu de opções, com o item de "Fazer Logoff".
-const menuLingua = ref();//Contém a configuração do menu suspenso.
+const menu = ref(); //Menu de opções, com o item de "Fazer Logoff".
+const menuLingua = ref(); //Contém a configuração do menu suspenso.
 // Computa os itens do menu de opções.
 const items = computed(() => [
     {
@@ -183,12 +189,18 @@ const linguas = computed(() => [
         ]
     }
 ]);
+const notificacoesNovas = computed(() => store.getQtdMessage);
 
-const toggle = (event) => {//Função para alternar a visibilidade do menu de opções.
-    menu.value.toggle(event);//O evento de clique.
+const abrirNotificacoes = () => {
+    router.push({ name: 'Mensagens' }); 
 };
-const toggleLingua = (event) => {//Alterna a visibilidade do menu usando a referência `menu`.
-    menuLingua.value.toggle(event);//O evento de clique é passado para a função `toggle` para garantir o controle do estado do menu.
+const toggleLingua = (event) => {
+    //Alterna a visibilidade do menu usando a referência `menu`.
+    menuLingua.value.toggle(event); //O evento de clique é passado para a função `toggle` para garantir o controle do estado do menu.
+};
+const toggle = (event) => {
+    //Função para alternar a visibilidade do menu de opções.
+    menu.value.toggle(event); //O evento de clique.
 };
 </script>
 
@@ -220,9 +232,15 @@ const toggleLingua = (event) => {//Alterna a visibilidade do menu usando a refer
                     <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd"> {{ padZero(minutes) }}:{{ padZero(seconds) }} </vue-countdown>
                 </div>
             </div>
+            <div class="formgrid mt-2 p-overlay-badge">
+                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirNotificacoes">
+                    <i class="pi pi-envelope" />
+                    <span v-if="notificacoesNovas > 0" class="p-badge">{{ notificacoesNovas }}</span>
+                </button>
+            </div>
 
             <div class="formgrid mt-2">
-                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggleLingua($event)" aria-haspopup="true" aria-controls="overlay_menu_Lingua">
+                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggleLingua($event)">
                     <i class="pi pi-language"></i>
                 </button>
                 <Menu ref="menuLingua" id="overlay_menu_Lingua" :model="linguas" :popup="true" :pt="{ item: { 'aria-hidden': false } }" />
@@ -274,5 +292,26 @@ const toggleLingua = (event) => {//Alterna a visibilidade do menu usando a refer
     .pic {
         display: none; /* Esconde elementos no layout em telas pequenas */
     }
+}
+.p-overlay-badge {
+    position: relative;
+    display: inline-block;
+}
+
+.p-overlay-badge .p-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  background-color: #2196f3; /* azul chamativo */
+  color: white;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  height: 18px;
+  line-height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

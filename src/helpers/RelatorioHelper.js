@@ -520,3 +520,52 @@ export async function GerarPdfRetirada(funcionarioSelecionado, relatorio) {
         await GerarPdfRetiradapt(funcionarioSelecionado, relatorio);
     }
 }
+
+/**
+ * Converts complex HTML content into plain text with specific formatting rules.
+ *
+ * - Text nodes are added as-is, trimmed of whitespace.
+ * - Headings (H1, H2, H3) are converted to uppercase and surrounded by newlines.
+ * - Paragraphs (P) are added with a newline at the end.
+ * - List items (LI) are prefixed with a dash or bullet, depending on the parent list type.
+ * - Ordered lists (OL) prefix items with their index followed by a dash.
+ * - Unordered lists (UL) prefix items with a bullet (•).
+ * - Other elements are recursively processed.
+ *
+ * @param {string} html - The HTML string to be converted into plain text.
+ * @returns {string} The formatted plain text representation of the HTML content.
+ */
+export function htmlComplexoParaTexto(html) {
+    const container = document.createElement('div');
+    container.innerHTML = html;
+  
+    let resultado = '';
+  
+    function processarElemento(el) {
+      if (el.nodeType === Node.TEXT_NODE) {
+        resultado += el.textContent.trim();
+      } else if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3') {
+        resultado += '\n' + el.textContent.trim().toUpperCase() + '\n';
+      } else if (el.tagName === 'P') {
+        resultado += el.textContent.trim() + '\n';
+      } else if (el.tagName === 'LI') {
+        resultado += '- ' + el.textContent.trim() + '\n';
+      } else if (el.tagName === 'OL' || el.tagName === 'UL') {
+        el.querySelectorAll('li').forEach(li => {
+          if (el.tagName === 'OL') {
+            const index = Array.from(el.children).indexOf(li) + 1;
+            resultado += `${index}- ${li.textContent.trim()}\n`;
+          } else {
+            resultado += `• ${li.textContent.trim()}\n`;
+          }
+        });
+      } else {
+        el.childNodes.forEach(processarElemento);
+      }
+    }
+  
+    container.childNodes.forEach(processarElemento);
+  
+    return resultado.trim();
+  }
+  

@@ -584,5 +584,5 @@ export default {
     product_not_found:'Produto não encontrado',
     product_updated:'Produto atualizado com sucesso',
     product_removed:'Produto removido com sucesso',
-    
+    select_notification:'Selecione uma notificação para ver os detalhes.',
 };

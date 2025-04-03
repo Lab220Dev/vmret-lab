@@ -165,7 +165,7 @@ onMounted(async () => {
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
                                 <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('save')" icon="pi pi-check" severity="primary"  @click="editarUsuario"  />
-                                <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('delete')" icon="pi pi-trash" severity="danger"  @click="deletarUsuario(usuarioDash.value.id)" />
+                                <Button v-if="visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('delete')" icon="pi pi-trash" severity="danger"  @click="deletarUsuario(UsuarioDash.value.id)" />
                                 <Button style="width: 15%" class="buttons flex align-items-center justify-content-center m-2 mr-0" :label="t('back')" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
                                 <Button v-if="!visible" style="width: 15%" class="buttons flex align-items-center justify-content-center m-2" :label="t('save')" icon="pi pi-check" severity="info" @click="adicionarUsuario"  />
                             </div>

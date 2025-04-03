@@ -554,5 +554,7 @@ export default {
     dm_config_with: "Withdrawal Options",
     employee_name: "Employee Name",
     employee_id: "Employee ID",
-    dm_config_data_save: "Do you want to save machine data?"
+    dm_config_data_save: "Do you want to save machine data?",
+    select_notification:'Select a notification to  see the details.',
+
 };

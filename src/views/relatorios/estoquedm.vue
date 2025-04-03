@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 // Declara as variáveis reativas
 const loading = ref(false); // Variável para controlar o estado de carregamento
-const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
+const relatorio = ref({ id_dm: null }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
 const todosOption = { label: 'Todos', value: null }; // Opção para o filtro de DM para mostrar todos
 const dropdown1 = ref(null); // Referência para o dropdown de DM
 const EstoqueDM = ref([]); // Lista de itens de estoque filtrados
@@ -104,6 +104,7 @@ watch(
  * Chama `fetchDM` para carregar os dados iniciais das DM's.
  */
 onMounted(() => {
+    relatorioDM();
     fetchDM(); // Carrega as DM's quando o componente é montado
 });
 
@@ -194,11 +195,8 @@ const truncatedText = (text) => {
                     <!-- Exibe a posição do produto com tooltip condicional -->
                 </template>
             </Column>
-            <Column :field="t('quantity')" sortable style="width: 12%; text-align: center">
-                <template #header>
-                    <span v-tooltip="$t('current_quantity')">{{t('current_quantity_short')}}</span>
-                    <!-- Tooltip para a coluna de quantidade -->
-                </template>
+            <Column field="quantidade" :header="t('quantity')" sortable style="width: 12%; text-align: center">
+
             </Column>
             <Column field="quantidademinima" sortable style="width: 12%; text-align: center">
                 <template #header>

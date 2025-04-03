@@ -547,5 +547,7 @@ export default {
     dm_config_with: "Opciones de Retiro",
     employee_name: "Nombre del Empleado",
     employee_id: "Matrícula",
-    dm_config_data_save: "¿Desea guardar los datos de la máquina?"
+    dm_config_data_save: "¿Desea guardar los datos de la máquina?",
+    select_notification:'Seleccione una notificación',
+
 };

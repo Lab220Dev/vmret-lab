@@ -10,16 +10,22 @@
     <!-- Encapsula a tabela dentro de um card -->
 
     <!-- Coluna 'cliente' para exibir o nome do cliente -->
-    <Column field="cliente" :header="t('client')"></Column>
+    <Column field="cliente_nome" :header="t('client')"></Column>
     
     <!-- Coluna 'tipo' para exibir o tipo da notificação -->
     <Column field="tipo" :header="t('type')"></Column>
     
     <!-- Coluna 'date' para exibir a data da notificação -->
-    <Column field="date" :header="t('date')"></Column>
+    <Column field="data_criacao" :header="t('date')">
+      <template #body="slotProps">
+        {{ formatStringDate(slotProps.data.data_criacao) }}
+      </template>
+    </Column>
     
     <!-- Coluna 'status' para exibir o status da notificação -->
-    <Column field="status" :header="t('status')"></Column>
+    <Column field="status" :header="t('status')"><template #body="slotProps">
+        {{ slotProps.data.status ? 'lido' : 'não lido' }}
+      </template></Column>
 
     <!-- Template personalizado para exibição quando não há dados -->
     <template #empty>
@@ -32,6 +38,7 @@
 <script setup>
 import { computed } from 'vue';  // Importa a função 'computed' do Vue para definir uma propriedade computada
 import { useI18n } from 'vue-i18n';   // Importa a função 'useI18n' do Vue para tradução de textos
+import{formatStringDate} from '@/helpers/HelperUtils.js';  // Importa a função 'formatStringDate' do arquivo HelperUtils.js
 /**
  * Define as propriedades que o componente espera receber.
  * 

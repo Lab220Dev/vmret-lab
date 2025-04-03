@@ -21,7 +21,8 @@ export const useAuthStore = defineStore('auth', {
     token: null, // Armazena o token de autenticação, inicialmente é null
     usuario: null, // Armazena os dados do usuário logado, inicialmente é null
     menu: null, // Armazena o menu de navegação associado ao usuário, inicialmente é null
-    globalMessage: '' // Mensagem global, usada para exibir alertas ou mensagens importantes para o usuário
+    globalMessage: '', // Mensagem global, usada para exibir alertas ou mensagens importantes para o usuário
+    qtdMessage: 0,
   }),
 
   /**
@@ -64,7 +65,13 @@ export const useAuthStore = defineStore('auth', {
       const dataStore = useDataStore(); 
       dataStore.$reset(); // Limpa os dados no store de dados
     },
-
+      /**
+       * Reduz a quantidade de mensagens por um valor específico.
+       * @param {number} amount - A quantidade a ser reduzida (padrão: 1)
+       */
+      reduzirQtdMessage(amount = 1) {
+        this.qtdMessage = Math.max(0, this.qtdMessage - amount);
+      },
     /**
      * Inicializa o store com os dados armazenados no localStorage, se existirem.
      */
@@ -86,7 +93,9 @@ export const useAuthStore = defineStore('auth', {
     setGlobalMessage(msg) {
       this.globalMessage = msg; // Define a mensagem global no store
     },
-
+    setQtdMessage(qtd) {
+      this.qtdMessage = qtd;
+    },
     /**
      * Limpa a mensagem global, deixando-a em branco.
      */
@@ -115,6 +124,9 @@ export const useAuthStore = defineStore('auth', {
     },
     getGlobalMessage: (state) => { // Renomeando o getter
       return state.globalMessage;
+    },
+    getQtdMessage: (state) => {
+      return state.qtdMessage;
     }
   },
   persist: true // Isso garante que o estado do Pinia seja persistido automaticamente

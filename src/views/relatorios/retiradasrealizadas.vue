@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString, getDateFromString, isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString, getDateFromString, isMobileDevice ,formatStringDate} from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
 import { useI18n } from 'vue-i18n';
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
@@ -370,7 +370,7 @@ onMounted(() => {
 
             <Column field="Dia" sortable class="table-cell" :header="t('date')">
                 <template #body="{ data }">
-                    <span v-tooltip="data.Dia">{{ data.Dia }}</span>
+                    <span v-tooltip="data.Dia">{{ formatStringDate(data.Dia) }}</span>
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
