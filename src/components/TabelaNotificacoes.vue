@@ -24,7 +24,7 @@
     
     <!-- Coluna 'status' para exibir o status da notificação -->
     <Column field="status" :header="t('status')"><template #body="slotProps">
-        {{ slotProps.data.status ? 'lido' : 'não lido' }}
+        {{ statusString(slotProps.data) }}
       </template></Column>
 
     <!-- Template personalizado para exibição quando não há dados -->
@@ -63,4 +63,15 @@ const validListanoti = computed(() => {
   // Se for, retorna a lista; se não for, retorna um array vazio
   return Array.isArray(props.listanoti) ? props.listanoti : [];   // Retorna a lista de notificações ou um array vazio
 });
+
+function statusString(data) {
+  if (!data || !data.tipo) return '';
+
+  const statusMap = {
+    app: data.status ? 'lido' : 'não lido',
+    email: 'enviado',
+  };
+
+  return statusMap[data.tipo] || '';
+}
 </script>

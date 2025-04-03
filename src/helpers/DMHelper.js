@@ -665,12 +665,12 @@ export const prepareDMData = (action, DM, Cliente, Controladora) => {
         // Caso a ação seja 'atualizar', prepara os dados para atualizar um DM existente.
         case 'atualizar':
             // Verifica se o ID do cliente foi alterado, e se sim, atualiza.
-            if (DM.IDcliente !== Cliente.value.id_cliente) {
-                DM.IDcliente = Cliente.value.id_cliente;
+            if (DM.ID_cliente !== Cliente.id_cliente) {
+                DM.ID_cliente = Cliente.id_cliente;
             }
             // Verifica se o nome do cliente foi alterado, e se sim, atualiza.
-            if (DM.ClienteNome !== Cliente.value.nome_cliente) {
-                DM.ClienteNome = Cliente.value.nome_cliente;
+            if (DM.ClienteNome !== Cliente.nome_cliente) {
+                DM.ClienteNome = Cliente.nome_cliente;
             }
             // Retorna os dados combinados: dados base, dados de DM atualizados e as controladoras.
             return {
