@@ -3,7 +3,7 @@ import { reactive, ref, onMounted, watch } from 'vue'; // Importa funções reat
 import { useToast } from 'primevue/usetoast'; // Importa o hook useToast da biblioteca primevue para exibir notificações
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente LoadingSpinner
-import { FilterMatchMode } from 'primevue/api'; // Importa o modo de correspondência de filtro da biblioteca primevue
+import { FilterMatchMode } from '@primevue/core/api'; // Importa o modo de correspondência de filtro da biblioteca primevue
 import plantaService from '@/services/plantaService.js'; // Importa o serviço plantaService
 import { resetPlantaForm, applyGlobalFilter } from '@/helpers/formHelper'; // Importa funções auxiliares para manipulação de formulários
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados
@@ -16,7 +16,7 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Define o filtro global com o modo de correspondência CONTAINS
 });
 
-const active = ref(0); // Cria uma referência reativa para controlar o índice ativo
+const active = ref("0");// Variável reativa para controlar a aba ativa.
 const store = useAuthStore(); // Inicializa o store de autenticação
 const dataStore = useDataStore(); // Inicializa o store de dados
 const toast = useToast(); // Inicializa o hook useToast para exibir notificações
@@ -47,7 +47,7 @@ const lazyParams = ref({
 });
 const onRowSelect = (event) => { // Declara uma função chamada onRowSelect
     planta = event.data; // Define a planta selecionada com os dados do evento
-    active.value = 1; // Define o índice ativo como 1
+    active.value = "1"; // Define o índice ativo como 1
     visible.value = true; // Define a visibilidade como true
     loadPlanta(); // Carrega os dados da planta
 };
@@ -109,7 +109,7 @@ const adicionarPlanta = async () => { // Declara uma função assíncrona chamad
         await plantaService.adicionarPlanta({ id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta }, store.token);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('factory_add_sucess'), life: 3000 });
         loadPlanta();
-        active.value = 0;
+        active.value = "0";
         resetPlantaForm(planta);
     } catch (error) {
         console.error('Erro ao adicionar planta:', error);
@@ -128,7 +128,7 @@ const deletePlanta = async () => { // Declara uma função assíncrona chamada d
         dataStore.invalidatePlantasCache(); // Invalida o cache de plantas no dataStore
         deletePlantaDialog.value = false; // Fecha o diálogo de confirmação de exclusão de planta
         loadPlanta(); // Recarrega a lista de plantas
-        active.value = 0; // Define o valor de active como 0
+        active.value = "0"; // Define o valor de active como 0
     } catch (error) {
         console.error('Erro ao deletar planta:', error); // Exibe o erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('factory_delete_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
@@ -143,7 +143,7 @@ const atualizarPlanta = async () => { // Declara uma função assíncrona chamad
         await plantaService.atualizarPlanta({ id_usuario: store.userId, id_cliente: store.userIdCliente, ...planta }, store.token);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('factory_update_sucess'), life: 3000 });
         loadPlanta();
-        active.value = 0;
+        active.value = "0";
         resetPlantaForm(planta);
     } catch (error) {
         console.error('Erro ao atualizar planta:', error);
@@ -165,6 +165,7 @@ const resetForm = () => resetPlantaForm(planta); // Declara uma função chamada
 onMounted(() => { // Declara uma função assíncrona chamada onMounted
     loadPlanta(); // Carrega os dados da planta
     Mob.value = isMobEnabled(); // Define o valor de Mob com base na função isMobEnabled
+    active.value = "0"; // Define o valor de active como 0
 });
 
 function debounce(func, wait = 300) { // Declara uma função chamada debounce
@@ -182,8 +183,12 @@ const debouncedFilterChange = debounce(() => { // Declara uma função chamada d
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active">
-            <TabPanel :header="$t('list_factories')">
+        <Tabs v-model:value="active" :value="0">
+            <TabList>
+                <Tab value="0">{{ $t('list_factories') }}</Tab>
+                <Tab value="1">{{ visible ? $t('edit_factory') : $t('add_factory')}}</Tab>
+            </TabList>
+            <TabPanel value="0">
                 <div class="col-12">
                     <DataTable
                         v-model:filters="filters"
@@ -229,19 +234,19 @@ const debouncedFilterChange = debounce(() => { // Declara uma função chamada d
                     </DataTable>
                 </div>
             </TabPanel>
-            <TabPanel :header="visible ? t('edit_factory') : t('add_factory')">
+            <TabPanel value="1">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
+                                    <div class="lg:col-12 md:col-12 sm:col-12">
                                         <label for="id_planta">{{ t('code') }}:</label>
-                                        <InputText class="my-2" id="id_planta" v-model="planta.codigo" required />
+                                        <InputText class="my-2 w-full" id="id_planta" v-model="planta.codigo" required />
                                     </div>
                                     <div class="full lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">{{ t('factory_name') }}:</label>
-                                        <InputText class="my-2" id="nome" v-model="planta.nome" required />
+                                        <InputText class="my-2 w-full" id="nome" v-model="planta.nome" required />
                                     </div>
                                     
                                 </div>
@@ -276,43 +281,11 @@ const debouncedFilterChange = debounce(() => { // Declara uma função chamada d
                     </div>
                 </div>
             </TabPanel>
-        </TabView>
+        </Tabs>
         <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
 <style scoped>
-.overflow-scroll { /* Define uma classe para permitir rolagem e desativar o redimensionamento */
-    overflow: scroll; /* Permite rolagem */
-    resize: none; /* Desativa o redimensionamento */
-}
 
-@media (max-width: 1024px) { /* Define estilos para telas com largura máxima de 1024px */
-    .text-center { /* Define uma classe para centralizar o texto */
-        margin: 2px; /* Define uma margem de 2px */
-    }
-}
-
-.field { /* Define uma classe para campos de formulário */
-    padding: 4.5px; /* Define um padding de 4.5px */
-}
-
-.buttons { /* Define uma classe para botões */
-    width: 200px; /* Define uma largura de 200px */
-}
-
-.titulo { /* Define uma classe para títulos */
-    white-space: pre-wrap; /* Permite quebra de linha dentro do texto */
-    text-align: center; /* Centraliza o texto */
-}
-
-@media (max-width: 580px) { /* Define estilos para telas com largura máxima de 580px */
-    .full { /* Define uma classe para elementos que ocupam toda a largura */
-        flex: 0 0 100%; /* Define o flex-grow, flex-shrink e flex-basis */
-        max-width: 100%; /* Define a largura máxima como 100% */
-        margin-bottom: 1rem; /* Define uma margem inferior de 1rem */
-        width: 100%; /* Define a largura como 100% */
-        margin: 1px; /* Define uma margem de 1px */
-    }
-}
 </style>

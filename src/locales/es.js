@@ -327,6 +327,7 @@ export default {
     fetch_data: 'Error al buscar datos.',
     console_fetch_data: 'Error al buscar retiros:',
     product_details: 'Product Details',
+    details: 'Detalles',
     info: 'Información',
     load_dm_list: 'No se pudo cargar la lista de DMs.',
     load_user_list: 'No se pudo cargar la lista de usuarios.',

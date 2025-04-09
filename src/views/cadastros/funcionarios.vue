@@ -7,7 +7,7 @@ import { useToast } from 'primevue/usetoast';
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 // Importando o objeto 'FilterMatchMode' do PrimeVue para configurar os filtros de pesquisa
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 // Importando a imagem de placeholder que será usada caso não haja imagem para um produto
 import imagePlaceholder from '@/assets/images/placeholder4.1.jpg';
 import clockurl from '@/assets/images/OIP.png';
@@ -34,7 +34,8 @@ const dataStore = useDataStore(); // Acessa o store de dados para obter informa�
 const toast = useToast(); // Função para exibir notificações via toast
 
 const selectedFile = ref(null); // Cria uma referência reativa para armazenar o arquivo selecionado
-const handleFileSelected = (file) => { // Declara uma função chamada handleFileSelected
+const handleFileSelected = (file) => {
+    // Declara uma função chamada handleFileSelected
     selectedFile.value = file; // Define o arquivo selecionado na referência reativa
 };
 
@@ -166,8 +167,7 @@ const deleteFuncionarioDialog = ref(false);
 // Cria uma referência reativa para controlar a visibilidade de um outro elemento, inicialmente configurado para `false` (oculto).
 const visible = ref(false);
 
-// Cria uma referência reativa para armazenar o valor de "ativo", inicialmente configurado para 0.
-const active = ref(0);
+const active = ref('0'); // Variável reativa para controlar a aba ativa.
 
 // Cria uma referência reativa para armazenar o valor de "itens ativos", inicialmente configurado para 0.
 const activeItens = ref(0);
@@ -175,20 +175,20 @@ const totalRecords = ref(0);
 
 const loading = ref(false); // Cria uma referência reativa para controlar o estado de carregamento
 
-// Cria uma referência reativa para armazenar o dropdown 1, inicialmente configurado para `null` (não atribuído).
-const dropdown1 = ref(null);
+// Cria uma referência reativa para armazenar o select1, inicialmente configurado para `null` (não atribuído).
+const select1 = ref(null);
 
-// Cria uma referência reativa para armazenar o dropdown 2, inicialmente configurado para `null` (não atribuído).
-const dropdown2 = ref(null);
+// Cria uma referência reativa para armazenar o select2, inicialmente configurado para `null` (não atribuído).
+const select2 = ref(null);
 
-// Cria uma referência reativa para armazenar o dropdown 3, inicialmente configurado para `null` (não atribuído).
-const dropdown3 = ref(null);
+// Cria uma referência reativa para armazenar o select3, inicialmente configurado para `null` (não atribuído).
+const select3 = ref(null);
 
-// Cria uma referência reativa para armazenar o dropdown 4, inicialmente configurado para `null` (não atribuído).
-const dropdown4 = ref(null);
+// Cria uma referência reativa para armazenar o select4, inicialmente configurado para `null` (não atribuído).
+const select4 = ref(null);
 
-// Cria uma referência reativa para armazenar o dropdown 5, inicialmente configurado para `null` (não atribuído).
-const dropdown5 = ref(null);
+// Cria uma referência reativa para armazenar o select5, inicialmente configurado para `null` (não atribuído).
+const select5 = ref(null);
 
 /**
  * Formata a data usando o serviço de formatação para transformá-la em uma string.
@@ -253,7 +253,7 @@ const onRowSelect = async (event) => {
     await getImagem(funcionario.foto);
 
     // Define o valor de `active` como 1, provavelmente indicando que o funcionário está ativo no sistema.
-    active.value = 1;
+    active.value = '1';
 
     // Define a visibilidade do formulário de edição para `true`, permitindo a edição dos dados do funcionário.
     editVisible.value = true;
@@ -342,7 +342,8 @@ const loadFuncionarios = async (page = 1) => {
 watch(
     () => filters.value.global.value, // Observa mudanças no valor global do filtro
     () => {
-        filteredCount.value = ListaFuncionarios.value.filter((item) => { // Filtra a lista de funcionários
+        filteredCount.value = ListaFuncionarios.value.filter((item) => {
+            // Filtra a lista de funcionários
             const filterValue = filters.value.global.value?.toLowerCase() || ''; // Obtém o valor do filtro em minúsculas
             return Object.values(item).some((val) => val && val.toString().toLowerCase().includes(filterValue)); // Verifica se algum valor do item inclui o valor do filtro
         }).length; // Atualiza o contador de resultados filtrados
@@ -361,7 +362,7 @@ const adicionarFuncionario = async () => {
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_added'), life: 3000 });
         dataStore.invalidateFuncionariosCache();
         await loadFuncionarios();
-        active.value = 0;
+        active.value = '0';
         resetForm();
         resetFuncionarioForm(funcionario);
     } catch (error) {
@@ -382,7 +383,8 @@ const loadData = async () => {
     }
 };
 
-const fetchItensSetor = async (id_setor) => { // Declara uma função assíncrona chamada fetchItensSetor
+const fetchItensSetor = async (id_setor) => {
+    // Declara uma função assíncrona chamada fetchItensSetor
     const data = {
         id_cliente: store.userIdCliente,
         id_setor: id_setor
@@ -399,14 +401,16 @@ const fetchItensSetor = async (id_setor) => { // Declara uma função assíncron
     }
 };
 
-const listarProdutosDisponiveis = () => { // Declara uma função chamada listarProdutosDisponiveis
+const listarProdutosDisponiveis = () => {
+    // Declara uma função chamada listarProdutosDisponiveis
     const addedIds = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao setor
 
     // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
     ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...ListaProdutos.value.filter((produto) => !addedIds.has(produto.value)));
 };
 
-const fetchHieraquiaOptions = async () => { // Declara uma função assíncrona chamada fetchHieraquiaOptions
+const fetchHieraquiaOptions = async () => {
+    // Declara uma função assíncrona chamada fetchHieraquiaOptions
     try {
         const response = await funcionarioService.fetchHieraquiaOptions();
         hieraquiaoptions = response.data;
@@ -421,7 +425,8 @@ const fetchHieraquiaOptions = async () => { // Declara uma função assíncrona 
 
 watch(
     TempoInicio, // Observa mudanças na referência reativa TempoInicio
-    (newTime) => { // Função de callback chamada quando TempoInicio muda
+    (newTime) => {
+        // Função de callback chamada quando TempoInicio muda
         if (newTime) {
             funcionario.hora_inicial = formatservices.formatarTempo(newTime); // Formata e atribui o novo tempo inicial
         } else {
@@ -433,7 +438,8 @@ watch(
 
 watch(
     TempoFim, // Observa mudanças na referência reativa TempoFim
-    (newTime) => { // Função de callback chamada quando TempoFim muda
+    (newTime) => {
+        // Função de callback chamada quando TempoFim muda
         if (newTime) {
             funcionario.hora_final = formatservices.formatarTempo(newTime); // Formata e atribui o novo tempo final
         } else {
@@ -444,8 +450,10 @@ watch(
 );
 
 /*resetar informações e botões*/
-watch(active, (newIndex, oldIndex) => { // Observa mudanças na variável reativa active
-    if (newIndex !== oldIndex && newIndex === 0) { // Verifica se o índice mudou e se o novo índice é 0
+watch(active, (newIndex, oldIndex) => {
+    // Observa mudanças na variável reativa active
+    if (newIndex !== oldIndex && newIndex === '0') {
+        // Verifica se o índice mudou e se o novo índice é 0
         funcionario = reactive(resetFuncionarioForm()); // Reseta o formulário do funcionário
         resetForm(); // Reseta o formulário
         resetItens(); // Reseta os itens
@@ -454,13 +462,16 @@ watch(active, (newIndex, oldIndex) => { // Observa mudanças na variável reativ
     }
 });
 
-const resetTable = () => { // Declara uma função chamada resetTable
+const resetTable = () => {
+    // Declara uma função chamada resetTable
     activeItens.value = 0; // Define o valor de activeItens como 0
     resetItens(); // Reseta os itens
 };
 
-const getImagem = async (filename) => { // Declara uma função assíncrona chamada getImagem
-    if (filename === '') { // Verifica se o nome do arquivo é vazio
+const getImagem = async (filename) => {
+    // Declara uma função assíncrona chamada getImagem
+    if (filename === '') {
+        // Verifica se o nome do arquivo é vazio
         return imagePlaceholder; // Retorna a imagem placeholder
     }
     try {
@@ -474,27 +485,34 @@ const getImagem = async (filename) => { // Declara uma função assíncrona cham
     }
 };
 
-function debounce(func, wait = 300) { // Declara uma função chamada debounce
+function debounce(func, wait = 300) {
+    // Declara uma função chamada debounce
     let timeout; // Declara uma variável para armazenar o timeout
-    return (...args) => { // Retorna uma função que recebe argumentos
+    return (...args) => {
+        // Retorna uma função que recebe argumentos
         clearTimeout(timeout); // Limpa o timeout anterior
         timeout = setTimeout(() => func.apply(this, args), wait); // Define um novo timeout para chamar a função após o tempo de espera
     };
 }
 
-const debouncedFilterChange = debounce(() => { // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
+const debouncedFilterChange = debounce(() => {
+    // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
     onFilterChange();
 }, 300);
 
-onMounted(async () => { // Declara uma função assíncrona chamada onMounted
+onMounted(async () => {
+    // Declara uma função assíncrona chamada onMounted
     Mob.value = formatservices.isMobEnabled(); // Define o valor de Mob com base na função isMobEnabled
     await loadData(); // Carrega os dados iniciais
     await loadFuncionarios(); // Carrega a lista de funcionários
     await fetchHieraquiaOptions(); // Busca as opções de hierarquia
     await fetchItensSetor(); // Busca os itens do setor
+
+    active.value = '0'; // Define a aba ativa como 0 (listagem de usuários)
 });
 
-const deleteFuncionario = async () => { // Declara uma função assíncrona chamada deleteFuncionario
+const deleteFuncionario = async () => {
+    // Declara uma função assíncrona chamada deleteFuncionario
     let data = { id_funcionario: funcionario.id_funcionario, id_usuario: store.userId };
     try {
         loading.value = true; // Ativa o estado de loading
@@ -503,7 +521,7 @@ const deleteFuncionario = async () => { // Declara uma função assíncrona cham
         dataStore.invalidateFuncionariosCache(); // Invalida o cache de funcionários no dataStore
         deleteFuncionarioDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadFuncionarios(); // Carrega a lista de funcionários
-        active.value = 0; // Define o valor de active como 0
+        active.value = '0'; // Define o valor de active como 0
         resetForm(); // Reseta o formulário
     } catch {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('deleted_employee_form_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
@@ -512,7 +530,8 @@ const deleteFuncionario = async () => { // Declara uma função assíncrona cham
     }
 };
 
-const resetForm = () => { // Declara uma função chamada resetForm
+const resetForm = () => {
+    // Declara uma função chamada resetForm
     funcionario.foto = null; // Reseta a foto do funcionário
     imageUrl.value = imagePlaceholder; // Define a URL da imagem como a imagem placeholder
     resetFuncionarioForm(funcionario); // Reseta o formulário do funcionário
@@ -530,8 +549,10 @@ const resetItens = () => {
     resetProduto(selectedProduct);
 };
 
-const SalvarProduto = async () => { // Declara uma função assíncrona chamada SalvarProduto
-    if (!validarCampos()) { // Verifica se a validação dos campos falhou
+const SalvarProduto = async () => {
+    // Declara uma função assíncrona chamada SalvarProduto
+    if (!validarCampos()) {
+        // Verifica se a validação dos campos falhou
         return; // Se falhar, não continua
     }
     loading.value = true; // Ativa o estado de loading
@@ -550,7 +571,8 @@ const SalvarProduto = async () => { // Declara uma função assíncrona chamada 
     }
 };
 
-const listarProdutosFiltrados = () => { // Declara uma função chamada listarProdutosFiltrados
+const listarProdutosFiltrados = () => {
+    // Declara uma função chamada listarProdutosFiltrados
     const idsSetor = new Set(ListaItemsSetor.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao setor
 
     const idsAdicionados = new Set(ListaProdutoFuncionario.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao funcionário
@@ -561,7 +583,8 @@ const listarProdutosFiltrados = () => { // Declara uma função chamada listarPr
 
     ListaProdutosDisponiveis.splice(0, ListaProdutosDisponiveis.length, ...itensFiltrados); // Atualiza a lista de produtos disponíveis
 
-    if (itensFiltrados.length === 0) { // Verifica se não há mais itens disponíveis
+    if (itensFiltrados.length === 0) {
+        // Verifica se não há mais itens disponíveis
         toast.add({
             severity: 'warn',
             summary: t('employee_no_availble_item'),
@@ -571,17 +594,20 @@ const listarProdutosFiltrados = () => { // Declara uma função chamada listarPr
     }
 };
 
-const abrirDialogAdicionarItem = () => { // Declara uma função chamada abrirDialogAdicionarItem
+const abrirDialogAdicionarItem = () => {
+    // Declara uma função chamada abrirDialogAdicionarItem
     listarProdutosFiltrados(); // Chama a função para listar os produtos filtrados
     visible.value = true; // Mostra o diálogo
 };
 
-const editItem = (selectedItem) => { // Declara uma função chamada editItem
+const editItem = (selectedItem) => {
+    // Declara uma função chamada editItem
     selectedProduct.value = { ...selectedItem }; // Define o produto selecionado
     itemDialog.value = true; // Mostra o diálogo de item
 };
 
-const atualizarFuncionario = async () => { // Declara uma função assíncrona chamada atualizarFuncionario
+const atualizarFuncionario = async () => {
+    // Declara uma função assíncrona chamada atualizarFuncionario
     try {
         loading.value = true;
         const { isValid, errors } = validateForm(funcionario);
@@ -592,7 +618,7 @@ const atualizarFuncionario = async () => { // Declara uma função assíncrona c
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_update'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         dataStore.invalidateFuncionariosCache(); // Invalida o cache de funcionários no dataStore
         loadFuncionarios(); // Carrega a lista de funcionários
-        active.value = 0; // Define o valor de active como 0
+        active.value = '0'; // Define o valor de active como 0
         resetForm(); // Reseta o formulário
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('employee_update_error'), life: 3000 });
@@ -601,24 +627,28 @@ const atualizarFuncionario = async () => { // Declara uma função assíncrona c
     }
 };
 
-const closeAllDropdowns = () => { // Declara uma função chamada closeAllDropdowns
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Verifica e esconde o dropdown1 se estiver visível
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Verifica e esconde o dropdown2 se estiver visível
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Verifica e esconde o dropdown3 se estiver visível
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Verifica e esconde o dropdown4 se estiver visível
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Verifica e esconde o dropdown5 se estiver visível
+const closeAllselects = () => {
+    // Declara uma função chamada closeAllselect s
+    if (select1.value?.overlayVisible) select1.value.hide(); // Verifica e esconde o select1 se estiver visível
+    if (select2.value?.overlayVisible) select2.value.hide(); // Verifica e esconde o select2 se estiver visível
+    if (select3.value?.overlayVisible) select3.value.hide(); // Verifica e esconde o select3 se estiver visível
+    if (select4.value?.overlayVisible) select4.value.hide(); // Verifica e esconde o select4 se estiver visível
+    if (select5.value?.overlayVisible) select5.value.hide(); // Verifica e esconde o select5 se estiver visível
 };
 
-const handleDatepickerOpen = () => { // Declara uma função chamada handleDatepickerOpen
-    closeAllDropdowns(); // Chama a função closeAllDropdowns para fechar todos os dropdowns
+const handleDatepickerOpen = () => {
+    // Declara uma função chamada handleDatepickerOpen
+    closeAllselects(); // Chama a função closeAllselect s para fechar todos os selects
 };
 
-const confirmDeleteProduct = (item) => { // Declara uma função chamada confirmDeleteProduct
+const confirmDeleteProduct = (item) => {
+    // Declara uma função chamada confirmDeleteProduct
     selectedProduct.value = { ...item }; // Define o produto selecionado
     deleteProductDialog.value = true; // Mostra o diálogo de confirmação de exclusão de produto
 };
 
-const deleteProduct = async () => { // Declara uma função assíncrona chamada deleteProduct
+const deleteProduct = async () => {
+    // Declara uma função assíncrona chamada deleteProduct
     try {
         loading.value = true; // Ativa o estado de loading
         const res = await funcionarioService.deleteProduct(funcionario, selectedProduct); // Faz uma requisição para deletar o produto
@@ -647,9 +677,11 @@ const deleteProduct = async () => { // Declara uma função assíncrona chamada 
     }
 };
 
-const validarCampos = () => { // Declara uma função chamada validarCampos
+const validarCampos = () => {
+    // Declara uma função chamada validarCampos
     try {
-        if (!selectedProduct.value.id_produto) { // Verifica se o ID do produto selecionado está vazio
+        if (!selectedProduct.value.id_produto) {
+            // Verifica se o ID do produto selecionado está vazio
             toast.add({
                 severity: 'error',
                 summary: t('title_error'),
@@ -659,7 +691,8 @@ const validarCampos = () => { // Declara uma função chamada validarCampos
             return false;
         }
 
-        if (!selectedProduct.value.quantidade || selectedProduct.value.quantidade <= 0) { // Verifica se a quantidade do produto é inválida
+        if (!selectedProduct.value.quantidade || selectedProduct.value.quantidade <= 0) {
+            // Verifica se a quantidade do produto é inválida
             toast.add({
                 severity: 'error',
                 summary: t('title_error'),
@@ -683,7 +716,8 @@ const validarCampos = () => { // Declara uma função chamada validarCampos
         return false;
     }
 };
-const hideDialog = () => { // Declara uma função chamada hideDialog
+const hideDialog = () => {
+    // Declara uma função chamada hideDialog
     itemDialog.value = false; // Define itemDialog como false para esconder o diálogo de item
     deleteProductDialog.value = false; // Define deleteProductDialog como false para esconder o diálogo de confirmação de exclusão de produto
 };
@@ -691,300 +725,308 @@ const hideDialog = () => { // Declara uma função chamada hideDialog
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active">
-            <TabPanel :header="$t('employee_list')">
-                <div class="col-12">
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="ListaFuncionarios"
-                        selectionMode="single"
-                        stripedRows
-                        paginator
-                        lazy
-                        :totalRecords="totalRecords"
-                        :rows="lazyParams.value?.rows || 10"
-                        removableSort
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        dataKey="id"
-                        :sortOrder="lazyParams.value?.sortOrder || 1"
-                        :sortField="lazyParams.value?.sortField || 'nome'"
-                        @filter="onFilterChange($event)"
-                        @page="onPageChange($event)"
-                        @sort="onSortChange($event)"
-                        :globalFilterFields="['nome', 'matricula']"
-                        :metaKeySelection="false"
-                        @rowSelect="onRowSelect"
-                    >
-                        <template #header>
-                            <div class="flex justify-content-between align-items-center mt-4">
-                                <div class="font-semibold">
-                                    <span>{{ $t('total_records', { count: totalRecords }) }}</span>
-                                </div>
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" @input="debouncedFilterChange" />
-                                </IconField>
-                            </div>
-                        </template>
-
-                        <template #empty> {{ t('no_employee') }} </template>
-
-                        <Column field="nome" sortable :header="t('name')" class="col-6"></Column>
-                        <Column field="matricula" sortable :header="t('employee_id')" class="col-6"></Column>
-                    </DataTable>
-                </div>
-            </TabPanel>
-
-            <TabPanel :header="editVisible ? t('edit_employee') : t('add_employee')" v-model:activeIndex="active">
-                <div class="grid">
+        <Tabs v-model:value="active" :value="0">
+            <TabList>
+                <Tab value="0">{{ $t('employee_list') }}</Tab>
+                <Tab value="1">{{ editVisible ? $t('edit_employee') : $t('add_employee') }}</Tab>
+            </TabList>
+            <TabPanels>
+                <TabPanel value="0">
                     <div class="col-12">
-                        <div class="mt-5">
-                            <!--form de cadastro de novo funcionario-->
-                            <div class="p-fluid formgrid grid m-0 p-0">
-                                <div class="full lg:col-8 md:col-6 sm:col-12">
-                                    <label for="name">{{ t('name') }}:</label>
-                                    <InputText class="my-2" v-model="funcionario.nome" id="name" type="text"> </InputText>
+                        <DataTable
+                            v-model:filters="filters"
+                            :value="ListaFuncionarios"
+                            selectionMode="single"
+                            stripedRows
+                            paginator
+                            lazy
+                            :totalRecords="totalRecords"
+                            :rows="lazyParams.value?.rows || 10"
+                            removableSort
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            dataKey="id"
+                            :sortOrder="lazyParams.value?.sortOrder || 1"
+                            :sortField="lazyParams.value?.sortField || 'nome'"
+                            @filter="onFilterChange($event)"
+                            @page="onPageChange($event)"
+                            @sort="onSortChange($event)"
+                            :globalFilterFields="['nome', 'matricula']"
+                            :metaKeySelection="false"
+                            @rowSelect="onRowSelect"
+                        >
+                            <template #header>
+                                <div class="flex justify-content-between align-items-center mt-4">
+                                    <div class="font-semibold">
+                                        <span>{{ $t('total_records', { count: totalRecords }) }}</span>
+                                    </div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText name="busca" v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" @input="debouncedFilterChange" />
+                                    </IconField>
                                 </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="matricula">{{ t('employee_id') }}:</label>
-                                    <InputText class="my-2" id="matricula" v-model="funcionario.matricula" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="senha">{{ t('password') }}:</label>
-                                    <InputText type="password" class="my-2" id="senha" v-model="funcionario.senha" autocomplete="new-password" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="Hash">Hash 1:</label>
-                                    <InputText class="my-2" disabled id="Hash" v-model="funcionario.biometria" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="Hash2">Hash 2:</label>
-                                    <InputText class="my-2" disabled id="Hash2" v-model="funcionario.biometria2" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="DataAdmissao">{{ t('admission_date') }}:</label>
-                                    <VueDatePicker class="my-2" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="cpf">{{ t('ssn') }}:</label>
-                                    <InputMask class="my-2" v-model="funcionario.CPF" id="cpf" :mask="$t('docmask')" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false" />
-                                    <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="rg">{{ t('identity_document') }}:</label>
-                                    <InputMask class="my-2" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" :autoClear="false" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="ctps">{{ t('work_card') }}:</label>
-                                    <InputMask class="my-2" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" :autoClear="false" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="email">{{ t('email') }}:</label>
-                                    <InputText class="my-2" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
-                                    <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="perfil">{{ t('cost_center') }}:</label>
-                                    <Dropdown class="my-2" filter v-model="funcionario.id_centro_custo" :options="centroCustoOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_center_cost')" ref="dropdown1" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="planta">{{ t('factory') }}:</label>
-                                    <Dropdown filter class="my-2" v-model="funcionario.id_planta" :options="plantaOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_factory')" ref="dropdown2" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="setor">{{ t('sector') }}</label>
-                                    <Dropdown filter class="my-2" v-model="funcionario.id_setor" :options="setorOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_sector')" @change="setorChange" ref="dropdown3" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label class="ajustetexto" for="funcao">{{ t('function') }}:</label>
-                                    <Dropdown filter class="my-2" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_function')" ref="dropdown4" />
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="status">{{ t('status') }}:</label>
-                                    <Dropdown class="my-2" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" :placeholder="$t('select_status')" ref="dropdown5"></Dropdown>
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="inicio">{{ t('start_time') }}:</label>
-                                    <VueDatePicker class="my-2" v-model="TempoInicio" time-picker disable-time-range-validation>
-                                        <template #input-icon>
-                                            <img class="input-slot-image" :src="clockurl" />
-                                        </template>
-                                    </VueDatePicker>
-                                </div>
-                                <div class="full lg:col-4 md:col-6 sm:col-12">
-                                    <label for="inicio">{{ t('end_time') }}:</label>
-                                    <VueDatePicker class="my-2" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
-                                        <template #input-icon>
-                                            <img class="input-slot-image" :src="clockurl" />
-                                        </template>
-                                    </VueDatePicker>
-                                </div>
-                                <!-- primeira parte do nested -->
-                                <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
-                                    <Fieldset :legend="t('select_days_for_employee')" class="mt-5 p-1 lg:col-12 md:col-12 sm:col-12">
-                                        <label for="fim"></label>
-                                        <div id="fim" class="checkbox-container flex align-content-end flex-wrap mx-4">
-                                            <div class="checkbox-items m-2 flex align-items-end">
-                                                <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
-                                                <label for="Segunda" class="ml-2"> {{ t('monday') }} </label>
-                                            </div>
-                                            <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
-                                                <label for="Terca" class="ml-2"> {{ t('tuesday') }} </label>
-                                            </div>
-                                            <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
-                                                <label for="Quarta" class="ml-2"> {{ t('wednesday') }} </label>
-                                            </div>
-                                            <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
-                                                <label for="Quinta" class="ml-2"> {{ t('thursday') }} </label>
-                                            </div>
-                                            <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
-                                                <label for="Sexta" class="ml-2">{{ t('friday') }} </label>
-                                            </div>
-                                            <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
-                                                <label for="Sabado" class="ml-2"> {{ t('saturday') }} </label>
-                                            </div>
-                                            <div class="checkbox-items m-2 flex align-items-center">
-                                                <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
-                                                <label for="Domingo" class="ml-2">{{ t('sunday') }}</label>
-                                            </div>
-                                        </div>
-                                    </Fieldset>
-                                </div>
-
-                                <div class="full mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
-                                    <ImageUpload ref="imageUploader" @fileSelected="handleFileSelected" @clearImage="handleClearImage" :externalImages="imageUrl" />
-                                </div>
-                            </div>
-                            <div class="grid justify-content-end flex-wrap mt-8">
-                                <Button
-                                    v-if="editVisible"
-                                    style="width: 15%"
-                                    class="buttons flex align-items-center justify-content-center m-2"
-                                    :label="$t('save')"
-                                    icon="pi pi-check"
-                                    severity="primary"
-                                    @click="atualizarFuncionario"
-                                    :disabled="Mob"
-                                />
-                                <Button
-                                    v-if="editVisible"
-                                    style="width: 15%"
-                                    class="buttons flex align-items-center justify-content-center m-2"
-                                    :label="$t('delete')"
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    @click="deleteFuncionarioDialog = true"
-                                    :disabled="Mob"
-                                />
-
-                                <Button
-                                    v-if="!editVisible"
-                                    style="width: 15%"
-                                    class="buttons flex align-items-center justify-content-center m-2"
-                                    :label="$t('save')"
-                                    icon="pi pi-check"
-                                    severity="info"
-                                    @click="adicionarFuncionario()"
-                                    :disabled="Mob"
-                                />
-                            </div>
-                            <!--Datatables com os items do setor + os que o funcionario pode retirar-->
-                            <div class="col-12">
-                                <TabView v-model:activeIndex="activeItens">
-                                    <TabPanel :header="t('sector_items')">
-                                        <DataTable
-                                            class=""
-                                            v-model:filters="filters"
-                                            :value="ListaItemsSetor"
-                                            stripedRows
-                                            paginator
-                                            removableSort
-                                            :rows="10"
-                                            :rowsPerPageOptions="[5, 10, 20, 50]"
-                                            :globalFilterFields="['nome', 'sku', 'qtd_limite']"
-                                            dataKey="sku"
-                                        >
-                                            <template #header>
-                                                <div class="flex justify-content-end align-items-center mb-2">
-                                                    <div>
-                                                        <IconField iconPosition="left">
-                                                            <InputIcon>
-                                                                <i class="pi pi-search" />
-                                                            </InputIcon>
-                                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
-                                                        </IconField>
-                                                    </div>
-                                                </div>
+                            </template>
+                            <template #empty> {{ t('no_employee') }} </template>
+                            <Column field="nome" sortable :header="t('name')" class="col-6"></Column>
+                            <Column field="matricula" sortable :header="t('employee_id')" class="col-6"></Column>
+                        </DataTable>
+                    </div>
+                </TabPanel>
+                <TabPanel value="1" v-model:activeIndex="active">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="mt-5">
+                                <!--form de cadastro de novo funcionario-->
+                                <div class="p-fluid formgrid grid m-0 p-0">
+                                    <div class="lg:col-8 md:col-6 sm:col-12">
+                                        <label for="name">{{ t('name') }}:</label>
+                                        <InputText class="my-2 w-full" v-model="funcionario.nome" id="name" type="text"> </InputText>
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="matricula">{{ t('employee_id') }}:</label>
+                                        <InputText class="my-2 w-full" id="matricula" v-model="funcionario.matricula" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="senha">{{ t('password') }}:</label>
+                                        <InputText type="password" class="my-2 w-full" id="senha" v-model="funcionario.senha" autocomplete="new-password" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="Hash">Hash 1:</label>
+                                        <InputText class="my-2 w-full" disabled id="Hash" v-model="funcionario.biometria" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="Hash2">Hash 2:</label>
+                                        <InputText class="my-2 w-full" disabled id="Hash2" v-model="funcionario.biometria2" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="DataAdmissao">{{ t('admission_date') }}:</label>
+                                        <VueDatePicker class="my-2 w-full" v-model="funcionario.data_admissao" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="cpf">{{ t('ssn') }}:</label>
+                                        <InputMask class="my-2 w-full" v-model="funcionario.CPF" id="cpf" :mask="$t('docmask')" :unmask="true" :invalid="!!errors.CPF" @blur="cpfvalidate" :autoClear="false" />
+                                        <small v-if="errors.CPF" class="p-error">{{ errors.CPF }}</small>
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="rg">{{ t('identity_document') }}:</label>
+                                        <InputMask class="my-2 w-full" id="rg" v-model="funcionario.RG" mask="99.999.999-*" :unmask="true" :autoClear="false" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="ctps">{{ t('work_card') }}:</label>
+                                        <InputMask class="my-2 w-full" id="ctps" v-model="funcionario.CTPS" mask="9999999/9999" :unmask="true" :autoClear="false" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="email">{{ t('email') }}:</label>
+                                        <InputText class="my-2 w-full" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
+                                        <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="perfil">{{ t('cost_center') }}:</label>
+                                        <Select class="my-2 w-full" filter v-model="funcionario.id_centro_custo" :options="centroCustoOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_center_cost')" ref="select1" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="planta">{{ t('factory') }}:</label>
+                                        <Select filter class="my-2 w-full" v-model="funcionario.id_planta" :options="plantaOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_factory')" ref="select2" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="setor">{{ t('sector') }}</label>
+                                        <Select filter class="my-2 w-full" v-model="funcionario.id_setor" :options="setorOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_sector')" @change="setorChange" ref="select3" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label class="ajustetexto" for="funcao">{{ t('function') }}:</label>
+                                        <Select filter class="my-2 w-full" v-model="funcionario.id_funcao" :options="formatedHierarquiaOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_function')" ref="select4" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="status">{{ t('status') }}:</label>
+                                        <Select class="my-2 w-full" id="status" v-model="funcionario.status" :options="status" optionLabel="label" optionValue="value" :placeholder="$t('select_status')" ref="select5" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="inicio">{{ t('start_time') }}:</label>
+                                        <VueDatePicker class="my-2 w-full" v-model="TempoInicio" time-picker disable-time-range-validation>
+                                            <template #input-icon>
+                                                <img class="input-slot-image" :src="clockurl" />
                                             </template>
-                                            <template #empty> {{ t('employee_itens_empty') }} </template>
-                                            <Column field="nome" sortable style="width: 45%" :header="t('name')"></Column>
-                                            <Column field="sku" sortable :header="t('sku')"></Column>
-                                            <Column field="qtd_limite" :header="t('quantity')"></Column>
-                                        </DataTable>
-                                    </TabPanel>
-                                    <TabPanel :header="t('employee_items')">
-                                        <Button class="mt-3 justify-content-end" :label="t('add_items')" @click="abrirDialogAdicionarItem" />
-                                        <DataTable
-                                            class="mt-3"
-                                            v-model:filters="filters"
-                                            :value="ListaProdutoFuncionario"
-                                            paginator
-                                            :rows="10"
-                                            :sortField="'sku'"
-                                            :rowsPerPageOptions="[5, 10, 20, 50]"
-                                            :globalFilterFields="['nome_produto', 'sku', 'quantidade']"
-                                            tableStyle="min-width: 50rem"
-                                            stripedRows
-                                            dataKey="id_item_funcionario"
-                                        >
-                                            <template #header>
-                                                <div class="flex justify-content-end align-items-center mb-4">
-                                                    <div>
-                                                        <IconField iconPosition="left">
-                                                            <InputIcon>
-                                                                <i class="pi pi-search" />
-                                                            </InputIcon>
-                                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
-                                                        </IconField>
-                                                    </div>
-                                                </div>
+                                        </VueDatePicker>
+                                    </div>
+                                    <div class="lg:col-4 md:col-6 sm:col-12">
+                                        <label for="inicio">{{ t('end_time') }}:</label>
+                                        <VueDatePicker class="my-2 w-full" id="inicio" v-model="TempoFim" time-picker disable-time-range-validation>
+                                            <template #input-icon>
+                                                <img class="input-slot-image" :src="clockurl" />
                                             </template>
-                                            <template #empty>{{ t('employee_itens_empty') }} </template>
-                                            <Column field="nome_produto" sortable style="width: 45%" :header="t('name')"></Column>
-                                            <Column field="sku" sortable :header="t('sku')"></Column>
-                                            <Column field="quantidade" :header="t('quantity')"></Column>
-                                            <Column style="min-width: 8rem">
-                                                <template #body="slotProps">
-                                                    <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
-                                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
-                                                </template>
-                                            </Column>
-                                        </DataTable>
-                                    </TabPanel>
-                                </TabView>
+                                        </VueDatePicker>
+                                    </div>
+                                    <!-- primeira parte do nested -->
+                                    <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
+                                        <Fieldset :legend="t('select_days_for_employee')" class="mt-5 p-1 lg:col-12 md:col-12 sm:col-12">
+                                            <label for="fim"></label>
+                                            <div id="fim" class="checkbox-container flex align-content-end flex-wrap mx-4 mt-4">
+                                                <div class="checkbox-items m-2 flex align-items-end">
+                                                    <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
+                                                    <label for="Segunda" class="ml-2"> {{ t('monday') }} </label>
+                                                </div>
+                                                <div class="checkbox-items m-2 flex align-items-center">
+                                                    <Checkbox v-model="funcionario.terca" inputId="Terca" name="Dias" value="Terca" :binary="true" />
+                                                    <label for="Terca" class="ml-2"> {{ t('tuesday') }} </label>
+                                                </div>
+                                                <div class="checkbox-items m-2 flex align-items-center">
+                                                    <Checkbox v-model="funcionario.quarta" inputId="Quarta" name="Dias" value="Quarta" :binary="true" />
+                                                    <label for="Quarta" class="ml-2"> {{ t('wednesday') }} </label>
+                                                </div>
+                                                <div class="checkbox-items m-2 flex align-items-center">
+                                                    <Checkbox v-model="funcionario.quinta" inputId="Quinta" name="Dias" value="Quinta" :binary="true" />
+                                                    <label for="Quinta" class="ml-2"> {{ t('thursday') }} </label>
+                                                </div>
+                                                <div class="checkbox-items m-2 flex align-items-center">
+                                                    <Checkbox v-model="funcionario.sexta" inputId="Sexta" name="Dias" value="Sexta" :binary="true" />
+                                                    <label for="Sexta" class="ml-2">{{ t('friday') }} </label>
+                                                </div>
+                                                <div class="checkbox-items m-2 flex align-items-center">
+                                                    <Checkbox v-model="funcionario.sabado" inputId="Sabado" name="Dias" value="Sabado" :binary="true" />
+                                                    <label for="Sabado" class="ml-2"> {{ t('saturday') }} </label>
+                                                </div>
+                                                <div class="checkbox-items m-2 flex align-items-center">
+                                                    <Checkbox v-model="funcionario.domingo" inputId="Domingo" name="Dias" value="Domingo" :binary="true" />
+                                                    <label for="Domingo" class="ml-2">{{ t('sunday') }}</label>
+                                                </div>
+                                            </div>
+                                        </Fieldset>
+                                    </div>
+                                    <div class="mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
+                                        <ImageUpload ref="imageUploader" @fileSelected="handleFileSelected" @clearImage="handleClearImage" :externalImages="imageUrl" />
+                                    </div>
+                                </div>
+                                <div class="grid justify-content-end flex-wrap mt-8">
+                                    <Button
+                                        v-if="editVisible"
+                                        style="width: 15%"
+                                        class="buttons flex align-items-center justify-content-center m-2"
+                                        :label="$t('save')"
+                                        icon="pi pi-check"
+                                        severity="primary"
+                                        @click="atualizarFuncionario"
+                                        :disabled="Mob"
+                                    />
+                                    <Button
+                                        v-if="editVisible"
+                                        style="width: 15%"
+                                        class="buttons flex align-items-center justify-content-center m-2"
+                                        :label="$t('delete')"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        @click="deleteFuncionarioDialog = true"
+                                        :disabled="Mob"
+                                    />
+                                    <Button
+                                        v-if="!editVisible"
+                                        style="width: 15%"
+                                        class="buttons flex align-items-center justify-content-center m-2"
+                                        :label="$t('save')"
+                                        icon="pi pi-check"
+                                        severity="info"
+                                        @click="adicionarFuncionario()"
+                                        :disabled="Mob"
+                                    />
+                                </div>
+                                <!--Datatables com os items do setor + os que o funcionario pode retirar-->
+                                <div class="col-12">
+                                    <Tabs value="0" v-model:activeIndex="activeItens">
+                                        <TabList>
+                                            <Tab value="0">{{ t('sector_items') }}</Tab>
+                                            <Tab value="1">{{ t('employee_items') }}</Tab>
+                                        </TabList>
+                                        <TabPanels>
+                                            <TabPanel value="0">
+                                                <DataTable
+                                                    class=""
+                                                    v-model:filters="filters"
+                                                    :value="ListaItemsSetor"
+                                                    stripedRows
+                                                    paginator
+                                                    removableSort
+                                                    :rows="10"
+                                                    :rowsPerPageOptions="[5, 10, 20, 50]"
+                                                    :globalFilterFields="['nome', 'sku', 'qtd_limite']"
+                                                    dataKey="sku"
+                                                >
+                                                    <template #header>
+                                                        <div class="flex justify-content-end align-items-center mb-2">
+                                                            <div>
+                                                                <IconField iconPosition="left">
+                                                                    <InputIcon>
+                                                                        <i class="pi pi-search" />
+                                                                    </InputIcon>
+                                                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" />
+                                                                </IconField>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    <template #empty> {{ t('employee_itens_empty') }} </template>
+                                                    <Column field="nome" sortable style="width: 45%" :header="t('name')"></Column>
+                                                    <Column field="sku" sortable :header="t('sku')"></Column>
+                                                    <Column field="qtd_limite" :header="t('quantity')"></Column>
+                                                </DataTable>
+                                            </TabPanel>
+                                            <TabPanel value="1">
+                                                <Button class="mt-3 justify-content-end" :label="t('add_items')" @click="abrirDialogAdicionarItem" />
+                                                <DataTable
+                                                    class="mt-3"
+                                                    v-model:filters="filters"
+                                                    :value="ListaProdutoFuncionario"
+                                                    paginator
+                                                    :rows="10"
+                                                    :sortField="'sku'"
+                                                    :rowsPerPageOptions="[5, 10, 20, 50]"
+                                                    :globalFilterFields="['nome_produto', 'sku', 'quantidade']"
+                                                    tableStyle="min-width: 50rem"
+                                                    stripedRows
+                                                    dataKey="id_item_funcionario"
+                                                >
+                                                    <template #header>
+                                                        <div class="flex justify-content-end align-items-center mb-4">
+                                                            <div>
+                                                                <IconField iconPosition="left">
+                                                                    <InputIcon>
+                                                                        <i class="pi pi-search" />
+                                                                    </InputIcon>
+                                                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" />
+                                                                </IconField>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                    <template #empty>{{ t('employee_itens_empty') }} </template>
+                                                    <Column field="nome_produto" sortable style="width: 45%" :header="t('name')"></Column>
+                                                    <Column field="sku" sortable :header="t('sku')"></Column>
+                                                    <Column field="quantidade" :header="t('quantity')"></Column>
+                                                    <Column style="min-width: 8rem">
+                                                        <template #body="slotProps">
+                                                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editItem(slotProps.data)" />
+                                                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                                                        </template>
+                                                    </Column>
+                                                </DataTable>
+                                            </TabPanel>
+                                        </TabPanels>
+                                    </Tabs>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </TabPanel>
-        </TabView>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
         <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="$t('item_edit')" :draggable="false" :modal="true" class="p-fluid">
+            <hr class="p-0 m-0" />
             <div>
-                <div class="p-fluid formgrid grid">
-                    <div class="field lg:col-12 md:col-6 sm:col-4">
-                        <label for="name">{{ t('name') }}:</label>
-                        <InputText disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
+                <div class="formgrid grid">
+                    <div class="field lg:col-9 md:col-6 sm:col-4">
+                        <label class="mr-2" for="name">{{ t('name') }}:</label>
+                        <InputText disabled class="w-full" v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-4">
+                    <div class="field lg:col-3 md:col-6 sm:col-4">
                         <label for="Quantidade">{{ t('quantity') }}</label>
-                        <InputText id="Quantidade" v-model="selectedProduct.quantidade" />
+                        <InputText id="Quantidade" class="w-full" v-model="selectedProduct.quantidade" />
                     </div>
                 </div>
             </div>
@@ -994,38 +1036,40 @@ const hideDialog = () => { // Declara uma função chamada hideDialog
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="visible" :modal="true" :draggable="false" :header="$t('add_employee_items')">
-            <div class="grid my-1">
-                <div class="col-12">
-                    <label for="Produto" class="mr-2 font-semibold col-2">{{ t('product') }}: </label>
-                    <Dropdown
-                        v-model="selectedProduct.id_produto"
-                        :options="ListaProdutosDisponiveis"
-                        optionLabel="label"
-                        :virtualScrollerOptions="{ itemSize: 30 }"
-                        :filter="true"
-                        :filterBy="'label'"
-                        optionValue="value"
-                        :placeholder="$t('select_product')"
-                        class="col-8 ml-1 p-0"
-                    />
-                </div>
-                <div class="col-12">
-                    <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{ t('quantity') }}: </label>
-                    <InputNumber variant="filled" class="ml-5" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+        <Dialog v-model:visible="visible" :style="{ width: '450px' }" :modal="true" :draggable="false" :header="$t('add_employee_items')">
+            <hr class="p-0 m-0" />
+            <div>
+                <div class="formgrid grid">
+                    <div class="field lg:col-9 md:col-9 sm:col-12">
+                        <label for="Produto" class="mr-2">{{ t('product') }}: </label>
+                        <Select
+                            v-model="selectedProduct.id_produto"
+                            :options="ListaProdutosDisponiveis"
+                            optionLabel="label"
+                            :virtualScrollerOptions="{ itemSize: 30 }"
+                            :filter="true"
+                            :filterBy="'label'"
+                            optionValue="value"
+                            :placeholder="$t('select_product')"
+                            class="w-full"
+                        />
+                    </div>
+                    <div class="field lg:col-3 md:col-9 sm:col-12">
+                        <label for="Quantidade" class="mr-2">{{ t('quantity') }}: </label>
+                        <InputText variant="filled" class="w-full" id="Quantidade" v-model="selectedProduct.quantidade" inputClass="col-3" autocomplete="off" required />
+                    </div>
                 </div>
             </div>
-
-            <div class="flex justify-content-end gap-2">
+            <template #footer>
                 <Button type="button" :label="$t('cancel')" severity="secondary" @click="visible = false"></Button>
                 <Button type="button" :label="$t('add')" @click="SalvarProduto"></Button>
-            </div>
+            </template>
         </Dialog>
+
         <Dialog v-model:visible="deleteProductDialog" :draggable="false" :style="{ width: '450px' }" :header="$t('dialog_delete_item')" :modal="true">
             <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="selectedProduct.id_produto">
-                    {{ t('dialog_delete_employee', { nome: selectedProduct.nome_produto }) }}
+                <span v-if="selectedProduct">
+                    {{ t('dialog_delete_employee', { name: selectedProduct.nome_produto }) }}
                 </span>
             </div>
             <template #footer>
@@ -1082,17 +1126,7 @@ const hideDialog = () => { // Declara uma função chamada hideDialog
     padding: 10px;
 }
 
-.buttons {
-    width: 100px;
-}
-
-@media (max-width: 580px) {
-    .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
-    }
+.p-fieldset-legend {
+    display: flex;
 }
 </style>

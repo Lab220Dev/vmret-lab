@@ -174,32 +174,32 @@ onMounted(async () => {
         <!-- Grid interno para organizar os campos de entrada -->
         <div class="card my-6 mx-0 p-fluid grid">
             <!-- Campo para a matrícula -->
-            <div class="full lg:col-4 md:col-12 sm:col-12">
+            <div class=" lg:col-4 md:col-12 sm:col-12">
                 <label for="matricula">{{ t('employee') }}:</label>
                 <!-- Campo de texto vinculado ao modelo libAvulsa.matricula -->
-                <Dropdown class="my-2" v-model="libAvulsa.id_funcionario" :options="listaFuncionarios" optionLabel="label" optionValue="value" placeholder="Selecione um Funcionario" />
+                <Select class="my-2 w-full" v-model="libAvulsa.id_funcionario" :options="listaFuncionarios" optionLabel="label" optionValue="value" placeholder="Selecione um Funcionario" />
                 <!-- <InputText class="my-2" v-model="libAvulsa.matricula" id="matricula" type="text" /> -->
                 <!-- Mensagem esperada: Nenhuma validação direta implementada -->
             </div>
 
             <!-- Campo para o prazo de retirada -->
-            <div class="full lg:col-4 md:col-6 sm:col-12">
+            <div class=" lg:col-4 md:col-12 sm:col-12">
                 <label for="prazo"> {{ t('withdrawal_deadline') }}:</label>
                 <!-- Componente AutoComplete para o prazo -->
-                <VueDatePicker class="my-2" v-model="libAvulsa.limiteRetirada" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
+                <VueDatePicker class="my-2 w-full" v-model="libAvulsa.limiteRetirada" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" @open="handleDatepickerOpen" />
                 <!-- Mensagem esperada: Campo sempre desabilitado (placeholder fixo). -->
             </div>
             <!-- Campo para o voucher -->
-            <div class="full lg:col-8 md:col-12 sm:col-12">
+            <div class=" lg:col-4 md:col-12 sm:col-12">
                 <label for="voucher">{{ t('product') }}:</label>
                 <!-- Campo de texto vinculado ao modelo libAvulsa.voucher -->
-                <Dropdown class="my-2" v-model="selectedProduct" :options="ListaProdutos" optionLabel="label" placeholder="Selecione um Produto" :virtualScrollerOptions="{ itemSize: 30 }" />
+                <Select class="my-2 w-full" v-model="selectedProduct" :options="ListaProdutos" optionLabel="label" placeholder="Selecione um Produto" :virtualScrollerOptions="{ itemSize: 30 }" />
                 <!-- <InputText class="my-2" v-model="libAvulsa.voucher" id="voucher" /> -->
                 <!-- Mensagem esperada: Nenhuma validação direta implementada -->
             </div>
-            <div class="full lg:col-4 md:col-12 sm:col-12 pt-5 mt-2">
+            <div class=" lg:col-12 md:col-12 sm:col-12 pt-5 mt-2 flex justify-content-end">
                 <!-- Campo de texto vinculado ao modelo libAvulsa.voucher -->
-                <Button label="Adicionar" icon="pi pi-check" severity="info" @click="adicionarProduto()" />
+                <Button label="Adicionar" class="w-auto" icon="pi pi-check" severity="info" @click="adicionarProduto()" />
                 <!-- Mensagem esperada: Nenhuma validação direta implementada -->
             </div>
             <div class="col-12">
@@ -217,7 +217,7 @@ onMounted(async () => {
                 </DataTable>
             </div>
             <!-- Checkbox para enviar email -->
-            <div class="full lg:col-12 md:col-12 sm:col-12">
+            <div class="mt-4 lg:col-12 md:col-12 sm:col-12">
                 <div class="flex align-items-center">
                     <!-- Checkbox que ativa ou desativa a flag enviarEmail -->
                     <Checkbox v-model="libAvulsa.enviarEmail" inputId="sim" name="enviarEmail" value="Sim" class="mx-1" />
@@ -274,17 +274,5 @@ onMounted(async () => {
 </template>
 
 <style>
-/**
- * Estilo responsivo para dispositivos menores que 580px.
- * Ajusta os elementos para ocuparem 100% da largura disponível.
- */
-@media (max-width: 580px) {
-    .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
-    }
-}
+
 </style>

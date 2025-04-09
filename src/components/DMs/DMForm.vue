@@ -3,8 +3,8 @@
         <!-- Seção para seleção de cliente -->
         <div class="full lg:col-12 md:col-12 sm:col-12">
             <label for="name">Cliente:</label>
-            <!-- Dropdown para selecionar o cliente -->
-            <Dropdown class="my-2" 
+            <!-- Select para selecionar o cliente -->
+            <Select class="my-2" 
             v-model="selectedClient" 
             :options="ListaClientes"
             optionLabel="label" 
@@ -91,7 +91,7 @@ const fetchClientes = async () => {
             }
         });
 
-        // Mapeia os dados dos clientes para o formato esperado pelo Dropdown
+        // Mapeia os dados dos clientes para o formato esperado pelo select 
         ListaClientes.value = response.data.map((cliente) => ({
             label: cliente.nome, // Nome do cliente
             value: {
@@ -110,7 +110,7 @@ onMounted(() => {
     fetchClientes();//Chama a função para buscar os clientes
 });
 
-// Observa mudanças no ID do cliente na DM e atualiza a seleção no Dropdown
+// Observa mudanças no ID do cliente na DM e atualiza a seleção no select 
 watch(
     () => DM.value.IDcliente,//Observa mudanças no ID do cliente
     (newClienteId) => {//Função chamada quando o ID do cliente muda

@@ -8,8 +8,8 @@ import removeConsole from 'vite-plugin-remove-console';
 export default defineConfig(() => {
     return {
         plugins: [
-            vue(),
-            removeConsole(),
+            vue(), // Adiciona o Vue.js como plugin
+            removeConsole(), // Remove console.log do código de produção
             visualizer({  // Adiciona o visualizer como plugin
                 open: true,  // Abre o relatório automaticamente após o build
                 filename: 'stats.html',  // Gera o relatório de análise

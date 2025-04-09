@@ -1,6 +1,6 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente de data picker para selecionar as datas
-import { FilterMatchMode } from 'primevue/api'; // Importa o modo de correspondência para filtros no PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Importa o modo de correspondência para filtros no PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa o hook do PrimeVue para mostrar notificações
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do componente de data picker
 import { ref, onMounted, watch, computed } from 'vue'; // Importa funções do Vue para reatividade e manipulação de ciclo de vida
@@ -26,11 +26,11 @@ const store = useAuthStore(); // Instancia o store de autenticação
 const toast = useToast(); // Instancia o hook de toast para notificações
 
 const emptyMessage = computed(() => t('no_search_made')); // Mensagem padrão quando não há resultados
-const dropdown1 = ref(null); // Referência para o primeiro dropdown
-const dropdown2 = ref(null); // Referência para o segundo dropdown
-const dropdown3 = ref(null); // Referência para o terceiro dropdown
-const dropdown4 = ref(null); // Referência para o quarto dropdown
-const dropdown5 = ref(null); // Referência para o quinto dropdown
+const select1 = ref(null); // Referência para o primeiro select
+const select2 = ref(null); // Referência para o segundo select
+const select3 = ref(null); // Referência para o terceiro select
+const select4 = ref(null); // Referência para o quarto select
+const select5 = ref(null); // Referência para o quinto select
 
 const devolucoes = ref([]); // Lista de devoluções retornadas pela API
 
@@ -152,13 +152,13 @@ const exportJSON = () => {
     gerarEbaixarJSON('Devoluções', devolucoes.value);
 };
 
-// Função para fechar todos os dropdowns
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o primeiro dropdown
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o segundo dropdown
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o terceiro dropdown
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Fecha o quarto dropdown
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o quinto dropdown
+// Função para fechar todos os selects
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Fecha o primeiro select
+    if (select2.value?.overlayVisible) select2.value.hide(); // Fecha o segundo select
+    if (select3.value?.overlayVisible) select3.value.hide(); // Fecha o terceiro select
+    if (select4.value?.overlayVisible) select4.value.hide(); // Fecha o quarto select
+    if (select5.value?.overlayVisible) select5.value.hide(); // Fecha o quinto select
 };
 
 // Função para carregar os dados iniciais dos filtros
@@ -189,9 +189,9 @@ const loadData = async () => {
 const filtroGenerico = () => {
     filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor);
 };
-// Função chamada quando o datepicker é aberto, fecha todos os dropdowns
+// Função chamada quando o datepicker é aberto, fecha todos os selects
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns
+    closeAllselects(); // Fecha todos os selects
 };
 
 const isMobile = isMobileDevice();
@@ -205,32 +205,31 @@ onMounted(() => {
 <template>
     <div class="card vh">
         <div class="form">
-            <div class="text-center">
-                
+            <div>
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- div de busca de informações para o relatorio -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="id_dm">{{t('dm')}}:</label>
-                        <Dropdown filter class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="dropdown1" :placeholder="$t('all')" ></Dropdown>
+                        <Select filter class="w-full" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" ref="select1" :placeholder="$t('all')" />
                     </div>
 
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <label for="perfil">{{t('cost_center')}}</label>
-                        <Dropdown filter class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown3" @change="filtroGenerico" />
+                        <label for="perfil">{{t('cost_center')}}:</label>
+                        <Select filter class="w-full" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="select3" @change="filtroGenerico" />
                     </div>
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                        <label for="perfil">{{t('sector')}}</label>
-                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value":placeholder="$t('all')"  ref="dropdown4" @change="filtroGenerico" />
+                        <label for="perfil">{{t('sector')}}:</label>
+                        <Select filter class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value":placeholder="$t('all')"  ref="select4" @change="filtroGenerico" />
                     </div>
                     <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
-                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown2" @change="filtroGenerico" />
+                        <Select filter class="w-full" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="select2" @change="filtroGenerico" />
                     </div>
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('employee')}}:</label>
-                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="dropdown5" />
+                        <Select filter class="w-full" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')"  ref="select5" />
                     </div>
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('initial_date')}}:</label>
                         <VueDatePicker
                             class="drop"
@@ -247,7 +246,7 @@ onMounted(() => {
                             @open="handleDatepickerOpen"
                         />
                     </div>
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('end_date')}}:</label>
                         <VueDatePicker
                             class="drop"
@@ -264,9 +263,9 @@ onMounted(() => {
                             @open="handleDatepickerOpen"
                         />
                     </div>
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field pt-6 mt-0 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <!-- botão de filtrar -->
-                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="filtrar w-full" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
                     <!-- Botão para exportar dados em CSV -->
@@ -366,108 +365,4 @@ onMounted(() => {
     </Dialog>
 </template>
 <style>
-/** 
- * .card
- * 
- * Estiliza o container `.card` para permitir o rolar horizontal do conteúdo.
- * Isso é útil quando o conteúdo excede a largura da caixa e você quer permitir a rolagem horizontal.
- */
-.card {
-    overflow-x: auto; /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
-}
-
-/** 
- * .datatable-wrapper
- * 
- * Estiliza o wrapper da tabela (provavelmente um contêiner ao redor de uma DataTable),
- * garantindo que ele tenha rolagem horizontal e se ajuste à largura da tela.
- */
-.datatable-wrapper {
-    overflow-x: auto; /* Permite a rolagem horizontal quando o conteúdo excede a largura do contêiner */
-    width: 100vw; /* Define a largura do contêiner para 100% da largura da janela de visualização (viewport) */
-}
-
-/** 
- * .filtrar
- * 
- * Aplica um espaçamento superior de 25px para o elemento com a classe `.filtrar`.
- * Isso pode ser utilizado para dar um espaço adequado entre os elementos de filtro ou controles.
- */
-.filtrar {
-    margin-top: 25px; /* Adiciona margem superior de 25px ao elemento */
-}
-
-/** 
- * .drop
- * 
- * Aplica largura de 100% ao elemento com a classe `.drop`, geralmente usado para controles de seleção.
- * Isso garante que o controle ocupe toda a largura disponível no seu contêiner pai.
- */
-.drop {
-    width: 100%; /* Define a largura do elemento para 100% da largura do contêiner pai */
-}
-
-/** 
- * @media (max-width: 580px)
- * 
- * Define regras específicas para telas menores ou iguais a 580px de largura.
- * Essas regras tornam a interface mais responsiva, ajustando a exibição de campos e controles.
- */
-@media (max-width: 580px) {
-    /** 
-     * .form .field
-     * 
-     * Faz com que os campos de formulário se ajustem em telas pequenas.
-     * A largura máxima será 100% e o campo ocupará toda a largura disponível do contêiner pai.
-     */
-    .form .field {
-        flex: 0 0 100%; /* Faz o campo de formulário ocupar 100% da largura do contêiner */
-        max-width: 100%; /* Garante que o campo de formulário tenha uma largura máxima de 100% */
-        margin-bottom: 1rem; /* Adiciona um espaço de 1rem abaixo de cada campo */
-    }
-
-    /** 
-     * .form .field .drop
-     * 
-     * Define que os controles de seleção dentro do campo de formulário também ocupem 100% da largura disponível,
-     * garantindo que eles se ajustem corretamente em dispositivos móveis.
-     */
-    .form .field .drop {
-        width: 100%; /* Define a largura do controle de seleção para 100% */
-    }
-
-    /** 
-     * .form .field .filtrar, .form .field .exportar
-     * 
-     * Garante que os controles de filtro e exportação dentro do formulário ocupem toda a largura disponível
-     * em dispositivos móveis, garantindo uma boa usabilidade.
-     */
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%; /* Define a largura do controle de filtro e exportação para 100% */
-    }
-}
-
-/** 
- * .field
- * 
- * Estilo para campos de formulário que garante que o texto dentro do campo seja alinhado à esquerda.
- * Também evita que o texto ultrapasse a largura do campo e faz com que o conteúdo quebre se necessário.
- */
-.field {
-    white-space: nowrap; /* Evita que o texto dentro do campo quebre para a linha seguinte */
-    text-align: left; /* Alinha o texto à esquerda */
-}
-
-/** 
- * .table-cell
- * 
- * Estilo para células de uma tabela, garantindo que o conteúdo não ultrapasse o tamanho da célula
- * e exibindo "..." (ellipsis) quando o texto for maior que o espaço disponível.
- */
-.table-cell {
-    overflow: hidden; /* Oculta qualquer conteúdo que ultrapasse o limite da célula */
-    white-space: nowrap; /* Impede que o texto dentro da célula quebre em múltiplas linhas */
-    text-overflow: ellipsis; /* Adiciona "..." quando o texto é cortado */
-}
 </style>

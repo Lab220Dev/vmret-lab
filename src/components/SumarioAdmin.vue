@@ -200,7 +200,7 @@ const clientsChartData = computed(() => ({  // Dados do gráfico de clientes com
 .card-item {  /* Estilo para os cartões */
     padding: 20px;  /* Adiciona um preenchimento de 20px em todos os lados do cartão */
     border-radius: 8px; /* Arredonda os cantos do cartão */
-    background-color: white;  /* Define o fundo do cartão como branco */
+    background-color: rgb(255, 255, 255) !important;  /* Define o fundo do cartão como branco */
     /* Ajuste para manter os cartões do mesmo tamanho */
     display: flex;  
     flex-direction: column;   /* Alinha os elementos verticalmente */

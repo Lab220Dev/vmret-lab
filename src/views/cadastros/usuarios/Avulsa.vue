@@ -26,7 +26,7 @@ const toast = useToast();// Função para exibir notificações
 });
 
 /**
- * Estado reativo que armazena as opções de plantas disponíveis para o dropdown.
+ * Estado reativo que armazena as opções de plantas disponíveis para o select .
  * 
  * @type {Ref<Array<{ nome: string, code: string }>>}
  */
@@ -70,8 +70,8 @@ const toast = useToast();// Função para exibir notificações
                     <!-- Campo de Planta -->
                     <div class="full lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">Planta:</label>
-                        <!-- Dropdown para selecionar a planta -->
-                        <Dropdown class="my-2" id="planta" v-model="libAvulsa.planta" :options="plantaOptions" optionLabel="nome" placeholder="Escolha um"></Dropdown>
+                        <!-- Select para selecionar a planta -->
+                        <Select class="my-2" id="planta" v-model="libAvulsa.planta" :options="plantaOptions" optionLabel="nome" placeholder="Escolha um"/>
                     </div>
 
                     <!-- Campo de Senha -->

@@ -1,6 +1,6 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueDatePicker para selecionar datas
-import { FilterMatchMode } from 'primevue/api'; // Importa o modo de filtro global da PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Importa o modo de filtro global da PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa a funcionalidade de toast da PrimeVue
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o CSS do VueDatePicker
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'; // Importa hooks do Vue.js
@@ -18,9 +18,9 @@ const toast = useToast(); // Inicializa o toast para exibição de mensagens rá
 
 // Mensagens
 const emptyMessage = ref('Ainda não foi feita nenhuma busca'); // Mensagem exibida quando não há resultados
-const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dropdowns
+const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para select s
 
-// Dados dos dropdowns
+// Dados dos select s
 const ListaFuncionarios = ref(null); // Lista de funcionários
 const dms = ref([todosOption]); // Lista de DMs
 const plantas = ref([todosOption]); // Lista de plantas
@@ -295,18 +295,18 @@ const fetchFuncionarios = async () => {
     }
 };
 
-// Função para fechar todos os dropdowns
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Se o dropdown1 estiver aberto, fecha
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Se o dropdown2 estiver aberto, fecha
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Se o dropdown3 estiver aberto, fecha
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Se o dropdown4 estiver aberto, fecha
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Se o dropdown5 estiver aberto, fecha
+// Função para fechar todos os select s
+const closeAllselect s = () => {
+    if (select 1.value?.overlayVisible) select 1.value.hide(); // Se o select 1 estiver aberto, fecha
+    if (select 2.value?.overlayVisible) select 2.value.hide(); // Se o select 2 estiver aberto, fecha
+    if (select 3.value?.overlayVisible) select 3.value.hide(); // Se o select 3 estiver aberto, fecha
+    if (select 4.value?.overlayVisible) select 4.value.hide(); // Se o select 4 estiver aberto, fecha
+    if (select 5.value?.overlayVisible) select 5.value.hide(); // Se o select 5 estiver aberto, fecha
 };
 
 // Função chamada ao abrir o datepicker
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns ao abrir o datepicker
+    closeAllselect s(); // Fecha todos os select s ao abrir o datepicker
 };
 
 // Função executada ao montar o componente
@@ -333,14 +333,14 @@ onMounted(() => {
                     <!-- Filtro para selecionar a DM -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
-                        <!-- Dropdown para selecionar a DM -->
-                        <Dropdown class="drop" 
+                        <!-- Select para selecionar a DM -->
+                        <Select class="drop" 
                             v-model="relatorio.dm" 
                             :options="dms" 
                             optionLabel="label" 
                             optionValue="value" 
                             placeholder="Todos" 
-                            ref="dropdown1" />
+                            ref="select 1" />
                     </div>
                     
                     <!-- Filtro para selecionar a Data Inicial -->
@@ -536,11 +536,11 @@ onMounted(() => {
     }
 
     /**
-     * Estilo para os componentes Dropdown.
-     * Garante que os Dropdowns ocupem toda a largura disponível dentro do container.
+     * Estilo para os componentes select .
+     * Garante que os select s ocupem toda a largura disponível dentro do container.
      */
     .drop {
-        width: 100%;  /* Define que os Dropdowns ocupem 100% da largura disponível dentro do campo ou container. */
+        width: 100%;  /* Define que os select s ocupem 100% da largura disponível dentro do campo ou container. */
     }
 
     /**
@@ -559,11 +559,11 @@ onMounted(() => {
         }
 
         /**
-         * Estilo para o dropdown nos dispositivos móveis.
-         * Garante que o dropdown ocupe 100% da largura disponível do campo.
+         * Estilo para o Select nos dispositivos móveis.
+         * Garante que o Select ocupe 100% da largura disponível do campo.
          */
         .form .field .drop {
-            width: 100%;  /* Garante que o dropdown ocupe 100% da largura do seu container, ajustando-se a dispositivos móveis. */
+            width: 100%;  /* Garante que o Select ocupe 100% da largura do seu container, ajustando-se a dispositivos móveis. */
         }
 
         /**

@@ -9,7 +9,7 @@ import VueDatePicker from '@vuepic/vue-datepicker';
  * Importa o tipo `FilterMatchMode` para configurar os filtros no componente DataTable.
  * @module primevue/api
  */
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 
 /**
  * Importa o serviço de Toast para exibição de mensagens rápidas para o usuário.
@@ -73,14 +73,14 @@ const toast = useToast();
  const emptyMessage = computed(() => t('no_search_made'));
 
 /**
- * Referências para os dropdowns de filtros.
+ * Referências para os selects de filtros.
  * @type {ref<any>}
  */
-const dropdown1 = ref(null);
-const dropdown2 = ref(null);
-const dropdown3 = ref(null);
-const dropdown4 = ref(null);
-const dropdown5 = ref(null);
+const select1 = ref(null);
+const select2 = ref(null);
+const select3 = ref(null);
+const select4 = ref(null);
+const select5 = ref(null);
 
 /**
  * Dados do histórico de abastecimento.
@@ -167,22 +167,22 @@ const relatorio = ref({
 
 
 /**
- * Função para fechar todos os dropdowns abertos.
+ * Função para fechar todos os selects abertos.
  */
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown do DM
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown da planta
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o dropdown do setor
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Fecha o dropdown do centro de custo
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o dropdown do operador
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Fecha o selectdo DM
+    if (select2.value?.overlayVisible) select2.value.hide(); // Fecha o selectda planta
+    if (select3.value?.overlayVisible) select3.value.hide(); // Fecha o selectdo setor
+    if (select4.value?.overlayVisible) select4.value.hide(); // Fecha o selectdo centro de custo
+    if (select5.value?.overlayVisible) select5.value.hide(); // Fecha o selectdo operador
 };
 
 /**
  * Função para tratar o evento de abertura do date picker.
- * Fecha todos os dropdowns ao abrir o date picker.
+ * Fecha todos os selects ao abrir o date picker.
  */
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns ao abrir o date picker
+    closeAllselects(); // Fecha todos os selects ao abrir o date picker
 };
 const loadData = async () => {
     loading.value = true;
@@ -210,45 +210,45 @@ onMounted(() => {
     <!-- Card container para o conteúdo -->
     <div class="card vh">
         <div class="form">
-            <div class="text-center">
+            <div class="">
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" >
                     <!-- Filtro de DM (Documento de Movimento) -->
-                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                    <div class=" py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">{{t('dm')}}:</label>
-                        <!-- Componente Dropdown para escolher o DM -->
-                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
+                        <!-- Componente selectpara escolher o DM -->
+                        <Select filter class="w-full" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
                     </div>
                     <!-- Filtro de Planta -->
-                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                    <div class="py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
-                        <!-- Componente Dropdown para escolher a planta -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
+                        <!-- Componente Select para escolher a planta -->
+                        <Select filter class="w-full" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" />
                     </div>
                     <!-- Filtro de Setor -->
-                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                    <div class="py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
-                        <!-- Componente Dropdown para escolher o setor -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                        <!-- Componente Select para escolher o setor -->
+                        <Select filter class="w-full" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
-                    <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                    <div class=" py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
-                        <!-- Componente Dropdown para escolher o centro de custo -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" />
+                        <!-- Componente Select para escolher o centro de custo -->
+                        <Select filter class="w-full" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" />
                     </div>
 
                     <!-- Filtro de Operador -->
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class=" py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('operator')}}:</label>
-                        <!-- Componente Dropdown para escolher o operador -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                        <!-- Componente Select para escolher o operador -->
+                        <Select filter class="w-full" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
                     </div>
                     <!-- Filtro de Data Inicial -->
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class=" py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('initial_date')}}:</label>
                         <!-- Componente VueDatePicker para escolher a data inicial -->
                         <VueDatePicker
-                            class="drop"
+                            class="w-full"
                             v-model="relatorio.data_inicio"
                             showIcon
                             :showOnFocus="false"
@@ -262,11 +262,11 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Filtro de Data Final -->
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class=" py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('end_date')}}:</label>
                         <!-- Componente VueDatePicker para escolher a data final -->
                         <VueDatePicker
-                            class="drop"
+                            class="w-full"
                             v-model="relatorio.data_final"
                             showIcon
                             :showOnFocus="false"
@@ -280,8 +280,8 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Botão para filtrar os dados -->
-                    <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+                    <div class=" pt-4 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                        <Button class="w-full" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
                 </div>
             </div>
@@ -355,42 +355,5 @@ onMounted(() => {
 
 </template>
 <style>
-.card {
-    overflow-x: auto;
-}
 
-.datatable-wrapper {
-    overflow: hidden;
-    width: 100vw;
-}
-
-.filtrar {
-    margin-top: 25px;
-}
-
-.drop {
-    width: 100%;
-}
-
-@media (max-width: 580px) {
-    .form .field {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .form .field .drop {
-        width: 100%;
-    }
-
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%;
-    }
-}
-
-.field {
-    white-space: nowrap;
-    text-align: left;
-}
 </style>

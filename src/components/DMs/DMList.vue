@@ -73,7 +73,7 @@
 import { ref, onMounted } from 'vue'; // Importa funções do Vue
 import { useToast } from 'primevue/usetoast'; // Usado para mostrar notificações
 import axios from '@/axios.js'; // Instância do Axios configurada para fazer requisições HTTP
-import { FilterMatchMode } from 'primevue/api'; // Modo de filtro usado para pesquisa
+import { FilterMatchMode } from '@primevue/core/api'; // Modo de filtro usado para pesquisa
 import { useAuthStore } from '@/store/authStore.js'; // Acessa dados do usuário autenticado
 
 /**

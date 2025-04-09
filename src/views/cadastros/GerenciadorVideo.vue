@@ -2,7 +2,7 @@
     <!-- Container principal da página de gerenciamento de vídeos -->
     <div class="card vh">
         <h3 class="mt-6 mb-4">{{$t('gerenciamento_de_videos')}}</h3>
-        <hr/>
+        <hr class="mt-0"/>
         <!-- Exibe mensagem de erro caso haja algum problema -->
         <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
         <div v-else>

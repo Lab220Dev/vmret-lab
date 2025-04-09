@@ -2,8 +2,8 @@
   <!-- Componente para gerenciar controladoras -->
   <div class="card">
     <h5>Controladora {{ index + 1 }}</h5>
-    <!-- Dropdown para selecionar o tipo de controladora -->
-    <Dropdown 
+    <!-- Select para selecionar o tipo de controladora -->
+    <Select 
     v-model="controladora.tipo" 
     :options="tipoControladoras" 
     placeholder="Selecione o tipo de Controladora" 

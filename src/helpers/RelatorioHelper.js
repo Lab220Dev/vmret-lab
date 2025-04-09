@@ -8,28 +8,11 @@ import i18n from '@/i18n'; // Importa a função de tradução do vue-i18n
 import clientesService from '../Services/ClientesService'; // Importa o serviço de clientes para realizar operações relacionadas a clientes.
 import funcionarioService from '../Services/funcionarioService'; // Importa o serviço de funcionários para realizar operações relacionadas a funcionários.
 
+// const jsdom = require("jsdom"); 
+
 const { t } = i18n.global; // Obtém a função de tradução do vue-i18n
 const store = useAuthStore(); // Obtém o store de autenticação para acessar informações do usuário autenticado.
 
-/**
- * Prepara os dados do relatório com base no tipo de relatório fornecido e nos valores do relatório.
- * A função retorna um objeto com as informações necessárias para o tipo de relatório específico.
- *
- * @param {string} tipoRelatorio - O tipo do relatório para o qual os dados estão sendo preparados (ex.: 'Devoluções', 'Estoque').
- * @param {Object} relatorio - O objeto contendo os valores específicos para o relatório.
- * @param {Object} relatorio.value - O objeto interno que contém os valores do relatório.
- * @param {string} relatorio.value.id_dm - O ID do documento de movimentação (DM), quando aplicável.
- * @param {string} relatorio.value.id_funcionario - O ID do funcionário, quando aplicável.
- * @param {string} relatorio.value.id_planta - O ID da planta, quando aplicável.
- * @param {string} relatorio.value.id_centro_custo - O ID do centro de custo, quando aplicável.
- * @param {string} relatorio.value.id_setor - O ID do setor, quando aplicável.
- * @param {string} relatorio.value.data_inicio - A data de início para o filtro, quando aplicável.
- * @param {string} relatorio.value.data_final - A data final para o filtro, quando aplicável.
- * @param {string} relatorio.value.id_operador - O ID do operador, quando aplicável.
- * @param {string} relatorio.value.dia - O dia do relatório, quando aplicável.
- *
- * @returns {Object} O objeto com os dados preparados para o relatório, de acordo com o tipo.
- */
 export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
     // Define a base data com o ID do cliente a partir do store.
     const baseData = {
@@ -136,11 +119,6 @@ export const prepararDadosRelatorio = (tipoRelatorio, relatorio) => {
     }
 };
 
-/**
- * Adiciona a opção 'Todos' e organiza os dados de funcionários.
- * @param {Array} funcionarios - Lista de funcionários retornada pela API.
- * @returns {Array} - Lista formatada com a opção 'Todos' e os funcionários organizados.
- */
 export function organizarFuncionarios(funcionarios) {
     // Mapeia os dados e adiciona a opção 'Todos' no início
     const listaFormatada = funcionarios.map((funcionario) => ({
@@ -158,19 +136,6 @@ export function organizarFuncionarios(funcionarios) {
     return [{ label: 'Todos', value: null }, ...listaFormatada];
 }
 
-/**
- * Generates a PDF report for equipment withdrawal.
- *
- * @param {Object} funcionarioSelecionado - The selected employee object.
- * @param {Object} funcionarioSelecionado.value - The value object containing employee details.
- * @param {string} funcionarioSelecionado.value.label - The name of the employee.
- * @param {string} funcionarioSelecionado.value.matricula - The registration number of the employee.
- * @param {string} funcionarioSelecionado.value.data_admissao - The admission date of the employee.
- * @param {string} funcionarioSelecionado.value.id_funcao - The function ID of the employee.
- * @param {string} funcionarioSelecionado.value.id_setor - The sector ID of the employee.
- * @param {Object} relatorio - The report object containing withdrawal details.
- * @throws {Error} Throws an error if the employee is not selected or if there is an error generating the PDF.
- */
 export async function GerarPdfRetiradapt(funcionarioSelecionado, relatorio) {
     try {
         // Verifica se o funcionário selecionado está definido e não está vazio.
@@ -369,7 +334,8 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         div.querySelector('#elementos').textContent = dadosfuncionario.elementos || 'No informado'; // Elementos do funcionário.
 
         // Converter HTML do cabeçalho em imagem
-        const canvas = await html2canvas(div, { scale: 2 }); // Converte o conteúdo do elemento div em um canvas com uma escala de 2 para aumentar a resolução.
+        await new Promise(resolve => setTimeout(resolve, 300)); // Espera o DOM aplicar os estilos
+const canvas = await html2canvas(div, { scale: 2 }); // Converte o conteúdo do elemento div em um canvas com uma escala de 2 para aumentar a resolução.
 
         const imgData = canvas.toDataURL('image/png'); // Converte o canvas em uma URL de imagem no formato PNG.
         document.body.removeChild(div); // Remove o elemento do DOM
@@ -389,12 +355,11 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
         pdf.setDrawColor(0, 0, 0); // Define a cor da borda
         pdf.setFillColor(143, 143, 143); // Define a cor de fundo
         pdf.setLineWidth(0.1); // Largura da linha da borda
-        pdf.rect(10, 43.3, imgWidth, 1, 'FD'); // Desenha o retângulo
 
         // Adicionar borda ao redor da página
         pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
 
-        let posY = imgHeight + 11; // Posição Y inicial para a tabela
+        let posY = imgHeight + 10; // Posição Y inicial para a tabela
         const itemsPerPage = 15; // Itens por página
         let itemCount = 0; // Contador de itens
 
@@ -404,21 +369,22 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
 
                 // Adicionar borda ao redor da página
                 pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página
-                posY = 11; // Posição Y inicial para a tabela
+                posY = 10; // Posição Y inicial para a tabela
             }
             const tabelaDiv = document.createElement('div'); // Cria um elemento div para conter a tabela
             // Define o conteúdo HTML da tabela.
             tabelaDiv.innerHTML = `
-    <table border="1" style="border-collapse: collapse; width: 100%; text-align: left; border-color: rgb(0, 0, 0); color: rgb(0, 0, 0);">
+    <table border="1" style="border-collapse: collapse; width: 100%; text-align: left; border: 1px solid rgb(0, 0, 0); color: rgb(0, 0, 0);">
          <thead>
-             <tr style="background-color:rgb(255, 255, 255); height: 30px; text-align: center">
-                 <th style="width: 35px; background-color:rgb(143, 143, 143);" > </th>
-                 <th>Producto</th>
-                 <th>Tipo // Modelo</th>
-                 <th>Marca</th>
-                 <th>Cantidad</th>
-                 <th>Fecha</th>
-                 <th>Firma</th>
+         <tr style="background-color:rgb(143, 143, 143); height: 10px; text-align: center; border: 1px solid rgb(0, 0, 0);">
+             <tr style="background-color:rgb(255, 255, 255); height: 30px; text-align: center;">
+                 <th style="width: 35px; background-color:rgb(143, 143, 143); border: 1px solid rgb(0, 0, 0);"> </th>
+                 <th style="border: 1px solid rgb(0, 0, 0);">Producto</th>
+                 <th style="border: 1px solid rgb(0, 0, 0);">Tipo // Modelo</th>
+                 <th style="border: 1px solid rgb(0, 0, 0);">Marca</th>
+                 <th style="border: 1px solid rgb(0, 0, 0);">Cantidad</th>
+                 <th style="border: 1px solid rgb(0, 0, 0);">Fecha</th>
+                 <th style="border: 1px solid rgb(0, 0, 0);">Firma</th>
              </tr>
          </thead>
          <tbody>
@@ -426,16 +392,16 @@ export async function GerarPdfRetiradaEs(funcionarioSelecionado, relatorio) {
                         .slice(i, i + itemsPerPage)
                         .map(
                             (item, index) => `
-                                <tr style="height: 35px;">
-                                    <td style="text-align: center">${i + index + 1}</td>
-                     <td style="padding: 5px">${item.ProdutoNome || ''}</td>
-                     <td style="padding: 5px">${item.modelo || ''}</td>
-                     <td style="padding: 5px">${item.marca || ''}</td>
-                     <td style="text-align: center">${item.Quantidade || ''}</td>
-                     <td style="text-align: center">${formatStringDate(item.Dia) || ''}</td>
-                     <td style="padding: 5px; text-align: center">${item.Forma_Autenticacao === 'Senha' ? 'Contraseña' : item.Forma_Autenticacao || ''}</td>                 
-                </tr>
-             `
+                                <tr style="height: 35px; border: 1px solid rgb(0, 0, 0);">
+                                    <td style="text-align: center; border: 1px solid rgb(0, 0, 0);">${i + index + 1}</td>
+                                    <td style="padding: 5px; border: 1px solid rgb(3, 3, 3);">${item.ProdutoNome || ''}</td>
+                                    <td style="padding: 5px; border: 1px solid rgb(0, 0, 0);">${item.modelo || ''}</td>
+                                    <td style="padding: 5px; border: 1px solid rgb(0, 0, 0);">${item.marca || ''}</td>
+                                    <td style="text-align: center; border: 1px solid rgb(0, 0, 0);">${item.Quantidade || ''}</td>
+                                    <td style="text-align: center; border: 1px solid rgb(0, 0, 0);">${formatStringDate(item.Dia) || ''}</td>
+                                    <td style="padding: 5px; text-align: center; border: 1px solid rgb(0, 0, 0);">${item.Forma_Autenticacao === 'Senha' ? 'Contraseña' : item.Forma_Autenticacao || ''}</td>                 
+                                </tr>
+                            `
                         )
                         .join('')}
          </tbody>

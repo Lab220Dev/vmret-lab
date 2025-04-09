@@ -318,6 +318,7 @@ export default {
     fetch_data: 'Error fetching data.',
     console_fetch_data: 'Error fetching withdrawals:',
     product_details: 'Detalles del Producto',
+    details: 'Details',
     info: 'Information',
     load_dm_list: 'Failed to load the list of DMs.',
     load_user_list: 'Failed to load the user list.',

@@ -17,7 +17,7 @@ const relatorio = ref({
 const loading = ref(false); // Variável reativa para controlar o estado de carregamento
 const dms = ref([]); // Variável reativa para armazenar a lista de DMs
 const formatedDms = ref([]); // Lista reativa para armazenar os DMs formatados (não utilizada atualmente)
-const dropdown1 = ref(null); // Referência para o primeiro dropdown
+const select 1 = ref(null); // Referência para o primeiro select 
 
 // Função que será chamada quando o componente for montado
 onMounted(() => {
@@ -41,7 +41,7 @@ const fetchDMS = async () => {
                 Authorization: `Bearer ${store.token}` // Passa o token de autenticação no cabeçalho
             }
         });
-        // Mapeia a resposta para um formato esperado para a dropdown
+        // Mapeia a resposta para um formato esperado para a select 
         dms.value = response.data.map(({ ID_DM, Numero }) => ({
             label: `${Numero}`, // Exibe o número da DM como label
             value: ID_DM // O ID da DM será o valor selecionado
@@ -128,19 +128,19 @@ const exportJSON = () => {
 };
 
 /**
- * Função que fecha todos os dropdowns caso estejam abertos.
- * Verifica se o dropdown está visível e o fecha.
+ * Função que fecha todos os select s caso estejam abertos.
+ * Verifica se o Select está visível e o fecha.
  */
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Verifica se o dropdown1 está visível e o esconde
+const closeAllselect s = () => {
+    if (select 1.value?.overlayVisible) select 1.value.hide(); // Verifica se o select 1 está visível e o esconde
 };
 
 /**
  * Função que é chamada quando o datepicker é aberto.
- * Fecha todos os dropdowns ao abrir o datepicker.
+ * Fecha todos os select s ao abrir o datepicker.
  */
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns quando o datepicker é aberto
+    closeAllselect s(); // Fecha todos os select s quando o datepicker é aberto
 };
 </script>
 
@@ -153,8 +153,8 @@ const handleDatepickerOpen = () => {
                     <!-- Div de busca de informações para o relatório -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
-                        <!-- Dropdown para selecionar a DM -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <!-- Select para selecionar a DM -->
+                        <Select class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="select 1" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Inicial:</label>

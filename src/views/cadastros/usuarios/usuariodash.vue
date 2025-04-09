@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useI18n } from 'vue-i18n';
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 import usuarioService from '@/Services/usuariodashService.js';
 
 const { t } = useI18n();
@@ -95,7 +95,7 @@ onMounted(async () => {
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <TabView v-model:activeIndex="active">
+                <Tabs v-model:activeIndex="active">
                     <TabPanel header="Usuario Dash">
                         <DataTable
                             :value="Usuarios"
@@ -156,11 +156,11 @@ onMounted(async () => {
                             </div>
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="superUser">Usuario Supervisor Complexo</label>
-                                <InputSwitch v-model="UsarioDash.superUser" :change="invalidData()" />
+                                <ToggleSwitch v-model="UsarioDash.superUser" :change="invalidData()" />
                             </div>
                             <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                 <label for="superUser">Cliente</label>
-                                <Dropdown v-model="UsarioDash.id_cliente" :options="clientes" :disabled="UsarioDash.superUser" optionLabel="label" optionValue="value" />
+                                <Select v-model="UsarioDash.id_cliente" :options="clientes" :disabled="UsarioDash.superUser" optionLabel="label" optionValue="value" />
                             </div>
                             <!-- Botões para salvar, excluir ou voltar -->
                             <div class="flex align-items-center justify-content-end field col-12 mt-6">
@@ -209,7 +209,7 @@ onMounted(async () => {
                             </DataTable>
                         </div>
                     </TabPanel>
-                </TabView>
+                </Tabs>
             </div>
         </div>
         <LoadingSpinner v-if="loading" />

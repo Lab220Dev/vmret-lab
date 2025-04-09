@@ -1,8 +1,8 @@
 <script setup>
 import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
-import { reactive, ref, onMounted, watch, computed, nextTick } from 'vue'; // Hooks do Vue.js
+import { reactive, ref, onMounted, watch, computed} from 'vue'; // Hooks do Vue.js
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação de usuário
-import { FilterMatchMode } from 'primevue/api'; // Modo de filtro global para PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Modo de filtro global para PrimeVue
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de loading
 import { useDataStore } from '@/store/dataStore.js'; // Store para dados gerais
 import {
@@ -138,7 +138,7 @@ const controladoraRefs = ref([]);
 const totalRecords = ref(0); // Declara uma variável reativa chamada totalRecords com valor inicial 0
 const isEditMode = ref(false); // Declara uma variável reativa chamada isEditMode com valor inicial false
 const showDialogProduto = ref(false); // Declara uma variável reativa chamada showDialogProduto com valor inicial false
-const active = ref(0); // Declara uma variável reativa chamada active com valor inicial 0
+const active = ref("0");// Declara uma variável reativa chamada active com valor inicial 0
 const showDialogDVM = ref(false); // Declara uma variável reativa chamada showDialogDVM com valor inicial false
 const showDialogDItem = ref(false); // Declara uma variável reativa chamada showDialogDItem com valor inicial false
 const showDialogControl = ref(false); // Declara uma variável reativa chamada showDialogControl com valor inicial false
@@ -441,7 +441,7 @@ const adicionarDM = async () => {
         dataStore.invalidateDMCache(); // Invalida o cache de DM no dataStore
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_added_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         fetchDMS(); // Busca as DMs atualizadas
-        active.value = 0; // Define o valor de active como 0
+        active.value = "0"; // Define o valor de active como 0
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues); // Reseta o formulário de DM
     } catch (error) {
         // Captura qualquer erro que ocorrer durante a adição
@@ -468,7 +468,7 @@ const atualizarDM = async () => {
         await dmService.atualizarDM(data); // Faz uma requisição para atualizar a DM
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_update_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         fetchDMS(); // Busca as DMs atualizadas
-        active.value = 0; // Define o valor de active como 0
+        active.value = "0"; // Define o valor de active como 0
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues); // Reseta o formulário de DM
     } catch (error) {
         // Captura qualquer erro que ocorrer durante a atualização
@@ -559,7 +559,7 @@ const configurarVisibilidade = () => {
         preencherControladoraOptions(); // Chama a função preencherControladoraOptions para preencher as opções de controladoras
         operador.value = true; // Define a variável reativa operador como true
     } else {
-        active.value = 1; // Define a variável reativa active como 1
+        active.value = "1"; // Define a variável reativa active como 1
     }
 };
 
@@ -733,6 +733,8 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
     await loadData(); // Carrega os dados iniciais
     await fetchCliente(); // Busca a lista de clientes
     await fetchDMS(); // Busca a lista de DMs
+
+    active.value = "0"; 
 });
 </script>
 
@@ -740,9 +742,13 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
     <div class="grid">
         <div class="col-12">
             <div class="card">
-                <h4 class="my-6 ml-2">{{ t('dispenser_machines') }}</h4>
-                <TabView v-model:activeIndex="active" v-if="!show">
-                    <TabPanel :header="$t('dispenser_machine_list')">
+                <Tabs v-model:value="active" :value="0" v-if="!show">
+                    <TabList>
+                        <Tab  value="0">{{ $t('dispenser_machine_list') }}</Tab>
+                        <Tab v-if="admin()" value="1">{{ visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine') }}</Tab>
+                    </TabList>
+                    <TabPanels>
+                    <TabPanel value="0">
                         <div class="col-12">
                             <DataTable
                                 v-model:filters="filters"
@@ -805,7 +811,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                                 >
                                 <Column field="Ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
                                     <template #body="{ data }">
-                                        <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.Ativo, 'pi-times-circle text-red-500': !data.Ativo }"></i>
+                                        <i class="pi" :class="{ 'pi-check-circle pi-yes ': data.Ativo, 'pi-times-circle pi-no': !data.Ativo }"></i>
                                     </template>
                                 </Column>
                                 <Column field="Updated" style="width: 15%" sortable :header="t('updated')">
@@ -821,36 +827,36 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                             </DataTable>
                         </div>
                     </TabPanel>
-                    <TabPanel :header="visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine')" v-if="admin()">
+                    <TabPanel value="1">
                         <div class="mt-5 mx-0 p-fluid grid">
-                            <div class="full lg:col-12 md:col-12 sm:col-12">
+                            <div class="lg:col-12 md:col-12 sm:col-12">
                                 <label for="name">{{ t('client') }}:</label>
-                                <Dropdown class="my-2" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
+                                <Select class="my-2 w-full" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
                             </div>
 
-                            <div class="full lg:col-6 md:col-9 sm:col-12">
-                                <label for="indetificacao">{{ t('dm_identification') }}:</label>
-                                <InputText class="my-2" v-model="DM.Identificacao" id="indetificacao" />
+                            <div class="lg:col-6 md:col-9 sm:col-12">
+                                <label for="indetificacao">{{ t('dm_identification') }}</label>
+                                <InputText class="my-2 w-full" v-model="DM.Identificacao" id="indetificacao" />
                             </div>
-                            <div class="full lg:col-6 md:col-9 sm:col-12">
+                            <div class="lg:col-6 md:col-9 sm:col-12">
                                 <label for="numero">{{ t('dm_number') }}:</label>
-                                <InputText class="my-2" v-model="DM.Numero" id="numero" />
+                                <InputText class="my-2 w-full" v-model="DM.Numero" id="numero" />
                             </div>
-                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                            <div class="flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                 <label class="mt-0 text-nowrap" for="switch2">{{ t('dm_active') }}</label>
                                 <div class="grid mt-3">
-                                    <InputSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
+                                    <ToggleSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
                                     <span class="ml-2">{{ DM.Ativo ? $t('yes') : $t('no') }}</span>
                                 </div>
                             </div>
-                            <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                            <div class=" flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                 <label class="mt-0 text-nowrap" for="switch3">{{ t('dm_return') }}</label>
                                 <div class="grid mt-3">
-                                    <InputSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
+                                    <ToggleSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
                                     <span class="ml-2">{{ DM.Devolucao ? $t('yes') : $t('no') }}</span>
                                 </div>
                             </div>
-                        </div>
+                        </div><hr/>
 
                         <panel :header="$t('dm_options')" class="mt-4">
                             <div class="grid mt-5 mx-0 p-fluid">
@@ -889,7 +895,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                                             <div class="flex align-items-center flex-column">
                                                 <label for="switch4" class="mt-0 text-nowrap"> {{ $t('dm_config_data') }}</label>
                                                 <div class="grid mt-3">
-                                                    <InputSwitch class="mr-2" v-model="salvardados" inputId="switch4" @change="handleSalvarDadosChange" />
+                                                    <ToggleSwitch class="mr-2" v-model="salvardados" inputId="switch4" @change="handleSalvarDadosChange" />
                                                     <span class="ml-2">{{ salvardados ? $t('yes') : $t('no') }}</span>
                                                 </div>
                                             </div>
@@ -906,10 +912,10 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                                             </div>
                                             <hr />
                                             <div class="flex flex-column gap-3">
-                                                <div class="flex align-items-center flex-column">
+                                                <div class="flex align-items-center flex-column mt-4">
                                                     <label for="switch4" class="mt-0 text-nowrap">{{ $t('dm_config_data_save') }}</label>
                                                     <div class="grid mt-3">
-                                                        <InputSwitch class="mr-2" v-model="salvardadosMaquina" inputId="switch4" />
+                                                        <ToggleSwitch class="mr-2" v-model="salvardadosMaquina" inputId="switch4" />
                                                         <span class="ml-2">{{ salvardadosMaquina ? $t('yes') : $t('no') }}</span>
                                                     </div>
                                                 </div>
@@ -923,7 +929,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                         <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
                             <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
                                 <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
-                                <InputSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
+                                <ToggleSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
                             </div>
                             <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
                                 <label for="userapi">{{ t('userid_api') }}</label>
@@ -962,9 +968,9 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                                 </div>
 
                                 <div class="field mt-3 col-12">
-                                    <label class="mr-3">{{ t('model') }} </label>
-                                    <Dropdown
-                                        class=""
+                                    <label class="mr-3">{{ t('model') }}: </label>
+                                    <Select 
+                                        class="select"
                                         style="width: 250px"
                                         v-model="controladora.tipo"
                                         optionLabel="label"
@@ -1092,7 +1098,8 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                             <Button v-if="visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="atualizarDM" class="full mt-4 mr-2" />
                         </div>
                     </TabPanel>
-                </TabView>
+                </TabPanels>
+                </Tabs>
                 <div class="card" v-if="operador">
                     <div class="mx-0 grid">
                         <div class="col-12">
@@ -1181,7 +1188,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                     <label for="Produto" class="font-semibold">{{ t('product') }}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown
+                    <Select 
                         v-model="produtoSelecionado.id_produto"
                         class="w-full"
                         removableSort
@@ -1189,7 +1196,6 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                         :virtualScrollerOptions="{ itemSize: 30 }"
                         :filter="true"
                         :filterBy="'label'"
-                        v-model:filters="filters"
                         optionLabel="label"
                         optionValue="value"
                         :placeholder="t('select_product')"
@@ -1199,7 +1205,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                     <label for="Controladora" class="font-semibold">{{ t('controller') }}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Dropdown v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" :placeholder="$t('controller_select')" />
+                    <Select v-model="produtoSelecionado.Controladora" class="w-full" optionLabel="label" optionValue="value" :options="controladoraOptions" @change="handleControladoraChange" :placeholder="$t('controller_select')" />
                 </div>
                 <!-- Exibir campos dependendo do tipo de controladora -->
                 <template v-if="tipoControladoraSelecionada === '2018'">
@@ -1207,13 +1213,13 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                         <label for="Dip" class="font-semibold">{{ t('board') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" :placeholder="$t('board_select')" />
+                        <Select v-model="produtoSelecionado.Placa" class="w-full" :options="placaOptions" optionLabel="label" optionValue="value" :placeholder="$t('board_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="molas" class="font-semibold">{{ t('spring') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" :placeholder="$t('spring_select')" />
+                        <Select v-model="produtoSelecionado.Motor1" class="w-full" :options="molasOptions" optionLabel="label" optionValue="value" :placeholder="$t('spring_select')" />
                     </div>
                 </template>
 
@@ -1222,21 +1228,21 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                         <label for="Dip" class="font-semibold">{{ t('dip') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
+                        <Select v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Andar" class="font-semibold">{{ t('level_floor') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" :placeholder="$t('floor_select')" @change="handleAndarChange" />
+                        <Select v-model="produtoSelecionado.Andar" class="w-full" :options="andarOptions" optionLabel="label" optionValue="value" :placeholder="$t('floor_select')" @change="handleAndarChange" />
                     </div>
 
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Posicao" class="font-semibold">{{ t('position') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" @change="validarAndarSelecionado" />
+                        <Select v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" @change="validarAndarSelecionado" />
                     </div>
                 </template>
 
@@ -1245,7 +1251,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                         <label for="Motor" class="font-semibold">{{ t('motor') }}:</label>
                     </div>
                     <div class="lg:col-8 md:c ol-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" :placeholder="$t('motor_select')" />
+                        <Select v-model="produtoSelecionado.Motor1" class="w-full" :options="motorOptions" optionLabel="label" optionValue="value" :placeholder="$t('motor_select')" />
                     </div>
                 </template>
 
@@ -1254,13 +1260,13 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                         <label for="Dip" class="font-semibold">{{ t('dip') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
+                        <Select v-model="produtoSelecionado.Dip" class="w-full" :options="dipOptions" optionLabel="label" optionValue="value" :placeholder="$t('dip_select')" />
                     </div>
                     <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                         <label for="Posicao" class="font-semibold">{{ t('position') }}:</label>
                     </div>
                     <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                        <Dropdown v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" />
+                        <Select v-model="produtoSelecionado.Posicao" class="w-full" :options="posicaoOptions" optionLabel="label" optionValue="value" :placeholder="$t('position_select')" />
                     </div>
                 </template>
                 <div v-if="tipoControladoraSelecionada" class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
@@ -1281,8 +1287,8 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
         </div>
 
         <div class="flex justify-content-end gap-2 mt-4">
-            <Button type="button" :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
-            <Button type="button" :label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
+            <Button type="button"  :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
+            <Button type="button" style="width:300px !important;" :label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
     <Dialog :header="$t('dialog_delete_item')" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">

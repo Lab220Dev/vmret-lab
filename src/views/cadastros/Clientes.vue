@@ -1,7 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted, watch, computed } from 'vue'; // Funções reativas e hooks do Vue.js
 import { useToast } from 'primevue/usetoast'; // Função para mostrar notificações
-import { FilterMatchMode } from 'primevue/api'; // Modo de filtro para tabelas, como CONTAINS ou EQUALS
+import { FilterMatchMode } from '@primevue/core/api'; // Modo de filtro para tabelas, como CONTAINS ou EQUALS
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Spinner de carregamento
 import MenuSelector from '@/components/MenuSelector.vue'; // Seleção de menus hierárquicos
 import clientesService from '@/services/clientesService'; // Serviço para manipulação de dados de clientes
@@ -11,7 +11,7 @@ import { formatDate,prepareListData } from '@/helpers/HelperUtils.js'; // Funç�
 import { useI18n } from 'vue-i18n';//Importa o hook useI18n da biblioteca vue-i18n para internacionalização.
 const { t } = useI18n();//Desestruturação do hook useI18n para obter a função t, que é usada para tradução.
 
-const active = ref(0); // Controle do índice ativo (0 indica nenhuma etapa selecionada)
+const active = ref("0");// Controle do índice ativo (0 indica nenhuma etapa selecionada)
 const show = ref(false); // Controle da visibilidade de algum componente (não utilizado diretamente)
 const toast = useToast(); // Instância da função de notificação
 const loading = ref(false); // Flag de carregamento (indica se o sistema está processando dados)
@@ -64,7 +64,7 @@ function debounce(func, wait = 300) { // Declara uma função chamada debounce
  */
 const onRowSelect = (event) => {
     cliente = reactive({ ...event.data }); // Preenche o objeto `cliente` com os dados da linha selecionada
-    active.value = 1; // Altera o índice ativo para 1 (indicando que o cliente está sendo editado)
+    active.value = "1"; // Altera o índice ativo para 1 (indicando que o cliente está sendo editado)
     visible.value = true; // Torna o formulário visível para edição
     structuredMenus.value = cliente.menusPorPerfil || []; // Carrega a estrutura de menus (caso exista)
     console.log('Menus Estruturados:', structuredMenus.value); // Exibe os menus estruturados no console
@@ -104,7 +104,7 @@ const adicionarCliente = async () => {
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('client_add_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
         resetClienteForm(cliente); // Limpa o formulário após adicionar o cliente
-        active.value = 0; // Reseta o índice ativo para 0 (volta para a visão geral)
+        active.value = "0"; // Reseta o índice ativo para 0 (volta para a visão geral)
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
         toast.add({ severity: 'error', summary:t('title_error'), detail: t('client_add_fail'), life: 3000  });
@@ -117,7 +117,7 @@ const atualizarCliente = async () => {
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('client_update_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
         loadClientes(); // Recarrega a lista de clientes
         resetClienteForm(cliente); // Limpa o formulário após atualizar os dados
-        active.value = 0; // Reseta o índice ativo para 0
+        active.value ="0"; // Reseta o índice ativo para 0
     } catch {
         // Caso ocorra um erro, exibe uma mensagem de erro
         toast.add({ severity: 'error', summary:  t('title_sucess'), detail: t('client_update_fail'), life: 3000  });
@@ -211,7 +211,7 @@ const validateCNPJField = () => {
  * @param {number} oldIndex - Valor antigo de `active`.
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
+    if (newIndex !== oldIndex && newIndex === "0") {
         resetClienteForm(cliente); // Reseta o formulário
         visible.value = false; // Esconde o formulário
     }
@@ -219,153 +219,161 @@ watch(active, (newIndex, oldIndex) => {
 
 onMounted(() => {
     loadClientes(); // Chama a função para carregar os clientes assim que o componente for montado
+    active.value = "0"; // Define a aba ativa como 0 (listagem de usuários)
 });
 </script>
 
 <template>
     <!-- Card Principal -->
     <div class="card">
-        <!-- TabView que gerencia as abas de Listar Clientes e Editar/Adicionar Cliente -->
-        <TabView v-model:activeIndex="active" v-if="!show">
+        <!-- Tabsque gerencia as abas de Listar Clientes e Editar/Adicionar Cliente -->
+        <Tabs v-model:value="active" :value="0" v-if="!show">
             <!-- Aba de Listar Clientes -->
-            <TabPanel  :header="$t('client_list')">
-                <div class="col-12">
-                    <!-- DataTable que exibe a lista de clientes -->
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="ListaClientes"
-                        selectionMode="single"
-                        tableStyle="min-width: 50rem; table-layout: fixed;"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :totalRecords="filteredCount"
-                        stripedRows
-                        paginator
-                        lazy
-                        :rows="lazyParams.value?.rows || 10"
-                        dataKey="id"
-                        :metaKeySelection="false"
-                        @rowSelect="onRowSelect"
-                        @filter="onFilterChange($event)"
-                        @page="onPageChange($event)"
-                        @sort="onSortChange($event)"
-                        :globalFilterFields="['id_cliente', 'nome', 'last_login']"
-                        :sortOrder="lazyParams.value?.sortOrder || 1"
-                        :sortField="lazyParams.value?.sortField || 'id_cliente'"
-                    >
-                        <!-- Filtragem global na tabela -->
-                        <!-- Dados da tabela (lista de clientes) -->
-                        <!-- Permite selecionar apenas um item -->
-                        <!-- Estilo da tabela -->
-                        <!-- Opções de quantidade de itens por página -->
-                        <!-- Linhas alternadas para melhorar a legibilidade -->
-                        <!-- Habilita paginação -->
-                        <!-- Quantidade de linhas por página -->
-                        <!-- Chave única para cada cliente (usado na seleção) -->
-                        <!-- Desabilita a seleção usando a tecla Meta (como Ctrl) -->
-                        <!-- Ação chamada ao selecionar uma linha -->
-                        <!-- Campos para pesquisa global -->
-                        <!-- Ordem de ordenação inicial -->
-                        <!-- Campo inicial para ordenação -->
-                        <template #header>
-                            <div class="flex justify-content-end">
-                                <!--Caixa de pesquisa para busca global -->
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                        <!--Ícone de pesquisa -->
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search"  @input="debouncedFilterChange"/>
-                                    <!-- Campo de busca -->
-                                </IconField>
-                            </div>
-                        </template>
-                        <!--Definição das colunas da tabela -->
-                        <Column field="id_cliente" sortable style="width: 7%" header="ID"></Column>
-                        <Column field="nome" sortable style="width: 20%" :header="t('name')"></Column>
-                        <!--Coluna que mostra se o cliente está ativo, com ícones de status -->
-                        <Column field="ativo" sortable style="width: 10%; text-align: center" :header="t('active')">
-                            <template #body="{ data }">
-                                <i class="pi" :class="{ 'pi-check-circle text-green-500 ': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
-                            </template>
-                        </Column>
-                        <!--oluna que mostra o último login do cliente formatado -->
-                        <Column field="last_login" sortable class="table-cell" style="width: 15%" :header="t('last_login')">
-                            <template #body="{ data }">
-                                {{ formatDate(new Date(data.last_login)) }}
-                                <!-- Formata e exibe a data -->
-                            </template>
-                        </Column>
-                        <!--Coluna com botão de exclusão -->
-                        <Column style="width: 10%">
-                            <template #body="slotProps">
-                                <!--Botão de excluir -->
-                                <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
-                            </template>
-                        </Column>
-                    </DataTable>
-                </div>
-            </TabPanel>
-            <!--Aba de Adicionar ou Editar Cliente -->
-            <TabPanel :header="visible ? t('edit_client') : t('add_client')">
-                <div class="grid">
+            <TabList >
+                <Tab value="0">{{$t('client_list')  }}</Tab>
+                <Tab value="1">{{ visible ? t('edit_client') : t('add_client') }}</Tab>
+            </TabList>
+            <TabPanels>
+                <TabPanel value="0">
                     <div class="col-12">
-                        <div class="mt-5">
-                            <!--Formulário para adicionar ou editar um cliente -->
-                            <form @submit.prevent="submitForm">
-                                <div class="mt-5 mx-0 p-fluid grid">
-                                    <!--Campo para o nome do cliente -->
-                                    <div class="full mt-5 lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_planta">{{t('name')}}:</label>
-                                        <InputText class="my-2" id="id_planta" v-model="cliente.nome" required />
-                                    </div>
-                                    <!--Campo para o CNPJ do cliente -->
-                                    <div :class="visible ? { 'lg:col-9 md:col-9 sm:col-12': true } : { 'lg:col-12 md:col-12 sm:col-12': true }">
-                                        <label for="cnpj">{{t('ein')}}:</label>
-                                        <InputMask class="my-2" v-model="cliente.cnpj" id="cnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cnpj" @blur="validateCNPJField" />
-                                        <small v-if="errors.cnpj" class="p-error">{{ errors.cnpj }}</small>
-                                        <!--Exibe mensagem de erro se houver -->
-                                    </div>
-                                    <!--campo para selecionar o perfil, aparece apenas se visible for verdadeiro -->
-                                    <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
-                                        <label v-if="visible">{{t('select_profile')}}</label>
-                                        <Dropdown v-if="visible" class="my-2" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_profile')" />
-                                    </div>
-                                    <!--Campo para ativar ou desativar a integração via API-->
-                                    <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                        <label class="mt-0 text-nowrap" for="switch1">{{t('external_integration')}}</label>
-                                        <div class="grid mt-3">
-                                            <InputSwitch class="mr-2" v-model="cliente.usar_api" inputId="switch1" />
-                                            <!-- Comutador para a integração -->
-                                            <span class="ml-2">{{ cliente.usar_api ?  $t('yes') : $t('no') }}</span>
-                                        </div>
-                                    </div>
-                                    <!--campo para ativar ou desativar o status de cliente ativo -->
-                                    <div class="full flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                        <label class="mt-0 text-nowrap" for="switch2">{{t('active_client')}}</label>
-                                        <div class="grid mt-3">
-                                            <InputSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
-                                            <!--Comutador para o status ativo -->
-                                            <span class="ml-2">{{ cliente.ativo ?  $t('yes') : $t('no')}}</span>
-                                        </div>
-                                    </div>
+                        <!-- DataTable que exibe a lista de clientes -->
+                        <DataTable
+                            v-model:filters="filters"
+                            :value="ListaClientes"
+                            selectionMode="single"
+                            tableStyle="min-width: 50rem; table-layout: ;"
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            :totalRecords="filteredCount"
+                            stripedRows
+                            paginator
+                            lazy
+                            :rows="lazyParams.value?.rows || 10"
+                            dataKey="id"
+                            :metaKeySelection="false"
+                            @rowSelect="onRowSelect"
+                            @click="active.value = '1'"
+                            @filter="onFilterChange($event)"
+                            @page="onPageChange($event)"
+                            @sort="onSortChange($event)"
+                            :globalFilterFields="['id_cliente', 'nome', 'last_login']"
+                            :sortOrder="lazyParams.value?.sortOrder || 1"
+                            :sortField="lazyParams.value?.sortField || 'id_cliente'"
+                        >
+                            <!-- Filtragem global na tabela -->
+                            <!-- Dados da tabela (lista de clientes) -->
+                            <!-- Permite selecionar apenas um item -->
+                            <!-- Estilo da tabela -->
+                            <!-- Opções de quantidade de itens por página -->
+                            <!-- Linhas alternadas para melhorar a legibilidade -->
+                            <!-- Habilita paginação -->
+                            <!-- Quantidade de linhas por página -->
+                            <!-- Chave única para cada cliente (usado na seleção) -->
+                            <!-- Desabilita a seleção usando a tecla Meta (como Ctrl) -->
+                            <!-- Ação chamada ao selecionar uma linha -->
+                            <!-- Campos para pesquisa global -->
+                            <!-- Ordem de ordenação inicial -->
+                            <!-- Campo inicial para ordenação -->
+                            <template #header>
+                                <div class="flex justify-content-end">
+                                    <!--Caixa de pesquisa para busca global -->
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                            <!--Ícone de pesquisa -->
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search"  @input="debouncedFilterChange"/>
+                                        <!-- Campo de busca -->
+                                    </IconField>
                                 </div>
-                            </form>
-                            <!--seção adicional para configurar menus  -->
-                            <div class="mt-6" v-if="visible">
-                                <!-- Seção de Seleção de Menu -->
-                                <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil" :initialMenus="structuredMenus.value" :id_cliente="cliente.id_cliente" />
+                            </template>
+                            <!--Definição das colunas da tabela -->
+                            <Column field="id_cliente" sortable style="width: 7%" header="ID"></Column>
+                            <Column field="nome" sortable style="width: 20%" :header="t('name')"></Column>
+                            <!--Coluna que mostra se o cliente está ativo, com ícones de status -->
+                            <Column field="ativo" sortable style="width: 10%; text-align: center" :header="t('active')">
+                                <template #body="{ data }">
+                                    <i class="pi" :class="{ 'pi-check-circle pi-yes ': data.ativo, 'pi-times-circle pi-no': !data.ativo }"></i>
+                                </template>
+                            </Column>
+                            <!--oluna que mostra o último login do cliente formatado -->
+                            <Column field="last_login" sortable class="table-cell" style="width: 15%" :header="t('last_login')">
+                                <template #body="{ data }">
+                                    {{ formatDate(new Date(data.last_login)) }}
+                                    <!-- Formata e exibe a data -->
+                                </template>
+                            </Column>
+                            <!--Coluna com botão de exclusão -->
+                            <Column style="width: 10%">
+                                <template #body="slotProps">
+                                    <!--Botão de excluir -->
+                                    <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteClientedes(slotProps.data)" />
+                                </template>
+                            </Column>
+                        </DataTable>
+                    </div>
+                </TabPanel>
+                <!--Aba de Adicionar ou Editar Cliente -->
+                <TabPanel value="1">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="mt-5">
+                                <!--Formulário para adicionar ou editar um cliente -->
+                                <form @submit.prevent="submitForm">
+                                    <div class="mt-5 mx-0 p-fluid grid">
+                                        <!--Campo para o nome do cliente -->
+                                        <div class=" lg:col-6 md:col-6 sm:col-12">
+                                            <label for="id_planta">{{t('name')}}:</label>
+                                            <InputText class="my-2 w-full" id="id_planta" v-model="cliente.nome" required />
+                                        </div>
+                                        <!--Campo para o CNPJ do cliente -->
+                                        <div :class="visible ? { 'lg:col-3 md:col-3 sm:col-12': true } : { 'lg:col-6 md:col-6 sm:col-12': true }">
+                                            <label for="cnpj">{{t('ein')}}:</label>
+                                            <InputMask class="my-2 w-full" v-model="cliente.cnpj" id="cnpj" mask="99.999.999/9999-99" :unmask="true" :invalid="!!errors.cnpj" @blur="validateCNPJField" />
+                                            <small v-if="errors.cnpj" class="p-error">{{ errors.cnpj }}</small>
+                                            <!--Exibe mensagem de erro se houver -->
+                                        </div>
+                                        <!--campo para selecionar o perfil, aparece apenas se visible for verdadeiro -->
+                                        <div :class="visible ? 'lg:col-3 md:col-3 sm:col-12 ' : ''">
+                                            <label v-if="visible">{{t('select_profile')}}:</label>
+                                            <Select v-if="visible" class="my-2 w-full" v-model="selectedPerfil" :options="perfilOptions" optionLabel="label" optionValue="value" :placeholder="$t('select_profile')" />
+                                        </div>
+                                        <!--Campo para ativar ou desativar a integração via API-->
+                                        <div class=" flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                            <label class="mt-0 text-nowrap" for="switch1">{{t('external_integration')}}</label>
+                                            <div class="grid mt-3">
+                                                <ToggleSwitch class="mr-2" v-model="cliente.usar_api" inputId="switch1" />
+                                                <!-- Comutador para a integração -->
+                                                <span class="ml-2">{{ cliente.usar_api ?  $t('yes') : $t('no') }}</span>
+                                            </div>
+                                        </div>
+                                        <!--campo para ativar ou desativar o status de cliente ativo -->
+                                        <div class=" flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                            <label class="mt-0 text-nowrap" for="switch2">{{t('active_client')}}</label>
+                                            <div class="grid mt-3 w-full align-items-center justify-content-center switch-wrapper">
+                                                <ToggleSwitch class="mr-2" v-model="cliente.ativo" inputId="switch2" />
+                                                <!--Comutador para o status ativo -->
+                                                <span class="ml-2">{{ cliente.ativo ?  $t('yes') : $t('no')}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <!--seção adicional para configurar menus  -->
+                                <div class="mt-6" v-if="visible">
+                                    <!-- Seção de Seleção de Menu -->
+                                    <MenuSelector class="mx-auto" v-if="selectedPerfil" :selectedPerfil="selectedPerfil" :initialMenus="structuredMenus.value" :id_cliente="cliente.id_cliente" />
+                                </div>
                             </div>
-                        </div>
-                        <!--botões para salvar ou voltar -->
-                        <div class="mr-1 my-7 grid justify-content-end">
-                            <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')"  icon="pi pi-check" severity="primary" @click="atualizarCliente" />
-                            <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
-                            <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                            <!--botões para salvar ou voltar -->
+                            <div class="mr-1 my-7 grid justify-content-end w-full">
+                                <Button style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="active = 0" />
+                                <Button v-if="visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')"  icon="pi pi-check" severity="primary" @click="atualizarCliente" />
+                                <Button v-if="!visible" style="width: 25%; min-width: 100px" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarCliente" />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </TabPanel>
-        </TabView>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
 
         <!--caixa de diálogo de confirmação para deletar cliente -->
         <Dialog header="Deletar Cliente" v-model:visible="deleteClienteDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
@@ -383,7 +391,7 @@ onMounted(() => {
             </template>
         </Dialog>
         <!-- ProgressBar para mostrar o progresso -->
-        <ProgressBar v-if="progressValue > 0"  :value="progressValue" style="height: 20px" />
+        <!-- <ProgressBar v-if="progressValue > 0"  :value="progressValue" style="height: 20px" /> -->
             
         <!-- Componente de carregamento -->
         <LoadingSpinner v-if="loading" />

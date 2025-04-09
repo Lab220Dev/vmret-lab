@@ -1,6 +1,6 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente de calendário (datepicker)
-import { FilterMatchMode } from 'primevue/api'; // Importa o tipo de filtro para a tabela (DataTable) do PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Importa o tipo de filtro para a tabela (DataTable) do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa a função para exibir mensagens de toast (notificações)
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa o estilo do componente VueDatePicker
 import { ref, onMounted, computed, nextTick, watch } from 'vue'; // Importa funções reativas e de ciclo de vida do Vue
@@ -13,7 +13,7 @@ import { useI18n } from 'vue-i18n';
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
 
-const { t,locale } = useI18n();
+const { t, locale } = useI18n();
 /**
  * @type {Ref<boolean>}
  * Flag que controla a exibição do modal de mensagem.
@@ -51,37 +51,37 @@ const toast = useToast();
  * Mensagem padrão exibida quando não há dados encontrados.
  * @default 'Ainda não foi feita nenhuma busca'
  */
- const emptyMessage = computed(() => t('no_search_made'));
+const emptyMessage = computed(() => t('no_search_made'));
 
 /**
  * @type {Ref<any>}
- * Referência para o primeiro dropdown (DM).
+ * Referência para o primeiro select(DM).
  */
-const dropdown1 = ref(null);
+const select1 = ref(null);
 
 /**
  * @type {Ref<any>}
- * Referência para o segundo dropdown (Planta).
+ * Referência para o segundo select(Planta).
  */
-const dropdown2 = ref(null);
+const select2 = ref(null);
 
 /**
  * @type {Ref<any>}
- * Referência para o terceiro dropdown (Setor).
+ * Referência para o terceiro select(Setor).
  */
-const dropdown3 = ref(null);
+const select3 = ref(null);
 
 /**
  * @type {Ref<any>}
- * Referência para o quarto dropdown (Centro de Custo).
+ * Referência para o quarto select(Centro de Custo).
  */
-const dropdown4 = ref(null);
+const select4 = ref(null);
 
 /**
  * @type {Ref<any>}
- * Referência para o quinto dropdown (Funcionário).
+ * Referência para o quinto select(Funcionário).
  */
-const dropdown5 = ref(null);
+const select5 = ref(null);
 
 /**
  * @type {Ref<Array<any>>}
@@ -123,7 +123,7 @@ const centroCusto = computed(() => dataStore.cdcsOptions);
  * Lista original de funcionários.
  * @default []
  */
-const ListaFuncionariosOriginal  = computed(() => dataStore.funcionariosOptions);
+const ListaFuncionariosOriginal = computed(() => dataStore.funcionariosOptions);
 
 /**
  * @type {Ref<Array<any>>}
@@ -137,7 +137,7 @@ const ListaFuncionarios = computed(() => dataStore.funcionariosOptions);
  * Lista original de setores.
  * @default []
  */
-const ListaSetorOriginal= computed(() => dataStore.setoresOptions);
+const ListaSetorOriginal = computed(() => dataStore.setoresOptions);
 
 /**
  * @type {Ref<Array<any>>}
@@ -154,13 +154,14 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 
-const show = ref(false);//Flag que controla a exibição da tabela de resultados.
+const show = ref(false); //Flag que controla a exibição da tabela de resultados.
 
-const selectedItem = ref([]);//Armazena o item selecionado para exibição de detalhes.
+const selectedItem = ref([]); //Armazena o item selecionado para exibição de detalhes.
 
-const loading = ref(false);//Flag que controla a exibição do spinner de carregamento.
+const loading = ref(false); //Flag que controla a exibição do spinner de carregamento.
 
-const relatorio = ref({//Relatório que contém os filtros selecionados para a consulta (DM, Planta, Setor, Centro de Custo, etc).
+const relatorio = ref({
+    //Relatório que contém os filtros selecionados para a consulta (DM, Planta, Setor, Centro de Custo, etc).
     id_dm: '',
     id_planta: null,
     ID_CentroCusto: '',
@@ -170,7 +171,8 @@ const relatorio = ref({//Relatório que contém os filtros selecionados para a c
     data_final: new Date() // data atual
 });
 
-const buscar = async () => {//Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
+const buscar = async () => {
+    //Função de busca que envia os parâmetros para a API e recebe os dados das retiradas.
     try {
         loading.value = true; // Ativa a flag de carregamento
         retiradas.value = await relatorioService.itemsMaisRetiradas(relatorio);
@@ -202,7 +204,8 @@ const buscar = async () => {//Função de busca que envia os parâmetros para a 
     }
 };
 
-watch(//Reage à mudança no filtro global e atualiza a contagem de itens filtrados.
+watch(
+    //Reage à mudança no filtro global e atualiza a contagem de itens filtrados.
     () => filters.value.global.value,
     () => {
         filteredCount.value = retiradas.value.filter((item) => {
@@ -252,7 +255,7 @@ const exportJSON = () => {
 const loadData = async () => {
     loading.value = true;
     try {
-        if (!dataStore.dms)(await dataStore.fetchListaDms()); // Carrega a lista de DMs
+        if (!dataStore.dms) await dataStore.fetchListaDms(); // Carrega a lista de DMs
         if (!dataStore.plantas) await dataStore.fetchPlantas(); // Carrega a lista de plantas
         if (!dataStore.setores) await dataStore.fetchSetores(); // Carrega a lista de setores
         if (!dataStore.cdcs) await dataStore.fetchCdc(); // Carrega a lista de centros de custo
@@ -272,117 +275,114 @@ const filtroGenerico = () => {
     filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, ListaSetor);
 };
 
-// Função para fechar todos os dropdowns abertos
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown de DM
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown de Planta
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o dropdown de Setor
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Fecha o dropdown de Funcionário
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o dropdown de Centro de Custo
+// Função para fechar todos os selects abertos
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Fecha o selectde DM
+    if (select2.value?.overlayVisible) select2.value.hide(); // Fecha o selectde Planta
+    if (select3.value?.overlayVisible) select3.value.hide(); // Fecha o selectde Setor
+    if (select4.value?.overlayVisible) select4.value.hide(); // Fecha o selectde Funcionário
+    if (select5.value?.overlayVisible) select5.value.hide(); // Fecha o selectde Centro de Custo
 };
 
-// Função para fechar os dropdowns quando o datepicker for aberto
+// Função para fechar os selects quando o datepicker for aberto
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns
+    closeAllselects(); // Fecha todos os selects
 };
 
-const isMobile = isMobileDevice();//Retorna `true` se o dispositivo for móvel, ou `false` caso contrário.
+const isMobile = isMobileDevice(); //Retorna `true` se o dispositivo for móvel, ou `false` caso contrário.
 
 // Função chamada ao montar o componente
 onMounted(async () => {
-  await loadData();
+    await loadData();
 });
-
 </script>
 
 <template>
     <div class="card vh">
         <div class="form">
-            <div class="text-center">
-        <div class="p-0 m-0 p-fluid formgrid grid col-12">
-            <!-- Início do formulário de busca de informações para o relatório -->
-            <!-- Filtro para DM (Documento de Medição) -->
-            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="id_dm">{{t('dispenser_machine')}}:</label>
-                <!-- Dropdown para selecionar o DM (documento de medição) -->
-                <Dropdown filter class="drop" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
-            </div>
+            <div>
+                <div class="p-0 m-0 p-fluid formgrid grid col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="id_dm">{{ t('dispenser_machine') }}:</label>
+                        <!-- selectpara selecionar o DM (documento de medição) -->
+                        <Select filter class="w-full" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
+                    </div>
 
-            <!-- Filtro para Centro de Custo -->
-            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="perfil">{{t('cost_center')}}</label>
-                <!-- Dropdown para selecionar o centro de custo -->
-                <Dropdown filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
-            </div>
+                    <!-- Filtro para Centro de Custo -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="perfil">{{ t('cost_center') }}</label>
+                        <!-- selectpara selecionar o centro de custo -->
+                        <Select filter class="w-full" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" @change="filtroGenerico" />
+                    </div>
 
-            <!-- Filtro para Setor -->
-            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="perfil">{{t('sector')}}</label>
-                <!-- Dropdown para selecionar o setor -->
-                <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
-            </div>
+                    <!-- Filtro para Setor -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="perfil">{{ t('sector') }}</label>
+                        <!-- selectpara selecionar o setor -->
+                        <Select filter class="w-full" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" @change="filtroGenerico" />
+                    </div>
 
-            <!-- Filtro para Planta -->
-            <div class="field py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="planta">{{t('factory')}}:</label>
-                <!-- Dropdown para selecionar a planta -->
-                <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
-            </div>
+                    <!-- Filtro para Planta -->
+                    <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="planta">{{ t('factory') }}:</label>
+                        <!-- selectpara selecionar a planta -->
+                        <Select filter class="w-full" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" @change="filtroGenerico" />
+                    </div>
 
-            <!-- Filtro para Funcionário -->
-            <div class="field py-0 mt-2 xl:col-3 lg:col-6 md:col-6 sm:col-12">
-                <label for="perfil">{{t('employee')}}:</label>
-                <!-- Dropdown para selecionar o funcionário -->
-                <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
-            </div>
+                    <!-- Filtro para Funcionário -->
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="perfil">{{ t('employee') }}:</label>
+                        <!-- selectpara selecionar o funcionário -->
+                        <Select filter class="w-full" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
+                    </div>
 
-            <!-- Filtro para Data Inicial -->
-            <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{t('initial_date')}}:</label>
-                <!-- DataPicker para selecionar a data inicial -->
-                <VueDatePicker
-                    class="drop"
-                    v-model="relatorio.data_inicio"
-                    showIcon
-                    :showOnFocus="false"
-                    :format="formatDateToString"
-                    :locale="locale"
-                    :enable-time-picker="false"
-                    auto-apply
-                    ref="datepicker1"
-                    @open="handleDatepickerOpen"
-                    teleport="body"
-                    :placeholder="$t('initial_date_placeholder')" 
-                />
-            </div>
+                    <!-- Filtro para Data Inicial -->
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="perfil">{{ t('initial_date') }}:</label>
+                        <!-- DataPicker para selecionar a data inicial -->
+                        <VueDatePicker
+                            class="w-full"
+                            v-model="relatorio.data_inicio"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="formatDateToString"
+                            :locale="locale"
+                            :enable-time-picker="false"
+                            auto-apply
+                            ref="datepicker1"
+                            @open="handleDatepickerOpen"
+                            teleport="body"
+                            :placeholder="$t('initial_date_placeholder')"
+                        />
+                    </div>
 
-            <!-- Filtro para Data Final -->
-            <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <label for="perfil">{{t('end_date')}}:</label>
-                <!-- DataPicker para selecionar a data final -->
-                <VueDatePicker
-                    class="drop"
-                    v-model="relatorio.data_final"
-                    showIcon
-                    :showOnFocus="false"
-                    :format="formatDateToString"
-                    :locale="locale"
-                    :enable-time-picker="false"
-                    auto-apply
-                    ref="datepicker2"
-                    @open="handleDatepickerOpen"
-                    teleport="body"
-                    :placeholder="$t('end_date_placeholder')"
-                />
-            </div>
+                    <!-- Filtro para Data Final -->
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-12">
+                        <label for="perfil">{{ t('end_date') }}:</label>
+                        <!-- DataPicker para selecionar a data final -->
+                        <VueDatePicker
+                            class="w-full"
+                            v-model="relatorio.data_final"
+                            showIcon
+                            :showOnFocus="false"
+                            :format="formatDateToString"
+                            :locale="locale"
+                            :enable-time-picker="false"
+                            auto-apply
+                            ref="datepicker2"
+                            @open="handleDatepickerOpen"
+                            teleport="body"
+                            :placeholder="$t('end_date_placeholder')"
+                        />
+                    </div>
 
-            <!-- Botão de Filtrar -->
-            <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
-                <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
-            </div>
+                    <!-- Botão de Filtrar -->
+                    <div class="pt-6 mt-0 field xl:col-3 lg:col-3 md:col-12 sm:col-12">
+                        <Button class="w-full" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+                    </div>
 
-            <!-- Botão para exportar dados em CSV -->
-            <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                    <!-- Botão para exportar dados em CSV -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
                         <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
                     </div>
 
@@ -442,7 +442,7 @@ onMounted(async () => {
                 <div class="flex justify-content-between align-items-center">
                     <div class="flex justify-content-start">
                         <!-- Exibe o total de registros filtrados -->
-                        <span>{{$t('total_records',{count: filteredCount})}}</span>
+                        <span>{{ $t('total_records', { count: filteredCount }) }}</span>
                     </div>
                     <div>
                         <!-- Filtro global de pesquisa -->
@@ -459,20 +459,20 @@ onMounted(async () => {
             <template #empty>{{ emptyMessage }} </template>
             <!-- Colunas da tabela -->
             <Column field="ProdutoNome" sortable :header="t('item')"></Column>
-            <Column field="quantidade_no_periodo" sortable style="width: 15%":header="t('quantity')" class="text-center"></Column>
+            <Column field="quantidade_no_periodo" sortable style="width: 15%" :header="t('quantity')" class="text-center"></Column>
             <Column field="ProdutoSKU" sortable style="width: 15%" :header="t('ca')"></Column>
         </DataTable>
 
         <!-- Exibe os detalhes do produto em um modal -->
-        <card v-if="show" class="details-card">
-            <template #title>{{ $t('details') }}</template>
+        <card v-if="show" class="card mt-5">
+            <template #title> {{ $t('details') }}: </template>
             <template #content>
-                <DataTable :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
+                <DataTable class="mt-4" :value="selectedItem" stripedRows removableSort showGridlines paginator :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" rowHover>
                     <Column field="Identificacao" sortable :header="t('dm')"></Column>
                     <Column field="ProdutoNome" sortable :header="t('item')"></Column>
                     <Column field="Data" sortable :header="t('date')"></Column>
                     <Column field="Quantidade" sortable :header="t('quantity')"> </Column>
-                    <Column field="ProdutoSKU" sortable  :header="t('SKU')"></Column>
+                    <Column field="ProdutoSKU" sortable :header="t('SKU')"></Column>
                 </DataTable>
             </template>
         </card>
@@ -490,87 +490,4 @@ onMounted(async () => {
     </Dialog>
 </template>
 
-<style>
-/* Estilo para o cabeçalho do dialog */
-.dialog-header {
-    /* Exibe os itens em linha (horizontais) */
-    display: flex;
-    /* Alinha os itens verticalmente no centro */
-    align-items: center;
-    /* Cria espaço entre os itens, posicionando-os nas extremidades */
-    justify-content: space-between;
-}
-
-/* Estilo para o conteúdo do dialog */
-.dialog-content {
-    /* Adiciona um espaçamento interno de 1 rem em todos os lados */
-    padding: 1rem;
-}
-
-/* Estilo para a mensagem dentro do dialog */
-.dialog-message {
-    /* Define o alinhamento do texto como justificado */
-    text-align: justify;
-    /* Remove a margem da mensagem para evitar espaços desnecessários */
-    margin: 0;
-}
-
-/* Estilo para o card */
-.card {
-    /* Permite o conteúdo do card se estender além do limite horizontal (caso necessário) */
-    overflow-x: auto;
-}
-
-/* Estilo para a área que envolve a DataTable */
-.datatable-wrapper {
-    /* Permite que o conteúdo da DataTable se estenda horizontalmente se necessário */
-    overflow-x: auto;
-    /* Define a largura da área como 100% da largura da viewport */
-    width: 100vw;
-}
-
-/* Estilo para o botão de filtro */
-.filtrar {
-    /* Define a margem superior do botão de filtro */
-    margin-top: 25px;
-}
-
-/* Estilo para os campos de dropdown */
-.drop {
-    /* Define que os campos de dropdown devem ocupar toda a largura disponível */
-    width: 100%;
-}
-
-/* Estilos responsivos para telas pequenas (máximo de 580px de largura) */
-@media (max-width: 580px) {
-    /* Define o comportamento do campo no formulário */
-    .form .field {
-        /* Define que o campo deve ocupar 100% da largura disponível */
-        flex: 0 0 100%;
-        max-width: 100%;
-        /* Adiciona um espaço abaixo dos campos */
-        margin-bottom: 1rem;
-    }
-
-    /* Ajusta o tamanho do dropdown para telas pequenas */
-    .form .field .drop {
-        /* Garante que o dropdown ocupe toda a largura disponível */
-        width: 100%;
-    }
-
-    /* Ajusta a largura dos botões de filtro e exportação para telas pequenas */
-    .form .field .filtrar,
-    .form .field .exportar {
-        /* Garante que os botões de filtro e exportação ocupem 100% da largura disponível */
-        width: 100%;
-    }
-}
-
-/* Estilo para o campo no formulário */
-.field {
-    /* Impede que o conteúdo do campo se quebre em várias linhas */
-    white-space: nowrap;
-    /* Alinha o texto dentro do campo à esquerda */
-    text-align: left;
-}
-</style>
+<style></style>

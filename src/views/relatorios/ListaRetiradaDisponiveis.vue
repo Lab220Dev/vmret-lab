@@ -1,6 +1,6 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importação do componente VueDatePicker para seleção de datas
-import { FilterMatchMode } from 'primevue/api'; // Importação do FilterMatchMode para configurar filtros na DataTable
+import { FilterMatchMode } from '@primevue/core/api'; // Importação do FilterMatchMode para configurar filtros na DataTable
 import { useToast } from 'primevue/usetoast'; // Importação do hook useToast para exibir mensagens de notificação
 import '@vuepic/vue-datepicker/dist/main.css'; // Importação do CSS do VueDatePicker
 import { ref, onMounted, watch , computed} from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
@@ -15,10 +15,10 @@ const filteredCount = ref(0); // Contador reativo para o número de registros fi
 
 const store = useAuthStore(); // Acesso ao store de autenticação
 const toast = useToast(); // Acesso ao toast para mostrar mensagens de notificação
-const dropdown1 = ref(null); // Referência para o primeiro dropdown (não utilizado no template atual)
-const dropdown2 = ref(null); // Referência para o segundo dropdown (não utilizado no template atual)
-const dropdown3 = ref(null); // Referência para o terceiro dropdown (usado para o filtro de usuários)
-const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dropdowns de seleção
+const select1 = ref(null); // Referência para o primeiro select(não utilizado no template atual)
+const select2 = ref(null); // Referência para o segundo select(não utilizado no template atual)
+const select3 = ref(null); // Referência para o terceiro select(usado para o filtro de usuários)
+const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para selects de seleção
 const dados = ref([]); // Lista reativa que armazenará os dados do histórico de logs
 const codigo = ref([]); // Lista reativa que armazenará os códigos disponíveis
 const filters = ref({
@@ -95,16 +95,16 @@ const fetchFuncionarios = async () => {
     }
 };
 
-// Função para fechar todos os dropdowns
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Se o primeiro dropdown estiver visível, esconde
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Se o segundo dropdown estiver visível, esconde
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Se o terceiro dropdown estiver visível, esconde
+// Função para fechar todos os select s
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Se o primeiro selectestiver visível, esconde
+    if (select2.value?.overlayVisible) select2.value.hide(); // Se o segundo selectestiver visível, esconde
+    if (select3.value?.overlayVisible) select3.value.hide(); // Se o terceiro selectestiver visível, esconde
 };
 
 // Função que é chamada quando o datepicker é aberto
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns quando o datepicker é aberto
+    closeAllselects(); // Fecha todos os select s quando o datepicker é aberto
 };
 
 // Função que é chamada quando o componente é montado
@@ -115,25 +115,24 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card vh p-fluid">
-        <h5 class="my-6 ml-2 text-2xl"> Lista de Liberações avulsas </h5>
+    <div class="card vh">
         <div class="form">
             <div class="grid mb-0 pt-5">
                 <!-- Campos para filtros -->
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">{{t('employee')}}:</label>
-                    <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
-                     optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                    <Select class="w-full" filter v-model="relatorio.id_funcionario" :options="ListaFuncionarios"
+                     optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">{{t('code')}}:</label>
-                    <Dropdown filter class="drop" v-model="relatorio.id_operacao" :options="codigo" 
+                    <Select class="w-full" filter v-model="relatorio.id_operacao" :options="codigo" 
                     optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{t('withdrawal_deadline')}}:</label>
                     <VueDatePicker
-                        class="drop"
+                    class="w-full"
                         v-model="relatorio.data_inicio"
                         showIcon
                         :showOnFocus="false"
@@ -146,11 +145,11 @@ onMounted(() => {
                         :placeholder="$t('initial_date_placeholder')"
                     />
                 </div>
-                
-            </div>
-            <div class=" p-0 m-0 field lg:col-12 md:col-12 sm:col-12">
-                    <Button class="filtrar" type="button"label="Procurar" icon="pi pi-search" severity="info" @click="buscar" />
+                <div class=" pt-4 m-0 lg:col-3 md:col-12 sm:col-12">
+                    <Button type="button"label="Procurar" class="w-full" icon="pi pi-search" severity="info" @click="buscar" />
                 </div>
+            </div>
+            
         </div>
 
         <!-- Tabela para exibição dos logs -->
@@ -195,43 +194,6 @@ onMounted(() => {
     </div>
 </template>
 
-<style scoped>
-.card {
-    overflow-x: auto;
-}
+<style>
 
-.datatable-wrapper {
-    overflow-x: auto;
-    width: 100vw;
-}
-
-.filtrar {
-    margin-top: 25px;
-}
-
-.drop {
-    width: 100%;
-}
-
-@media (max-width: 580px) {
-    .form .field {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .form .field .drop {
-        width: 100%;
-    }
-
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%;
-    }
-}
-
-.field {
-    white-space: nowrap;
-    text-align: left;
-}
 </style>

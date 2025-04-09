@@ -1,9 +1,9 @@
 <template>
-    <div class="card">
+    <div class="card ">
         <h5 class="mt-6 ml-2 text-2xl">{{ t('cadastro_de_servicos') }}</h5>
         <div v-if="isAdmin" class="flex justify-content-start cliente-selection">
 
-            <Dropdown class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" :placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
+            <Select class="mt-4 ml-3" style="width: 300px" v-model="selectedClient" :options="availableClients" :placeholder="$t('select_client')" optionLabel="name" @change="onClientSelected" />
         </div>
 
         <div v-if="selectedClient?.id" class="mt-6 card services-edit">
@@ -13,7 +13,7 @@
                     <span v-if="isAdmin">{{ selectedClient.name }}</span>
                 </h5>
                 <div class="add-service flex align-items-center">
-                    <Dropdown v-model="newService" class="" :options="availableServices" optionLabel="name" :placeholder="$t('add_service')" />
+                    <Select v-model="newService" class="" :options="availableServices" optionLabel="name" :placeholder="$t('add_service')" />
                     <Button class="ml-3" :label="t('insert')" @click="addService" />
                 </div>
             </div>
@@ -23,7 +23,7 @@
                 <Column field="name" style="width: 80%" :header="t('service')"></Column>
                 <Column :header="t('action')">
                     <template #body="slotProps">
-                        <Button :label="$t('setting')" class="mr-2 configuracao-monitoramento w-full" icon="pi pi-cog" @click="editService(slotProps.data)" />
+                        <Button :label="$t('setting')" class="mr-2 mb-2 configuracao-monitoramento w-full" icon="pi pi-cog" @click="editService(slotProps.data)" />
                         <Button :label="$t('remove')" class="p-button-danger w-full" icon="pi pi-trash" @click="openDeleteDialog(slotProps.data)" />
                     </template>
                 </Column>
@@ -43,41 +43,90 @@
                 </template>
             </Dialog>
 
-            <Fieldset :legend="t('settings')" v-if="showConfig" class="configuracao-monitoramento card mt-8 p-8 mx-8">
-                <!---->
-                <h4 class="text-xl mt-1 justify-content-center flex">{{ selectedService.name }}</h4>
+            <Fieldset :legend="t('settings')" v-if="showConfig" class="configuracao-monitoramento mt-8 p-8 mx-8">
+    <h4 class="text-xl mt-1 justify-content-center flex">{{ selectedService.name }}</h4>
 
-                <div class="flex flex-column col-12 mt-4 ml-3">
-                    <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationFrequency">{{ t('notification_frequency') }}:</label>
-                        <Dropdown style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationFrequency" :options="frequencies" optionLabel="label" optionValue="value" />
-                    </div>
+    <div class="flex flex-column col-12 mt-4 ml-3">
+        <!-- Frequência de notificação -->
+        <div class="field grid justify-content-center">
+            <label class="col-12 md:col-6 sm:col-12 md:mb-0 no-break" for="notificationFrequency">{{ t('notification_frequency') }}:</label>
+            <Select 
+                class="col-12 md:col-6 sm:col-12" 
+                v-model="serviceConfigs[selectedService.id].notificationFrequency" 
+                :options="frequencies" 
+                optionLabel="label" 
+                optionValue="value" 
+            />
+        </div>
 
-                    <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="time">{{ t('notification_time') }}:</label>
-                        <VueDatePicker style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationTime" time-picker :placeholder="$t('frequency_placeholder')" />
-                    </div>
+        <!-- Campo de Hora para '1x-dia' -->
+        <div v-if="serviceConfigs[selectedService.id].notificationFrequency === '1x-dia'" class="field grid justify-content-center">
+            <label class="col-12 md:col-6 sm:col-12 md:mb-0 no-break" for="time">{{ t('notification_time') }}:</label>
+            <DatePicker 
+                class="col-12 md:col-6 sm:col-12" 
+                v-model="serviceConfigs[selectedService.id].notificationTime" 
+                timeOnly 
+                :placeholder="$t('frequency_placeholder')" 
+            />
+        </div>
 
-                    <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="notificationMethods">{{ t('notification_method') }}:</label>
-                        <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].notificationMethods" :options="notificationMethods" optionLabel="label" optionValue="value" display="chip" />
-                    </div>
+        <!-- Métodos de notificação -->
+        <div class="field grid justify-content-center">
+            <label class="col-12 md:col-6 sm:col-12 md:mb-0 no-break" for="notificationMethods">{{ t('notification_method') }}:</label>
+            <MultiSelect 
+                class="col-12 md:col-6 sm:col-12" 
+                v-model="serviceConfigs[selectedService.id].notificationMethods" 
+                :options="notificationMethods" 
+                optionLabel="label" 
+                optionValue="value" 
+                display="chip" 
+            />
+        </div>
 
-                    <div class="field grid justify-content-center" v-if="serviceConfigs[selectedService.id].notificationMethods.includes('notif')">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') + ' web' }}:</label>
-                        <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipientsweb" :options="availableRecipientsWeb" optionLabel="name" optionValue="id" display="chip" />
-                    </div>
-                    <div class="field grid justify-content-center">
-                        <label class="col-12 md:col-5 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') }}:</label>
-                        <MultiSelect style="width: 300px" v-model="serviceConfigs[selectedService.id].recipients" :options="availableRecipients" optionLabel="name" optionValue="id" display="chip" />
-                    </div>
-                    <div class="flex justify-content-end flex-wrap mt-7">
-                        <Button class="flex align-items-center justify-content-center" v-if="novo" :label="$t('add_service')" @click="addServiceWithConfig" />
+        <!-- Receptores Web, visível se 'notif' for selecionado -->
+        <div class="field grid justify-content-center" v-if="serviceConfigs[selectedService.id].notificationMethods.includes('notif')">
+            <label class="col-12 md:col-6 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') + ' web' }}:</label>
+            <MultiSelect 
+                class="col-12 md:col-6 sm:col-12" 
+                v-model="serviceConfigs[selectedService.id].recipientsweb" 
+                :options="availableRecipientsWeb" 
+                optionLabel="name" 
+                optionValue="id" 
+                display="chip" 
+            />
+        </div>
 
-                        <Button class="flex align-items-center justify-content-center" v-else :label="$t('update_services')" @click="updateServiceConfig" />
-                    </div>
-                </div>
-            </Fieldset>
+        <!-- Receptores -->
+        <div class="field grid justify-content-center">
+            <label class="col-12 md:col-6 sm:col-12 md:mb-0 no-break" for="recipients">{{ t('recipient') }}:</label>
+            <MultiSelect 
+                class="col-12 md:col-6 sm:col-12" 
+                v-model="serviceConfigs[selectedService.id].recipients" 
+                :options="availableRecipients" 
+                optionLabel="name" 
+                optionValue="id" 
+                display="chip" 
+            />
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="flex justify-content-end flex-wrap mt-7">
+            <Button 
+                class="flex align-items-center justify-content-center" 
+                v-if="novo" 
+                :label="$t('add_service')" 
+                @click="addServiceWithConfig" 
+            />
+            <Button 
+                class="flex align-items-center justify-content-center" 
+                v-else 
+                :label="$t('update_services')" 
+                @click="updateServiceConfig" 
+            />
+        </div>
+    </div>
+</Fieldset>
+
         </div>
         <LoadingSpinner v-if="loading" />
     </div>

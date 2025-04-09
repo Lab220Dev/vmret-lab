@@ -3,20 +3,21 @@ import { reactive, ref, onMounted, watch, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import '@vuepic/vue-datepicker/dist/main.css';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 import { useDataStore } from '@/store/dataStore.js';
 import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
 import setorService from '@/Services/SetorService.js';
 import { useI18n } from 'vue-i18n';
-import {resetSetorForm ,resetProdutoSelecionadoSetor } from '@/helpers/formHelper.js';
+import { resetSetorForm, resetProdutoSelecionadoSetor } from '@/helpers/formHelper.js';
 const { t } = useI18n();
 const Mob = ref(false);
-const active = ref(0);
+const active = ref('0'); // Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore();
 const toast = useToast();
 const ListaSetor = ref([]);
-const ListaItensSetor= computed(() => dataStore.produtosOptions);
+const ListaItensSetor = computed(() => dataStore.produtosOptions);
 const ItensSetor = ref([]);
+const ListaItensDisponiveis = ref([]); // Declare ListaItensDisponiveis as a reactive reference
 const itemDialog = ref(false);
 const deleteSetorDialog = ref(false);
 const deleteProductDialog = ref(false);
@@ -55,9 +56,10 @@ const produtoSelecionado = ref({
 const onRowSelect = async (event) => {
     // Declara uma função assíncrona chamada onRowSelect
     Object.assign(setor, event.data); // Atribui os dados do evento ao objeto reativo setor
-    active.value = 1; // Define o índice ativo como 1
+
     editVisible.value = true; // Define a visibilidade de edição como true
-    await fetchListaItemSetor(); // Chama a função para buscar a lista de itens do setor
+    active.value = '1'; // Define o índice ativo como 1
+    fetchListaItemSetor(); // Chama a função para buscar a lista de itens do setor
 };
 
 const onFilterChange = async () => {
@@ -121,7 +123,7 @@ const adicionarSetor = async () => {
         dataStore.invalidateSetorCache(); // Invalida o cache de setores no dataStore
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('sector_added_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         loadSetor(); // Recarrega a lista de setores
-        active.value = 0; // Define o valor de active como 0
+        active.value = '0'; // Define o valor de active como 0
         resetForm(); // Reseta o formulário
     } catch (error) {
         toast.add({ severity: 'error', summary: 'Error', detail: t('sector_added_fail'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
@@ -152,7 +154,7 @@ const deleteSetor = async () => {
         dataStore.invalidateSetorCache(); // Invalida o cache de setores no dataStore
         deleteSetorDialog.value = false; // Fecha o diálogo de confirmação de exclusão de setor
         loadSetor(); // Recarrega a lista de setores
-        active.value = 0; // Define o valor de active como 0
+        active.value = '0'; // Define o valor de active como 0
         resetForm(); // Reseta o formulário
     } catch {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('sector_deleted_fail'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
@@ -160,7 +162,7 @@ const deleteSetor = async () => {
         loading.value = false; // Desativa o estado de loading
     }
 
-    active.value = 0; // Define o valor de active como 0
+    active.value = '0'; // Define o valor de active como 0
 };
 
 const atualizarSetor = async () => {
@@ -171,7 +173,7 @@ const atualizarSetor = async () => {
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('sector_update_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         dataStore.invalidateSetorCache(); // Invalida o cache de setores no dataStore
         loadSetor(); // Recarrega a lista de setores
-        active.value = 0; // Define o valor de active como 0
+        active.value = '0'; // Define o valor de active como 0
         resetForm(); // Reseta o formulário
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('sector_update_fail'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
@@ -200,7 +202,7 @@ const fetchListaItemSetor = async () => {
 
 watch(active, (newIndex, oldIndex) => {
     // Usa o método 'watch' para observar as mudanças na variável 'active', com a função de callback recebendo 'newIndex' (novo valor) e 'oldIndex' (valor anterior)
-    if (newIndex !== oldIndex && newIndex === 0) {
+    if (newIndex !== oldIndex && newIndex === '0') {
         // Verifica se o novo índice (newIndex) é diferente do índice antigo (oldIndex) e se o novo índice é igual a 0
         resetForm(); // Chama a função 'resetForm' para redefinir ou limpar o formulário, provavelmente reiniciando seus valores
         visible.value = false; // Define a variável 'visible' como false, provavelmente escondendo um componente ou elemento na interface
@@ -227,23 +229,26 @@ const loadData = async () => {
     }
 };
 
-const listarItensDisponiveis = () => { // Declara uma função chamada listarItensDisponiveis
+const listarItensDisponiveis = () => {
+    // Declara uma função chamada listarItensDisponiveis
     const addedIds = new Set(ListaItensSetor.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao setor
 
     // Filtra os produtos disponíveis (da ListaProdutos) excluindo os que já estão no setor
-    ListaItensDisponiveis.splice(0, ListaItensDisponiveis.length, ...ItensSetor.value.filter((produto) => !addedIds.has(produto.value)));
+    ListaItensDisponiveis.value = ItensSetor.value.filter((produto) => !addedIds.has(produto.id_produto)); // Atualiza corretamente a lista reativa
 };
 
-const listarItensFiltrados = () => { // Declara uma função chamada listarItensDisponiveis
+const listarItensFiltrados = () => {
+    // Declara uma função chamada listarItensFiltrados
     const idsSetor = new Set(ItensSetor.value.map((item) => item.id_produto)); // Cria um conjunto com os IDs dos produtos já adicionados ao setor
 
     const itensFiltrados = ListaItensSetor.value.filter(
-        (produto) => !idsSetor.has(produto.value) // Filtra os produtos disponíveis excluindo os que já estão no setor 
+        (produto) => !idsSetor.has(produto.value) // Filtra os produtos disponíveis excluindo os que já estão no setor
     );
 
-    ListaItensDisponiveis.splice(0, ListaItensDisponiveis.length, ...itensFiltrados); // Atualiza a lista de produtos disponíveis
+    ListaItensDisponiveis.value = [...itensFiltrados]; // Atualiza a lista de produtos disponíveis de forma reativa
 
-    if (itensFiltrados.length === 0) { // Verifica se não há mais itens disponíveis
+    if (itensFiltrados.length === 0) {
+        // Verifica se não há mais itens disponíveis
         toast.add({
             severity: 'warn',
             summary: t('employee_no_availble_item'),
@@ -255,14 +260,16 @@ const listarItensFiltrados = () => { // Declara uma função chamada listarItens
 
 const abrirDialogAdicionarItem = () => {
     listarItensFiltrados();
-    visible.value =true;
-}
+    visible.value = true;
+};
 
 onMounted(async () => {
     // Declara uma função que será executada assim que o componente for montado (usando 'onMounted')
     Mob.value = isMobEnabled(); // Define o valor de 'Mob' como o retorno da função 'isMobEnabled()', provavelmente para verificar se o dispositivo é móvel.
     await loadSetor(); // Chama a função assíncrona 'loadSetor' e espera sua conclusão antes de continuar.
     await loadData(); // Chama a função assíncrona 'loadData' e espera sua conclusão antes de continuar.
+
+    active.value = '0';
 });
 
 const atualizarProdutoSetor = async () => {
@@ -366,41 +373,45 @@ const deletarProduto = async () => {
 
 /**
  * Função que define o produto a ser deletado e exibe o diálogo de confirmação.
- * 
+ *
  * @param {Object} itm - O item (produto) que será deletado.
  */
- const deleteProduct = async (itm) => {  
-    item.value = itm;  // Atribui o produto recebido como parâmetro 'itm' à variável 'item.value', que provavelmente armazena o item selecionado para exclusão
-    deleteProductDialog.value = true;  // Define 'deleteProductDialog.value' como true, indicando que o diálogo/modal de confirmação de exclusão deve ser exibido
+const deleteProduct = async (itm) => {
+    item.value = itm; // Atribui o produto recebido como parâmetro 'itm' à variável 'item.value', que provavelmente armazena o item selecionado para exclusão
+    deleteProductDialog.value = true; // Define 'deleteProductDialog.value' como true, indicando que o diálogo/modal de confirmação de exclusão deve ser exibido
 };
 
 /**
  * Função que cria um "debounce", limitando a frequência de execução de uma função.
- * 
+ *
  * @param {Function} func - A função que será chamada após o tempo de espera.
  * @param {number} [wait=300] - O tempo de espera (em milissegundos) entre as execuções da função. O valor padrão é 300ms.
  * @returns {Function} Uma nova função que, quando chamada, aguarda o tempo de espera e executa 'func' uma vez.
  */
-function debounce(func, wait = 300) {  
-    let timeout;  // Declara a variável 'timeout' que irá armazenar o identificador do temporizador (para limpar o temporizador anterior)
+function debounce(func, wait = 300) {
+    let timeout; // Declara a variável 'timeout' que irá armazenar o identificador do temporizador (para limpar o temporizador anterior)
 
-    return (...args) => {  // Retorna uma função que pode ser chamada várias vezes. 'args' são os argumentos passados para a função 'func'
-        clearTimeout(timeout);  // Limpa o temporizador anterior, garantindo que a função 'func' não seja chamada antes do tempo de espera
-        timeout = setTimeout(() => func.apply(this, args), wait);  // Configura o temporizador para chamar 'func' após o tempo de espera, passando os argumentos e o contexto ('this')
+    return (...args) => {
+        // Retorna uma função que pode ser chamada várias vezes. 'args' são os argumentos passados para a função 'func'
+        clearTimeout(timeout); // Limpa o temporizador anterior, garantindo que a função 'func' não seja chamada antes do tempo de espera
+        timeout = setTimeout(() => func.apply(this, args), wait); // Configura o temporizador para chamar 'func' após o tempo de espera, passando os argumentos e o contexto ('this')
     };
 }
 
-const debouncedFilterChange = debounce(() => {  
-    onFilterChange();  // Chama a função 'onFilterChange', que provavelmente é responsável por aplicar filtros (por exemplo, em uma lista ou busca)
-}, 300);  // O tempo de espera de 300ms é passado para a função 'debounce', limitando a frequência de chamadas da função 'onFilterChange'
-
+const debouncedFilterChange = debounce(() => {
+    onFilterChange(); // Chama a função 'onFilterChange', que provavelmente é responsável por aplicar filtros (por exemplo, em uma lista ou busca)
+}, 300); // O tempo de espera de 300ms é passado para a função 'debounce', limitando a frequência de chamadas da função 'onFilterChange'
 </script>
 
 <template>
     <div class="card vh">
         <!-- inicio do tabview-->
-        <TabView v-model:activeIndex="active">
-            <TabPanel :header="t('list_sector')">
+        <Tabs v-model:value="active" :value="0">
+            <TabList>
+                <Tab value="0">{{ t('list_sector') }}</Tab>
+                <Tab value="1">{{ editVisible ? t('edit_sector') : t('add_sector') }}</Tab>
+            </TabList>
+            <TabPanel value="0">
                 <div class="col-12">
                     <DataTable
                         v-model:filters="filters"
@@ -447,23 +458,23 @@ const debouncedFilterChange = debounce(() => {
             </TabPanel>
             <!-- fim do listar -->
             <!-- inicio do adicionar-->
-            <TabPanel :header="editVisible ? t('edit_sector') : t('add_sector')" v-model:activeIndex="active">
+            <TabPanel value="1">
                 <div class="grid">
                     <div class="col-12">
                         <div class="mt-5">
                             <form @submit.prevent="submitForm">
                                 <div class="p-fluid formgrid grid m-0 p-0">
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
+                                    <div class="lg:col-12 md:col-12 sm:col-12">
                                         <label for="codigo">{{ t('code') }}:</label>
-                                        <InputText class="my-2" id="codigo" v-model="setor.codigo" required />
+                                        <InputText class="my-2 w-full" id="codigo" v-model="setor.codigo" required />
                                     </div>
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
+                                    <div class="lg:col-12 md:col-12 sm:col-12">
                                         <label for="nome">{{ t('sector_name') }}:</label>
-                                        <InputText class="my-2" id="nome" v-model="setor.nome" required />
+                                        <InputText class="my-2 w-full" id="nome" v-model="setor.nome" required />
                                     </div>
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
+                                    <div class="lg:col-12 md:col-12 sm:col-12">
                                         <label for="centro">{{ t('cost_center_name') }}:</label>
-                                        <Dropdown filter class="drop my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                                        <Select filter class="w-full my-2" v-model="setor.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
                                     </div>
                                 </div>
                                 <div class="mr-1 mt-4 grid justify-content-end">
@@ -481,7 +492,7 @@ const debouncedFilterChange = debounce(() => {
                                     <Button v-if="!editVisible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarSetor" :disabled="Mob" />
                                 </div>
                                 <div class="col-12">
-                                    <TabView v-if="editVisible">
+                                    <Tabs v-if="editVisible">
                                         <TabPanel :header="t('sector_available_items')">
                                             <Button class="my-3" @click="abrirDialogAdicionarItem" :label="$t('add')" />
                                             <DataTable
@@ -511,20 +522,20 @@ const debouncedFilterChange = debounce(() => {
                                                 </Column>
                                             </DataTable>
                                         </TabPanel>
-                                    </TabView>
+                                    </Tabs>
 
                                     <!-- dialogo editar item-->
                                     <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="t('item_edit')" :modal="true" class="p-2" :draggable="false"
-                                        ><hr />
+                                        ><hr class="p-0 m-0" />
                                         <div>
-                                            <div class="p-fluid formgrid grid">
-                                                <div class="field lg:col-12 md:col-6 sm:col-4">
+                                            <div class="formgrid grid">
+                                                <div class="field lg:col-9 md:col-9 sm:col-12">
                                                     <label class="mr-2" for="name">{{ t('name') }}:</label>
-                                                    <InputText disabled v-model="item.nome" id="name" type="text"></InputText>
+                                                    <InputText disabled class="w-full" v-model="item.nome" id="name" type="text"></InputText>
                                                 </div>
-                                                <div class="field lg:col-4 md:col-6 sm:col-4">
+                                                <div class="field lg:col-3 md:col-3 sm:col-12">
                                                     <label class="mr-2" for="Quantidade">{{ t('quantity') }}:</label>
-                                                    <InputText id="Quantidade" v-model="item.qtd_limite" />
+                                                    <InputText id="Quantidade" class="w-full" v-model="item.qtd_limite" />
                                                 </div>
                                             </div>
                                         </div>
@@ -535,29 +546,32 @@ const debouncedFilterChange = debounce(() => {
                                     </Dialog>
 
                                     <!-- dialogo adicionar item-->
-                                    <Dialog v-model:visible="visible" modal :header="t('add_items_to_sector')" :draggable="false">
-                                        <div class="grid">
-                                            <div class="col-12">
-                                                <label for="Produto" class="font-semibold col-2 mr-2">{{ t('product') }}: </label>
-                                                <Dropdown
-                                                    v-model="produtoSelecionado.id_produto"
-                                                    :options="ListaItensDisponiveis"
-                                                    :virtualScrollerOptions="{ itemSize: 30 }"
-                                                    optionLabel="label"
-                                                    optionValue="value"
-                                                    :placeholder="$t('select_product')"
-                                                    class="col-8 p-0"
-                                                />
-                                            </div>
-                                            <div class="col-12">
-                                                <label for="Quantidade" class="font-semibold w-6rem mr-2 ml-3">{{ t('quantity') }}: </label>
-                                                <InputNumber id="Quantidade" class="ml-5" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" :min="1" :max="999" />
+                                    <Dialog v-model:visible="visible" :style="{ width: '450px' }" :modal="true" :header="t('add_items_to_sector')" class="p-2" :draggable="false">
+                                        <hr class="p-0 m-0" />
+                                        <div>
+                                            <div class="formgrid grid">
+                                                <div class="field lg:col-9 md:col-9 sm:col-12">
+                                                    <label for="Produto" class="mr-2">{{ t('product') }}: </label>
+                                                    <Select
+                                                        v-model="produtoSelecionado.id_produto"
+                                                        :options="ListaItensDisponiveis"
+                                                        :virtualScrollerOptions="{ itemSize: 30 }"
+                                                        optionLabel="label"
+                                                        optionValue="value"
+                                                        :placeholder="$t('select_product')"
+                                                        class="w-full"
+                                                    />
+                                                </div>
+                                                <div class="field lg:col-3 md:col-9 sm:col-12">
+                                                    <label for="Quantidade" class="mr-2">{{ t('quantity') }}: </label>
+                                                    <InputText id="Quantidade" class="w-full" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" required />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="flex justify-content-end gap-2">
-                                            <Button type="button" :label="$t('cancel')" severity="secondary" @click="visible = false"></Button>
-                                            <Button type="button" :label="$t('add')" @click="SalvarProduto"></Button>
-                                        </div>
+                                        <template #footer>
+                                            <Button type="button" :label="$t('cancel')" severity="secondary" @click="visible = false" />
+                                            <Button type="button" :label="$t('add')" @click="SalvarProduto" />
+                                        </template>
                                     </Dialog>
 
                                     <!-- dialogo deletar produto-->
@@ -594,43 +608,9 @@ const debouncedFilterChange = debounce(() => {
                     </div>
                 </div>
             </TabPanel>
-        </TabView>
+        </Tabs>
         <LoadingSpinner v-if="loading" />
     </div>
 </template>
 
-<style>
-.overflow-scroll {
-    overflow: scroll;
-    resize: none;
-}
-
-@media (max-width: 1024px) {
-    .text-center {
-        margin: 2px;
-    }
-}
-
-.field {
-    padding: 4.5px;
-}
-
-.buttons {
-    width: 200px;
-}
-
-.titulo {
-    white-space: pre-wrap;
-    text-align: center;
-}
-
-@media (max-width: 580px) {
-    .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
-    }
-}
-</style>
+<style></style>

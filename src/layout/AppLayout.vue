@@ -16,12 +16,12 @@ const toast = useToast();
 // Acessa a store de autenticação para pegar dados do usuário (como o papel)
 const store = useAuthStore();
 // Obtém as configurações e o estado do layout através da função useLayout
-const { layoutConfig, layoutState, isSidebarActive } = useLayout();
+const { layoutConfig, layoutState, isDrawerActive } = useLayout();
 
 // Variável reativa para controlar o estado de carregamento
 const loading = ref(false);
 
-// Variável para armazenar a função de listener para cliques fora da sidebar
+// Variável para armazenar a função de listener para cliques fora da drawer
 const outsideClickListener = ref(null);
 
 const exibirMensagemGlobal = (mensagem) => {
@@ -37,12 +37,12 @@ const exibirMensagemGlobal = (mensagem) => {
         store.clearGlobalMessage();
     }
 };
-// Observa mudanças no estado da sidebar e ativa/desativa o listener de clique externo
-watch(isSidebarActive, (newVal) => {
+// Observa mudanças no estado da Drawer e ativa/desativa o listener de clique externo
+watch(isDrawerActive, (newVal) => {
     if (newVal) {
-        bindOutsideClickListener(); // Ativa o listener de clique externo se a sidebar estiver ativa
+        bindOutsideClickListener(); // Ativa o listener de clique externo se a Drawer estiver ativa
     } else {
-        unbindOutsideClickListener(); // Desativa o listener de clique externo se a sidebar não estiver ativa
+        unbindOutsideClickListener(); // Desativa o listener de clique externo se a Drawer não estiver ativa
     }
 });
 watch(
@@ -72,7 +72,7 @@ const containerClass = computed(() => {
 });
 
 /**
- * Função para adicionar um listener de clique fora, que fecha o menu ao clicar fora da sidebar ou do topo.
+ * Função para adicionar um listener de clique fora, que fecha o menu ao clicar fora da Drawer ou do topo.
  */
 const bindOutsideClickListener = () => {
     if (!outsideClickListener.value) {
@@ -95,16 +95,16 @@ const unbindOutsideClickListener = () => {//Função para remover o listener de 
 };
 
 /**
- * Função para verificar se o clique ocorreu fora da sidebar ou do botão de menu.
+ * Função para verificar se o clique ocorreu fora da Drawer ou do botão de menu.
  * @param {Event} event - Evento de clique.
- * @returns {boolean} - Retorna true se o clique foi fora da sidebar e do topo.
+ * @returns {boolean} - Retorna true se o clique foi fora da Drawer e do topo.
  */
 const isOutsideClicked = (event) => {
-    const sidebarEl = document.querySelector('.layout-sidebar'); // Sidebar
+    const drawerEl = document.querySelector('.layout-drawer'); // Drawer
     const topbarEl = document.querySelector('.layout-menu-button'); // Botão do menu no topo
 
     // Verifica se o clique foi fora dos elementos mencionados
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+    return !(drawerEl.isSameNode(event.target) || drawerEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
 };
 </script>
 
@@ -118,8 +118,8 @@ const isOutsideClicked = (event) => {
             <!-- Barra superior do layout -->
             <MyTopBar></MyTopBar>
 
-            <!-- Sidebar -->
-            <div class="layout-sidebar">
+            <!-- Drawer -->
+            <div class="layout-drawer">
                 <MySideBar></MySideBar>
             </div>
 

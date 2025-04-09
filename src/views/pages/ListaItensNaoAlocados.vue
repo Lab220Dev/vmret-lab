@@ -1,5 +1,5 @@
 <script setup>
-import { FilterMatchMode } from 'primevue/api';  // Importa o modo de filtro para uso no DataTable do PrimeVue
+import { FilterMatchMode } from '@primevue/core/api';  // Importa o modo de filtro para uso no DataTable do PrimeVue
 import '@vuepic/vue-datepicker/dist/main.css';  // Importa o estilo do componente de data picker
 import { ref, onMounted, computed } from 'vue';  // Importa o Vue para uso de referências reativas e lifecycle hooks
 import axios from '@/axios.js';  // Importa a instância de axios configurada para realizar as requisições HTTP
@@ -179,7 +179,7 @@ onMounted(() => {
 }
 
 .drop {
-    width: 100%;  /* Define a largura do dropdown como 100% */
+    width: 100%;  /* Define a largura do Select como 100% */
 }
 
 @media (max-width: 580px) {

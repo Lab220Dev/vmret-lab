@@ -3,7 +3,7 @@
 import { reactive, ref, onMounted, watch, computed } from 'vue'; // Importação das funções do Vue.
 import { useToast } from 'primevue/usetoast'; // Importação do hook para exibição de toast messages.
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store de autenticação.
-import { FilterMatchMode } from 'primevue/api'; // Importação do filtro de correspondência.
+import { FilterMatchMode } from '@primevue/core/api'; // Importação do filtro de correspondência.
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
 import { FormatarListaCliente } from '@/helpers/DMHelper.js';//Importa a função FormatarListaCliente do arquivo DMHelper.js localizado na pasta helpers
@@ -15,7 +15,7 @@ import { useI18n } from 'vue-i18n';//Importa o hook useI18n da biblioteca vue-i1
 const { t } = useI18n();//Desestruturação do hook useI18n para obter a função t, que é usada para tradução
 
 // Variáveis reativas para controle da aplicação
-const active = ref(0); // Variável reativa para controlar a aba ativa.
+const active = ref("0");// Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore(); // Instância do store de dados.
 const store = useAuthStore(); // Instância do store de autenticação.
 const loading = ref(false); // Variável para controlar o estado de carregamento.
@@ -48,7 +48,7 @@ const lazyParams = ref({
 });
 const ListaUsuario = ref([]); // Lista de usuários.
 
-const dropdownItems = computed(() => [
+const selectItems = computed(() => [
     // Opções de roles para o usuário.
     { label: t('manager'), value: 'Gestor' },
     { label: t('master'), value: 'Master' },
@@ -64,14 +64,6 @@ const filters = ref({
 const filteredCount = ref(0); // Contador de usuários filtrados.
 
 const deleteUsuarioDialog = ref(false); // Controle da visibilidade do diálogo de confirmação de exclusão.
-const onRowSelect = (event) => {
-    visible.value = true; // Torna o formulário visível.
-    usuario = event.data; // Preenche o formulário com os dados do usuário selecionado.
-    senha.value = usuario.senha; // Preenche o campo de senha.
-    SenhaBE.value = usuario.senha; // Armazena a senha original do backend.
-    senhaAlterada.value = false; // Reseta a flag de alteração da senha.
-    active.value = 1; // Altera a aba para a edição do usuário.
-};
 
 /**
  * Função de validação de e-mail.
@@ -166,7 +158,7 @@ const deleteUsuario = async (item) => {
  * Função para voltar à tela inicial.
  */
 const voltar = () => {
-    active.value = 0; // Retorna para a aba de listagem de usuários.
+    value.value = "0"; // Retorna para a aba de listagem de usuários.
     resetForm(); // Reseta o formulário.
 };
 
@@ -201,7 +193,7 @@ const saveUsuario = async () => {//Função para adicionar um novo usuário.
         const response = await usuarioService.adicionarUsuario(data);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('add_web_user_sucess'), life: 3000 }); // Exibe uma notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
-        active.value = 0; // Retorna à aba inicial.
+        active.value = "0"; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
@@ -227,7 +219,7 @@ const atualizarUsuario = async () => {//Função para atualizar um usuário.
         const response = await usuarioService.atualizarUsuario(data);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('update_web_user_sucess'), life: 3000 }); // Notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
-        active.value = 0; // Retorna à aba inicial.
+        active.value = "0"; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error); // Log de erro.
@@ -351,11 +343,20 @@ const formatDate = (value) => {
     }
 };
 
+const onRowSelect = (event) => {
+    visible.value = true; // Torna o formulário visível.
+    Object.assign(usuario, event.data); // Atualiza o objeto reativo com os dados do usuário selecionado.
+    senha.value = usuario.senha; // Preenche o campo de senha.
+    SenhaBE.value = usuario.senha; // Armazena a senha original do backend.
+    senhaAlterada.value = false; // Reseta a flag de alteração da senha.
+    active.value = "1";
+};
+
 /**
- * Observador da variável `active`, que detecta mudanças nas abas e executa ações.
+ * Observador da variável `value`, que detecta mudanças nas abas e executa ações.
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
+    if (newIndex !== oldIndex && newIndex === "0") {
         // Se mudar para a aba 0 (listagem de usuários).
         senha.value = ''; // Reseta a senha.
         resetForm(); // Reseta o formulário.
@@ -393,6 +394,8 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
         loadData(); // Carrega os dados ao montar o componente
         fetchUsuarios(); // Recarrega a lista de usuários ao montar
     }
+    active.value = "0"; // Define a aba ativa como 0 (listagem de usuários)
+    
 });
 
 /**
@@ -410,189 +413,189 @@ const resetForm = () => {
         <div class="col-12">
             <!-- Coluna que ocupa toda a largura da tela -->
             <div class="card">
-                <TabView v-model:activeIndex="active">
-                    <!-- Componente de abas (TabView), controla qual aba está ativa -->
-                    <TabPanel :header="$t('list_web_users')">
-                        <!-- Aba para listagem de usuários -->
-                        <div class="">
-                            <DataTable
-                                v-model:filters="filters"
-                                :value="ListaUsuario"
-                                stripedRows
-                                paginator
-                                lazy
-                                :totalRecords="filteredCount"
-                                removableSort
-                                :rows="lazyParams.value?.rows || 10"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
-                                selectionMode="single"
-                                tableStyle="min-width: 50rem; table-layout: fixed;"
-                                ref="dt"
-                                dataKey="id"
-                                :metaKeySelection="false"
-                                @rowSelect="onRowSelect"
-                                @filter="onFilterChange($event)"
-                                @page="onPageChange($event)"
-                                @sort="onSortChange($event)"
-                                :sortOrder="lazyParams.value?.sortOrder || 1"
-                                :sortField="lazyParams.value?.sortField || 'nome'"
-                            >
-                                <!-- A tabela exibe os dados provenientes de 'ListaUsuario' -->
-                                <!-- Aplica um estilo de linhas alternadas (listradas) para melhorar a legibilidade -->
-                                <!-- A tabela está paginada, com 10 linhas exibidas por página e opções de 5, 10, 20 ou 50 linhas por página -->
-                                <!-- Permite ao usuário selecionar apenas uma linha por vez -->
-                                <!-- Aplica um estilo de largura mínima de 50rem e layout fixo, garantindo que as colunas tenham larguras constantes -->
-                                <!-- Cria uma referência chamada 'dt' para o componente DataTable, que pode ser acessada diretamente no Vue -->
-                                <!-- Usa o campo 'id' como a chave única para cada linha da tabela -->
-                                <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (como Ctrl ou Command) -->
-                                <!-- Quando uma linha é selecionada, a função 'onRowSelect' é chamada -->
-                                <!-- A ordenação inicial é feita pelo campo 'nome', de forma crescente -->
-
-                                <!-- Componente DataTable para exibir a lista de usuários -->
-                                <template #header>
-                                    <!-- Cabeçalho da tabela com total de registros e campo de busca -->
-                                    <div class="flex justify-content-between mt-4">
-                                        <div class="font-semibold">
-                                            <span>{{ $t('total_records' ,{count: filteredCount})}}</span>
-                                            <!-- Exibe a quantidade de registros filtrados -->
+                <Tabs v-model:value="active" :value="0">
+                    <TabList>
+                        <!-- Lista de abas (TabList) -->
+                        <Tab value="0">{{$t('list_web_users')}}</Tab>
+                        <Tab value="1">{{visible ? t('edit_user') : t('add_user')}}</Tab>
+                        <!-- Abas para listagem e edição/adicionar usuário -->
+                    </TabList>
+                    <TabPanels >
+                        <TabPanel value="0">
+                            <!-- Aba para listagem de usuários -->
+                            <div>
+                                <DataTable
+                                class = "p-datatable p-datatable-striped"
+                                    v-model:filters="filters"
+                                    :value="ListaUsuario"
+                                    stripedRows
+                                    paginator
+                                    lazy
+                                    :totalRecords="filteredCount"
+                                    removableSort
+                                    :rows="lazyParams.value?.rows || 10"
+                                    :rowsPerPageOptions="[5, 10, 20, 50]"
+                                    :globalFilterFields="['nome', 'email', 'nome_cliente', 'role', 'last_login']"
+                                    selectionMode="single"
+                                    tableStyle="min-width: 50rem; table-layout: ;"
+                                    ref="dt"
+                                    dataKey="id"
+                                    :metaKeySelection="false"
+                                    @rowSelect="onRowSelect"
+                                    @filter="onFilterChange($event)"
+                                    @page="onPageChange($event)"
+                                    @sort="onSortChange($event)"
+                                    :sortOrder="lazyParams.value?.sortOrder || 1"
+                                    :sortField="lazyParams.value?.sortField || 'nome'"
+                                >
+                                    <!-- A tabela exibe os dados provenientes de 'ListaUsuario' -->
+                                    <!-- Aplica um estilo de linhas alternadas (listradas) para melhorar a legibilidade -->
+                                    <!-- A tabela está paginada, com 10 linhas exibidas por página e opções de 5, 10, 20 ou 50 linhas por página -->
+                                    <!-- Permite ao usuário selecionar apenas uma linha por vez -->
+                                    <!-- Aplica um estilo de largura mínima de 50rem e layout fixo, garantindo que as colunas tenham larguras constantes -->
+                                    <!-- Cria uma referência chamada 'dt' para o componente DataTable, que pode ser acessada diretamente no Vue -->
+                                    <!-- Usa o campo 'id' como a chave única para cada linha da tabela -->
+                                    <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (como Ctrl ou Command) -->
+                                    <!-- Quando uma linha é selecionada, a função 'onRowSelect' é chamada -->
+                                    <!-- A ordenação inicial é feita pelo campo 'nome', de forma crescente -->
+                                    <!-- Componente DataTable para exibir a lista de usuários -->
+                                    <template #header>
+                                        <!-- Cabeçalho da tabela com total de registros e campo de busca -->
+                                        <div class="flex justify-content-between mt-4">
+                                            <div class="font-semibold">
+                                                <span>{{ $t('total_records' ,{count: filteredCount})}}</span>
+                                                <!-- Exibe a quantidade de registros filtrados -->
+                                            </div>
+                                            <IconField iconPosition="left">
+                                                <InputIcon>
+                                                    <i class="pi pi-search" />
+                                                </InputIcon>
+                                                <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" />
+                                                <!-- Campo de busca global para filtrar os usuários -->
+                                            </IconField>
                                         </div>
-                                        <IconField iconPosition="left">
-                                            <InputIcon>
-                                                <i class="pi pi-search" />
-                                            </InputIcon>
-                                            <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" />
-                                            <!-- Campo de busca global para filtrar os usuários -->
-                                        </IconField>
+                                    </template>
+                                    <template #empty> {{ t('empty_user') }} </template>
+                                    <!-- Mensagem exibida quando não houver usuários na tabela -->
+                                    <!-- Definição das colunas da tabela -->
+                                    <Column field="nome" sortable style="width: 20%" class="table-cell" :header="t('name')">
+                                        <!-- Coluna para exibir o nome do usuário -->
+                                        <template #body="{ data }">
+                                            <span v-tooltip="data.nome">{{ data.nome }}</span>
+                                            <!-- Exibe o nome do usuário e aplica tooltip -->
+                                        </template>
+                                    </Column>
+                                    <Column field="email" sortable class="table-cell" style="width: 25%" :header="t('email')">
+                                        <!-- Coluna para exibir o e-mail do usuário -->
+                                        <template #body="{ data }">
+                                            <span v-tooltip="data.email">{{ data.email }}</span>
+                                            <!-- Exibe o e-mail do usuário e aplica tooltip -->
+                                        </template>
+                                    </Column>
+                                    <Column v-if="isAdmin" field="nome_cliente" sortable class="table-cell" style="width: 15%" :header="t('client')">
+                                        <!-- Coluna para exibir o nome do cliente, visível apenas se o usuário for admin -->
+                                        <template #body="{ data }">
+                                            <span v-tooltip="data.nome_cliente">{{ data.nome_cliente }}</span>
+                                            <!-- Exibe o nome do cliente e aplica tooltip -->
+                                        </template>
+                                    </Column>
+                                    <Column field="role" sortable class="table-cell" style="width: 15%" :header="t('role')">
+                                        <!-- Coluna para exibir o papel (role) do usuário -->
+                                        <template #body="{ data }">
+                                            <span v-tooltip="data.role">{{ data.role }}</span>
+                                            <!-- Exibe o papel do usuário e aplica tooltip -->
+                                        </template>
+                                    </Column>
+                                    <Column field="ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
+                                        <!-- Coluna para exibir se o usuário está ativo -->
+                                        <template #body="{ data }">
+                                            <i class="pi" :class="{ 'pi-check-circle pi-yes': data.ativo, 'pi-times-circle pi-no': !data.ativo }"></i>
+                                            <!-- Exibe um ícone de status dependendo se o usuário está ativo ou não -->
+                                        </template>
+                                    </Column>
+                                    <Column field="last_login" sortable class="table-cell" style="width: 17%" :header="t('last_login')">
+                                        <!-- Coluna para exibir a data do último login -->
+                                        <template #body="{ data }">
+                                            {{ formatDate(new Date(data.last_login)) }}
+                                            <!-- Formata a data do último login antes de exibir -->
+                                        </template>
+                                    </Column>
+                                    <Column style="width: 10%">
+                                        <!-- Coluna para o botão de deletar usuário -->
+                                        <template #body="slotProps">
+                                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deletUsuariodes(slotProps.data)" />
+                                            <!-- Botão para deletar o usuário -->
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                            </div>
+                        </TabPanel>
+                        <TabPanel value="1">
+                            <!-- Aba para edição ou criação de usuário -->
+                            <div class="mt-5 mx-0 grid">
+                                <!-- Formulário de edição ou adição -->
+                                <div class=" xl:col-6 lg:col-6 md:col-12 sm:col-12" >
+                                    <label for="name">{{ t('name') }}:</label>
+                                    <InputText class="my-2 w-full" v-model="usuario.nome" id="name" type="text"/>
+                                    <!-- Campo para nome do usuário -->
+                                </div>
+                                <div class=" xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                    <label for="email">{{ t('email') }}:</label>
+                                    <InputText class="my-2 w-full" v-model="usuario.email" id="email" :invalid="!!errors.email" @blur="validateEmail" />
+                                    <!-- Campo para e-mail do usuário, com validação -->
+                                    <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
+                                    <!-- Exibe mensagem de erro se o e-mail for inválido -->
+                                </div>
+                                <div :class="isAdmin ? 'xl:col-4 lg:col-4 md:col-3 sm:col-12' : 'xl:col-6 lg:col-6 md:col-3 sm:col-12'">
+                                    <label for="senha">{{ t('password') }}:</label>
+                                    <InputText class="my-2 w-full" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
+                                    <!-- Campo para senha do usuário -->
+                                    <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
+                                    <!-- Exibe mensagem de erro se a senha for inválida -->
+                                </div>
+                                <div :class="isAdmin ? 'xl:col-4 lg:col-4 md:col-3 sm:col-12' : 'xl:col-6 lg:col-6 md:col-3 sm:col-12'">
+                                    <label for="senha" class="text-nowrap">{{ t('confirm_password') }}:</label>
+                                    <InputText class="my-2 w-full" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
+                                    <!-- Campo para confirmação de senha -->
+                                    <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
+                                    <!-- Exibe mensagem de erro se as senhas não coincidirem -->
+                                </div>
+                                <div v-if="isAdmin" class="xl:col-4 lg:col-4 md:col-12 sm:col-12">
+                                    <label for="perfil">{{ t('client') }}:</label>
+                                    <Select class="my-2 w-full" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Select>
+                                    <!-- Select para selecionar o cliente, visível apenas se for admin -->
+                                </div>
+                                <div class=" xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch2">{{ t('active_user') }}</label>
+                                    <div class="grid mt-3 w-full align-items-center justify-content-center switch-wrapper">
+                                        <ToggleSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2 " />
+                                        <span class="ml-2">{{ usuario.ativo ? $t('yes') : $t('no') }}</span>
+                                        <!-- Switch para ativar/desativar o usuário -->
                                     </div>
-                                </template>
-
-                                <template #empty> {{ t('empty_user') }} </template>
-                                <!-- Mensagem exibida quando não houver usuários na tabela -->
-
-                                <!-- Definição das colunas da tabela -->
-                                <Column field="nome" sortable style="width: 20%" class="table-cell" :header="t('name')">
-                                    <!-- Coluna para exibir o nome do usuário -->
-                                    <template #body="{ data }">
-                                        <span v-tooltip="data.nome">{{ data.nome }}</span>
-                                        <!-- Exibe o nome do usuário e aplica tooltip -->
-                                    </template>
-                                </Column>
-                                <Column field="email" sortable class="table-cell" style="width: 25%" :header="t('email')">
-                                    <!-- Coluna para exibir o e-mail do usuário -->
-                                    <template #body="{ data }">
-                                        <span v-tooltip="data.email">{{ data.email }}</span>
-                                        <!-- Exibe o e-mail do usuário e aplica tooltip -->
-                                    </template>
-                                </Column>
-                                <Column v-if="isAdmin" field="nome_cliente" sortable class="table-cell" style="width: 15%" :header="t('client')">
-                                    <!-- Coluna para exibir o nome do cliente, visível apenas se o usuário for admin -->
-                                    <template #body="{ data }">
-                                        <span v-tooltip="data.nome_cliente">{{ data.nome_cliente }}</span>
-                                        <!-- Exibe o nome do cliente e aplica tooltip -->
-                                    </template>
-                                </Column>
-                                <Column field="role" sortable class="table-cell" style="width: 15%" :header="t('role')">
-                                    <!-- Coluna para exibir o papel (role) do usuário -->
-                                    <template #body="{ data }">
-                                        <span v-tooltip="data.role">{{ data.role }}</span>
-                                        <!-- Exibe o papel do usuário e aplica tooltip -->
-                                    </template>
-                                </Column>
-                                <Column field="ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
-                                    <!-- Coluna para exibir se o usuário está ativo -->
-                                    <template #body="{ data }">
-                                        <i class="pi" :class="{ 'pi-check-circle text-green-500': data.ativo, 'pi-times-circle text-red-500': !data.ativo }"></i>
-                                        <!-- Exibe um ícone de status dependendo se o usuário está ativo ou não -->
-                                    </template>
-                                </Column>
-                                <Column field="last_login" sortable class="table-cell" style="width: 17%" :header="t('last_login')">
-                                    <!-- Coluna para exibir a data do último login -->
-                                    <template #body="{ data }">
-                                        {{ formatDate(new Date(data.last_login)) }}
-                                        <!-- Formata a data do último login antes de exibir -->
-                                    </template>
-                                </Column>
-                                <Column style="width: 10%">
-                                    <!-- Coluna para o botão de deletar usuário -->
-                                    <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deletUsuariodes(slotProps.data)" />
-                                        <!-- Botão para deletar o usuário -->
-                                    </template>
-                                </Column>
-                            </DataTable>
-                        </div>
-                    </TabPanel>
-
-                    <TabPanel :header="visible ? t('edit_user') : t('add_user')">
-                        <!-- Aba para edição ou criação de usuário -->
-                        <div class="mt-3 mx-0 p-fluid grid">
-                            <!-- Formulário de edição ou adição -->
-                            <div class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
-                                <label for="name">{{ t('name') }}:</label>
-                                <InputText class="my-2" v-model="usuario.nome" id="name" type="text" />
-                                <!-- Campo para nome do usuário -->
-                            </div>
-                            <div class="full xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label for="email">{{ t('email') }}:</label>
-                                <InputText class="my-2" v-model="usuario.email" id="email" :invalid="!!errors.email" @blur="validateEmail" />
-                                <!-- Campo para e-mail do usuário, com validação -->
-                                <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
-                                <!-- Exibe mensagem de erro se o e-mail for inválido -->
-                            </div>
-                            <div class="full xl:col-3 lg:col-3 md:col-3 sm:col-12">
-                                <label for="senha">{{ t('password') }}:</label>
-                                <InputText class="my-2" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
-                                <!-- Campo para senha do usuário -->
-                                <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
-                                <!-- Exibe mensagem de erro se a senha for inválida -->
-                            </div>
-                            <div class="full xl:col-3 lg:col-3 md:col-3 sm:col-12">
-                                <label for="senha" class="text-nowrap">{{ t('confirm_password') }}:</label>
-                                <InputText class="my-2" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
-                                <!-- Campo para confirmação de senha -->
-                                <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
-                                <!-- Exibe mensagem de erro se as senhas não coincidirem -->
-                            </div>
-
-                            <div v-if="isAdmin" class="full xl:col-12 lg:col-12 md:col-12 sm:col-12">
-                                <label for="perfil">{{ t('client') }}:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Dropdown>
-                                <!-- Dropdown para selecionar o cliente, visível apenas se for admin -->
-                            </div>
-
-                            <div class="full xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">{{ t('active_user') }}</label>
-                                <div class="grid mt-3">
-                                    <InputSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
-                                    <span class="ml-2">{{ usuario.ativo ? $t('yes') : $t('no') }}</span>
-                                    <!-- Switch para ativar/desativar o usuário -->
+                                </div>
+                                <div class=" xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label for="perfil">{{ t('profile') }}:</label>
+                                    <Select class="my-2 w-full" id="perfil" v-model="usuario.role" :options="selectItems" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')"></Select>
+                                    <!-- Select para selecionar o perfil do usuário -->
+                                </div>
+                                <div class=" xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label for="planta">{{ t('factory') }}:</label>
+                                    <Select class="my-2 w-full" filter id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"></Select>
+                                    <!-- Select para selecionar a planta -->
+                                </div>
+                                <div class="flex align-items-center justify-content-end field col-12 mt-7">
+                                    <!-- Botões de ação -->
+                                    <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm()" />
+                                    <!-- Botão de salvar se o formulário estiver visível (edição) -->
+                                    <Button style="width: 30%" class="buttons flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
+                                    <!-- Botão de voltar -->
+                                    <Button v-if="!visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" />
+                                    <!-- Botão de salvar se o formulário não estiver visível (adicionar) -->
                                 </div>
                             </div>
-                            <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="perfil">{{ t('profile') }}:</label>
-                                <Dropdown class="my-2" id="perfil" v-model="usuario.role" :options="dropdownItems" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')"></Dropdown>
-                                <!-- Dropdown para selecionar o perfil do usuário -->
-                            </div>
-
-                            <div class="full xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                <label for="planta">{{ t('factory') }}:</label>
-                                <Dropdown class="my-2" filter id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"></Dropdown>
-                                <!-- Dropdown para selecionar a planta -->
-                            </div>
-
-                            <div class="flex align-items-center justify-content-end field col-12 mt-7">
-                                <!-- Botões de ação -->
-                                <Button v-if="visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm()" />
-                                <!-- Botão de salvar se o formulário estiver visível (edição) -->
-                                <Button style="width: 30%" class="buttons flex align-items-center justify-content-center m-2 mr-0" :label="$t('back')" icon="pi pi-arrow-left" severity="primary" @click="voltar()" />
-                                <!-- Botão de voltar -->
-                                <Button v-if="!visible" style="width: 30%" class="buttons flex align-items-center justify-content-center m-2" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" />
-                                <!-- Botão de salvar se o formulário não estiver visível (adicionar) -->
-                            </div>
-                        </div>
-                    </TabPanel>
-                </TabView>
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
                 <Dialog :header="$t('delete_web_user')" v-model:visible="deleteUsuarioDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
                     <!-- Diálogo para confirmar a exclusão do usuário -->
                     <div class="confirmation-content">
@@ -618,36 +621,5 @@ const resetForm = () => {
 </template>
 
 <style>
-@media (max-width: 580px) {
-    .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
-    }
-    .buttons {
-        width: 50% !important ;
-    }
-}
 
-.switch-wrapper {
-    display: inline-flex;
-    align-items: center;
-}
-
-.datatable-wrapper {
-    overflow-x: auto;
-    width: 100vw;
-}
-
-.text-nowrap {
-    white-space: nowrap;
-}
-
-.table-cell {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
 </style>

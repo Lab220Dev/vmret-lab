@@ -10,8 +10,8 @@
                 <!-- Rótulo para o nome da coluna esperada -->
                 <label class="expected-column">{{ expected }}</label>
 
-                <!-- Dropdown para selecionar a coluna do arquivo carregado -->
-                <Dropdown v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" @change="handleMappingChange(expected)" />
+                <!-- Select para selecionar a coluna do arquivo carregado -->
+                <Select v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" @change="handleMappingChange(expected)" />
             </div>
         </div>
 
@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'; // Importando hooks do Vue para reatividade e observação
-import Dropdown from 'primevue/dropdown'; // Componente Dropdown do PrimeVue para seleção de opções
+import Select from 'primevue/select '; // Componente Select do PrimeVue para seleção de opções
 import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
 

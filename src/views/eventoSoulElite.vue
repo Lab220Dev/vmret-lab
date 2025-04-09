@@ -92,7 +92,7 @@
             </template>
             <template #filter="{ filterModel }">
                 <!-- Filtro para a coluna 'dia_retirada', com calendário -->
-                <Calendar 
+                <DatePicker 
                     v-model="filterModel.value" 
                     dateFormat="dd/mm/yy" 
                     placeholder="Selecione o dia" 
@@ -128,7 +128,7 @@
 <script setup>
 // Importação de funcionalidades do Vue e do PrimeVue para filtros
 import { ref, onMounted, onUnmounted, h, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from 'primevue/api';
+import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
 
 // Registra um filtro customizado para comparar arrays
 FilterService.register('filterByArrayEquals', (arr, value) => {

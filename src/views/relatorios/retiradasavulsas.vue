@@ -1,7 +1,7 @@
 <script setup>
 // Importações de componentes, funções e bibliotecas
 import VueDatePicker from '@vuepic/vue-datepicker'; // Componente VueDatePicker para selecionar datas
-import { FilterMatchMode } from 'primevue/api'; // Função da biblioteca PrimeVue para modos de filtro
+import { FilterMatchMode } from '@primevue/core/api'; // Função da biblioteca PrimeVue para modos de filtro
 import { useToast } from 'primevue/usetoast'; // Hook de notificação Toast da PrimeVue
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilos do VueDatePicker
 import { ref, onMounted, watch, computed } from 'vue'; // Funções do Vue (reactividade, lifecycle, watch)
@@ -20,12 +20,12 @@ const dataStore = useDataStore(); // Acesso à store de dados
 const emptyMessage = computed(() => t('no_search_made')); // Mensagem quando não há dados
 const toast = useToast();
 const retiradas = ref([]); // Dados das retiradas a serem exibidos na tabela
-const dropdown1 = ref(null); // Referências para os dropdowns usados nos filtros
-const dropdown2 = ref(null);
-const dropdown3 = ref(null);
-const dropdown4 = ref(null);
-const dropdown5 = ref(null);
-const dropdown6 = ref(null);
+const select1 = ref(null); // Referências para os selects usados nos filtros
+const select2 = ref(null);
+const select3 = ref(null);
+const select4 = ref(null);
+const select5 = ref(null);
+const select6 = ref(null);
 // Dados para as opções dos filtros
 const ListaFuncionarios = computed(() => dataStore.funcionariosOptions);
 // Lista de funcionários
@@ -95,14 +95,14 @@ const voltar = () => {
 // Referência da tabela
 const dt = ref(null);
 
-// Função para fechar todos os dropdowns
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown1 se estiver aberto
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown2 se estiver aberto
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o dropdown3 se estiver aberto
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide(); // Fecha o dropdown4 se estiver aberto
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide(); // Fecha o dropdown5 se estiver aberto
-    if (dropdown6.value?.overlayVisible) dropdown6.value.hide(); // Fecha o dropdown6 se estiver aberto
+// Função para fechar todos os selects
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Fecha o select1 se estiver aberto
+    if (select2.value?.overlayVisible) select2.value.hide(); // Fecha o select2 se estiver aberto
+    if (select3.value?.overlayVisible) select3.value.hide(); // Fecha o select3 se estiver aberto
+    if (select4.value?.overlayVisible) select4.value.hide(); // Fecha o select4 se estiver aberto
+    if (select5.value?.overlayVisible) select5.value.hide(); // Fecha o select5 se estiver aberto
+    if (select6.value?.overlayVisible) select6.value.hide(); // Fecha o select6 se estiver aberto
 };
 const filtroGenerico = () => {
     filtroGenericoReltorio(relatorio, ListaFuncionariosOriginal, ListaFuncionarios, ListaSetorOriginal, setor);
@@ -120,9 +120,9 @@ watch(
     { immediate: true }
 ); // Executa imediatamente após a montagem
 
-// Função que é chamada quando o DatePicker é aberto, fechando todos os dropdowns
+// Função que é chamada quando o DatePicker é aberto, fechando todos os selects
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns quando o DatePicker for aberto
+    closeAllselects(); // Fecha todos os selects quando o DatePicker for aberto
 };
 const loadData = async () => {
     loading.value = true;
@@ -150,53 +150,53 @@ onMounted(() => {
     <div class="card vh">
         <div class="form">
             <!-- Grid de layout -->
-            <div class="text-center">
+            <div>
                 <!-- Formulário de busca para o relatório, exibido quando "show" for true -->
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- Campo de filtro para DM -->
-                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">{{t('dispenser_machine')}}:</label>
-                        <!-- Dropdown para selecionar DM -->
-                        <Dropdown filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" />
+                        <!-- Select para selecionar DM -->
+                        <Select filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 1" />
                     </div>
 
                     <!-- Campo de filtro para Planta -->
-                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
-                        <!-- Dropdown para selecionar Planta -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" @change="filtroGenerico" />
+                        <!-- Select para selecionar Planta -->
+                        <Select filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Setor -->
-                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
-                        <!-- Dropdown para selecionar Setor -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" @change="filtroGenerico" />
+                        <!-- Select para selecionar Setor -->
+                        <Select filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Centro de Custo -->
-                    <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-6">
+                    <div class="py-0 mt-0 field xl:col-3 lg:col-4 md:col-6 sm:col-6">
                         <label for="perfil">{{t('cost_center')}}:</label>
-                        <!-- Dropdown para selecionar Centro de Custo -->
-                        <Dropdown filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown4" @change="filtroGenerico" />
+                        <!-- Select para selecionar Centro de Custo -->
+                        <Select filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Funcionário -->
-                    <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 mt-2 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('employee')}}:</label>
-                        <!-- Dropdown para selecionar Funcionário -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown5" />
+                        <!-- Select para selecionar Funcionário -->
+                        <Select filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 5" />
                     </div>
 
                     <!-- Campo de filtro para Voucher -->
-                    <div class="py-0 mt-2 field xl:col-4 lg:col-4 md:col-6 sm:col-12">
+                    <div class="py-0 mt-2 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Voucher:</label>
-                        <!-- Dropdown para selecionar Voucher -->
-                        <Dropdown filter class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown6" />
+                        <!-- Select para selecionar Voucher -->
+                        <Select filter class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 6" />
                     </div>
 
                     <!-- Campo de filtro para Data Inicial -->
-                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                    <div class="py-0 mt-2 field xl:col-3 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">{{t('initial_date')}}:</label>
                         <!-- DatePicker para selecionar Data Inicial -->
                         <VueDatePicker
@@ -216,7 +216,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Campo de filtro para Data Final -->
-                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                    <div class="py-0 mt-2 field xl:col-3 lg:col-4 md:col-4 sm:col-12">
                         <label for="perfil">{{t('end_date')}}:</label>
                         <!-- DatePicker para selecionar Data Final -->
                         <VueDatePicker
@@ -236,9 +236,9 @@ onMounted(() => {
                     </div>
 
                     <!-- Botão de Filtrar -->
-                    <div class="py-0 my-0 field xl:col-4 lg:col-4 md:col-4 sm:col-12 justify-self-end">
+                    <div class="pt-3 my-2 field xl:col-12 lg:col-12 md:col-12 sm:col-12 justify-self-end">
                         <!-- Botão para filtrar dados do relatório -->
-                        <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+                        <Button class="w-full" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 
                     <!-- <div class="field lg:col-3 md:col-6 sm:col-6">
@@ -353,78 +353,5 @@ onMounted(() => {
 </template>
 
 <style>
-/**
- * Define o estilo para o container da "card" (cartão).
- * Faz com que a área do conteúdo dentro da carta (card) permita rolagem horizontal quando o conteúdo for maior que o container.
- */
-.card {
-    overflow-x: auto; /* Permite rolagem horizontal quando o conteúdo ultrapassar a largura do container */
-}
 
-/**
- * Estiliza o wrapper da tabela para garantir que ela ocupe toda a largura da tela.
- * Também permite rolagem horizontal caso o conteúdo da tabela ultrapasse a largura da tela.
- */
-.datatable-wrapper {
-    overflow-x: auto; /* Permite rolagem horizontal caso o conteúdo da tabela ultrapasse a largura do container */
-    width: 100vw; /* Define a largura do wrapper como 100% da largura da janela de visualização (viewport) */
-}
-
-/**
- * Define o estilo do botão de filtro (botão "Filtrar Dados").
- * Adiciona um espaço superior de 25px.
- */
-.filtrar {
-    margin-top: 25px; /* Adiciona uma margem superior de 25px ao botão de filtrar */
-}
-
-/**
- * Define o estilo dos dropdowns. Faz com que eles ocupem toda a largura disponível.
- */
-.drop {
-    width: 100%; /* Faz com que os dropdowns ocupem toda a largura do container pai */
-}
-
-/**
- * Regras de estilo aplicadas quando a largura da tela é inferior a 580px.
- * Usado para tornar o layout responsivo em telas pequenas, como em dispositivos móveis.
- */
-@media (max-width: 580px) {
-    /**
-     * A regra dentro desse bloco altera o layout dos campos do formulário
-     * quando a tela é pequena (largura menor que 580px).
-     * Cada campo ocupa 100% da largura disponível e adiciona uma margem inferior.
-     */
-    .form .field {
-        flex: 0 0 100%; /* Faz com que o campo ocupe 100% da largura disponível */
-        max-width: 100%; /* Define o máximo de largura como 100% */
-        margin-bottom: 1rem; /* Adiciona uma margem inferior de 1rem entre os campos */
-    }
-
-    /**
-     * Define o estilo para os dropdowns dentro do formulário em telas pequenas.
-     * Garante que os dropdowns ocupem 100% da largura do campo.
-     */
-    .form .field .drop {
-        width: 100%; /* Faz com que os dropdowns ocupem 100% da largura disponível no campo */
-    }
-
-    /**
-     * Estilo aplicado aos botões de filtro e exportar em telas pequenas.
-     * Garante que esses botões ocupem 100% da largura do campo.
-     */
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%; /* Faz com que os botões ocupem 100% da largura do campo */
-    }
-}
-
-/**
- * Define o estilo para os campos do formulário.
- * Faz com que o texto dentro dos campos não quebre e alinha o texto à esquerda.
- */
-.field {
-    white-space: nowrap; /* Impede que o texto dentro do campo quebre em várias linhas */
-    text-align: left; /* Alinha o texto à esquerda dentro dos campos */
-}
 </style>

@@ -2,7 +2,7 @@
 // Importação de funções e hooks do Vue.js
 import { reactive, ref, onMounted, watch, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 import cdcService from '@/services/cdcService';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { resetCDCForm } from '@/helpers/formHelper';
@@ -10,7 +10,7 @@ import { isMobEnabled, prepareListData } from '@/helpers/HelperUtils.js';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 // Definição de variáveis reativas e referências
-const active = ref(0); // Estado para o índice da aba ativa
+const active = ref("0");// Variável reativa para controlar a aba ativa.
 const toast = useToast(); // Hook para usar a funcionalidade de toast
 const centroCusto = ref([]); // Lista dos centros de custo
 const visible = ref(false); // Controle de visibilidade para o formulário de edição/adição
@@ -48,7 +48,7 @@ let cdc = reactive({
 const onRowSelect = async (event) => {
     cdc = event.data; // Atualiza os dados do centro de custo com os dados da linha selecionada
     visible.value = true; // Torna o formulário de edição visível
-    active.value = 1; // Muda para a aba de edição
+    active.value = "1"; // Muda para a aba de edição
 };
 const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
@@ -90,7 +90,7 @@ const loadCentroCusto = async (page = 1) => {
     } catch (error) {
         console.error(error.message); // Exibe o erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_cost_center_error') }); // Exibe mensagem de erro
-    }finally{
+    } finally {
         spinner.value = false; // Esconde o spinner de carregamento
     }
 };
@@ -119,12 +119,12 @@ const submitForm = async () => {
         }
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
-        active.value = 0; // Volta para a aba de listagem
+        active.value = "0"; // Volta para a aba de listagem
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: error.message || t('cost_center_update_error_default'), life: 3000 }); // Exibe mensagem de erro caso falhe
-    }finally{
+    } finally {
         spinner.value = false; // Esconde o spinner de carregamento
-    }	
+    }
 };
 
 /**
@@ -145,10 +145,10 @@ const deleteCentro = async () => {
         deleteCentroDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário
-        active.value = 0; // Volta para a aba de listagem
+        active.value = "0"; // Volta para a aba de listagem
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('cost_center_delted_error'), life: 3000 }); // Exibe mensagem de erro caso falhe
-    }finally{
+    } finally {
         spinner.value = false; // Esconde o spinner de carregamento
     }
 };
@@ -161,7 +161,7 @@ const deleteCentro = async () => {
  * @param {number} oldIndex - O índice anterior da aba ativa.
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
+    if (newIndex !== oldIndex && newIndex === "0") {
         // Se a aba ativa for a de listagem (índice 0)
         resetCDCForm(cdc); // Reseta os campos do formulário
         loadCentroCusto(); // Carrega os dados novamente
@@ -204,136 +204,128 @@ const debouncedFilterChange = debounce(() => {
 onMounted(() => {
     loadCentroCusto(); // Carrega os dados ao montar o componente
     Mob.value = isMobEnabled();
+    active.value = "0";
 });
 </script>
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active">
-            <!-- Componente TabView para controlar abas de listagem e edição -->
+        <Tabs v-model:value="active" :value="0">
+            <TabList>
+                <Tab value="0">{{ $t('list_cost_center') }}</Tab>
+                <Tab value="1">{{ visible ? t('edit_cost_center') : t('add_cost_center') }}</Tab>
+            </TabList>
 
             <!-- Aba de Listagem de Centros de Custo -->
-            <TabPanel :header="$t('list_cost_center')">
-                <div class="col-12">
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="centroCusto"
-                        selectionMode="single"
-                        tableStyle="min-width: 25%"
-                        stripedRows
-                        removableSort
-                        paginator
-                        lazy
-                        :totalRecords="filteredCount"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :rows="lazyParams.value?.rows || 10"
-                        dataKey="id"
-                        :sortOrder="lazyParams.value?.sortOrder || 1"
-                        :sortField="lazyParams.value?.sortField || 'Codigo'"
-                        @filter="onFilterChange($event)"
-                        @page="onPageChange($event)"
-                        @sort="onSortChange($event)"
-                        :globalFilterFields="['Codigo', 'Nome']"
-                        :metaKeySelection="false"
-                        @rowSelect="onRowSelect"
-                    >
-                        <!-- A tabela exibe os dados provenientes de "centroCusto" -->
-                        <!-- Permite selecionar apenas uma linha por vez -->
-                        <!-- Aplica um estilo alternado nas linhas para facilitar a leitura -->
-                        <!-- Aplica a ordenação removível, permitindo ao usuário reverter a ordenação clicando novamente na coluna -->
-                        <!-- Habilita a paginação para exibir os dados em várias páginas -->
-                        <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
-                        <!-- Exibe 10 itens por página por padrão -->
-                        <!-- A chave única para identificar cada linha é o campo "id" -->
-                        <!-- Ordena os dados inicialmente pelo campo "Codigo" -->
-                        <!-- Aplica o filtro global aos campos "Codigo" e "Nome" -->
-                        <!-- Desabilita a seleção de múltiplas linhas usando a tecla "meta" -->
-                        <!-- Quando uma linha é selecionada, emite o evento 'rowSelect', chamando a função 'handleRowSelection' -->
-                        <template #header>
-                            <!-- Cabeçalho da tabela -->
-                            <div class="flex justify-content-between align-items-center mt-4">
-                                <div class="font-semibold">
-                                    <span>{{ $t('total_records',{count: filteredCount})}}</span>
-                                </div>
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" :placeholder="t('search')"  type="search" @input="debouncedFilterChange" />
-                                </IconField>
-                            </div>
-                        </template>
-                        <template #empty> {{ t('empty_cost_center') }} </template>
-                        <!-- Mensagem exibida quando a tabela está vazia -->
-                        <Column field="Codigo" sortable :header="t('code')"></Column>
-                        <Column field="Nome" sortable :header="t('cost_center_name')"></Column>
-                    </DataTable>
-                </div>
-            </TabPanel>
-            <!-- Aba de Edição ou Adição de Centro de Custo -->
-            <TabPanel :header="visible ? t('edit_cost_center') : t('add_cost_center')" v-model:activeIndex="active">
-                <div class="grid">
+            <TabPanels>
+                <TabPanel value="0">
                     <div class="col-12">
-                        <div class="mt-5">
-                            <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid m-0 p-0">
-                                    <!-- Formulário para adicionar ou editar um centro de custo -->
-
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_centro_custo">{{ t('code') }}:</label>
-                                        <InputNumber class="my-2" id="id_centro_custo" v-model="cdc.Codigo" required />
+                        <DataTable
+                            v-model:filters="filters"
+                            :value="centroCusto"
+                            selectionMode="single"
+                            tableStyle="min-width: 25%"
+                            stripedRows
+                            removableSort
+                            paginator
+                            lazy
+                            :totalRecords="filteredCount"
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            :rows="lazyParams.value?.rows || 10"
+                            dataKey="id"
+                            :sortOrder="lazyParams.value?.sortOrder || 1"
+                            :sortField="lazyParams.value?.sortField || 'Codigo'"
+                            @filter="onFilterChange($event)"
+                            @page="onPageChange($event)"
+                            @sort="onSortChange($event)"
+                            :globalFilterFields="['Codigo', 'Nome']"
+                            :metaKeySelection="false"
+                            @rowSelect="onRowSelect"
+                        >
+                            <!-- A tabela exibe os dados provenientes de "centroCusto" -->
+                            <!-- Permite selecionar apenas uma linha por vez -->
+                            <!-- Aplica um estilo alternado nas linhas para facilitar a leitura -->
+                            <!-- Aplica a ordenação removível, permitindo ao usuário reverter a ordenação clicando novamente na coluna -->
+                            <!-- Habilita a paginação para exibir os dados em várias páginas -->
+                            <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
+                            <!-- Exibe 10 itens por página por padrão -->
+                            <!-- A chave única para identificar cada linha é o campo "id" -->
+                            <!-- Ordena os dados inicialmente pelo campo "Codigo" -->
+                            <!-- Aplica o filtro global aos campos "Codigo" e "Nome" -->
+                            <!-- Desabilita a seleção de múltiplas linhas usando a tecla "meta" -->
+                            <!-- Quando uma linha é selecionada, emite o evento 'rowSelect', chamando a função 'handleRowSelection' -->
+                            <template #header>
+                                <!-- Cabeçalho da tabela -->
+                                <div class="flex justify-content-between align-items-center mt-4">
+                                    <div class="font-semibold">
+                                        <span>{{ $t('total_records', { count: filteredCount }) }}</span>
                                     </div>
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="nome">{{ t('cost_center_name') }}:</label>
-                                        <InputText class="my-2" id="nome" v-model="cdc.Nome" required />
-                                    </div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
+                                    </IconField>
                                 </div>
-                                <div class="mr-1 mt-4 grid justify-content-end">
-                                    <!-- Botões de Ação -->
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
-                                    <Button
-                                        v-if="visible"
-                                        style="width: 15%"
-                                        class="flex align-items-center justify-content-center m-2 mr-0"
-                                        :label="$t('delete')"
-                                        icon="pi pi-trash"
-                                        severity="danger"
-                                        @click="deleteCentroDialog = true"
-                                        :disabled="Mob"
-                                    />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
-
-                        <Dialog :header="$t('delete_cost_center')" v-model:visible="deleteCentroDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
-                            <div class="confirmation-content">
-                                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                <span class=""> {{ t('delete_cost_center_confirm', { codigo: cdc.Codigo, nome: cdc.Nome }) }}</span>
-                            </div>
-
-                            <template #footer>
-                                <Button :label="$t('no')" icon="pi pi-times" @click="deleteCentroDialog = false" class="p-button-text" />
-                                <Button :label="$t('yes')" icon="pi pi-check" @click="deleteCentro" class="p-button-text" />
                             </template>
-                        </Dialog>
+                            <template #empty> {{ t('empty_cost_center') }} </template>
+                            <!-- Mensagem exibida quando a tabela está vazia -->
+                            <Column field="Codigo" sortable :header="t('code')"></Column>
+                            <Column field="Nome" sortable :header="t('cost_center_name')"></Column>
+                        </DataTable>
                     </div>
-                </div>
-            </TabPanel>
-        </TabView>
+                </TabPanel>
+                <!-- Aba de Edição ou Adição de Centro de Custo -->
+                <TabPanel value="1" v-model:activeIndex="active">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="mt-5">
+                                <form @submit.prevent="submitForm">
+                                    <div class="p-fluid formgrid grid m-0 p-0">
+                                        <!-- Formulário para adicionar ou editar um centro de custo -->
+                                        <div class="full lg:col-12 md:col-12 sm:col-12">
+                                            <label for="id_centro_custo">{{ t('code') }}:</label>
+                                            <InputNumber class="my-2 w-full" id="id_centro_custo" v-model="cdc.Codigo" required />
+                                        </div>
+                                        <div class="full lg:col-12 md:col-12 sm:col-12">
+                                            <label for="nome">{{ t('cost_center_name') }}:</label>
+                                            <InputText class="my-2 w-full" id="nome" v-model="cdc.Nome" required />
+                                        </div>
+                                    </div>
+                                    <div class="mr-1 mt-4 grid justify-content-end">
+                                        <!-- Botões de Ação -->
+                                        <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
+                                        <Button
+                                            v-if="visible"
+                                            style="width: 15%"
+                                            class="flex align-items-center justify-content-center m-2 mr-0"
+                                            :label="$t('delete')"
+                                            icon="pi pi-trash"
+                                            severity="danger"
+                                            @click="deleteCentroDialog = true"
+                                            :disabled="Mob"
+                                        />
+                                        <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
+                            <Dialog :header="$t('delete_cost_center')" v-model:visible="deleteCentroDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                                <div class="confirmation-content">
+                                    <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                                    <span class=""> {{ t('delete_cost_center_confirm', { codigo: cdc.Codigo, nome: cdc.Nome }) }}</span>
+                                </div>
+                                <template #footer>
+                                    <Button :label="$t('no')" icon="pi pi-times" @click="deleteCentroDialog = false" class="p-button-text" />
+                                    <Button :label="$t('yes')" icon="pi pi-check" @click="deleteCentro" class="p-button-text" />
+                                </template>
+                            </Dialog>
+                        </div>
+                    </div>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
         <LoadingSpinner v-if="spinner" />
     </div>
 </template>
-<style>
-@media (max-width: 580px) {
-    .full {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-        width: 100%;
-        margin: 1px;
-    }
-}
-</style>
+<style></style>
