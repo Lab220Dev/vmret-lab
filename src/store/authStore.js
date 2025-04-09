@@ -105,10 +105,10 @@ export const useAuthStore = defineStore('auth', {
   },
   getters: {
     userName: (state) => {
-      return state.usuario?.nome || ''; // Usando operador de encadeamento opcional
+      return state.usuario?.nome || state.usuario?.Nome || ''; // Usando operador de encadeamento opcional
     },
     userRole: (state) => {
-      return state.usuario?.role || ''; // Usando operador de encadeamento opcional
+      return state.usuario?.role || state.usuario?.tipo ||''; // Usando operador de encadeamento opcional
     },
     userIdCliente: (state) => {
       return state.usuario?.id_cliente || ''; // Usando operador de encadeamento opcional

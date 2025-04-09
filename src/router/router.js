@@ -15,6 +15,7 @@ import AppLayout from '@/layout/AppLayout.vue';//Importa o layout principal da a
  */
 import { useAuthStore } from '@/store/authStore';//Importa o store de autenticação, que gerencia o estado de login do usuário.
 import i18n from '@/i18n'; // Importa o módulo de internacionalização (i18n) para gerenciar traduções e idiomas na aplicação.
+import MonitoramentoLayout from '@/layout/MonitoramentoLayout.vue';
 
 /**
  * Variável reativa que controla o estado de carregamento da página.
@@ -298,11 +299,28 @@ const router = createRouter({
             meta: { requiresAuth: false }
         },
         {
-            path: '/evento/nomad',
-            name: 'dados do evento Nomad',
-            component: () => import('@/views/pages/Nomad.vue'),
-            meta: { requiresAuth: false }
-        }
+            path: '/monitoramento',
+            name: 'login do monitoramento',
+            component: () => import('@/views/pages/auth/LoginMonitoramento.vue')
+        },
+        {
+            path: '/app-monitoramento',
+            component: MonitoramentoLayout, 
+            children: [
+                {
+                    path: 'dashboard',
+                    name: 'DashboardMonitoramento',
+                    component: () => import('@/views/Monitoramento/HomeMonitoramento.vue'),
+                    meta: { requiresAuth: true }
+                },
+                {
+                    path: 'usuarioMonitoramento',
+                    name: 'UsuarioMonitoramento',
+                    component: () => import('@/views/Monitoramento/AdicionarUsuario.vue'),
+                    meta: { requiresAuth: true }
+                },
+            ]
+          }
     ]
 });
 
@@ -313,25 +331,38 @@ const router = createRouter({
  * @param {Function} next - Função que deve ser chamada para permitir ou bloquear a navegação.
  */
 router.beforeEach((to, from, next) => {
-
     const authStore = useAuthStore();
-    const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-    const token = localStorage.getItem('token');
 
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+    const isMonitoramento = to.path.startsWith('/app-monitoramento');
+    const token = localStorage.getItem('token');
+        console.log(token, isMonitoramento)
     if (requiresAuth && !token) {
-        next({ name: 'login' });
-    } else if (to.meta.Availability === false) {
-        authStore.setGlobalMessage(i18n.global.t('page_unavailable'));
-        if (to.name !== 'Dashboard') {
-            next({ name: 'Dashboard' });
+        if (isMonitoramento) {
+            next({ path: '/monitoramento' }); 
         } else {
-            router.replace({ name: 'Dashboard' });
+            next({ name: 'login' }); 
         }
-    } else {
-        isLoading.value = true;
-        next();
+        return;
     }
+
+    if (to.meta.Availability === false) {
+        authStore.setGlobalMessage(i18n.global.t('page_unavailable'));
+
+        if (isMonitoramento) {
+            next({ name: 'DashboardMonitoramento' }); 
+        } else {
+            next({ name: 'Dashboard' });
+        }
+        return;
+    }
+
+    // Tudo ok, segue
+    isLoading.value = true;
+    next();
 });
+
 
 // Define uma função que será executada após cada navegação de rota.
 router.afterEach(() => {
