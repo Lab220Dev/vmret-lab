@@ -71,7 +71,7 @@ const passo2 = computed(() => [
         apiUrl: 'http://vmretnew.sgilab220.com.br/api/relatorioRetiRe/relatorio' // URL da API para consultar o relatório de retiradas.
     },
     {
-        name:  t('status_title'),
+        name: t('status_title'),
         description: marked(t('status_description')), // Descrição do passo de status convertida de markdown para HTML.
         requestBody: {
             id_dm: '1234', // Exemplo de ID de DM (Máquina/Dispositivo).
@@ -124,231 +124,255 @@ function selectTopic(topic) {
 
 <template>
     <div class="card vh">
-        <h2 class="my-7 text-center">{{t('guide_title')}}</h2>
-        <fieldset class="m-2">
-            <p>
-                {{t('guide_description')}}
+        <h2 class="my-7 text-center">{{ t('guide_title') }}</h2>
+        <Fieldset class="m-2">
+            <p class="mt-3">
+                {{ t('guide_description') }}
             </p>
-        </fieldset>
+        </Fieldset>
 
-        <Accordion class="mt-3">
+        <Accordion value="0" class="mt-3">
             <!-- Passo 1 - Login -->
-            <AccordionTab :header="$t('step1_title')">
-                <p class="mt-3">
-                   {{t('step1_description')}}
-                </p>
-                <ul class="mt-4">
-                    <!-- Lista de tópicos do Passo 1 -->
-                    <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic1 in passo1" :key="topic1.name" @click="selectTopic1(topic1)" style="cursor: pointer">
-                        <strong>{{ topic1.name }}</strong>
-                    </li>
-                </ul>
+            <AccordionPanel>
+                <AccordionHeader>
+                    {{ t('step1_title') }}
+                </AccordionHeader>
+                <AccordionContent>
+                    <p class="mt-3">
+                        {{ t('step1_description') }}
+                    </p>
+                    <ul class="mt-4">
+                        <!-- Lista de tópicos do Passo 1 -->
+                        <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic1 in passo1" :key="topic1.name" @click="selectTopic1(topic1)" style="cursor: pointer">
+                            <strong>{{ topic1.name }}</strong>
+                        </li>
+                    </ul>
+                    <div class="mt-4 card details-card" v-if="selectedTopic1" style="margin-top: 1rem">
+                        <!-- Detalhes do tópico selecionado -->
+                        <h4 class="mt-2">{{ selectedTopic1.name }}</h4>
+                        <p class="my-5" v-html="selectedTopic1.description"></p>
 
-                <div class="mt-4 card details-card" v-if="selectedTopic1" style="margin-top: 1rem">
-                    <!-- Detalhes do tópico selecionado -->
-                    <h4 class="mt-2">{{ selectedTopic1.name }}</h4>
-                    <p class="my-5" v-html="selectedTopic1.description"></p>
+                        <Tabs value="0">
+                            <TabList>
+                                <Tab value="0">
+                                    JavaScript (Axios)
+                                </Tab>
+                                <Tab value="1">C#</Tab>
+                                <Tab value="2">Java</Tab>
+                                <Tab value="3">cURL</Tab>
+                                <Tab value="4">Postman</Tab>
 
-                    <TabView>
-                        <!-- Exemplo de uso com diferentes linguagens -->
-                        <TabPanel header="JavaScript (Axios)">
-                            <pre><code>
-            
-axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }})
-.then(response => {
-  console.log(response.data);
-})
-.catch(error => {
-  console.error('Erro:', error);
-});
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo em C# -->
-                        <TabPanel header="C#">
-                            <pre><code>
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-
-class Program
-{
-    static async Task Main()
-    {
-        using (var client = new HttpClient())
-        {
-            var jsonContent = new StringContent("{{ selectedTopic1.requestBody }}", Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("{{ selectedTopic1.apiUrl }}", jsonContent);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseBody);
-        }
-    }
-}
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo em Java -->
-                        <TabPanel header="Java">
-                            <pre><code>
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.HttpClient;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
-public class ApiClient {
-    public static void main(String[] args) throws Exception {
-        HttpClient client = HttpClients.createDefault();
-        HttpPost post = new HttpPost("{{ selectedTopic1.apiUrl }}");
-        post.setEntity(new StringEntity("{{ selectedTopic1.requestBody }}", ContentType.APPLICATION_JSON));
-
-        HttpResponse response = client.execute(post);
-        System.out.println(EntityUtils.toString(response.getEntity()));
-    }
-}
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo em cURL -->
-                        <TabPanel header="cURL">
-                            <pre><code>
-curl -X POST "{{ selectedTopic1.apiUrl }}" \
--H "Content-Type: application/json" \
--d '{{ selectedTopic1.requestBody }}'
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo no Postman -->
-                        <TabPanel header="Postman">
-                            <pre><code>
-POST {{ selectedTopic1.apiUrl }}
-Content-Type: application/json
-
-Body:
-{{ selectedTopic1.requestBody }}
-                            </code></pre>
-                        </TabPanel>
-                    </TabView>
-                </div>
-            </AccordionTab>
+                            </TabList>
+                            <TabPanels value="0">
+                            <!-- Exemplo de uso com diferentes linguagens -->
+                            <TabPanel value="0">
+                                <pre><code>
+                                
+                    axios.post('{{ selectedTopic1.apiUrl }}', {{ selectedTopic1.requestBody }})
+                    .then(response => {
+                      console.log(response.data);
+                    })
+                    .catch(error => {
+                      console.error('Erro:', error);
+                    });
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo em C# -->
+                            <TabPanel value="1">
+                                <pre><code>
+                    using System;
+                    using System.Net.Http;
+                    using System.Text;
+                    using System.Threading.Tasks;
+                    
+                    class Program
+                    {
+                        static async Task Main()
+                        {
+                            using (var client = new HttpClient())
+                            {
+                                var jsonContent = new StringContent("{{ selectedTopic1.requestBody }}", Encoding.UTF8, "application/json");
+                    
+                                var response = await client.PostAsync("{{ selectedTopic1.apiUrl }}", jsonContent);
+                                response.EnsureSuccessStatusCode();
+                    
+                                var responseBody = await response.Content.ReadAsStringAsync();
+                                Console.WriteLine(responseBody);
+                            }
+                        }
+                    }
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo em Java -->
+                            <TabPanel value="2">
+                                <pre><code>
+                    import org.apache.http.HttpEntity;
+                    import org.apache.http.client.methods.HttpPost;
+                    import org.apache.http.impl.client.HttpClients;
+                    import org.apache.http.impl.client.HttpClient;
+                    import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+                    
+                    public class ApiClient {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClients.createDefault();
+                            HttpPost post = new HttpPost("{{ selectedTopic1.apiUrl }}");
+                            post.setEntity(new StringEntity("{{ selectedTopic1.requestBody }}", ContentType.APPLICATION_JSON));
+                    
+                            HttpResponse response = client.execute(post);
+                            System.out.println(EntityUtils.toString(response.getEntity()));
+                        }
+                    }
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo em cURL -->
+                            <TabPanel value="3">
+                                <pre><code>
+                    curl -X POST "{{ selectedTopic1.apiUrl }}" \
+                    -H "Content-Type: application/json" \
+                    -d '{{ selectedTopic1.requestBody }}'
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo no Postman -->
+                            <TabPanel value="4">
+                                <pre><code>
+                    POST {{ selectedTopic1.apiUrl }}
+                    Content-Type: application/json
+                    
+                    Body:
+                    {{ selectedTopic1.requestBody }}
+                                </code></pre>
+                            </TabPanel>
+                        </TabPanels>
+                        </Tabs>
+                    </div>
+                </AccordionContent>
+            </AccordionPanel>
 
             <!-- Passo 2 - Relatórios e outros tópicos -->
-            <AccordionTab :header="$t('step2_title')">
-                <p class="mt-3">
-                   {{$t('step2_description')}}
-                </p>
-                <ul class="mt-5">
-                    <!-- Lista de tópicos do Passo 2 -->
-                    <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic in passo2" :key="topic.name" @click="selectTopic(topic)" style="cursor: pointer">
-                        <strong>{{ topic.name }}</strong>
-                    </li>
-                </ul>
-
-                <!-- Detalhes do tópico selecionado -->
-                <div class="mt-4 card details-card-passo2" v-if="selectedTopic" style="margin-top: 1rem">
-                    <h4 class="mt-2">{{ selectedTopic.name }}</h4>
-                    <p class="my-5" v-html="selectedTopic.description"></p>
-
-                    <TabView>
-                        <!-- Exemplo de uso com Axios -->
-                        <TabPanel header="JavaScript (Axios)">
-                            <pre><code>
-            
-axios.post('{{ selectedTopic.apiUrl }}', {{ selectedTopic.requestBody }}, {
-headers: {
-'Authorization': Bearer ${insiraotoken}
-}
-})
-.then(response => {
-  console.log(response.data);
-})
-.catch(error => {
-  console.error('Erro:', error);
-});
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo em C# -->
-                        <TabPanel header="C#">
-                            <pre><code>
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-
-class Program
-{
-    static async Task Main()
-    {
-        using (var client = new HttpClient())
-        {
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", insiraotoken);
-
-            var jsonContent = new StringContent("{{ selectedTopic.requestBody }}", Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync("{{ selectedTopic.apiUrl }}", jsonContent);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseBody);
-        }
-    }
-}
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo em Java -->
-                        <TabPanel header="Java">
-                            <pre><code>
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.HttpClient;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
-public class ApiClient {
-    public static void main(String[] args) throws Exception {
-        HttpClient client = HttpClients.createDefault();
-        HttpPost post = new HttpPost("{{ selectedTopic.apiUrl }}");
-
-        post.setHeader("Authorization", "Bearer " + insiraotoken);
-        post.setEntity(new StringEntity("{{ selectedTopic.requestBody }}", ContentType.APPLICATION_JSON));
-
-        HttpResponse response = client.execute(post);
-        System.out.println(EntityUtils.toString(response.getEntity()));
-    }
-}
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo em cURL -->
-                        <TabPanel header="cURL">
-                            <pre><code>
-curl -X POST "{{ selectedTopic.apiUrl }}" \
--H "Authorization: Bearer insiraotoken" \
--H "Content-Type: application/json" \
--d '{{ selectedTopic.requestBody }}'
-                            </code></pre>
-                        </TabPanel>
-
-                        <!-- Exemplo no Postman -->
-                        <TabPanel header="Postman">
-                            <pre><code>
-POST {{ selectedTopic.apiUrl }}
-Authorization: Bearer insiraotoken
-Content-Type: application/json
-
-Body:
-{{ selectedTopic.requestBody }}
-                            </code></pre>
-                        </TabPanel>
-                    </TabView>
-                </div>
-            </AccordionTab>
+            <AccordionPanel value="1">
+                <AccordionHeader>
+                    {{ t('step2_title') }}
+                </AccordionHeader>
+                <AccordionContent>
+                    <p class="mt-3">
+                        {{ $t('step2_description') }}
+                    </p>
+                    <ul class="mt-5">
+                        <!-- Lista de tópicos do Passo 2 -->
+                        <li class="hover:text-orange-700 hover:bg-orange-100" v-for="topic in passo2" :key="topic.name" @click="selectTopic(topic)" style="cursor: pointer">
+                            <strong>{{ topic.name }}</strong>
+                        </li>
+                    </ul>
+                    <!-- Detalhes do tópico selecionado -->
+                    <div class="mt-4 card details-card-passo2" v-if="selectedTopic" style="margin-top: 1rem">
+                        <h4 class="mt-2">{{ selectedTopic.name }}</h4>
+                        <p class="my-5" v-html="selectedTopic.description"></p>
+                        
+                        
+                        <Tabs value="0">
+                            <TabList>
+                                <Tab value="0">
+                                    JavaScript (Axios)
+                                </Tab>
+                                <Tab value="1">C#</Tab>
+                                <Tab value="2">Java</Tab>
+                                <Tab value="3">cURL</Tab>
+                                <Tab value="4">Postman</Tab>
+                            </TabList>
+                            <!-- Exemplo de uso com Axios -->
+                            <TabPanels >
+                                <TabPanel value="0">
+                                <pre><code>
+                                
+                    axios.post('{{ selectedTopic.apiUrl }}', {{ selectedTopic.requestBody }}, {
+                    headers: {
+                    'Authorization': Bearer ${insiraotoken}
+                    }
+                    })
+                    .then(response => {
+                      console.log(response.data);
+                    })
+                    .catch(error => {
+                      console.error('Erro:', error);
+                    });
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo em C# -->
+                            <TabPanel value="1">
+                                <pre><code>
+                    using System;
+                    using System.Net.Http;
+                    using System.Text;
+                    using System.Threading.Tasks;
+                    
+                    class Program
+                    {
+                        static async Task Main()
+                        {
+                            using (var client = new HttpClient())
+                            {
+                                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", insiraotoken);
+                    
+                                var jsonContent = new StringContent("{{ selectedTopic.requestBody }}", Encoding.UTF8, "application/json");
+                    
+                                var response = await client.PostAsync("{{ selectedTopic.apiUrl }}", jsonContent);
+                                response.EnsureSuccessStatusCode();
+                    
+                                var responseBody = await response.Content.ReadAsStringAsync();
+                                Console.WriteLine(responseBody);
+                            }
+                        }
+                    }
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo em Java -->
+                            <TabPanel value="2">
+                                <pre><code>
+                    import org.apache.http.HttpEntity;
+                    import org.apache.http.client.methods.HttpPost;
+                    import org.apache.http.impl.client.HttpClients;
+                    import org.apache.http.impl.client.HttpClient;
+                    import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+                    
+                    public class ApiClient {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClients.createDefault();
+                            HttpPost post = new HttpPost("{{ selectedTopic.apiUrl }}");
+                    
+                            post.setHeader("Authorization", "Bearer " + insiraotoken);
+                            post.setEntity(new StringEntity("{{ selectedTopic.requestBody }}", ContentType.APPLICATION_JSON));
+                    
+                            HttpResponse response = client.execute(post);
+                            System.out.println(EntityUtils.toString(response.getEntity()));
+                        }
+                    }
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo em cURL -->
+                            <TabPanel value="3">
+                                <pre><code>
+                    curl -X POST "{{ selectedTopic.apiUrl }}" \
+                    -H "Authorization: Bearer insiraotoken" \
+                    -H "Content-Type: application/json" \
+                    -d '{{ selectedTopic.requestBody }}'
+                                </code></pre>
+                            </TabPanel>
+                            <!-- Exemplo no Postman -->
+                            <TabPanel value="4">
+                                <pre><code>
+                    POST {{ selectedTopic.apiUrl }}
+                    Authorization: Bearer insiraotoken
+                    Content-Type: application/json
+                    
+                    Body:
+                    {{ selectedTopic.requestBody }}
+                                </code></pre>
+                            </TabPanel>
+                        </TabPanels>
+                        </Tabs>
+                    </div>
+                </AccordionContent>
+            </AccordionPanel>
         </Accordion>
     </div>
 </template>
@@ -382,5 +406,12 @@ pre {
 
 p {
     text-indent: 20px;
+}
+
+
+.p-fieldset {
+    border-radius: initial;
+    color:#303030ec;
+    border: 1px solid #626262ec !important;
 }
 </style>

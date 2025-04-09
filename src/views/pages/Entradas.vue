@@ -152,14 +152,14 @@ onMounted(() => {
         <h2 class="my-6 text-2xl">{{t('integration_configuration')}}</h2>
 
         <div class="justify-content-between align-items-baseline flex">
-            <!-- Dropdown para selecionar a DM -->
-            <Dropdown
+            <!-- Select para selecionar a DM -->
+            <Select 
                 :options="Dados"
                 :virtualScrollerOptions="{ itemSize: 30 }"
                 :filter="true"
                 :filterBy="'Identificacao'"
                 :disabled="validador"
-                class="mb-5"
+                
                 v-model="DMSelecionada"
                 optionLabel="Identificacao"
                 optionValue="ID_DM"
@@ -167,8 +167,8 @@ onMounted(() => {
                 @change="handleDMChange()"
             />
             <!-- Mensagem informativa caso não haja interação e validador não esteja ativo -->
-            <InlineMessage class="inlinemessage " v-if="!validador && primeiraInteracao" severity="info">{{t('entrada_first')}}</InlineMessage>
-        </div>
+            <Message class="Message " v-if="!validador && primeiraInteracao" severity="info">{{t('entrada_first')}}</Message>
+        </div><hr class="mb-5"/>
 
         <!-- Formulário para editar e salvar as configurações da integração -->
 
@@ -176,23 +176,23 @@ onMounted(() => {
             <div class="p-fluid grid">
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
                     <label for="userid">{{t('userid_api')}}:</label>
-                    <InputText class="my-2" id="userid" v-model="Integracao.UserID" type="text" :disabled="validador" />
+                    <InputText class="my-2 w-full" id="userid" v-model="Integracao.UserID" type="text" :disabled="validador" />
                 </div>
                 <div class="mt-4 lg:col-6 md:col-6 sm:col-12">
                     <label for="senha">{{t('url_api')}}:</label>
-                    <InputText class="my-2" id="senha" v-model="Integracao.URL" type="text" :disabled="validador" />
+                    <InputText class="my-2 w-full" id="senha" v-model="Integracao.URL" type="text" :disabled="validador" />
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="idcliente">{{t('idclient_api')}}:</label>
-                    <InputText class="my-2" id="idcliente" v-model="Integracao.ClienteID" type="text" :disabled="validador" />
+                    <InputText class="my-2 w-full" id="idcliente" v-model="Integracao.ClienteID" type="text" :disabled="validador" />
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="chaveapi">{{t('api_password')}}:</label>
-                    <InputText class="my-2" id="chaveapi" v-model="Integracao.ChaveAPI" type="text" :disabled="validador" />
+                    <InputText class="my-2 w-full" id="chaveapi" v-model="Integracao.ChaveAPI" type="text" :disabled="validador" />
                 </div>
                 <div class="lg:col-6 md:col-6 sm:col-12">
                     <label for="chave">{{t('key')}}:</label>
-                    <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden" style="min-height: 30px" inputClass="w-full" rows="2" cols="30" :disabled="validador" />
+                    <Textarea v-model="Integracao.Chave" class="my-2 overflow-hidden w-full" style="min-height: 30px" inputClass="w-full" rows="2" cols="30" :disabled="validador" />
                 </div>
                 <div class="full lg:col-12 md:col-12 sm:col-12">
                     <Button type="submit" :label="$t('sync')" icon="pi pi-check" class="mt-4" :disabled="validador" />
@@ -205,7 +205,5 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.full {
-    width: 100%;  /* A largura do elemento que ocupa toda a linha */
-}
+
 </style>

@@ -14,7 +14,7 @@ import ImageUpload from '@/components/ImageUpload.vue';
 // Importando o componente de spinner de carregamento
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 // Importando o objeto 'FilterMatchMode' do PrimeVue para configurar os filtros de pesquisa
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 // Importando o store de dados para acessar os dados compartilhados, como plantas
 import { useDataStore } from '@/store/dataStore.js';
 // Importando o serviço de produto para interagir com a API relacionada aos produtos
@@ -40,7 +40,7 @@ const store = useAuthStore(); // Acessa o store de autenticação para obter dad
 
 // Variáveis de controle da interface do usuário
 const toast = useToast(); // Função para exibir notificações via toast
-const active = ref(0); // Controle de qual aba está ativa
+const active = ref("0");// Variável reativa para controlar a aba ativa.
 const loading = ref(false); // Controle de carregamento de dados
 const mob = ref(false); // Controle da habilidade de manipular produtos baseado na integração com Mob
 let formatedPlantaOptions = computed(() => dataStore.plantasOptions); // Opções formatadas para as plantas
@@ -141,7 +141,7 @@ const onRowSelect = async (event) => {
     await setImageIfValid(produto.imagem2, imageSec); // Define a imagem secundária
     await setImageIfValid(produto.imagemdetalhe, imageInfo); // Define a imagem de detalhes
     visible.value = true; // Torna o formulário visível
-    active.value = 1; // Ativa a aba de edição
+    active.value = "1"; // Ativa a aba de edição
     loadProdutos(); // Recarrega a lista de produtos
 };
 
@@ -245,7 +245,7 @@ const saveProduto = async () => {
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_added_sucess'), life: 3000 }); // Exibe sucesso
         loadProdutos(); // Recarrega a lista de produtos
         resetForm(); // Reseta o formulário
-        active.value = 0; // Volta para a aba inicial
+        active.value = "0"; // Volta para a aba inicial
     } catch (error) {
         console.error('Erro ao salvar produto:', error); // Exibe erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_added_error'), life: 3000 }); // Exibe erro
@@ -273,7 +273,7 @@ const deleteProduto = async () => {
         loadProdutos(); // Recarrega a lista de produtos
         resetProdutoForm(produto, [imagePrinc, imageSec, imageInfo]); // Reseta o formulário
         deleteProdutoDialog.value = false; // Fecha o diálogo de exclusão
-        active.value = 0; // Volta para a aba inicial
+        active.value = "0"; // Volta para a aba inicial
     } catch (error) {
         console.error('Erro ao deletar produto:', error); // Exibe erro no console
         toast.add({ severity: 'error', summary:  t('title_error'), detail: t('product_delete_error'), life: 3000 }); // Exibe erro
@@ -301,7 +301,7 @@ const updateProduto = async () => {
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_update_sucess'), life: 3000 }); // Exibe sucesso
         loadProdutos(); // Recarrega a lista de produtos
         resetForm(); // Reseta o formulário
-        active.value = 0; // Volta para a aba inicial
+        active.value = "0"; // Volta para a aba inicial
     } catch (error) {
         console.error('Erro ao atualizar produto:', error); // Exibe erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_update_error'), life: 3000 }); // Exibe erro
@@ -339,7 +339,7 @@ const getImagem = async (filename) => {
  * @param {number} oldIndex - O índice da aba ativa antes da mudança
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
+    if (newIndex !== oldIndex && newIndex === "0") {
         // Verifica se a aba foi alterada para a aba inicial (índice 0)
         resetForm(); // Chama a função para resetar o formulário, limpando os dados
         visible.value = false; // Torna o formulário de edição de produto invisível
@@ -387,159 +387,162 @@ onMounted(async () => {
         console.error('Erro ao carregar dados no onMounted:', error);
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
     }
+    active.value = "0";
 });
 </script>
 
 <template>
     <div class="card vh">
-        <TabView v-model:activeIndex="active">
-            <TabPanel :header="$t('list_products')">
-                <div class="col-12">
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="ListaProdutos"
-                        selectionMode="single"
-                        stripedRows
-                        paginator
-                        removableSort
-                        :rows="10"
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        :totalRecords="totalRecords"
-                        dataKey="id"
-                        lazy
-                        :globalFilterFields="['codigo', 'nome']"
-                        :sortField="'codigo'"
-                        :sortOrder="1"
-                        :metaKeySelection="false"
-                        @rowSelect="handleRowSelection"
-                        @page="onPageChange"
-                    >
-                        <!-- A tabela exibe os dados provenientes de "ListaProdutos" -->
-                        <!-- Permite selecionar apenas uma linha por vez -->
-                        <!-- Aplica um estilo de linhas alternadas para melhorar a legibilidade -->
-                        <!-- Habilita a funcionalidade de paginação para dividir os dados em várias páginas -->
-                        <!-- Permite ao usuário remover a ordenação clicando na coluna de ordenação -->
-                        <!-- Define o número de linhas por página como 10 e as opções de quantidade de itens por página como 5, 10, 20 ou 50 -->
-                        <!-- Define o número total de registros para auxiliar na navegação da paginação -->
-                        <!-- A chave única para cada linha é o campo "id" -->
-                        <!-- Habilita o carregamento preguiçoso, ou seja, os dados são carregados conforme necessário -->
-                        <!-- Os filtros globais serão aplicados aos campos "codigo" e "nome" -->
-                        <!-- A ordenação inicial será feita pelo campo "codigo" em ordem crescente -->
-                        <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (Ctrl ou Command) -->
-                        <!-- Emite o evento de seleção de linha chamando a função handleRowSelection quando uma linha for selecionada -->
-                        <!-- Emite o evento de mudança de página chamando a função onPageChange quando a página for alterada -->
-                        <template #header>
-                            <div class="flex justify-content-between align-items-center mt-4">
-                                <div class="font-semibold">
-                                    <span>{{$t('total_records',{count: totalRecords})}}</span>
-                                </div>
-
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
-                                </IconField>
-                            </div>
-                        </template>
-                        <template #empty> {{t('product_empty')}} </template>
-                        <Column :header="t('image')"  class="col-3">
-                            <template #body="slotProps">
-                                <div>
-                                    <img :src="slotProps.data.imagemUrl" :alt="$t('product_image_alt')" class="w-6rem border-round" />
+        <Tabs v-model:value="active" :value="0">
+            <TabList>
+                <Tab value="0">{{ $t('list_products') }}</Tab>
+                <Tab value="1">{{ visible ? t('edit_product') :  t('add_product') }}</Tab>
+            </TabList>
+            <TabPanels>
+                <TabPanel value="0">
+                    <div class="col-12">
+                        <DataTable
+                            v-model:filters="filters"
+                            :value="ListaProdutos"
+                            selectionMode="single"
+                            stripedRows
+                            paginator
+                            removableSort
+                            :rows="10"
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            :totalRecords="totalRecords"
+                            dataKey="id"
+                            lazy
+                            :globalFilterFields="['codigo', 'nome']"
+                            :sortField="'codigo'"
+                            :sortOrder="1"
+                            :metaKeySelection="false"
+                            @rowSelect="handleRowSelection"
+                            @page="onPageChange"
+                        >
+                            <!-- A tabela exibe os dados provenientes de "ListaProdutos" -->
+                            <!-- Permite selecionar apenas uma linha por vez -->
+                            <!-- Aplica um estilo de linhas alternadas para melhorar a legibilidade -->
+                            <!-- Habilita a funcionalidade de paginação para dividir os dados em várias páginas -->
+                            <!-- Permite ao usuário remover a ordenação clicando na coluna de ordenação -->
+                            <!-- Define o número de linhas por página como 10 e as opções de quantidade de itens por página como 5, 10, 20 ou 50 -->
+                            <!-- Define o número total de registros para auxiliar na navegação da paginação -->
+                            <!-- A chave única para cada linha é o campo "id" -->
+                            <!-- Habilita o carregamento preguiçoso, ou seja, os dados são carregados conforme necessário -->
+                            <!-- Os filtros globais serão aplicados aos campos "codigo" e "nome" -->
+                            <!-- A ordenação inicial será feita pelo campo "codigo" em ordem crescente -->
+                            <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" (Ctrl ou Command) -->
+                            <!-- Emite o evento de seleção de linha chamando a função handleRowSelection quando uma linha for selecionada -->
+                            <!-- Emite o evento de mudança de página chamando a função onPageChange quando a página for alterada -->
+                            <template #header>
+                                <div class="flex justify-content-between align-items-center mt-4">
+                                    <div class="font-semibold">
+                                        <span>{{$t('total_records',{count: totalRecords})}}</span>
+                                    </div>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
+                                    </IconField>
                                 </div>
                             </template>
-                        </Column>
-                        <Column field="codigo" sortable :header="t('sku')" class="col-2"></Column>
-                        <Column field="nome" sortable :header="t('name')" class="col-7"></Column>
-                    </DataTable>
-                </div>
-            </TabPanel>
-            <TabPanel :header="visible ? t('edit_product') :  t('add_product')">
-                <div class="grid">
-                    <div class="col-12">
-                        <div class="my-6">
-                            <!--form de cadastro de novo produto-->
-                            <div class="p-fluid formgrid grid m-0 p-0">
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="codigo">{{t('sku')}}:</label>
-                                    <InputText class="my-2" v-model="produto.codigo" id="codigo" type="text"> </InputText>
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="nome">{{t('name')}}:</label>
-                                    <InputText class="my-2" v-model="produto.nome" id="nome" type="text"></InputText>
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="nome">{{t('description')}}:</label>
-                                    <Textarea v-model="produto.descricao" class="my-2 overflow-scroll" rows="5" cols="30" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="codigo">{{t('specification')}}:</label>
-                                    <Textarea v-model="produto.especificacoes" class="my-2 overflow-scroll" rows="5" cols="30" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="tipo">{{t('type')}}:</label>
-                                    <Dropdown class="my-2" v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" :placeholder="t('select_type')" />
-                                </div>
-                                <div class="full lg:col-6 md:col-6 sm:col-6">
-                                    <label for="tipo">{{t('factory')}}:</label>
-                                    <Dropdown class="my-2" filter v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" :placeholder="t('select_factory')" />
-                                </div>
-                                <div class="full med lg:col-4 md:col-4 sm:col-4">
-                                    <label for="UndMedida">{{t('unit_measurement')}}:</label>
-                                    <InputText class="my-2" v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
-                                </div>
-                                <div class="full lg:col-4 md:col-4 sm:col-4">
-                                    <label for="vldDias">{{t('shelf_life')}}:</label>
-                                    <InputNumber class="my-2" v-model="produto.validadedias" inputId="vldDias" :suffix="$t('product_shelflife_suffix')" />
-                                </div>
-                                <div class="full lg:col-4 md:col-4 sm:col-4">
-                                    <label for="qntMin">{{t('minimum_quantity')}}:</label>
-                                    <InputNumber class="my-2" v-model="produto.quantidademinima" inputId="qntMin" />
+                            <template #empty> {{t('product_empty')}} </template>
+                            <Column :header="t('image')"  class="col-3">
+                                <template #body="slotProps">
+                                    <div>
+                                        <img :src="slotProps.data.imagemUrl" :alt="$t('product_image_alt')" class="w-6rem border-round" />
+                                    </div>
+                                </template>
+                            </Column>
+                            <Column field="codigo" sortable :header="t('sku')" class="col-2"></Column>
+                            <Column field="nome" sortable :header="t('name')" class="col-7"></Column>
+                        </DataTable>
+                    </div>
+                </TabPanel>
+                <TabPanel value="1">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="my-6">
+                                <!--form de cadastro de novo produto-->
+                                <div class="p-fluid formgrid grid m-0 p-0">
+                                    <div class="lg:col-6 md:col-6 sm:col-6">
+                                        <label for="codigo">{{t('sku')}}:</label>
+                                        <InputText class="my-2 w-full" v-model="produto.codigo" id="codigo" type="text"> </InputText>
+                                    </div>
+                                    <div class="lg:col-6 md:col-6 sm:col-6">
+                                        <label for="nome">{{t('name')}}:</label>
+                                        <InputText class="my-2 w-full" v-model="produto.nome" id="nome" type="text"></InputText>
+                                    </div>
+                                    <div class="lg:col-6 md:col-6 sm:col-6">
+                                        <label for="nome">{{t('description')}}:</label>
+                                        <Textarea v-model="produto.descricao" class="my-2 overflow-scroll w-full" rows="5" cols="30" />
+                                    </div>
+                                    <div class="lg:col-6 md:col-6 sm:col-6">
+                                        <label for="codigo">{{t('specification')}}:</label>
+                                        <Textarea v-model="produto.especificacoes" class="my-2 overflow-scroll w-full" rows="5" cols="30" />
+                                    </div>
+                                    <div class="lg:col-6 md:col-6 sm:col-6">
+                                        <label for="tipo">{{t('type')}}:</label>
+                                        <Select class="my-2 w-full" v-model="produto.id_tipoProduto" :options="tipoProduto" optionLabel="label" optionValue="value" :placeholder="t('select_type')" />
+                                    </div>
+                                    <div class="lg:col-6 md:col-6 sm:col-6">
+                                        <label for="tipo">{{t('factory')}}:</label>
+                                        <Select class="my-2 w-full" filter v-model="produto.id_planta" :options="formatedPlantaOptions" optionLabel="label" optionValue="value" :placeholder="t('select_factory')" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-4 sm:col-4">
+                                        <label for="UndMedida">{{t('unit_measurement')}}:</label>
+                                        <InputText class="my-2 w-full" v-model="produto.unidade_medida" id="UndMedida" type="text"> </InputText>
+                                    </div>
+                                    <div class="lg:col-4 md:col-4 sm:col-4">
+                                        <label for="vldDias">{{t('shelf_life')}}:</label>
+                                        <InputNumber class="my-2 w-full" v-model="produto.validadedias" inputId="vldDias" :suffix="$t('product_shelflife_suffix')" />
+                                    </div>
+                                    <div class="lg:col-4 md:col-4 sm:col-4">
+                                        <label for="qntMin">{{t('minimum_quantity')}}:</label>
+                                        <InputNumber class="my-2 w-full" v-model="produto.quantidademinima" inputId="qntMin" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card p-0 col-12" style="width: 100%">
-                            <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
-                                <!-- Grid de Upload de Imagens -->
-                                <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">{{t('image')}}<br />{{t('image_type_Main')}}:</h4>
-                                    <ImageUpload ref="imageUploader" @fileSelected="(file) => handleFileSelected(file, 'principal')" @clearImage="handleClearImage" :externalImages="imagePrinc" />
-                                </div>
-                                <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">{{t('image')}}<br /> {{t('image_type_secondary')}} :</h4>
-                                    <ImageUpload ref="imageUploader2" @fileSelected="(file) => handleFileSelected(file, 'secundaria')" @clearImage="handleClearImage" :externalImages="imageSec" />
-                                </div>
-                                <div class="full lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
-                                    <h4 class="titulo">{{t('infos')}}<br /> {{ t('image_type_additional') }} :</h4>
-                                    <ImageUpload ref="imageUploader3" @fileSelected="(file) => handleFileSelected(file, 'info')" @clearImage="handleClearImage" :externalImages="imageInfo" />
+                            <div class="card p-0 col-12" style="width: 100%">
+                                <div class="p-fluid grid flex-wrap col-12 my-4 p-0 mx-0">
+                                    <!-- Grid de Upload de Imagens -->
+                                    <div class=" lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                        <h4 class="">{{t('image')}}<br />{{t('image_type_Main')}}:</h4>
+                                        <ImageUpload ref="imageUploader" @fileSelected="(file) => handleFileSelected(file, 'principal')" @clearImage="handleClearImage" :externalImages="imagePrinc" />
+                                    </div>
+                                    <div class=" lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                        <h4 class="">{{t('image')}}<br /> {{t('image_type_secondary')}} :</h4>
+                                        <ImageUpload ref="imageUploader2" @fileSelected="(file) => handleFileSelected(file, 'secundaria')" @clearImage="handleClearImage" :externalImages="imageSec" />
+                                    </div>
+                                    <div class=" lg:col-4 md:col-4 col-12 my-4 mx-0 p-0 text-center">
+                                        <h4 class="">{{t('infos')}}<br /> {{ t('image_type_additional') }} :</h4>
+                                        <ImageUpload ref="imageUploader3" @fileSelected="(file) => handleFileSelected(file, 'info')" @clearImage="handleClearImage" :externalImages="imageInfo" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="mt-7 grid justify-content-end flex-wrap">
-                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" :disabled="mob"/>
-                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" :disabled="mob"/>
-                    <Button v-if="!visible" style="width: 15%" class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" :disabled="mob"/>
-                </div>
-
-                <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
-                    <div class="confirmation-content">
-                        <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                        <span>
-                            Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
-                        >
+                    <div class="mt-7 grid justify-content-end flex-wrap">
+                        <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="primary" @click="updateProduto" :disabled="mob"/>
+                        <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2" label="Excluir" icon="pi pi-trash" severity="danger" @click="deleteProdutoDialog = true" :disabled="mob"/>
+                        <Button v-if="!visible" style="width: 15%" class="mr-6 flex align-items-center justify-content-center m-2" label="Salvar" icon="pi pi-check" severity="info" @click="saveProduto" :disabled="mob"/>
                     </div>
-
-                    <template #footer>
-                        <Button :label="$t('no')" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
-                        <Button :label="$t('yes')" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
-                    </template>
-                </Dialog>
-            </TabPanel>
-        </TabView>
+                    <Dialog header="Deletar Produto" v-model:visible="deleteProdutoDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                        <div class="confirmation-content">
+                            <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                            <span>
+                                Você tem certeza que deseja deletar o produto <b>{{ produto.id_produto }}</b> - <b>{{ produto.nome }}</b> ?</span
+                            >
+                        </div>
+                        <template #footer>
+                            <Button :label="$t('no')" icon="pi pi-times" @click="deleteProdutoDialog = false" class="p-button-text" />
+                            <Button :label="$t('yes')" icon="pi pi-check" @click="deleteProduto" class="p-button-text" />
+                        </template>
+                    </Dialog>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
         <LoadingSpinner v-if="loading" />
     </div>
 </template>

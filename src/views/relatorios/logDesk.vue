@@ -1,7 +1,7 @@
 <script setup>
 // Importações necessárias para o funcionamento do componente
 import VueDatePicker from '@vuepic/vue-datepicker'; // Componente de seletor de data
-import { FilterMatchMode } from 'primevue/api'; // Modo de filtragem do PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Modo de filtragem do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Função para exibir mensagens de toast
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilo do VueDatePicker
 import { ref, onMounted, watch, computed } from 'vue'; // Funções do Vue para reatividade e ciclo de vida
@@ -14,23 +14,23 @@ import funcionarioService from '@/Services/funcionarioService.js';
 
 import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs de desktop
 import { useI18n } from 'vue-i18n';
-const { t,locale } = useI18n();
+const { t, locale } = useI18n();
 
 // Contadores e mensagens reativas
 const filteredCount = ref(0); // Contador de registros filtrados
 const emptyMessage = computed(() => t('no_search_made')); // Mensagem para exibição quando não houver resultados
 
-// Variáveis reativas para dados da store de autenticação e manipulação de dropdowns
+// Variáveis reativas para dados da store de autenticação e manipulação de select s
 const store = useAuthStore(); // Store do Vuex com informações de autenticação
 const toast = useToast(); // Função para exibir mensagens toast
-const dropdown1 = ref(null); // Referência para o primeiro dropdown
-const dropdown2 = ref(null); // Referência para o segundo dropdown
-const dropdown3 = ref(null); // Referência para o terceiro dropdown
-const todosOption = { label: 'Todos', value: null }; // Opção padrão para "Todos" nos dropdowns
+const select1 = ref(null); // Referência para o primeiro select
+const select2 = ref(null); // Referência para o segundo select
+const select3 = ref(null); // Referência para o terceiro select
+const todosOption = { label: 'Todos', value: null }; // Opção padrão para "Todos" nos select s
 
 // Variáveis para armazenar os dados de DMs, operações e filtros
 const historico = ref([]); // Armazena os registros históricos
-const dms = ref([todosOption]); // Lista de DMs para o dropdown
+const dms = ref([todosOption]); // Lista de DMs para o select
 
 // Filtros globais para busca
 const filters = ref({
@@ -100,7 +100,7 @@ const fetchUsuarioDM = async () => {
     try {
         const response = await usuarioDMService.listarUDMSimples(data); // Requisição para buscar usuários
         operador.value = response.data.map(({ id, nome, id_cliente }) => ({
-            // Mapeia os usuários para o formato esperado no dropdown
+            // Mapeia os usuários para o formato esperado no select
             label: nome,
             value: id,
             id_cliente: id_cliente
@@ -116,7 +116,7 @@ const fetchDM = async () => {
         const response = await dmService.listarDMId(); // Requisição para buscar DMs
         dms.value = [
             ...response.data.map(({ id_dm, Identificacao, id_cliente }) => ({
-                // Mapeia as DMs para o formato esperado no dropdown
+                // Mapeia as DMs para o formato esperado no select
                 label: Identificacao,
                 value: id_dm,
                 id_cliente: id_cliente
@@ -160,16 +160,16 @@ const handleDmChange = async () => {
     await fetchFuncionarios(); // Busca os funcionários
 };
 
-// Função para fechar todos os dropdowns abertos
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o primeiro dropdown se ele estiver aberto
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o segundo dropdown se ele estiver aberto
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Fecha o terceiro dropdown se ele estiver aberto
+// Função para fechar todos os select s abertos
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Fecha o primeiro Select se ele estiver aberto
+    if (select2.value?.overlayVisible) select2.value.hide(); // Fecha o segundo Select se ele estiver aberto
+    if (select3.value?.overlayVisible) select3.value.hide(); // Fecha o terceiro Select se ele estiver aberto
 };
 
-// Função chamada ao abrir o datepicker, para fechar outros dropdowns
+// Função chamada ao abrir o datepicker, para fechar outros select s
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns
+    closeAllselects(); // Fecha todos os selects
 };
 
 // Função chamada ao montar o componente, para buscar dados iniciais
@@ -180,26 +180,26 @@ onMounted(() => {
 
 <template>
     <!-- Formulário de filtros para a busca dos logs -->
-    <div class="card vh p-fluid">
+    <div class="card vh">
         <div class="form">
-            <div class="grid mb-0 pt-5">
+            <div class="grid mb-0 pt-5 mr-1">
                 <!-- Filtros para DM, Operação, Usuário, Funcionário, e Data -->
-                <div class="field py-0 my-0 lg:col-2 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-2 md:col-6 sm:col-6">
                     <label for="operador">{{ t('dm') }}:</label>
-                    <Dropdown  class="drop" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="dropdown1" @change="handleDmChange" />
+                    <Select class="w-full" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="select 1" @change="handleDmChange" />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operador">{{ t('operator') }}:</label>
-                    <Dropdown class="drop" filter v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown2" />
+                    <Select class="w-full" filter v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 2" />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operador">{{ t('employee') }}:</label>
-                    <Dropdown filter class="drop" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                    <Select filter class="w-full" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" />
                 </div>
-                <div class="field py-0 my-0 lg:col-2 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-2 md:col-6 sm:col-6">
                     <label for="perfil">{{ t('initial_date') }}:</label>
                     <VueDatePicker
-                        class="drop"
+                        class="w-full"
                         v-model="relatorioDesk.data_inicio"
                         showIcon
                         :showOnFocus="false"
@@ -212,10 +212,10 @@ onMounted(() => {
                         :placeholder="$t('initial_date_placeholder')"
                     />
                 </div>
-                <div class="field py-0 my-0 lg:col-2 md:col-6 sm:col-6">
+                <div class="py-0 my-0 lg:col-2 md:col-6 sm:col-6">
                     <label for="perfil">{{ t('end_date') }}:</label>
                     <VueDatePicker
-                        class="drop"
+                        class="w-full"
                         v-model="relatorioDesk.data_final"
                         showIcon
                         :showOnFocus="false"
@@ -229,9 +229,8 @@ onMounted(() => {
                     />
                 </div>
             </div>
-            <div class="field p-0 m-0 lg:col-12 md:col-12 sm:col-12">
-                <Button class="filtrar" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
-                <!-- Botão para acionar a busca -->
+            <div class="p-0 m-0 lg:col-12 md:col-12 sm:col-12">
+                <Button class="mt-4 w-full" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
             </div>
         </div>
         <!-- Tabela para exibição dos logs -->
@@ -247,9 +246,9 @@ onMounted(() => {
             rowHover
             :globalFilterFields="['Dia', 'Operacao', 'ID_Usuario', 'Log', 'Resultado']"
             dataKey="ID"
-            :tableStyle="{ width: '100%' }"
             :sortOrder="1"
             :sortField="'Operacao'"
+            :tableStyle="'min-width: 50rem; table-layout: fixed;'"
         >
             <template #header>
                 <div class="flex justify-content-between align-items-center">
@@ -269,52 +268,21 @@ onMounted(() => {
             <template #empty> {{ emptyMessage }} </template>
 
             <!-- Definição das colunas da tabela -->
-            <Column field="Dia" sortable :header="t('date')"></Column>
-            <Column field="Operacao" sortable :header="t('operation')"></Column>
-            <Column field="ID_Usuario" sortable :header="t('user')"></Column>
-            <Column field="Log" sortable :header="t('summary')"></Column>
+            <Column field="Dia" sortable :header="t('date')" style="width: 15%"></Column>
+            <Column field="Operacao" sortable :header="t('operation')" class="table-cell" style="width: 20%">
+                <template #body="slotProps">
+                    <span v-tooltip.left="slotProps.data.Operacao">{{ slotProps.data.Operacao }}</span>
+                </template>
+            </Column>
+            <Column field="ID_Usuario" sortable :header="t('user')" style="width: 15%"></Column>
+            <Column field="Log" sortable :header="t('summary')" class="table-cell" style="width: 30%">
+                <template #body="slotProps">
+                    <span v-tooltip.left="slotProps.data.Log">{{ slotProps.data.Log }}</span>
+                </template>
+            </Column>
             <Column field="Resultado" sortable :header="t('result')"></Column>
         </DataTable>
     </div>
 </template>
 
-<style scoped>
-.card {
-    overflow-x: auto;
-}
-
-.datatable-wrapper {
-    overflow-x: auto;
-    width: 100vw;
-}
-
-.filtrar {
-    margin-top: 25px;
-}
-
-.drop {
-    width: 100%;
-}
-
-@media (max-width: 580px) {
-    .form .field {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .form .field .drop {
-        width: 100%;
-    }
-
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%;
-    }
-}
-
-.field {
-    white-space: nowrap;
-    text-align: left;
-}
-</style>
+<style></style>

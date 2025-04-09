@@ -2,7 +2,7 @@
     <div class="card justify-content-center">
         <Stepper v-model:activeStep="active">
             <!-- Passo 1: Seleção e Upload -->
-            <StepperPanel>
+            <StepPanels>
                 <template #header="{ index, clickCallback }">
                     <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
                         <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
@@ -13,7 +13,7 @@
                 <template #content="{ nextCallback }">
                     <div class="flex flex-column gap-2 mx-auto" style="min-height: 16rem; max-width: 20rem">
                         <div class="text-center mt-3 mb-3 text-xl font-semibold">Selecione o Tipo de Importação</div>
-                        <Dropdown v-model="selectedImportType" :options="importTypes" optionLabel="label" optionValue="value" placeholder="Selecione o Tipo de Importação" @change="carregarComponente" />
+                        <Select v-model="selectedImportType" :options="importTypes" optionLabel="label" optionValue="value" placeholder="Selecione o Tipo de Importação" @change="carregarComponente" />
                         <div v-if="selectedImportType" class="mt-3">
                             <FileUpload mode="basic" chooseLabel="Selecionar Arquivo" @select="handleFileUpload" accept=".csv" />
                         </div>
@@ -21,10 +21,10 @@
                         <Button label="Próximo" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" :disabled="!fileUploaded" />
                     </div>
                 </template>
-            </StepperPanel>
+            </StepPanels>
 
             <!-- Passo 2: Validação Dinâmica -->
-            <StepperPanel>
+            <StepPanels>
                 <template #header="{ index, clickCallback }">
                     <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
                         <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
@@ -41,10 +41,10 @@
                         </div>
                     </div>
                 </template>
-            </StepperPanel>
+            </StepPanels>
 
             <!-- Passo 3: Resumo e Edição -->
-            <StepperPanel>
+            <StepPanels>
                 <template #header="{ index, clickCallback }">
                     <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
                         <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
@@ -84,7 +84,7 @@
                         <div v-if="dadosInvalidos.length">
                             <div class="toggle-container">
                                 <span>Editar na Plataforma:</span>
-                                <InputSwitch v-model="isEditingEnabled" />
+                                <ToggleSwitch v-model="isEditingEnabled" />
                             </div>
 
                             <!-- Modo de edição habilitado -->
@@ -153,7 +153,7 @@
                         <Button label="Voltar" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
                     </div>
                 </template>
-            </StepperPanel>
+            </StepPanels>
         </Stepper>
     </div>
     <LoadingSpinner v-if="loading" />
@@ -165,8 +165,8 @@
  */
 import { ref, shallowRef, defineAsyncComponent, computed, watch } from 'vue'; // Funções do Vue para criar reatividade e componentes dinâmicos
 import Stepper from 'primevue/stepper'; // Componente para exibir etapas de progresso
-import StepperPanel from 'primevue/stepperpanel'; // Painel de cada etapa do stepper
-import Dropdown from 'primevue/dropdown'; // Componente de Dropdown (lista suspensa)
+import StepPanels from 'primevue/steppanels'; // Painel de cada etapa do stepper
+import Select from 'primevue/select'; // Componente de Select (lista suspensa)
 import FileUpload from 'primevue/fileupload'; // Componente de upload de arquivos
 import Button from 'primevue/button'; // Componente de botão
 import Chart from 'primevue/chart'; // Componente para renderizar gráficos

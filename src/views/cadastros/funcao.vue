@@ -3,7 +3,7 @@ import { reactive, ref, onMounted, watch, computed } from 'vue'; // Importa os h
 import { useToast } from 'primevue/usetoast'; // Hook para exibir mensagens de toast (notificações)
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento (spinner)
-import { FilterMatchMode } from 'primevue/api'; // Importa filtros do PrimeVue para usar na tabela
+import { FilterMatchMode } from '@primevue/core/api'; // Importa filtros do PrimeVue para usar na tabela
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import funcaoService from '@/services/funcaoService'; // Importa os serviços para manipulação das funções
 import { resetFuncaoForm } from '@/helpers/formHelper'; // Importa a função para resetar o formulário
@@ -13,7 +13,7 @@ const { t } = useI18n();
 const dataStore = useDataStore(); // Cria uma instância do store de dados
 const Mob = ref(false);
 // Variáveis reativas
-const active = ref(0); // Armazena o índice da aba ativa (para alternar entre 'Listar' e 'Adicionar/Editar')
+const active = ref("0");// Variável reativa para controlar a aba ativa.
 const toast = useToast(); // Instância do toast para exibir mensagens de sucesso e erro
 const ListaFuncao = ref([]); // Armazena a lista de funções
 const visible = ref(false); // Controla a visibilidade do formulário de edição/adicionar
@@ -48,7 +48,7 @@ let funcao = reactive(resetFuncaoForm()); // Inicializa os dados do formulário 
 const onRowSelect = (event) => {
     funcao = event.data; // Atualiza os dados do formulário com os dados da linha selecionada
     visible.value = true; // Exibe o formulário de edição
-    active.value = 1; // Muda a aba para a de edição
+    active.value = "1"; // Muda a aba para a de edição
 };
 const onFilterChange = async () => {
     lazyParams.value.filters = filters.value; // Atualiza os filtros
@@ -81,7 +81,7 @@ const submitForm = async () => {
             toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('function_add_sucess'), life: 3000 });
         }
         loadFuncoes(); // Recarrega a lista de funções após a operação
-        active.value = 0; // Volta para a aba de listagem
+        active.value = "0"; // Volta para a aba de listagem
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('function_default_fail'), life: 3000 }); // Mensagem de erro se a operação falhar
@@ -140,7 +140,7 @@ const deleteFuncao = async () => {
         loadFuncoes(); // Recarrega a lista de funções
         deleteFuncaoDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
-        active.value = 0; // Volta para a aba de listagem
+        active.value = "0"; // Volta para a aba de listagem
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('function_delete_fail'), life: 3000 }); // Mensagem de erro se a exclusão falhar
     } finally {
@@ -153,7 +153,7 @@ const deleteFuncao = async () => {
  * Recarrega a lista de funções e reseta o formulário
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === 0) {
+    if (newIndex !== oldIndex && newIndex === "0") {
         funcao = reactive(resetFuncaoForm()); // Reseta os dados do formulário
         loadFuncoes(); // Recarrega a lista de funções
         visible.value = false; // Esconde o formulário de edição/adicionar
@@ -189,132 +189,133 @@ onMounted(() => {
     Mob.value = isMobEnabled(); // Define o valor de Mob com base na função isMobEnabled
     loadFuncoes(); // Carrega a lista de funções
     loadData(); // Carrega os dados dos centros de custo
+    active.value = "0";
 });
 </script>
 
 <template>
     <div class="card vh">
-        <!-- Componente TabView para alternar entre as abas de listagem e edição/adicionar -->
-        <TabView v-model:activeIndex="active">
-            <TabPanel :header="$t('list_functions')">
-                <div class="col-12">
-                    <!-- Componente DataTable para exibição das funções -->
-                    <DataTable
-                        v-model:filters="filters"
-                        :value="ListaFuncao"
-                        selectionMode="single"
-                        tableStyle="min-width: 25%"
-                        stripedRows
-                        paginator
-                        removableSort
-                        :rowsPerPageOptions="[5, 10, 20, 50]"
-                        lazy
-                        :totalRecords="filteredCount"
-                        :rows="lazyParams.value?.rows || 10"
-                        dataKey="id"
-                        :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo']"
-                        :metaKeySelection="false"
-                        :sortOrder="lazyParams.value?.sortOrder || 1"
-                        :sortField="lazyParams.value?.sortField || 'id_funcao'"
-                        @rowSelect="onRowSelect"
-                        @filter="onFilterChange($event)"
-                        @page="onPageChange($event)"
-                        @sort="onSortChange($event)"
-                    >
-                        <!-- A tabela exibe os dados provenientes de "ListaFuncao" -->
-                        <!-- Permite selecionar apenas uma linha por vez -->
-                        <!-- Aplica um estilo alternado nas linhas para melhorar a legibilidade -->
-                        <!-- Habilita a funcionalidade de paginação -->
-                        <!-- Permite a ordenação removível, ou seja, a ordenação pode ser removida clicando novamente na coluna de ordenação -->
-                        <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
-                        <!-- Exibe 10 itens por página por padrão -->
-                        <!-- Define a chave única para cada linha como o campo "id" -->
-                        <!-- Aplica o filtro global aos campos "id_funcao", "nome" e "id_centro_custo" -->
-                        <!-- Ordena inicialmente pela coluna "id_funcao" em ordem crescente -->
-                        <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
-                        <!-- Emite o evento 'rowSelect' e chama a função 'onRowSelect' ao selecionar uma linha -->
-
-                        <template #header>
-                            <!-- Cabeçalho da tabela com filtro global e contador de registros -->
-                            <div class="flex justify-content-between align-items-center mt-4">
-                                <span>{{ $t('total_records',{count: filteredCount})}}</span>
-
-                                <IconField iconPosition="left">
-                                    <InputIcon>
-                                        <i class="pi pi-search" />
-                                    </InputIcon>
-                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
-                                </IconField>
-                            </div>
-                        </template>
-
-                        <template #empty> {{ t('function_empty') }} </template>
-                        <Column field="id_funcao" sortable :header="t('code')"></Column>
-                        <Column field="nome" sortable :header="t('function_name')"></Column>
-                        <Column field="id_centro_custo" sortable :header="t('cost_center_name')"></Column>
-                    </DataTable>
-                </div>
-            </TabPanel>
-            <!-- Aba para adicionar ou editar função -->
-            <TabPanel :header="visible ? t('edit_function') : t('add_function')" v-model:activeIndex="active">
-                <div class="grid">
+        <!-- Componente Tabspara alternar entre as abas de listagem e edição/adicionar -->
+        <Tabs v-model:value="active" :value="0">
+            <TabList>
+                <Tab value="0">{{ $t('list_functions') }}</Tab>
+                <Tab value="1">{{ visible ? t('edit_function') : t('add_function') }}</Tab>
+            </TabList>
+            <TabPanels>
+                <TabPanel value="0">
                     <div class="col-12">
-                        <div class="mt-5">
-                            <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid m-0 p-0">
-                                    <!-- Campo para código da função -->
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="id_funcao">{{ $t('function_code') }}:</label>
-                                        <InputText class="my-2" id="id_funcao" v-model="funcao.codigo" required />
-                                    </div>
-                                    <!-- Campo para nome da função -->
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="nome">{{ $t('function_name') }}:</label>
-                                        <InputText class="my-2" id="nome" v-model="funcao.nome" required />
-                                    </div>
-                                    <!-- Campo para selecionar o centro de custo -->
-                                    <div class="full lg:col-12 md:col-12 sm:col-12">
-                                        <label for="perfil">{{ $t('cost_center') }}:</label>
-                                        <Dropdown class="my-2" filter v-model="funcao.id_centro_custo" :options="centroCustoOptions" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
-                                    </div>
+                        <!-- Componente DataTable para exibição das funções -->
+                        <DataTable
+                            v-model:filters="filters"
+                            :value="ListaFuncao"
+                            selectionMode="single"
+                            tableStyle="min-width: 25%"
+                            stripedRows
+                            paginator
+                            removableSort
+                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            lazy
+                            :totalRecords="filteredCount"
+                            :rows="lazyParams.value?.rows || 10"
+                            dataKey="id"
+                            :globalFilterFields="['id_funcao', 'nome', 'id_centro_custo']"
+                            :metaKeySelection="false"
+                            :sortOrder="lazyParams.value?.sortOrder || 1"
+                            :sortField="lazyParams.value?.sortField || 'id_funcao'"
+                            @rowSelect="onRowSelect"
+                            @filter="onFilterChange($event)"
+                            @page="onPageChange($event)"
+                            @sort="onSortChange($event)"
+                        >
+                            <!-- A tabela exibe os dados provenientes de "ListaFuncao" -->
+                            <!-- Permite selecionar apenas uma linha por vez -->
+                            <!-- Aplica um estilo alternado nas linhas para melhorar a legibilidade -->
+                            <!-- Habilita a funcionalidade de paginação -->
+                            <!-- Permite a ordenação removível, ou seja, a ordenação pode ser removida clicando novamente na coluna de ordenação -->
+                            <!-- Oferece as opções de quantidade de itens por página: 5, 10, 20, 50 -->
+                            <!-- Exibe 10 itens por página por padrão -->
+                            <!-- Define a chave única para cada linha como o campo "id" -->
+                            <!-- Aplica o filtro global aos campos "id_funcao", "nome" e "id_centro_custo" -->
+                            <!-- Ordena inicialmente pela coluna "id_funcao" em ordem crescente -->
+                            <!-- Desabilita a seleção de múltiplas linhas com a tecla "meta" -->
+                            <!-- Emite o evento 'rowSelect' e chama a função 'onRowSelect' ao selecionar uma linha -->
+                            <template #header>
+                                <!-- Cabeçalho da tabela com filtro global e contador de registros -->
+                                <div class="flex justify-content-between align-items-center mt-4">
+                                    <span>{{ $t('total_records',{count: filteredCount})}}</span>
+                                    <IconField iconPosition="left">
+                                        <InputIcon>
+                                            <i class="pi pi-search" />
+                                        </InputIcon>
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
+                                    </IconField>
                                 </div>
-
-                                <div class="mr-1 mt-4 grid justify-content-end">
-                                    <!-- Botões de ação para salvar ou excluir função -->
-                                    <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
-                                    <Button
-                                        v-if="visible"
-                                        style="width: 15%"
-                                        class="flex align-items-center justify-content-center m-2 mr-0"
-                                        :label="$t('delete')"
-                                        icon="pi pi-trash"
-                                        severity="danger"
-                                        @click="deleteFuncaoDialog = true"
-                                        :disabled="Mob"
-                                    />
-                                    <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
-                        <Dialog header="Deletar Função" v-model:visible="deleteFuncaoDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
-                            <div class="confirmation-content">
-                                <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
-                                <span class="">
-                                    {{ t('function_dialog_confirm', { id: funcao.id_funcao, nome: funcao.nome }) }}
-                                </span>
-                            </div>
-
-                            <template #footer>
-                                <Button :label="$t('no')" icon="pi pi-times" @click="deleteFuncaoDialog = false" class="p-button-text" />
-                                <Button :label="$t('yes')" icon="pi pi-check" @click="deleteFuncao" class="p-button-text" />
                             </template>
-                        </Dialog>
+                            <template #empty> {{ t('function_empty') }} </template>
+                            <Column field="id_funcao" sortable :header="t('code')"></Column>
+                            <Column field="nome" sortable :header="t('function_name')"></Column>
+                            <Column field="id_centro_custo" sortable :header="t('cost_center_name')"></Column>
+                        </DataTable>
                     </div>
-                </div>
-            </TabPanel>
-        </TabView>
+                </TabPanel>
+                <!-- Aba para adicionar ou editar função -->
+                <TabPanel value="1" v-model:activeIndex="active">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="mt-5">
+                                <form @submit.prevent="submitForm">
+                                    <div class="p-fluid formgrid grid m-0 p-0">
+                                        <!-- Campo para código da função -->
+                                        <div class="lg:col-12 md:col-12 sm:col-12">
+                                            <label for="id_funcao">{{ $t('function_code') }}:</label>
+                                            <InputText class="my-2 w-full" id="id_funcao" v-model="funcao.codigo" required />
+                                        </div>
+                                        <!-- Campo para nome da função -->
+                                        <div class=" lg:col-12 md:col-12 sm:col-12">
+                                            <label for="nome">{{ $t('function_name') }}:</label>
+                                            <InputText class="my-2 w-full" id="nome" v-model="funcao.nome" required />
+                                        </div>
+                                        <!-- Campo para selecionar o centro de custo -->
+                                        <div class=" lg:col-12 md:col-12 sm:col-12">
+                                            <label for="perfil">{{ $t('cost_center') }}:</label>
+                                            <Select class="my-2 w-full" filter v-model="funcao.id_centro_custo" :options="centroCustoOptions" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
+                                        </div>
+                                    </div>
+                                    <div class="mr-1 mt-4 grid justify-content-end">
+                                        <!-- Botões de ação para salvar ou excluir função -->
+                                        <Button v-if="visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="primary" @click="submitForm" :disabled="Mob" />
+                                        <Button
+                                            v-if="visible"
+                                            style="width: 15%"
+                                            class="flex align-items-center justify-content-center m-2 mr-0"
+                                            :label="$t('delete')"
+                                            icon="pi pi-trash"
+                                            severity="danger"
+                                            @click="deleteFuncaoDialog = true"
+                                            :disabled="Mob"
+                                        />
+                                        <Button v-if="!visible" style="width: 15%" class="flex align-items-center justify-content-center m-2 mr-0" :label="$t('save')" icon="pi pi-check" severity="info" @click="submitForm" :disabled="Mob" />
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="mr-1 mt-7 grid justify-content-end flex-wrap"></div>
+                            <Dialog header="Deletar Função" v-model:visible="deleteFuncaoDialog" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                                <div class="confirmation-content">
+                                    <i class="pi pi-exclamation-triangle mr-1" style="font-size: 2rem"></i>
+                                    <span class="">
+                                        {{ t('function_dialog_confirm', { id: funcao.id_funcao, nome: funcao.nome }) }}
+                                    </span>
+                                </div>
+                                <template #footer>
+                                    <Button :label="$t('no')" icon="pi pi-times" @click="deleteFuncaoDialog = false" class="p-button-text" />
+                                    <Button :label="$t('yes')" icon="pi pi-check" @click="deleteFuncao" class="p-button-text" />
+                                </template>
+                            </Dialog>
+                        </div>
+                    </div>
+                </TabPanel>
+            </TabPanels>
+        </Tabs>
 
         <!-- Componente de loading (spinner) -->
         <LoadingSpinner v-if="loading" />

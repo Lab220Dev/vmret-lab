@@ -1,6 +1,6 @@
 <script setup>
 // Importa os modos de correspondência de filtro para a tabela de dados.
-import { FilterMatchMode } from 'primevue/api';
+import { FilterMatchMode } from '@primevue/core/api';
 
 // Importa funções do Vue: 'ref' para reatividade, 'onMounted' e 'onBeforeMount' para hooks de ciclo de vida.
 import { ref, onMounted, onBeforeMount } from 'vue';
@@ -273,7 +273,7 @@ const initFilters = () => {
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageselect "
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
                 >
@@ -362,7 +362,7 @@ const initFilters = () => {
 
                     <div class="field">
                         <label for="inventoryStatus" class="mb-3">Inventory Status</label>
-                        <Dropdown id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
+                        <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
                             <template #value="slotProps">
                                 <div v-if="slotProps.value && slotProps.value.value">
                                     <span :class="'product-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
@@ -374,7 +374,7 @@ const initFilters = () => {
                                     {{ slotProps.placeholder }}
                                 </span>
                             </template>
-                        </Dropdown>
+                        </Select >
                     </div>
 
                     <div class="field">

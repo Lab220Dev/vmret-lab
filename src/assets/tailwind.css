@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Certifique-se de que o Tailwind está configurado para processar os arquivos Vue e HTML */
+@layer utilities {
+    @apply text-blue-600;
+}

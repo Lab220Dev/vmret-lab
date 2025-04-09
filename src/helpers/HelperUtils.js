@@ -300,16 +300,16 @@ export const setTempo = (tempoRef, isoString) => {
 };
 
 /**
- * Fecha todos os dropdowns fornecidos.
+ * Fecha todos os selects fornecidos.
  *
- * @param {Array} dropdowns - Um array de objetos de dropdown.
- * @param {Object} dropdowns[].value - O valor associado ao dropdown. Espera-se que seja um objeto com o método `hide()`.
+ * @param {Array} selects - Um array de objetos de select .
+ * @param {Object} selects[].value - O valor associado ao select . Espera-se que seja um objeto com o método `hide()`.
  *
  * @returns {void} Esta função não retorna nada.
  */
-export const closeAllDropdowns = (dropdowns) => {
+export const closeAllselects = (selects) => {
 
-  dropdowns.forEach((dropdown) => dropdown.value?.hide());//Itera sobre cada dropdown no array `dropdowns` e chama o método `hide()` no valor do dropdown, caso o método esteja presente.
+  selects.forEach((select) => select.value?.hide());//Itera sobre cada Select no array `select s` e chama o método `hide()` no valor do select , caso o método esteja presente.
 };
 
 export const generateCustomVideoName = (dm, existingVideo) => {//Gera um nome personalizado para um vídeo com base no número da DM e no vídeo existente.

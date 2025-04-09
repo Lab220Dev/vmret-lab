@@ -2,7 +2,7 @@
 
 import VueDatePicker from '@vuepic/vue-datepicker';//Importa o componente VueDatePicker para uso no formulário de seleção de data.
 
-import { FilterMatchMode } from 'primevue/api';//Importa o FilterMatchMode da biblioteca PrimeVue para utilização na filtragem de dados da tabela.
+import { FilterMatchMode } from '@primevue/core/api';//Importa o FilterMatchMode da biblioteca PrimeVue para utilização na filtragem de dados da tabela.
 
 import { useToast } from 'primevue/usetoast';//Importa o hook useToast para exibir notificações de toast.
 
@@ -25,13 +25,13 @@ const toast = useToast();  // Função para exibir notificações de toast
 const emptyMessage = ref('Ainda não foi feita nenhuma busca');//Mensagem padrão para ser exibida caso não haja dados na tabela.
 
 /**
- * Referências para os dropdowns usados para filtros (funcionário, DM, etc.).
+ * Referências para os selects usados para filtros (funcionário, DM, etc.).
  */
-const dropdown1 = ref(null);
-const dropdown2 = ref(null);
-const dropdown3 = ref(null);
-const dropdown4 = ref(null);
-const dropdown5 = ref(null);
+const select1 = ref(null);
+const select2 = ref(null);
+const select3 = ref(null);
+const select4 = ref(null);
+const select5 = ref(null);
 
 const retiradas = ref([]);  // Dados das retiradas
 const todosOption = { label: 'Todos', value: null };  // Opção padrão "Todos" para os filtros
@@ -227,16 +227,16 @@ const fetchDM = async () => {//Função para buscar a lista de DMs (Documentos d
     }
 };
 
-const closeAllDropdowns = () => {//Função para fechar todos os dropdowns abertos na interface.
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide();
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide();
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide();
-    if (dropdown4.value?.overlayVisible) dropdown4.value.hide();
-    if (dropdown5.value?.overlayVisible) dropdown5.value.hide();
+const closeAllselects = () => {//Função para fechar todos os selects abertos na interface.
+    if (select1.value?.overlayVisible) select1.value.hide();
+    if (select2.value?.overlayVisible) select2.value.hide();
+    if (select3.value?.overlayVisible) select3.value.hide();
+    if (select4.value?.overlayVisible) select4.value.hide();
+    if (select5.value?.overlayVisible) select5.value.hide();
 };
 
 const handleDatepickerOpen = () => {
-    closeAllDropdowns();  // Fecha todos os dropdowns
+    closeAllselects();  // Fecha todos os selects
 };
 
 onMounted(() => {
@@ -257,8 +257,8 @@ onMounted(() => {
                     <!-- Campo de busca para o filtro de DM -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
-                        <!-- Dropdown para selecionar DM, com a v-model ligado a "relatorio.dm" -->
-                        <Dropdown class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="dropdown1" />
+                        <!-- Select para selecionar DM, com a v-model ligado a "relatorio.dm" -->
+                        <Select class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="select1" />
                     </div>
 
                     <!-- Campo de busca para o filtro de Data Inicial -->
@@ -427,7 +427,7 @@ onMounted(() => {
     margin-top: 25px;
 }
 
-/* Estilos para os dropdowns */
+/* Estilos para os selects */
 .drop {
     width: 100%;
 }
@@ -441,7 +441,7 @@ onMounted(() => {
         margin-bottom: 1rem;
     }
 
-    /* Faz os dropdowns ocuparem 100% da largura */
+    /* Faz os selects ocuparem 100% da largura */
     .form .field .drop {
         width: 100%;
     }

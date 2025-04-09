@@ -3,7 +3,7 @@ import { onMounted, ref, watch,computed } from 'vue'; // Importando hooks do Vue
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importando o componente de data
 import '@vuepic/vue-datepicker/dist/main.css'; // Importando o CSS do componente de data
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importando o componente de Loading Spinner
-import { FilterMatchMode } from 'primevue/api'; // Importando a constante de filtros do PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Importando a constante de filtros do PrimeVue
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados (provavelmente para carregar dados externos)
 import { getTimeFromString, getDateFromString } from '@/helpers/HelperUtils.js';
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
@@ -21,7 +21,7 @@ const todosOption = { label: 'Todos', value: null }; // Opção para "Todos"
 const loading = ref(false); // Estado de carregamento (true ou false)
 const dms = ref([todosOption]); // Lista de DMs, começando com a opção 'Todos'
 const StatusDM = ref([]); // Status das DMs
-const dropdown1 = ref(null); // Ref para o dropdown da DM
+const select1 = ref(null); // Ref para o Select da DM
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para pesquisa
@@ -72,14 +72,14 @@ const formatDate = (date) => {
     const ano = date.getFullYear(); // Obtém o ano
     return `${dia}/${mes}/${ano}`; // Retorna a data no formato dd/MM/yyyy
 };
-// Função para fechar todos os dropdowns
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Verifica se o dropdown está visível e o esconde
+// Função para fechar todos os select s
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Verifica se o Select está visível e o esconde
 };
 
 // Função chamada quando o datepicker for aberto
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha o dropdown de DM quando o datepicker abrir
+    closeAllselects(); // Fecha o Select de DM quando o datepicker abrir
 };
 </script>
 
@@ -88,8 +88,8 @@ const handleDatepickerOpen = () => {
         <!-- Cabeçalho com título <h5 class="my-6 ml-2 text-2xl">{{t('status_dm')}}</h5>-->
         
         <div class="flex flex-row gap-3 mb-5">
-            <!-- Dropdown para selecionar DM -->
-            <Dropdown filter id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="dropdown1" @change="KeepAlive" />
+            <!-- Select para selecionar DM -->
+            <Select filter id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="select1" @change="KeepAlive" />
             <!-- DatePicker para selecionar a data -->
             <VueDatePicker
                 class="drop w-full md:w-14rem"
@@ -204,42 +204,5 @@ const handleDatepickerOpen = () => {
 </template>
 
 <style>
-.card {
-    overflow-x: auto; /* Permite rolagem horizontal no card */
-}
 
-.datatable-wrapper {
-    overflow-x: auto; /* Permite rolagem horizontal na tabela */
-    width: 100vw; /* Define a largura da tabela como 100% da tela */
-}
-
-.filtrar {
-    margin-top: 25px; /* Adiciona margem superior ao botão de filtro */
-}
-
-.drop {
-    width: 100%; /* Faz o dropdown ocupar 100% da largura disponível */
-}
-
-@media (max-width: 580px) {
-    .form .field {
-        flex: 0 0 100%; /* Faz os campos ocuparem 100% da largura em telas pequenas */
-        max-width: 100%;
-        margin-bottom: 1rem; /* Adiciona margem inferior entre os campos */
-    }
-
-    .form .field .drop {
-        width: 100%;
-    }
-
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%;
-    }
-}
-
-.field {
-    white-space: nowrap; /* Impede quebra de linha no texto */
-    text-align: left; /* Alinha o texto à esquerda */
-}
 </style>

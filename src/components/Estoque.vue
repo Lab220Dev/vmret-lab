@@ -7,10 +7,10 @@
         <!-- Seção do filtro para selecionar a DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">DM:</label>
-            <!-- Rótulo (label) para o Dropdown de DM -->
+            <!-- Rótulo (label) para o Select de DM -->
 
-            <!-- Componente Dropdown para selecionar a DM -->
-            <Dropdown id="dm" style="width: 20%" v-model="selectedDM" :options="props.dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" />
+            <!-- Componente Select para selecionar a DM -->
+            <Select id="dm" style="width: 20%" v-model="selectedDM" :options="props.dms" optionLabel="label" optionValue="value" placeholder="Todos" class="mb-2 ml-2" />
         </div>
 
         <!-- Exibe um componente de LoadingSpinner caso a propriedade 'loading' seja verdadeira -->

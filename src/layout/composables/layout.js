@@ -13,8 +13,8 @@ const layoutConfig = reactive({
 const layoutState = reactive({
     staticMenuDesktopInactive: false,
     overlayMenuActive: false,
-    profileSidebarVisible: false,
-    configSidebarVisible: false,
+    profileDrawerVisible: false,
+    configDrawerVisible: false,
     staticMenuMobileActive: false,
     menuHoverActive: false
 });
@@ -40,9 +40,9 @@ export function useLayout() {
         }
     };
 
-    const isSidebarActive = computed(() => layoutState.overlayMenuActive || layoutState.staticMenuMobileActive);
+    const isDrawerActive = computed(() => layoutState.overlayMenuActive || layoutState.staticMenuMobileActive);
 
     const isDarkTheme = computed(() => layoutConfig.darkTheme);
 
-    return { layoutConfig: toRefs(layoutConfig), layoutState: toRefs(layoutState), setScale, onMenuToggle, isSidebarActive, isDarkTheme, setActiveMenuItem };
+    return { layoutConfig: toRefs(layoutConfig), layoutState: toRefs(layoutState), setScale, onMenuToggle, isDrawerActive, isDarkTheme, setActiveMenuItem };
 }

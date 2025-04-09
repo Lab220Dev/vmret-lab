@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch ,computed} from 'vue'; // Importa funções do Vue para reatividade e manipulação do ciclo de vida
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados do usuário autenticado
-import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
+import { FilterMatchMode } from '@primevue/core/api'; // Importa a API de filtros do PrimeVue para filtrar a tabela
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento
 import estoqueService from '@/services/estoqueService';
 import { useDataStore } from '@/store/dataStore.js';
@@ -11,7 +11,7 @@ const { t } = useI18n();
 const loading = ref(false); // Variável para controlar o estado de carregamento
 const relatorio = ref({ id_dm: '' }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
 const todosOption = { label: 'Todos', value: null }; // Opção para o filtro de DM para mostrar todos
-const dropdown1 = ref(null); // Referência para o dropdown de DM
+const select1 = ref(null); // Referência para o Select de DM
 const EstoqueDM = ref([]); // Lista de itens de estoque filtrados
 const dms  = computed(() => dataStore.dmsOptions); // Lista de DM com a opção de "Todos"
 const store = useAuthStore(); // Instancia o store de autenticação
@@ -117,10 +117,10 @@ const truncatedText = (text) => {
     <div class="card vh">
         <!-- Contêiner principal da tela -->
         <!-- Título da página <h5 class="my-6 ml-2 text-2xl">{{$t('dm_inventory')}}</h5>-->
-        <!-- Dropdown para seleção de DM -->
+        <!-- Select para seleção de DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">{{$t('dispenser_machine')}}:</label>
-            <Dropdown id="dm" filter style="width: 200px" v-model="relatorio.id_dm" :options="dms" ref="dropdown1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
+            <Select id="dm" filter style="width: 200px" v-model="relatorio.id_dm" :options="dms" ref="select1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <!-- Tabela de Estoque -->
@@ -216,64 +216,5 @@ const truncatedText = (text) => {
 </template>
 
 <style>
-.card {
-    overflow-x: auto; /* Permite rolagem horizontal quando o conteúdo exceder a largura */
-}
 
-.datatable-wrapper {
-    overflow-x: auto; /* Permite rolagem horizontal da tabela */
-    width: 100vw; /* Largura total da tela */
-}
-
-.filtrar {
-    margin-top: 25px; /* Espaçamento superior */
-}
-
-.drop {
-    width: 100%; /* Largura total do dropdown */
-}
-
-@media (max-width: 580px) {
-    .form .field {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .form .field .drop {
-        width: 100%;
-    }
-
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%;
-    }
-}
-
-.field {
-    white-space: nowrap; /* Impede quebra de linha */
-    text-align: left; /* Alinha o texto à esquerda */
-}
-
-.table-cell {
-    overflow: hidden; /* Oculta o texto que excede o tamanho da célula */
-    white-space: nowrap; /* Impede quebra de linha */
-    text-overflow: ellipsis; /* Exibe reticências (...) quando o texto excede o tamanho */
-}
-
-/* Estilos para a exibição de tooltip */
-.tooltip-target {
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-    max-width: 100%;
-}
-
-/* Estilos para o tooltip, permitindo múltiplas linhas de texto */
-.v-tooltip {
-    max-width: 400px;
-    white-space: normal;
-}
 </style>

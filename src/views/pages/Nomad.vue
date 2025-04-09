@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from 'primevue/api';
+import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
 
 // Registro de filtro customizado para comparar arrays
 FilterService.register('filterByArrayEquals', (arr, value) => {
@@ -182,7 +182,7 @@ function limparFiltros() {
                 {{ slotProps.data.dia_retirada_formatada }}
             </template>
             <template #filter="{ filterModel }">
-                <Calendar v-model="filterModel.value" dateFormat="dd/mm/yy" placeholder="Selecione o dia" :showIcon="true" />
+                <DatePicker v-model="filterModel.value" dateFormat="dd/mm/yy" placeholder="Selecione o dia" :showIcon="true" />
             </template>
         </Column>
         <Column field="hora_retirada" header="Hora" sortable>

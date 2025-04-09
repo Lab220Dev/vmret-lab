@@ -4,7 +4,7 @@
         <div class="columns-mapping">
             <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
                 <label class="expected-column">{{ expected }}</label>
-                <Dropdown v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" />
+                <Select v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" />
             </div>
         </div>
         <p v-if="!isMappingComplete" class="text-red-500">Por favor, complete o mapeamento de todos os campos.</p>
@@ -13,7 +13,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';  // Importa as funcionalidades reativas e de observação do Vue
-import Dropdown from 'primevue/dropdown';  // Importa o componente Dropdown do PrimeVue
+import Select from 'primevue/select ';  // Importa o componente Select do PrimeVue
 
 // Props recebidas do componente pai
 /**

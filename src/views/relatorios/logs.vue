@@ -1,9 +1,9 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importação do componente VueDatePicker para seleção de datas
-import { FilterMatchMode } from 'primevue/api'; // Importação do FilterMatchMode para configurar filtros na DataTable
+import { FilterMatchMode } from '@primevue/core/api'; // Importação do FilterMatchMode para configurar filtros na DataTable
 import { useToast } from 'primevue/usetoast'; // Importação do hook useToast para exibir mensagens de notificação
 import '@vuepic/vue-datepicker/dist/main.css'; // Importação do CSS do VueDatePicker
-import { ref, onMounted, watch , computed} from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
+import { ref, onMounted, watch, computed } from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store para gerenciar o estado de autenticação
 import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs web
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
@@ -17,10 +17,10 @@ const filteredCount = ref(0); // Contador reativo para o número de registros fi
 
 const store = useAuthStore(); // Acesso ao store de autenticação
 const toast = useToast(); // Acesso ao toast para mostrar mensagens de notificação
-const dropdown1 = ref(null); // Referência para o primeiro dropdown (não utilizado no template atual)
-const dropdown2 = ref(null); // Referência para o segundo dropdown (não utilizado no template atual)
-const dropdown3 = ref(null); // Referência para o terceiro dropdown (usado para o filtro de usuários)
-const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para dropdowns de seleção
+const select1 = ref(null); // Referência para o primeiro select(não utilizado no template atual)
+const select2 = ref(null); // Referência para o segundo select(não utilizado no template atual)
+const select3 = ref(null); // Referência para o terceiro select(usado para o filtro de usuários)
+const todosOption = { label: 'Todos', value: null }; // Opção "Todos" para selects de seleção
 const historico = ref([]); // Lista reativa que armazenará os dados do histórico de logs
 const dms = ref([todosOption]); // Lista reativa que armazenará os DMs (Data Migrations) disponíveis
 const operacao = computed(() => [
@@ -85,9 +85,8 @@ const toISODate = (date) => {
 
 // Função que busca os logs filtrados
 const buscar = async () => {
-        try {
-
-        historico.value = await relatorioService.logs(relatorio); 
+    try {
+        historico.value = await relatorioService.logs(relatorio);
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
     } catch (error) {
         // Caso ocorra um erro na requisição
@@ -115,7 +114,7 @@ const fetchDM = async () => {
     const data = { id_cliente: store.userIdCliente }; // Prepara os dados para a requisição
 
     try {
-        const response = await dmService.listarDMs(data); 
+        const response = await dmService.listarDMs(data);
         dms.value = [
             // Atualiza a lista de DMs com a resposta
             todosOption,
@@ -146,7 +145,7 @@ const fetchUsuario = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar lista de usuários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error',summary: t('title_error'),  detail: t('load_user_list'), life: 3000 }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_user_list'), life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
@@ -164,20 +163,20 @@ const fetchFuncionarios = async () => {
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao carregar funcionários:', error); // Exibe o erro no console
-        toast.add({ severity: 'error', summary:t('title_error'), detail: t('load_employee_list'), life: 3000 }); // Exibe uma notificação de erro
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_employee_list'), life: 3000 }); // Exibe uma notificação de erro
     }
 };
 
-// Função para fechar todos os dropdowns
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Se o primeiro dropdown estiver visível, esconde
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Se o segundo dropdown estiver visível, esconde
-    if (dropdown3.value?.overlayVisible) dropdown3.value.hide(); // Se o terceiro dropdown estiver visível, esconde
+// Função para fechar todos os selects
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Se o primeiro selectestiver visível, esconde
+    if (select2.value?.overlayVisible) select2.value.hide(); // Se o segundo selectestiver visível, esconde
+    if (select3.value?.overlayVisible) select3.value.hide(); // Se o terceiro selectestiver visível, esconde
 };
 
 // Função que é chamada quando o datepicker é aberto
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha todos os dropdowns quando o datepicker é aberto
+    closeAllselects(); // Fecha todos os selects quando o datepicker é aberto
 };
 
 // Função que é chamada quando o componente é montado
@@ -189,22 +188,20 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="card vh p-fluid">
+    <div class="card vh">
         <div class="form">
-            <div class="grid mb-0 pt-5">
+            <div class="grid mb-0 pt-5 mr-1">
                 <!-- Campos para filtros -->
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
-                    <label for="usuario">{{t('user')}}:</label>
-                    <Dropdown filter class="drop" v-model="relatorio.id_usuario" :options="usuario"
-                     optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown3" />
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                    <label for="usuario">{{ t('user') }}:</label>
+                    <Select filter class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
-                    <label for="operacao">{{t('operation')}}:</label>
-                    <Dropdown filter class="drop" v-model="relatorio.id_operacao" :options="operacao" 
-                    optionLabel="label" optionValue="value" :placeholder="$t('all')" />
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                    <label for="operacao">{{ t('operation') }}:</label>
+                    <Select filter class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
-                    <label for="perfil">{{t('initial_date')}}:</label>
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                    <label for="perfil">{{ t('initial_date') }}:</label>
                     <VueDatePicker
                         class="drop"
                         v-model="relatorio.data_inicio"
@@ -219,8 +216,8 @@ onMounted(() => {
                         :placeholder="$t('initial_date_placeholder')"
                     />
                 </div>
-                <div class="field py-0 my-0 lg:col-3 md:col-6 sm:col-6">
-                    <label for="perfil">{{t('end_date')}}:</label>
+                <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
+                    <label for="perfil">{{ t('end_date') }}:</label>
                     <VueDatePicker
                         class="drop"
                         v-model="relatorio.data_final"
@@ -235,13 +232,11 @@ onMounted(() => {
                         :placeholder="$t('end_date_placeholder')"
                     />
                 </div>
-                
             </div>
-            <div class=" p-0 m-0 field lg:col-12 md:col-12 sm:col-12">
-                    <Button class="filtrar" type="button":label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
-                </div>
+            <div class="p-0 m-0 lg:col-12 md:col-6 sm:col-12">
+                <Button class="w-full mt-4" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
+            </div>
         </div>
-
         <!-- Tabela para exibição dos logs -->
         <DataTable
             v-model:filters="filters"
@@ -294,7 +289,7 @@ onMounted(() => {
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
-                        <span>{{$t('total_records',{count: filteredCount})}}</span>
+                        <span>{{ $t('total_records', { count: filteredCount }) }}</span>
                     </div>
                     <div>
                         <IconField iconPosition="left">
@@ -309,8 +304,7 @@ onMounted(() => {
 
             <template #empty> {{ emptyMessage }} </template>
 
-            <Column field="Dia" sortable :header="t('date')">
-               </Column>
+            <Column field="Dia" sortable :header="t('date')"> </Column>
             <Column field="Operacao" sortable style="max-width: 10%" :header="t('operation')"></Column>
             <Column field="ID_Usuario" sortable style="max-width: 8%" :header="t('user')"></Column>
             <Column field="Log_Web" sortable style="max-width: 500px" :header="t('summary')"></Column>

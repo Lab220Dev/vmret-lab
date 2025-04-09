@@ -1,6 +1,6 @@
 <script setup>
 import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente VueDatePicker para seleção de datas
-import { FilterMatchMode } from 'primevue/api'; // Importa a API de filtros do PrimeVue
+import { FilterMatchMode } from '@primevue/core/api'; // Importa a API de filtros do PrimeVue
 import { useToast } from 'primevue/usetoast'; // Importa a função `useToast` do PrimeVue para mostrar mensagens de notificação
 import '@vuepic/vue-datepicker/dist/main.css'; // Importa os estilos do VueDatePicker
 import { ref, onMounted, computed } from 'vue'; // Importa funções do Vue: `ref` para reatividade e `onMounted` para ciclo de vida do componente
@@ -61,11 +61,11 @@ const generatePDF = async () => {//Função para gerar o PDF do relatório.
 };
 
 /**
- * Função para fechar todos os dropdowns abertos.
+ * Função para fechar todos os selects abertos.
  */
-const closeAllDropdowns = () => {
-    if (dropdown1.value?.overlayVisible) dropdown1.value.hide(); // Fecha o dropdown1 se estiver visível
-    if (dropdown2.value?.overlayVisible) dropdown2.value.hide(); // Fecha o dropdown2 se estiver visível
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible) select1.value.hide(); // Fecha o select1 se estiver visível
+    if (select2.value?.overlayVisible) select2.value.hide(); // Fecha o select2 se estiver visível
 };
 const selecionaFuncionario = () => {
     selectedItem.value = ListaFuncionariosOriginal.value.find((funcionario) => funcionario.value === relatorio.value.id_funcionario);
@@ -74,7 +74,7 @@ const selecionaFuncionario = () => {
  * Função para tratar a abertura do Datepicker.
  */
 const handleDatepickerOpen = () => {
-    closeAllDropdowns(); // Fecha os dropdowns ao abrir o Datepicker
+    closeAllselects(); // Fecha os selects ao abrir o Datepicker
 };
 const loadData = async () => {
     // Define o estado de carregamento como verdadeiro enquanto os dados estão sendo carregados.
@@ -115,14 +115,14 @@ onMounted(() => {
                     <!-- Campo de seleção para a Planta -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="planta">{{t('factory')}}:</label>
-                        <!-- Componente Dropdown para selecionar a planta, com lista de opções fornecida por 'plantas' -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="dropdown1" @change="filterFuncionarios" />
+                        <!-- Componente Select para selecionar a planta, com lista de opções fornecida por 'plantas' -->
+                        <Select filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" @change="filterFuncionarios" />
                     </div>
                     <!-- Campo de seleção para Funcionário -->
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-6">
                         <label for="perfil">{{t('employee')}}:</label>
-                        <!-- Componente Dropdown para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
-                        <Dropdown filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="dropdown2" :placeholder="$t('all')" @change="selecionaFuncionario"/>
+                        <!-- Componente Select para selecionar o funcionário, com lista de opções fornecida por 'ListaFuncionarios' -->
+                        <Select filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" ref="select2" :placeholder="$t('all')" @change="selecionaFuncionario"/>
                     </div>
                     <!-- Campo de seleção para Data Inicial -->
                     <div class="field datepicker xl:col-2 lg:col-4 md:col-4 sm:col-6">
@@ -160,8 +160,8 @@ onMounted(() => {
                         />
                     </div>
                     <!-- Botão para gerar a ficha -->
-                    <div class="ml-0 pl-0 field xl:col-2 lg:col-4 md:col-4 sm:col-6">
-                        <Button class="filtrar" type="button" :label="$t('generate_pdf')" icon="pi pi-download" severity="info" @click="generatePDF" />
+                    <div class="ml-0 pl-0 field xl:col-2 lg:col-4 md:col-4 sm:col-12">
+                        <Button class="w-full mt-5" type="button" :label="$t('generate_pdf')" icon="pi pi-download" severity="info" @click="generatePDF" />
                     </div>
                 </div>
             </div>
@@ -181,58 +181,6 @@ onMounted(() => {
     </Dialog>
 </template>
 
-<style scoped>
-.card {
-    overflow-x: auto;
-    overflow: visible; /* Permite que os elementos filhos excedam os limites do pai */
-}
+<style>
 
-.datepicker {
-    position: relative; /* Necessário para o posicionamento absoluto funcionar corretamente */
-}
-
-.vue-datepicker {
-    position: absolute; /* Permite que o DatePicker ultrapasse os limites do grid */
-    z-index: 1050; /* Garante que o DatePicker fique acima de outros elementos */
-}
-
-.datatable-wrapper {
-    overflow: hidden;
-    width: 100vw;
-}
-
-.filtrar {
-    margin-top: 25px;
-    width: 179px;
-}
-
-.drop {
-    width: 100%;
-}
-
-.vue-datepicker {
-    z-index: 1050; /* Assegura que o menu do date picker seja exibido acima de outros elementos */
-}
-
-@media (max-width: 580px) {
-    .form .field {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .form .field .drop {
-        width: 100%;
-    }
-
-    .form .field .filtrar,
-    .form .field .exportar {
-        width: 100%;
-    }
-}
-
-.field {
-    white-space: nowrap;
-    text-align: left;
-}
 </style>
