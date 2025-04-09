@@ -124,7 +124,7 @@ function limparFiltros() {
 }
 </script>
 <template>
-    <h1>Painel de Acompanhamento das Máquinas
+    <h1>{{ $t('title') }}
         
     </h1>
     <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
@@ -149,51 +149,51 @@ function limparFiltros() {
         <template #header>
             <div class="flex justify-content-between align-items-center">
                 <div>
-                    <span>Total de registros: {{ data.length }}</span>
+                    <span>{{ $t('totalRecords') }}: {{ data.length }}</span>
                 </div>
                 <div class="flex justify-content-end align-items-center">
                     <IconField iconPosition="left">
                         <InputIcon>
                             <i class="pi pi-search" />
                         </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        <InputText v-model="filters['global'].value" :placeholder="$t('searchPlaceholder')" />
                     </IconField>
-                    <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
+                    <Button class="ml-4" type="button" icon="pi pi-filter-slash" :label="$t('clearFilters')" outlined @click="limparFiltros()" />
                 </div>
             </div>
         </template>
 
         <!-- Mensagens para quando não houver dados ou durante o carregamento -->
-        <template #empty> Nenhum registro encontrado </template>
-        <template #loading> Carregando registros encontrados, aguarde... </template>
+        <template #empty> {{t('noData')}} </template>
+        <template #loading> {{t('loadingData')}} </template>
 
         <!-- Definição das colunas com filtros customizados -->
-        <Column field="Nome" header="Nome" sortable>
+        <Column field="Nome" :header="$t('ProdutoNome')" sortable>
             <!-- <template #filter="{ filterModel }">
                 <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
             </template> -->
         </Column>
-        <Column field="ID_DM" header=" Máquina (ID)" sortable>
+        <Column field="ID_DM" :header="$t('MaquinaID')" sortable>
             <!-- <template #filter="{ filterModel }">
                 <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
             </template> -->
         </Column>
-        <Column field="Qr_Code" header="QR Code" sortable>
+        <Column field="Qr_Code" :header="$t('QRCode')" sortable>
             <!-- <template #filter="{ filterModel }">
                 <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
             </template> -->
         </Column>
-        <Column field="Qr_COde_Valido" header="QR Code Válido?" sortable>
+        <Column field="Qr_COde_Valido":header="$t('QRCodeValido')" sortable>
             <!-- <template #body="slotProps">
                 {{ slotProps.data.dia_retirada_formatada }}
             </template> -->
         </Column>
-        <Column field="Retorno_Placa" header="Resposta da Máquina" sortable>
+        <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
             <!-- <template #filter="{ filterModel }">
                 <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
             </template> -->
         </Column>
-        <Column field="Retorno_Infra" header="Sucesso na Retirada?" sortable>
+        <Column field="Retorno_Infra" :header="$t('RetiradaEfetiva')" sortable>
             <!-- <template #body="slotProps">
                 <span>
                     <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
