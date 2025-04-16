@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from 'primevue/api';
+import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
 import { useAuthStore } from '@/store/authStore';
 // Registro de filtro customizado para comparar arrays
 FilterService.register('filterByArrayEquals', (arr, value) => {
@@ -59,11 +59,11 @@ let reconnectTimeout = null;
 // Função para conectar via SSE, com tratamento de erro e reconexão automática
 function connectSSE() {
     const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-    eventSource = new EventSource(`${baseURL}/nomad/updateNomad` ,{
-            headers: {
-                'Authorization': 'Bearer ' + store.token,
-            }
-        });
+    eventSource = new EventSource(`${baseURL}/nomad/updateNomad`, {
+        headers: {
+            Authorization: 'Bearer ' + store.token
+        }
+    });
 
     eventSource.onmessage = (event) => {
         try {
@@ -124,101 +124,88 @@ function limparFiltros() {
 }
 </script>
 <template>
-    <h1>Painel de Acompanhamento das Máquinas
-        
-    </h1>
-    <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
-    <div v-if="sseError" class="error-message">A conexão com o servidor caiu. Tentando reconectar...</div>
-    <DataTable
-        v-model:filters="filters"
-        :value="formattedData"
-        stripedRows
-        showGridlines
-        paginator
-        :rows="50"
-        :rowsPerPageOptions="[50, 100, 500, 1000]"
-        rowHover
-        :globalFilterFields="['Nome', 'ID_DM', 'Qr_Code', 'Qr_COde_Valido', 'Retorno_Placa', 'Retorno_Infra']"
-        tableStyle="min-width: 50rem; table-layout: fixed;"
-        :sortField="'nome'"
-        :sortOrder="1"
-        filterDisplay="menu"
-        :loading="loading"
-    >
-        <!-- Cabeçalho com total de registros e controles de filtro -->
-        <template #header>
-            <div class="flex justify-content-between align-items-center">
-                <div>
-                    <span>Total de registros: {{ data.length }}</span>
+    <div class="card">
+        <h3 class="mt-3 p-0">Painel de Monitoramento</h3>
+        <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
+        <div v-if="sseError" class="error-message">A conexão com o servidor caiu. Tentando reconectar...</div>
+        <DataTable
+            v-model:filters="filters"
+            :value="formattedData"
+            stripedRows
+            showGridlines
+            paginator
+            :rows="50"
+            :rowsPerPageOptions="[50, 100, 500, 1000]"
+            rowHover
+            :globalFilterFields="['Nome', 'ID_DM', 'Qr_Code', 'Qr_COde_Valido', 'Retorno_Placa', 'Retorno_Infra']"
+            tableStyle="min-width: 50rem; table-layout: fixed;"
+            :sortField="'nome'"
+            :sortOrder="1"
+            removableSort
+            filterDisplay="menu"
+            :loading="loading"
+        >
+            <!-- Cabeçalho com total de registros e controles de filtro -->
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span>Total de registros: {{ data.length }}</span>
+                    </div>
+                    <div class="flex justify-content-end align-items-center">
+                        <IconField iconPosition="left">
+                            <InputIcon>
+                                <i class="pi pi-search" />
+                            </InputIcon>
+                            <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        </IconField>
+                        <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
+                    </div>
                 </div>
-                <div class="flex justify-content-end align-items-center">
-                    <IconField iconPosition="left">
-                        <InputIcon>
-                            <i class="pi pi-search" />
-                        </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
-                    </IconField>
-                    <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
-                </div>
-            </div>
-        </template>
-
-        <!-- Mensagens para quando não houver dados ou durante o carregamento -->
-        <template #empty> Nenhum registro encontrado </template>
-        <template #loading> Carregando registros encontrados, aguarde... </template>
-
-        <!-- Definição das colunas com filtros customizados -->
-        <Column field="Nome" header="Nome" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
-            </template> -->
-        </Column>
-        <Column field="ID_DM" header=" Máquina (ID)" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
-            </template> -->
-        </Column>
-        <Column field="Qr_Code" header="QR Code" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
-            </template> -->
-        </Column>
-        <Column field="Qr_COde_Valido" header="QR Code Válido?" sortable>
-            <!-- <template #body="slotProps">
-                {{ slotProps.data.dia_retirada_formatada }}
-            </template> -->
-        </Column>
-        <Column field="Retorno_Placa" header="Resposta da Máquina" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
-            </template> -->
-        </Column>
-        <Column field="Retorno_Infra" header="Sucesso na Retirada?" sortable>
-            <!-- <template #body="slotProps">
-                <span>
-                    <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
-                    {{ slotProps.data.Retirada }}
-                </span>
             </template>
-            <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" />
-            </template> -->
-        </Column>
-    </DataTable>
+            <!-- Mensagens para quando não houver dados ou durante o carregamento -->
+            <template #empty> Nenhum registro encontrado </template>
+            <template #loading> Carregando registros encontrados, aguarde... </template>
+            <!-- Definição das colunas com filtros customizados -->
+            <Column field="Nome" header="Nome"  sortable>
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
+                </template>
+            </Column>
+            <Column field="ID_DM" header=" Máquina (ID)" sortable>
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
+                </template>
+            </Column>
+            <Column field="Qr_Code" header="QR Code" sortable class="table-cell">
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
+                </template>
+            </Column>
+            <Column field="Qr_COde_Valido" header="QR Code Válido?" sortable >
+                <template #body="slotProps">
+                    {{ slotProps.data.dia_retirada_formatada }}
+                </template>
+            </Column>
+            <Column field="Retorno_Placa" header="Resposta da Máquina" sortable>
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
+                </template>
+            </Column>
+            <Column field="Retorno_Infra" header="Sucesso na Retirada?" sortable>
+                <template #body="slotProps">
+                    <span>
+                        <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
+                        {{ slotProps.data.Retirada }}
+                    </span>
+                </template>
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" />
+                </template>
+            </Column>
+        </DataTable>
+    </div>
 </template>
 
 <style>
-.new-row {
-    background-color: #e0ffe0;
-}
-.updated-row {
-    background-color: #fff5e6;
-}
-.updated-icon {
-    margin-left: 5px;
-}
-.error-message {
-    color: red;
-    margin-bottom: 1rem;
-}
+
 </style>

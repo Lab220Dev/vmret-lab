@@ -1,29 +1,43 @@
 <template>
-    <div class="validation-container">
+    <div class="validation-container card">
         <!-- Título da página de mapeamento -->
-        <h3 class="text-center">Mapeamento de Campos - Funcionários</h3>
-
+        <h3 class="text-center my-4">Mapeamento de Campos - Funcionários</h3>
+        <Divider class="mt-0 mb-2" />
         <!-- Container das colunas para mapeamento -->
-        <div class="columns-mapping">
+        <div class="mt-6">
+            <div class="grid mb-4">
+                
+                <div class="col-6 pb-0" style="height: 50px">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos Esperados</div>
+                </div>
+                <div class="col-6 pb-0" style="height: 50px">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos do Arquivo</div>
+                </div>
+            </div>
             <!-- Loop para gerar um item de mapeamento para cada coluna esperada -->
-            <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
-                <!-- Rótulo para o nome da coluna esperada -->
-                <label class="expected-column">{{ expected }}</label>
-
-                <!-- Select para selecionar a coluna do arquivo carregado -->
-                <Select v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" @change="handleMappingChange(expected)" />
+            <div v-for="(expected, index) in expectedColumns" :key="index" class="grid align-items-baseline">
+                <div class="col-6 py-0">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <label class="text-l font-semibold">{{ expected }}:</label>
+                </div>
+                <div class="col-6 py-0">
+                    <!-- Select para selecionar a coluna do arquivo carregado -->
+                    <Select class="w-full" v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione um campo" @change="handleMappingChange(expected)" />
+                </div>
+                <hr/>
+                <Divider/>
             </div>
         </div>
-
         <!-- Mensagem de erro caso o mapeamento não esteja completo -->
-        <p v-if="!isMappingComplete" class="text-red-500">Por favor, complete o mapeamento de todos os campos.</p>
+        <p v-if="!isMappingComplete" class="text-red-500 card">Por favor, complete o mapeamento de todos os campos.</p>
     </div>
 </template>
-
 <script setup>
 import { ref, computed, watch } from 'vue'; // Importando hooks do Vue para reatividade e observação
-import Select from 'primevue/select '; // Componente Select do PrimeVue para seleção de opções
-import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
+import Select from 'primevue/select'; // Componente Select do PrimeVue para seleção de opções
+import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists, isCentroCustoExists, isFuncaoExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
 
 // Props recebidas do componente pai
@@ -43,7 +57,6 @@ const toast = useToast(); // Instância do sistema de notificações do PrimeVue
  */
 const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-completo']); // Emite eventos para o componente pai
 
-// Colunas esperadas para funcionários (dados esperados)
 const expectedColumns = ref([
     'Nome',
     'CPF',
@@ -56,7 +69,7 @@ const expectedColumns = ref([
     'Centro_Custo',
     'Planta',
     'Setor',
-    'Função',
+    'Funcao',
     'Status',
     'hora_inicial',
     'hora_final',
@@ -79,19 +92,17 @@ const requiredColumns = [
   'Centro_Custo',
   'Planta',
   'Setor',
-  'Função',
+  'Funcao',
   'Status',
   'hora_inicial',
   'hora_final'
 ];
-// Define as colunas que o sistema espera do arquivo carregado. São essas as colunas obrigatórias.
-
 // Colunas disponíveis no arquivo carregado (extraídas dos dados do arquivo)
 /**
  * @type {Ref<Array<{label: string, value: string}>>} fileColumns
  * Extrai as colunas do primeiro item do arquivo carregado para mapear os dados corretamente.
  */
-const fileColumns = ref(Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
+const fileColumns = computed(() => Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
 
 // Mapeamento das colunas (onde cada campo esperado será mapeado para uma coluna do arquivo)
 const mappedColumns = ref({}); // Armazena o mapeamento das colunas. Cada chave é o nome da coluna esperada e o valor é o nome da coluna mapeada do arquivo.
@@ -186,14 +197,23 @@ const validarDados = async () => {
             errors.Email = 'Email inválido'; // Mensagem de erro se o email for inválido
         }
 
+        if (!mappedRow.Centro_Custo || !( await isCentroCustoExists(mappedRow.Centro_Custo))) {
+            errors.Centro_Custo = 'Centro de Custo não registrado ou inválido'; // Mensagem de erro se o centro de custo estiver vazio
+        }
+
         // Valida o campo "Planta"
         if (!mappedRow.Planta || !(await isPlantaExists(mappedRow.Planta))) {
-            errors.Planta = 'Planta não registrada ou Invalida'; // Mensagem de erro se a planta for inválida
+            errors.Planta = 'Planta não registrada ou inválida'; // Mensagem de erro se a planta for inválida
         }
 
         // Valida o campo "Setor"
         if (!mappedRow.Setor || !(await isSetorExists(mappedRow.Setor))) {
-            errors.Setor = 'Setor não registrado ou Inválido'; // Mensagem de erro se o setor for inválido
+            errors.Setor = 'Setor não registrado ou inválido'; // Mensagem de erro se o setor for inválido
+        }
+
+        // Valida o campo "Setor"
+        if (!mappedRow.Funcao || !(await isFuncaoExists(mappedRow.Funcao))) {
+            errors.Funcao = 'Função não registrada ou inválida'; // Mensagem de erro se o setor for inválido
         }
 
         // Classifica a linha como válida ou inválida
@@ -215,31 +235,11 @@ const validarDados = async () => {
 };
 </script>
 
-<style scoped>
+<style>
 /* Estilos para o container de validação */
 .validation-container {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
-}
-
-/* Estilo para o container das colunas de mapeamento */
-.columns-mapping {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-/* Estilo para cada item de mapeamento de coluna */
-.column-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* Estilo para os rótulos das colunas esperadas */
-.expected-column {
-    font-weight: bold;
-    width: 30%; /* Define a largura do rótulo */
 }
 </style>

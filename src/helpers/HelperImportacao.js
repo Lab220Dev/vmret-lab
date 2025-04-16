@@ -1,4 +1,4 @@
-import { isValidEmail, isValidCPF } from '@/helpers/HelperValidacao'; // Importa as funções para validação de CPF e Email.
+import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists, isCentroCustoExists } from '@/helpers/HelperValidacao'; // Importa as funções para validação de CPF e Email.
 import { generateCSV, downloadCSV } from '@/helpers/HelperUtils'; // Importa funções para gerar e baixar arquivos CSV.
 import Papa from 'papaparse'; // Importa a biblioteca PapaParse para processar arquivos CSV.
 
@@ -11,7 +11,7 @@ import Papa from 'papaparse'; // Importa a biblioteca PapaParse para processar a
  * @param {string} type - O tipo de importação ('funcionarios', 'produtos', 'centro_custo'). Define qual validação será aplicada.
  * @returns {Object} - Um objeto contendo os erros encontrados na validação. Se não houver erros, o objeto estará vazio.
  */
-export const validateRow = (row, type) => {
+export const validateRow = async (row, type) => {
     const errors = {}; // Criação de um objeto para armazenar os erros encontrados.
 
     // Verifica se o tipo de importação é 'funcionarios'
@@ -27,6 +27,29 @@ export const validateRow = (row, type) => {
 
         // Verifica se a matrícula está vazia
         if (!row.Matrícula || String(row.Matrícula).trim() === '') errors.Matrícula = 'Matrícula é obrigatória'; // Erro: "Matrícula é obrigatória"
+
+        if (!row.Senha || String(row.Senha.trim()) === '') errors.Senha = 'Senha é obrigatória'; // Erro: "Senha é obrigatória"
+
+        // Valida o campo "Centro_Custo"
+        if (!row.Centro_Custo) {
+            errors.Centro_Custo = 'Centro de Custo não registrado ou Inválido'; // Mensagem de erro se o setor for inválido
+        } else if (!(await isCentroCustoExists(row.Centro_Custo))) {
+            errors.Centro_Custo = 'Centro de Custo não registrado ou Inválido'; // Mensagem de erro se o setor for inválido
+        }
+
+        // Valida o campo "Planta"
+        if (!row.Planta) {
+            errors.Planta = 'Planta não registrada ou Invalida'; // Mensagem de erro se a planta for inválida
+        } else if (!(await isPlantaExists(row.Planta))) {
+            errors.Planta = 'Planta não registrada ou Invalida'; // Mensagem de erro se a planta for inválida
+        }
+
+        // Valida o campo "Setor"
+        if (!row.Setor) {
+            errors.Setor = 'Setor não registrado ou Inválido'; // Mensagem de erro se o setor for inválido
+        } else if (!(await isSetorExists(row.Setor))) {
+            errors.Setor = 'Setor não registrado ou Inválido'; // Mensagem de erro se o setor for inválido
+        }
     }
 
     return errors; // Retorna o objeto de erros. Se não houver erros, ele estará vazio.
@@ -42,10 +65,14 @@ export const validateRow = (row, type) => {
  */
 export const formatErrors = (rowData) => {
     // Mapeia as entradas do objeto de erros e as formata em uma string legível
-    return Object.entries(rowData.errors || {}) // Itera sobre as entradas do objeto 'errors'.
+    const formattedErrors = Object.entries(rowData.errors || {}) // Itera sobre as entradas do objeto 'errors'.
         .map(([key, message]) => `${key}: ${message}`) // Para cada erro, formata "campo: mensagem de erro".
         .join(', '); // Junta todos os erros com uma vírgula, criando uma string com todos os erros.
+
+    console.log('Formatted Errors:', formattedErrors); // Adiciona um console para exibir os erros formatados.
+    return formattedErrors;
 };
+
 
 /**
  * Obtém os rótulos dos campos com base no tipo de importação.
@@ -70,7 +97,7 @@ export const getFieldLabels = (importType) => {
                 Centro_Custo: 'Centro de Custo',
                 Planta: 'Planta',
                 Setor: 'Setor',
-                Função: 'Função',
+                Funcao: 'Função',
                 Status: 'Status',
                 hora_inicial: 'Hora de Início',
                 hora_final: 'Hora Final'

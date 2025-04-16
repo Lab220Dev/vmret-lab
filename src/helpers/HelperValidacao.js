@@ -1,5 +1,6 @@
 import { useDataStore } from '@/store/dataStore';  // Importa o hook `useDataStore` para acessar o armazenamento de dados.
 import { isValid as validateCPF } from 'cpf-validator';  // Importa a função `isValid` da biblioteca `cpf-validator` e a renomeia como `validateCPF`.
+import funcaoService from '@/Services/funcaoService';  // Importa o serviço de funções para interagir com a API de funções.
 import i18n from '@/i18n'; 
 /**
  * Valida CPF usando a biblioteca cpf-validator.
@@ -105,6 +106,19 @@ export const isPlantaExists = async (planta) => {
         return plantas.some(({ label }) => label.toLowerCase() === planta.toLowerCase());  // Retorna `true` se o nome da Planta for igual ao fornecido (ignora maiúsculas/minúsculas), caso contrário `false`.
     }
 };
+
+export const isFuncaoExists = async (funcao) => {
+
+    const funcoes = await funcaoService.listarFuncoes();  // Obtém as Funções armazenadas, ou faz uma requisição para obtê-las, caso não estejam no dataStore.
+
+    if (isNumeric(funcao)) {
+        // Se a Função for numérica (ID), verifica se o ID existe nas Funções
+        return funcoes.some(({ id_funcao }) => id_funcao === parseInt(funcao, 10));  // Retorna `true` se alguma Função tiver o ID igual ao fornecido, caso contrário `false`.
+    } else {
+        // Caso contrário, verifica se o nome da Função (label) existe nas Funções
+        return funcoes.some(({ nome }) => label.toLowerCase() === nome.toLowerCase());  // Retorna `true` se o nome da Função for igual ao fornecido (ignora maiúsculas/minúsculas), caso contrário `false`.
+    }
+}
 
 /**
  * 

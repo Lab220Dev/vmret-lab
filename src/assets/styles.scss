@@ -72,6 +72,10 @@ body {
     text-overflow: ellipsis;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
+
 hr {
     border: 0;
     height: 1px;
@@ -133,3 +137,27 @@ hr {
 .full {
     width: 100%;  /* A largura do elemento que ocupa toda a linha */
 }
+
+h6 a:hover {
+    color: #FB5C2B !important; /* Ensure the style is applied */
+}
+
+//Estilo para o texto de importação
+.text-red-500 {
+    color: #fb2b2b !important; /* Ensure the style is applied */
+    margin-top: 30px;
+    text-align: center;
+    border: #de00002a 1px solid;
+
+}
+
+.red-500 {
+    color: #fb2b2b !important; 
+}
+
+.border-primary-500 {
+    border:#89B4FA solid 1px !important;
+    border-radius: 10px;
+    background-color: rgba(135, 194, 252, 0.152);
+}
+

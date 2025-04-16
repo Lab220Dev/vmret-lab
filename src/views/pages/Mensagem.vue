@@ -34,17 +34,18 @@ onMounted(() => {
 <template>
     <div class="card split-view">
         <!-- Lado esquerdo: Lista de notificações -->
-        <div class="lista">
+        <div class="lista vh">
             <DataTable
                 :value="listaNotificacoes"
                 selectionMode="single"
                 :paginator="true"
-                :rows="5"
+                :rows="12"
                 :rowsPerPageOptions="[5, 10, 15]"
                 @rowSelect="onRowSelect"
                 :rowStyleClass="rowStyleClass"
                 dataKey="id_notificacao"
                 v-model:selection="notificacaoSelecionada"
+                class="datatable"
             >
                 <Column header="Notificação">
                     <template #body="slotProps">
@@ -64,7 +65,8 @@ onMounted(() => {
             <div v-html="notificacaoSelecionada.conteudo"></div>
         </div>
         <div class="detalhe" v-else>
-            <p style="opacity: 0.6">{{ t('select_notification') || 'Selecione uma notificação para ver os detalhes.' }}</p>
+            <p class="mt-5 text-center">{{ t('select_notification') || 'Selecione uma notificação para ver os detalhes.' }}</p>
+            <hr />
         </div>
     </div>
 </template>
@@ -73,11 +75,11 @@ onMounted(() => {
 .split-view {
     display: flex;
     flex-direction: row;
-    gap: 1rem;
 }
 
 .lista {
     flex: 1;
+
 }
 
 .detalhe {
@@ -94,4 +96,10 @@ onMounted(() => {
     margin-left: 8px;
     border-radius: 10px;
 }
+
+.datatable .p-datatable {
+    display: grid;
+    align-content: space-between;
+}
+
 </style>

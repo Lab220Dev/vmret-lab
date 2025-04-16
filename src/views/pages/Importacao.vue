@@ -1,160 +1,167 @@
 <template>
     <div class="card justify-content-center">
-        <Stepper v-model:activeStep="active">
+        <Stepper v-model:activeStep="active" value="1" linear>
+            <StepList>
+                <Step value="1"> </Step>
+                <Step value="2"></Step>
+                <Step value="3"></Step>
+            </StepList>
             <!-- Passo 1: Seleção e Upload -->
             <StepPanels>
-                <template #header="{ index, clickCallback }">
-                    <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
-                        <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
-                            <i class="pi pi-list" />
-                        </span>
-                    </button>
-                </template>
-                <template #content="{ nextCallback }">
+                <StepPanel v-slot="{ activateCallback }" value="1">
                     <div class="flex flex-column gap-2 mx-auto" style="min-height: 16rem; max-width: 20rem">
-                        <div class="text-center mt-3 mb-3 text-xl font-semibold">Selecione o Tipo de Importação</div>
+                        <div class="text-center mt-3 mb-0 text-xl font-semibold">Selecione o Tipo de Importação</div>
+                        <hr class="mt-0 mb-4" />
                         <Select v-model="selectedImportType" :options="importTypes" optionLabel="label" optionValue="value" placeholder="Selecione o Tipo de Importação" @change="carregarComponente" />
-                        <div v-if="selectedImportType" class="mt-3">
+                        <div v-if="selectedImportType" class="mt-3 card border-1 upload">
                             <FileUpload mode="basic" chooseLabel="Selecionar Arquivo" @select="handleFileUpload" accept=".csv" />
                         </div>
-                        <p v-if="uploadError" class="text-red-500">{{ uploadError }}</p>
-                        <Button label="Próximo" icon="pi pi-arrow-right" iconPos="right" @click="nextCallback" :disabled="!fileUploaded" />
+                        <p v-if="uploadError" class="!text-red-500">{{ uploadError }}</p>
+                        <Button label="Próximo" icon="pi pi-arrow-right" iconPos="right" @click="activateCallback('2')" :disabled="!fileUploaded" />
                     </div>
-                </template>
-            </StepPanels>
+                </StepPanel>
 
-            <!-- Passo 2: Validação Dinâmica -->
-            <StepPanels>
-                <template #header="{ index, clickCallback }">
-                    <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
-                        <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
-                            <i class="pi pi-cog" />
-                        </span>
-                    </button>
-                </template>
-                <template #content="{ prevCallback, nextCallback }">
+                <!-- Passo 2: Validação Dinâmica -->
+
+                <StepPanel v-slot="{ activateCallback }" value="2">
                     <div>
                         <component v-if="componenteAtual" :is="componenteAtual" :fileData="fileData" @dados-validos="handleDadosValidos" @dados-invalidos="handleDadosInvalidos" @mapeamento-completo="updateValidacaoConcluida" />
                         <div class="flex justify-content-between mt-4">
-                            <Button label="Voltar" icon="pi pi-arrow-left" @click="prevCallback" />
-                            <Button label="Próximo" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="nextCallback" />
+                            <Button label="Voltar" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                            <Button label="Próximo" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="activateCallback('3')" />
                         </div>
                     </div>
-                </template>
-            </StepPanels>
+                </StepPanel>
 
-            <!-- Passo 3: Resumo e Edição -->
-            <StepPanels>
-                <template #header="{ index, clickCallback }">
-                    <button class="bg-transparent border-none inline-flex flex-column gap-2" @click="clickCallback">
-                        <span :class="['border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center', { 'bg-primary border-primary': index <= active, 'surface-border': index > active }]">
-                            <i class="pi pi-check-circle" />
-                        </span>
-                    </button>
-                </template>
-                <template #content="{ prevCallback }">
-                    <div class="flex flex-column gap-2 mx-auto" style="min-height: 16rem; max-width: 100%">
+                <!-- Passo 3: Resumo e Edição -->
+                <StepPanel v-slot="{ activateCallback }" value="3">
+                    <div class="flex flex-column gap-2 mx-0" style="min-height: 16rem; max-width: 100%">
                         <!-- Resumo Geral -->
-                        <div class="summary">
-                            <h3 class="text-center">Resumo da Importação</h3>
-                            <div class="summary-cards flex gap-3 justify-content-center">
-                                <div class="card summary-card">
-                                    <h4>Registros Processados</h4>
-                                    <p class="summary-value">{{ dadosValidos.length + dadosInvalidos.length }}</p>
+                        <div class="grid col-12 mx-0">
+                            <div class="grid col-12 gap-3 justify-content-center">
+                                <h3 class="text-center">Resumo da Importação</h3>
+                                <Divider class="mt-0 mb-4" />
+                            </div>
+                            <hr class="mt-0 mb-4" />
+                            <div class="grid col-12 gap-3 justify-content-center">
+                                <div class="col-3 card text-center nowrap" style="height: 150px">
+                                    <h4 class="nowrap">Registros Processados</h4>
+                                    <p class="font-bold text-2xl">{{ dadosValidos.length + dadosInvalidos.length }}</p>
                                 </div>
-                                <div class="card summary-card">
+                                <div class="col-3 card text-center" style="height: 150px">
                                     <h4>Registros Válidos</h4>
-                                    <p class="summary-value text-green-500">{{ dadosValidos.length }}</p>
+                                    <p class="text-green-500 font-bold text-2xl">{{ dadosValidos.length }}</p>
                                 </div>
-                                <div class="card summary-card">
+                                <div class="col-3 card text-center" style="height: 150px">
                                     <h4>Registros Inválidos</h4>
-                                    <p class="summary-value text-red-500">{{ dadosInvalidos.length }}</p>
+                                    <p class="red-500 font-bold text-2xl">{{ dadosInvalidos.length }}</p>
                                 </div>
                             </div>
                         </div>
-
                         <!-- Contêiner Gráfico e Tabela -->
-                        <div class="chart-table-container">
+                        <div>
                             <!-- Gráfico de Pizza -->
-                            <div class="chart-container">
+                            <div v-if="dadosValidos.length || dadosInvalidos.length">
                                 <Chart type="pie" :data="chartData" style="max-width: 300px; margin: auto" />
                             </div>
+                            <p v-else class="text-center">Carregando dados do gráfico...</p>
                         </div>
 
                         <div v-if="dadosInvalidos.length">
-                            <div class="toggle-container">
+                            <div class="toggle-container flex justify-content-end align-items-center my-5">
                                 <span>Editar na Plataforma:</span>
-                                <ToggleSwitch v-model="isEditingEnabled" />
+                                <ToggleSwitch class="ml-3" v-model="isEditingEnabled" />
                             </div>
-
                             <!-- Modo de edição habilitado -->
                             <div v-if="isEditingEnabled">
-                                <h4>Registros Inválidos</h4>
-                                <DataTable
-                                    :value="dadosInvalidos"
-                                    editMode="cell"
-                                    class="p-datatable-sm"
-                                    @cell-edit-complete="onCellEditComplete"
-                                    @cell-edit-cancel="onCellEditCancel"
-                                    scrollable
-                                    scrollHeight="200px"
-                                    :virtualScrollerOptions="{ itemSize: 20 }"
-                                >
+                                <h4 class="font-normal">Registros Inválidos</h4>
+                                <hr class="mt-0 pt-0"/>
+                                <DataTable :value="dadosInvalidos" size="small" editMode="cell" showGridlines  @cell-edit-complete="onCellEditComplete" @cell-edit-cancel="onCellEditCancel" style="max-width: 70vw;">
                                     <!-- A tabela exibe os dados provenientes de 'dadosInvalidos', com a possibilidade de edição de células. -->
                                     <!-- A classe CSS 'p-datatable-sm' aplica um estilo compacto à tabela. -->
                                     <!-- Ao completar a edição de uma célula, a função 'onCellEditComplete' é chamada, e ao cancelar a edição, a função 'onCellEditCancel' é acionada. -->
                                     <!-- A tabela possui rolagem ativada e um limite de altura de 200px, permitindo que os dados além dessa altura sejam rolados. -->
                                     <!-- A rolagem virtual (lazy loading) é ativada, carregando dados conforme necessário, com um item tendo altura de 20px. -->
-
-                                    <Column v-for="field in fields" :key="field" :field="field" :header="fieldLabels[field] || field" :style="{ backgroundColor: '#fff5f5' }">
+                                    <!-- Coluna Nome Completo Congelada -->
+                                    <Column field="Nome" header="Nome Completo" style="min-width: 150px; font-weight: bold; position: sticky; left: 0; z-index: 1; background-color: #f5f5f5" />
+                                    <Column v-for="(field, index) in fields.filter((f) => f !== 'Nome')" :key="`column-${index}`" :field="field" :header="fieldLabels[field] || field" class="table-cell">
+                                        <template #body="{ data, field }">
+                                            <span :style="{ color: data.errors && data.errors[field] ? 'red' : 'inherit'}">
+                                                {{ data[field] }}
+                                            </span>
+                                        </template>
                                         <template #editor="{ data, field }">
                                             <InputText v-model="data[field]" />
                                         </template>
                                     </Column>
-                                    <Column field="errors" header="Erro" :body="formatErrors" :style="{ color: 'red' }" />
                                 </DataTable>
-                                <Button label="Revalidar Dados" icon="pi pi-refresh" class="mt-3" @click="revalidateData" />
+                                <div class="flex justify-content-between mt-4 border-primary-500 p-4">
+                                    <Button label="Revalidar Dados" icon="pi pi-refresh" @click="revalidateData" />
+                                </div>
                             </div>
-
                             <!-- Modo de edição desabilitado -->
                             <div v-else>
                                 <h4>Registros Inválidos</h4>
-                                <DataTable :value="dadosInvalidos" class="p-datatable-sm" scrollable scrollHeight="400px">
+                                <hr class="mt-0 pt-0"/>
+                                <DataTable :value="dadosInvalidos" size="small" scrollable showGridlines  style="max-width: 70vw;">
                                     <!-- A tabela exibe os dados provenientes de 'dadosInvalidos' -->
                                     <!-- A classe 'p-datatable-sm' aplica um estilo compacto à tabela -->
                                     <!-- A rolagem é habilitada, permitindo que a tabela seja rolada quando o conteúdo exceder a altura definida -->
                                     <!-- A altura da área visível da tabela é definida como 400px, ativando a rolagem para os dados além desse limite -->
-
                                     <!-- Coluna Nome Completo Congelada -->
-                                    <Column field="Nome" header="Nome Completo" frozen alignFrozen="left" style="min-width: 200px; background-color: #f9f9f9; font-weight: bold" />
-
+                                    <Column field="Nome" header="Nome Completo" frozen alignFrozen="left" style="min-width: 150px; font-weight: bold;  background-color: #f5f5f5" />
                                     <!-- Outras Colunas -->
-                                    <Column v-for="field in fields.filter((f) => f !== 'Nome')" :key="field" :field="field" :header="fieldLabels[field]" style="min-width: 150px" />
-
-                                    <!-- Coluna de Erros -->
-                                    <Column field="errors" header="Erro" :body="formatErrors" style="min-width: 200px; color: red" />
+                                    <Column v-for="(field, index) in fields.filter((f) => f !== 'Nome')" :key="`column-${index}`" :field="field" :header="fieldLabels[field] || field" class="table-cell">
+                                        <template #body="{ data, field }">
+                                            <span v-tooltip.top="data.errors && data.errors[field]" :style="{ color: data.errors && data.errors[field] ? 'red' : 'inherit' }">
+                                                {{ data[field] }}
+                                            </span>
+                                        </template>
+                                    </Column>
                                 </DataTable>
-                                <Button label="Baixar CSV com Erros" icon="pi pi-download" class="mt-3 p-button-secondary" @click="downloadErrors" />
-                                <FileUpload mode="basic" chooseLabel="Reenviar Arquivo Corrigido" @select="handleFileReupload" accept=".csv" />
+                                <div class="flex justify-content-between mt-4 border-primary-500 p-4">
+                                    <Button label="Baixar CSV com Erros" icon="pi pi-download" class="p-button-info" @click="downloadErrors" />
+                                    <div class="flex align-items-center">
+                                        <FileUpload mode="basic" chooseLabel="Reenviar Arquivo Corrigido" @select="handleFileReupload" accept=".csv" class="file-upload-left" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
                         <!-- Mensagem quando não houver erros -->
                         <div v-else>
                             <p class="text-center text-green-500 mt-4">Todos os registros foram validados com sucesso!</p>
                         </div>
                     </div>
-                    <!-- Botão de Envio -->
-                    <div class="flex justify-content-end mt-4">
-                        <Button label="Enviar Dados" icon="pi pi-send" class="p-button-success" @click="submitData" />
+                    <div class="flex justify-content-between mt-4">
+                        <!-- Botão Voltar -->
+                        <div class="mt-4">
+                            <Button label="Voltar" class="w-10rem" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
+                        </div>
+                        <!-- Botão de Envio -->
+                        <div class="mt-4">
+                            <Button label="Enviar Dados" icon="pi pi-send" class="p-button-success w-10rem" @click="submitData()" />
+                        </div>
                     </div>
-                    <!-- Botão Voltar -->
-                    <div class="flex pt-4 justify-content-start">
-                        <Button label="Voltar" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
-                    </div>
-                </template>
+                    <Dialog header="Envio Concluído" v-model:visible="enviadoSucesso" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                        <p class="text-center">Os dados foram enviados com sucesso!</p>
+                        <template #footer>
+                            <Button
+                                :label="$t('ok')"
+                                icon="pi pi-check"
+                                @click="
+                                    () => {
+                                        enviadoSucesso = false;
+                                        activateCallback('1');
+                                    }
+                                "
+                                class="p-button-text"
+                            />
+                        </template>
+                    </Dialog>
+                </StepPanel>
             </StepPanels>
         </Stepper>
+        <!--diálogo de sucesso -->
     </div>
     <LoadingSpinner v-if="loading" />
 </template>
@@ -164,8 +171,13 @@
  * Importação de módulos necessários para o funcionamento da aplicação.
  */
 import { ref, shallowRef, defineAsyncComponent, computed, watch } from 'vue'; // Funções do Vue para criar reatividade e componentes dinâmicos
-import Stepper from 'primevue/stepper'; // Componente para exibir etapas de progresso
-import StepPanels from 'primevue/steppanels'; // Painel de cada etapa do stepper
+import Tooltip from 'primevue/tooltip'; // Importa a diretiva Tooltip do PrimeVue
+import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
+import Stepper from 'primevue/stepper';
+import StepList from 'primevue/steplist';
+import StepPanels from 'primevue/steppanels';
+import Step from 'primevue/step';
+import StepPanel from 'primevue/steppanel';
 import Select from 'primevue/select'; // Componente de Select (lista suspensa)
 import FileUpload from 'primevue/fileupload'; // Componente de upload de arquivos
 import Button from 'primevue/button'; // Componente de botão
@@ -175,13 +187,17 @@ import ImportService from '@/Services/ImportService.js';
 import { processFileUpload, processFileReupload, revalidateData, formatErrors, exportInvalidData } from '@/helpers/HelperImportacao.js'; // Funções para processamento de upload e reupload de arquivos
 import { validateRow, getFieldLabels, resetImportacao } from '@/helpers/HelperImportacao.js'; // Funções para validação de dados e obtenção de rótulos de campos
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading spinner para exibição enquanto a página está carregando
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
+const toast = useToast(); //toast para exibir mensagens de erro ou sucesso
 
 // Estados reativos definidos com ref, que armazenam e reagem a mudanças no estado da aplicação
 /**
  * @type {import('vue').Ref<number>}
  * Armazena o índice da etapa ativa no componente Stepper
  */
-const active = ref(0);
+const active = ref('0');
 const loading = ref(false); // Ref que controla o estado de carregamento
 
 /**
@@ -194,7 +210,7 @@ const selectedImportType = ref(null);
  * @type {import('vue').Ref<boolean>}
  * Indica se o arquivo foi carregado com sucesso
  */
-const fileUploaded = ref(false);
+const fileUploaded = ref(false); // Indicates whether a file has been successfully uploaded
 
 /**
  * @type {import('vue').Ref<Array>}
@@ -332,7 +348,7 @@ const handleFileUpload = (event) => {
         (data) => {
             // Sucesso no upload: atualiza o estado com os dados do arquivo
             fileData.value = data;
-            fileUploaded.value = true;
+            fileUploaded.value = true; // Set to true when the file is successfully uploaded
         },
         (error) => {
             // Erro no upload: exibe a mensagem de erro
@@ -402,7 +418,7 @@ const submitData = async () => {
     loading.value = true; // Ativa o estado de carregamento
     try {
         await ImportService.mass(dadosValidos.value, selectedImportType.value);
-        toast.add({ severity: 'Sucess', summary: t('title_sucess'), detail: t('sucess'), life: 3000 }); // Mensagem de erro
+        toast.add({ severity: 'Sucess', summary: t('title_sucess'), detail: t('sucess'), life: 3000 });
         resetImportacao({
             active,
             selectedImportType,
@@ -416,14 +432,16 @@ const submitData = async () => {
             isEditingEnabled,
             fieldLabels
         });
-
-        console.log('Enviando dados válidos:', validData.value);
+        enviadoSucesso.value = true; // Exibe o diálogo após o envio
     } catch (error) {
         console.error(error);
+        toast.add({ severity: 'error', summary: 'Erro ao importar dados.', detail: 'Verifique os dados e tente novamente.', life: 3000 }); // Exibe uma notificação de erro caso a requisição falhe
     } finally {
         loading.value = false; // Finaliza o carregamento após a tentativa de sincronização
     }
 };
+
+const enviadoSucesso = ref(false); // Indica se os dados foram enviados com sucesso
 
 /**
  * Função chamada quando a edição de uma célula de dados é concluída.
@@ -435,14 +453,18 @@ const submitData = async () => {
  * @param {string} event.field - Nome do campo editado
  * @returns {void}
  */
-const onCellEditComplete = (event) => {
-    const { data, newValue, field } = event;
+const onCellEditComplete = async (event) => {
+    const { data, newValue, field, index } = event;
     data[field] = newValue; // Atualiza o valor no campo editado
-    const errors = validateRow(data, selectedImportType.value); // Revalida a linha inteira após edição
-    data.errors = errors; // Atribui erros encontrados à linha
 
+    // Revalida a célula editada
+    const errors = await validateRow(data, selectedImportType.value);
+    const cellKey = `${index}-${field}`; // Combinação única de índice da linha e campo
+    data.errors = []; // Adiciona os erros ao objeto de dados
+    data.errors = errors; // Adiciona os erros ao objeto de dados
+
+    // Atualiza as listas de dados válidos e inválidos
     if (Object.keys(errors).length === 0) {
-        // Se não houver erros, move para a lista de dados válidos
         dadosValidos.value.push(data);
         dadosInvalidos.value = dadosInvalidos.value.filter((row) => row !== data);
     }
@@ -466,7 +488,6 @@ watch(selectedImportType, () => {
     fieldLabels.value = getFieldLabels(selectedImportType.value); // Atualiza os rótulos dos campos
 });
 </script>
-
 <style scoped>
 .card {
     padding: 2rem;
@@ -494,27 +515,11 @@ watch(selectedImportType, () => {
 }
 
 .text-red-500 {
-    color: red;
-}
-.summary {
-    margin-bottom: 2rem;
+    color: red !important;
 }
 
-.summary-cards {
-    display: flex;
-    gap: 1rem;
-}
-
-.summary-card {
-    text-align: center;
-    padding: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-.summary-value {
-    font-size: 1.5rem;
-    font-weight: bold;
+.text-green-500 {
+    color: green !important;
 }
 
 .invalid-table,
@@ -542,5 +547,25 @@ watch(selectedImportType, () => {
 
 .invalid-table {
     flex: 2;
+}
+
+.bluebutton {
+    background-color: #007bff;
+    color: white;
+}
+
+.upload {
+    border: #007bff9d solid 1px;
+    background-color: rgba(100, 168, 237, 0.152);
+}
+
+.file-upload-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.file-upload-left .p-fileupload-content {
+    margin-right: 10px; /* Espaço entre o texto e o botão */
 }
 </style>

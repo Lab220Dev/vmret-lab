@@ -119,6 +119,11 @@ const cdcService = {
         // Cria um objeto de dados com o id_cliente, id_usuario e o ID do centro de custo a ser deletado.
         const dataStore = useDataStore(); // Cria uma instância do store de dados.
         const store = useAuthStore(); // Cria uma instância do store de autenticação.
+        if (!cdc.ID_CentroCusto) {
+            console.error('ID do centro de custo é inválido ou não fornecido!');
+            throw new Error('ID do centro de custo é inválido ou não fornecido!');
+        }
+
         const data = {
             id_cliente: store.userIdCliente, // ID do cliente do usuário autenticado.
             id_usuario: store.userId, // ID do usuário autenticado.

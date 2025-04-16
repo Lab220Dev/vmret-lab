@@ -141,7 +141,7 @@ const deleteCentro = async () => {
     spinner.value = true; // Exibe o spinner de carregamento
     try {
         const response = await cdcService.deletarCentro(cdc); // Chama o serviço para deletar o centro de custo
-        toast.add({ severity: 'success', summary: t('title_sucess'), detail: response.data.message || t('cost_center_deleted_sucess'), life: 3000 }); // Exibe mensagem de sucesso
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('cost_center_deleted_sucess'), life: 3000 }); // Exibe mensagem de sucesso
         deleteCentroDialog.value = false; // Fecha o diálogo de confirmação de exclusão
         loadCentroCusto(); // Carrega novamente a lista de centros de custo
         resetCDCForm(cdc); // Reseta os campos do formulário

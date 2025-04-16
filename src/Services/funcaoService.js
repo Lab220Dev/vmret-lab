@@ -5,7 +5,6 @@ import axios from '@/axios.js';
 import { useAuthStore } from '@/store/authStore';
 
 // Instancia o store de autenticação para acessar os dados do usuário.
-const store = useAuthStore();
 
 // Objeto `funcaoService` que contém métodos para interagir com a API de funções.
 const funcaoService = {
@@ -15,6 +14,8 @@ const funcaoService = {
      * @throws {Error} Lança um erro se houver falha na requisição.
      */
     async listarFuncoes() {
+        const store = useAuthStore();
+
         // Prepara os dados para enviar na requisição, incluindo o id_cliente obtido do store.
         const data = { id_cliente: store.userIdCliente };
 
@@ -55,6 +56,8 @@ const funcaoService = {
      */
     async adicionarFuncao(funcao) {
         // Cria o objeto `data` incluindo o id do usuário e id do cliente do store, além dos dados passados pela função.
+        const store = useAuthStore();
+
         const data = {
             id_usuario: store.userId, // Obtém o ID do usuário autenticado do store.
             id_cliente: store.userIdCliente, // Obtém o ID do cliente associado ao usuário.
@@ -99,6 +102,7 @@ const funcaoService = {
      * @throws {Error} Lança um erro se houver falha na requisição.
      */
     async deletarFuncao(idFuncao) {
+        const store = useAuthStore();
         // Cria o objeto `data` incluindo o ID da função e o ID do usuário que está realizando a exclusão.
         const data = { id_funcao: idFuncao, id_usuario: store.userId };
 

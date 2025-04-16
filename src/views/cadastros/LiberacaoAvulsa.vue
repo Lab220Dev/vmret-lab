@@ -166,13 +166,8 @@ onMounted(async () => {
 <template>
     <!-- Estrutura principal da interface -->
     <div class="card">
-        <!-- Define que o conteúdo será exibido em 12 colunas no grid -->
-
-        <!-- Título do card -->
-        <h5 class="my-6 ml-2 text-2xl">{{ t('one_time_release') }}</h5>
-
         <!-- Grid interno para organizar os campos de entrada -->
-        <div class="card my-6 mx-0 p-fluid grid">
+        <div class="my-6 mx-0 p-fluid grid">
             <!-- Campo para a matrícula -->
             <div class=" lg:col-4 md:col-12 sm:col-12">
                 <label for="matricula">{{ t('employee') }}:</label>
@@ -237,14 +232,14 @@ onMounted(async () => {
         </div>
         <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="$t('item_edit')" :draggable="false" :modal="true" class="p-fluid">
             <div>
-                <div class="p-fluid formgrid grid">
-                    <div class="field lg:col-12 md:col-6 sm:col-4">
+                <div class="formgrid grid">
+                    <div class="lg:col-9 md:col-6 sm:col-4">
                         <label for="name">{{ t('name') }}:</label>
-                        <InputText disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
+                        <InputText class="w-full" disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
                     </div>
-                    <div class="field lg:col-4 md:col-6 sm:col-4">
-                        <label for="Quantidade">{{ t('quantity') }}</label>
-                        <InputText id="Quantidade" v-model="selectedProduct.quantidade" />
+                    <div class="lg:col-3 md:col-6 sm:col-4">
+                        <label for="Quantidade">{{ t('quantity') }}:</label>
+                        <InputText class="w-full" id="Quantidade" v-model="selectedProduct.quantidade" />
                     </div>
                 </div>
             </div>

@@ -499,8 +499,8 @@ onMounted(async () => {
                                         <InputNumber class="my-2 w-full" v-model="produto.validadedias" inputId="vldDias" :suffix="$t('product_shelflife_suffix')" />
                                     </div>
                                     <div class="lg:col-4 md:col-4 sm:col-4">
-                                        <label for="qntMin">{{t('minimum_quantity')}}:</label>
-                                        <InputNumber class="my-2 w-full" v-model="produto.quantidademinima" inputId="qntMin" />
+                                        <label for="qntMin" >{{t('minimum_quantity')}}:</label>
+                                        <InputNumber min="1" class="my-2 w-full" v-model="produto.quantidademinima" inputId="qntMin" />
                                     </div>
                                 </div>
                             </div>

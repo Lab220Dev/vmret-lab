@@ -64,7 +64,7 @@
             <Column field="Posicao" sortable style="text-align: center" header="Posição">
                 <template #body="{ data }">
                     <span
-                        v-tooltip="data.modelo === '2018' ? 'Placa / Mola ' : data.modelo === '2023' ? 'Andar / Posição' : 'Placa / Motor'"
+                        v-tooltip="data.modelo === '2018' ? 'Placa / Mola ' : data.modelo === '2023' ? 'Andar / Posição' : 'Placa / Posição'"
                     >
                         {{ data.Posicao }}  <!-- Exibe o valor da posição com tooltip baseado no modelo -->
                     </span>

@@ -19,8 +19,6 @@ import VueCountdown from '@chenfengyuan/vue-countdown';
 
 // Acessa a store de autenticação para obter os dados do usuário
 import { useAuthStore } from '@/store/authStore.js';
-import Badge from 'primevue/badge'; // Ensure Badge is imported
-import 'primevue/resources/primevue.min.css'; // Import PrimeVue styles
 import 'primeicons/primeicons.css'; // Import PrimeIcons styles
 // Importa o arquivo CSS de bandeiras.
 import '@/assets/demo/flags/flags.css';

@@ -337,7 +337,6 @@ router.beforeEach((to, from, next) => {
 
     const isMonitoramento = to.path.startsWith('/app-monitoramento');
     const token = localStorage.getItem('token');
-        console.log(token, isMonitoramento)
     if (requiresAuth && !token) {
         if (isMonitoramento) {
             next({ path: '/monitoramento' }); 

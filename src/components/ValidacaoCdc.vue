@@ -1,19 +1,36 @@
 <template>
-    <div class="validation-container">
-        <h3 class="text-center">Mapeamento de Campos - Centro de Custo</h3>
-        <div class="columns-mapping">
-            <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
-                <label class="expected-column">{{ expected }}</label>
-                <Select v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" />
+    <div class="validation-container card">
+        <h3 class="text-center my-4">Mapeamento de Campos - Centro de Custo</h3>
+        <div class="mt-6">
+            <div class="grid mb-4">
+                <div class="col-6 pb-0" style="height: 50px">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos Esperados</div>
+                </div>
+                <div class="col-6 pb-0" style="height: 50px">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos do Arquivo</div>
+                </div>
             </div>
+            <div v-for="(expected, index) in expectedColumns" :key="index" class="grid align-items-baseline">
+                <div class="col-6 py-0" style="">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <label class="text-l font-semibold">{{ expected }}:</label>
+                </div>
+                <div class="col-6 py-0">
+                    <Select class="w-full" v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione um campo" />
+                </div>
+                <hr/>
+                <Divider class="" />
         </div>
-        <p v-if="!isMappingComplete" class="text-red-500">Por favor, complete o mapeamento de todos os campos.</p>
+        </div>
+        <p v-if="!isMappingComplete" class="text-red-500 card">Por favor, complete o mapeamento de todos os campos.</p>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';  // Importa as funcionalidades reativas e de observação do Vue
-import Select from 'primevue/select ';  // Importa o componente Select do PrimeVue
+import { ref, computed, watch } from 'vue'; // Importa as funcionalidades reativas e de observação do Vue
+import Select from 'primevue/select'; // Importa o componente Select do PrimeVue
 
 // Props recebidas do componente pai
 /**
@@ -24,7 +41,7 @@ const props = defineProps(['fileData']);
 
 /**
  * Emite eventos para o componente pai
- * 
+ *
  * @event dados-validos - Envia os dados válidos para o componente pai
  * @event dados-invalidos - Envia os dados inválidos para o componente pai
  * @event mapeamento-completo - Indica se o mapeamento foi completado
@@ -41,7 +58,7 @@ const expectedColumns = ref(['Nome', 'Codigo']);
  * @type {Ref<Array<{ label: string, value: string }>>} fileColumns
  * Mapeamento das colunas do arquivo carregado. Cada item possui 'label' e 'value', ambos referindo-se a uma coluna.
  */
-const fileColumns = ref(Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
+const fileColumns = computed(() => Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
 
 /**
  * @type {Ref<Object>} mappedColumns
@@ -71,9 +88,7 @@ const validarDados = () => {
     const validos = []; // Lista de dados válidos
     const invalidos = []; // Lista de dados inválidos
     // Filtra as linhas que não são nulas ou vazias
-    const linhasUteis = props.fileData.filter(row =>
-        Object.values(row).some(value => value !== null && value !== undefined && String(value).trim() !== '')
-    );
+    const linhasUteis = props.fileData.filter((row) => Object.values(row).some((value) => value !== null && value !== undefined && String(value).trim() !== ''));
 
     // Itera sobre as linhas úteis para validar cada registro
     linhasUteis.forEach((row, rowIndex) => {
@@ -82,8 +97,8 @@ const validarDados = () => {
 
         // Mapeia os campos esperados com base no mapeamento
         expectedColumns.value.forEach((expectedField) => {
-            const mappedField = mappedColumns.value[expectedField];  // Obtém o campo mapeado
-            mappedRow[expectedField] = mappedField ? row[mappedField] : null;  // Adiciona o valor ao mappedRow
+            const mappedField = mappedColumns.value[expectedField]; // Obtém o campo mapeado
+            mappedRow[expectedField] = mappedField ? row[mappedField] : null; // Adiciona o valor ao mappedRow
         });
 
         // Valida os campos
@@ -93,7 +108,6 @@ const validarDados = () => {
         if (!mappedRow.Codigo || mappedRow.Codigo.trim() === '') {
             errors.Código = 'Código e Obrigatorio'; // Mensagem de erro caso o CPF seja inválido
         }
-       
 
         // Classifica os registros em válidos ou inválidos
         if (Object.keys(errors).length > 0) {
@@ -111,35 +125,14 @@ const validarDados = () => {
     emit('dados-invalidos', invalidos); // Envia os dados inválidos
     emit('mapeamento-completo', validos.length > 0 || invalidos.length > 0); // Emite se o mapeamento foi completado
 };
-
 </script>
 
-<style scoped>
+<style>
 /* Estilo para o container de validação */
 .validation-container {
     max-width: 600px; /* Define a largura máxima do container como 600px, garantindo que ele não ultrapasse esse tamanho */
     margin: 0 auto; /* Centraliza o container horizontalmente, usando margem automática à esquerda e direita */
     padding: 20px; /* Adiciona um padding de 20px ao redor do conteúdo dentro do container, criando espaço interno */
-}
-
-/* Estilo para o contêiner de mapeamento de colunas */
-.columns-mapping {
-    display: flex; /* Define o layout flexbox, permitindo que os itens internos sejam distribuídos de maneira flexível */
-    flex-direction: column; /* Organiza os itens dentro do container de forma vertical (coluna) */
-    gap: 1rem; /* Adiciona um espaço de 1rem entre os elementos dentro da coluna (espaçamento entre os itens) */
-}
-
-/* Estilo para cada item de coluna dentro do mapeamento */
-.column-item {
-    display: flex; /* Utiliza o layout flexbox para os itens, permitindo alinhamento e justificação dos elementos internos */
-    align-items: center; /* Alinha verticalmente os itens ao centro do container, garantindo que o conteúdo fique alinhado */
-    justify-content: space-between; /* Distribui os itens dentro do item de coluna, com o máximo de espaço possível entre eles */
-}
-
-/* Estilo para a coluna esperada dentro do mapeamento de colunas */
-.expected-column {
-    font-weight: bold; /* Define o peso da fonte como negrito, destacando visualmente esta coluna como importante */
-    width: 30%; /* Define a largura da coluna como 30% do tamanho total do container pai, garantindo que ela ocupe uma parte da largura */
 }
 
 </style>

@@ -1,28 +1,43 @@
 <template>
-    <div class="validation-container">
+    <div class="validation-container card">
         <!-- Título da página de mapeamento -->
-        <h3 class="text-center">Mapeamento de Campos - Funcionários</h3>
+        <h3 class="text-center my-4">Mapeamento de Campos - Produtos</h3>
 
         <!-- Container das colunas para mapeamento -->
-        <div class="columns-mapping">
+        <div class="mt-6">
+            <div class="grid mb-4">
+                <div class="col-6 pb-0" style="height: 50px">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos Esperados</div>
+                </div>
+                <div class="col-6 pb-0" style="height: 50px">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos do Arquivo</div>
+                </div>
+            </div>
             <!-- Loop para gerar um item de mapeamento para cada coluna esperada -->
-            <div v-for="(expected, index) in expectedColumns" :key="index" class="column-item">
-                <!-- Rótulo para o nome da coluna esperada -->
-                <label class="expected-column">{{ expected }}</label>
+            <div v-for="(expected, index) in expectedColumns" :key="index" class="grid align-items-baseline">
+                <div  class="col-6 py-0">
+                    <!-- Rótulo para o nome da coluna esperada -->
+                    <label class="text-l font-semibold">{{ expected }}</label>
+                </div>
 
-                <!-- Select para selecionar a coluna do arquivo carregado -->
-                <Select v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" @change="handleMappingChange(expected)" />
+                <div class="col-6 py-0">
+                    <!-- Select para selecionar a coluna do arquivo carregado -->
+                    <Select class="w-full" v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione a Coluna" @change="handleMappingChange(expected)" />
+                </div>
+                <hr/>
+                <Divider/>
             </div>
         </div>
-
         <!-- Mensagem de erro caso o mapeamento não esteja completo -->
-        <p v-if="!isMappingComplete" class="text-red-500">Por favor, complete o mapeamento de todos os campos.</p>
+        <p v-if="!isMappingComplete" class="text-red-500 card">Por favor, complete o mapeamento de todos os campos.</p>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'; // Importando hooks do Vue para reatividade e observação
-import Select from 'primevue/select '; // Componente Select do PrimeVue para seleção de opções
+import Select from 'primevue/select'; // Componente Select do PrimeVue para seleção de opções
 import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
 
@@ -71,7 +86,7 @@ const requiredColumns = [
  * @type {Ref<Array<{label: string, value: string}>>} fileColumns
  * Extrai as colunas do primeiro item do arquivo carregado para mapear os dados corretamente.
  */
-const fileColumns = ref(Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
+const fileColumns = computed(() =>Object.keys(props.fileData[0] || {}).map((field) => ({ label: field, value: field })));
 
 // Mapeamento das colunas (onde cada campo esperado será mapeado para uma coluna do arquivo)
 const mappedColumns = ref({}); // Armazena o mapeamento das colunas. Cada chave é o nome da coluna esperada e o valor é o nome da coluna mapeada do arquivo.

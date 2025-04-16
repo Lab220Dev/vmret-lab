@@ -184,7 +184,7 @@ onMounted(() => {
 
                             <!-- Campo de senha -->
                             <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">{{ $t('password') }}:</label>
+                                <label class="mb-2 inline font-semibold inline-block">{{ $t('password') }}:</label>
                                 <input type="password" v-model="password" name="senha" id="senha" class="formstyle" :placeholder="t('login_password_placeholder')" autocomplete="on" />
                             </div>
 
@@ -194,17 +194,17 @@ onMounted(() => {
                             </div>
 
                             <!-- Botão de login -->
-                            <button class="btn_button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm" @click.prevent="login">LOGIN</button>
+                            <button class="btn_button w-full py-3 px-3 border-round-sm text-nowrap" @click.prevent="login">LOGIN</button>
 
                             <!-- Link para recuperação de senha -->
                             <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = true" class="textblue font-semibold hover:text-orange-500">{{$t('login_forgot_password')}}</a>
+                                <a href="#" @click.prevent="forgotPassword = true" class="textblue font-semibold">{{$t('login_forgot_password')}}</a>
                             </h6>
                         </div>
 
                         <!-- Formulário de recuperação de senha (visível quando forgotPassword é true) -->
                         <div v-else>
-                            <h2 class="text-blue-600 text-5xl">{{ $t('login_forgot_password') }}</h2>
+                            <h2 class="textblue text-5xl">{{ $t('login_forgot_password') }}</h2>
                             <h4>{{ $t('login_recover_email') }}</h4>
 
                             <!-- Campo de email para recuperação -->
@@ -214,11 +214,11 @@ onMounted(() => {
                             </div>
 
                             <!-- Botão para enviar o link de recuperação -->
-                            <button @click.prevent="resetPassword" class=" ">{{$t('login_forgot_link')}}</button>
+                            <button @click.prevent="resetPassword" class="btn_button w-full py-3 px-3 border-round-sm text-nowrap">{{$t('login_forgot_link')}}</button>
 
                             <!-- Link para voltar ao login -->
                             <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = false" class="text-blue-500 font-semibold hover:text-orange-500">{{$t('return_login')}}</a>
+                                <a href="#" @click.prevent="forgotPassword = false" class="textblue font-semibold hover:text-orange-500">{{$t('return_login')}}</a>
                             </h6>
                         </div>
                     </form>
@@ -227,7 +227,7 @@ onMounted(() => {
 
             <!-- Rodapé com link para o site da empresa -->
             <div>
-                <p class="text-color-secondary text-sm">{{ $t('site_greet') }} <a href="https://www.lab220.com.br/" class="textblue font-semibold hover:text-orange-500">lab220.com.br</a></p>
+                <p class="text-sm">{{ $t('site_greet') }} <a href="https://www.lab220.com.br/" class="textblue font-semibold">lab220.com.br</a></p>
             </div>
         </SplitterPanel>
     </Splitter>

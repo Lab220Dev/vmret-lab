@@ -134,21 +134,21 @@ onMounted(() => {
 
                 <div class="block justify-content-center">
                     <!-- Título do sistema -->
-                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span class="font-bold text-blue-600 mt-0 mb-0">WEB</span></h1>
-                    <H4 class="text-lg m-0">{{ $t('login_title_home') }}</H4>
+                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span class="font-bold textblue mt-0 mb-0">WEB</span></h1>
+                    <h4 class="text-lg m-0">{{ $t('login_title_home') }}</h4>
                 </div>
             </div>
         </SplitterPanel>
 
         <!-- Painel direito da tela com o formulário de login ou recuperação de senha -->
-        <SplitterPanel class="flex colunadireita flex-column h-screen justify-content-between bg-white" :size="35" :minSize="30">
+        <SplitterPanel class="flex colunadireita flex-column h-screen justify-content-between" :size="35" :minSize="30">
             <!-- Logo da empresa -->
             <div class="flex justify-content-between flex-wrap">
                 <div class="justify-content-start">
                     <img id="img" src="@/assets/images/LogoLabSF2.png" alt="Logo da empresa" />
                 </div>
                 <div class="justify-content-end">
-                    <Dropdown v-model="selectedLanguage" :options="linguas" optionLabel="label" @change="changeLanguage">
+                    <Select v-model="selectedLanguage" :options="linguas" optionLabel="label" @change="changeLanguage">
                         <template #value="slotProps">
                             <div v-if="slotProps.value" class="flex align-items-center">
                                 <img :src="slotProps.value.icon" alt="" class="flag-icon" />
@@ -161,7 +161,7 @@ onMounted(() => {
                                 <span>{{ slotProps.option.label }}</span>
                             </div>
                         </template>
-                    </Dropdown>
+                    </Select>
                 </div>
             </div>
             <div>
@@ -170,18 +170,18 @@ onMounted(() => {
                     <form id="form-login" method="post" autocomplete="off">
                         <!-- Formulário de login (visível quando forgotPassword é false) -->
                         <div v-if="!forgotPassword">
-                            <h2 class="text-blue-600 text-5xl">{{ $t('login_inital_text') }}</h2>
+                            <h2 class="textblue text-5xl">{{ $t('login_inital_text') }}</h2>
                             <h4>{{ $t('login_intial_tex_sub') }}</h4>
 
                             <!-- Campo de email -->
                             <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">{{ $t('email') }}:</label>
+                                <label class="mb-2 inline font-semibold inline-block">{{ $t('email') }}:</label>
                                 <input type="email" v-model="username" name="email" id="email" class="formstyle" :placeholder="t('login_email_placeholder')" autocomplete="on" />
                             </div>
 
                             <!-- Campo de senha -->
                             <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">{{ $t('password') }}:</label>
+                                <label class="mb-2 inline font-semibold inline-block">{{ $t('password') }}:</label>
                                 <input type="password" v-model="password" name="senha" id="senha" class="formstyle" :placeholder="t('login_password_placeholder')" autocomplete="on" />
                             </div>
 
@@ -191,31 +191,31 @@ onMounted(() => {
                             </div>
 
                             <!-- Botão de login -->
-                            <button id="btn_button" class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm" @click.prevent="login">LOGIN</button>
+                            <button class="btn_button w-full py-3 px-3 border-round-sm text-nowrap" @click.prevent="login">LOGIN</button>
 
                             <!-- Link para recuperação de senha -->
                             <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = true" class="text-blue-500 font-semibold hover:text-orange-500">{{$t('login_forgot_password')}}</a>
+                                <a href="#" @click.prevent="forgotPassword = true" class="textblue font-semibold">{{$t('login_forgot_password')}}</a>
                             </h6>
                         </div>
 
                         <!-- Formulário de recuperação de senha (visível quando forgotPassword é true) -->
                         <div v-else>
-                            <h2 class="text-blue-600 text-5xl">{{ $t('login_forgot_password') }}</h2>
+                            <h2 class="textblue text-5xl">{{ $t('login_forgot_password') }}</h2>
                             <h4>{{ $t('login_recover_email') }}</h4>
 
                             <!-- Campo de email para recuperação -->
                             <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block texto-cinza-500">{{$t('email')}}:</label>
+                                <label class="mb-2 inline font-semibold inline-block">{{$t('email')}}:</label>
                                 <input type="email" name="reset-email" id="reset-email" class="formstyle" placeholder="Digite o seu email" autocomplete="on" v-model="mail" />
                             </div>
 
                             <!-- Botão para enviar o link de recuperação -->
-                            <button @click.prevent="resetPassword" class="login-button text-white bg-blue-600 hover:bg-orange-500 w-full cursor-pointer py-3 px-3 border-round-sm">{{$t('login_forgot_link')}}</button>
+                            <button @click.prevent="resetPassword" class="btn_button w-full py-3 px-3 border-round-sm text-nowrap">{{$t('login_forgot_link')}}</button>
 
                             <!-- Link para voltar ao login -->
                             <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = false" class="text-blue-500 font-semibold hover:text-orange-500">{{$t('return_login')}}</a>
+                                <a href="#" @click.prevent="forgotPassword = false" class="textblue font-semibold">{{$t('return_login')}}</a>
                             </h6>
                         </div>
                     </form>
@@ -224,13 +224,13 @@ onMounted(() => {
 
             <!-- Rodapé com link para o site da empresa -->
             <div>
-                <p class="text-color-secondary text-sm">{{ $t('site_greet') }} <a href="https://www.lab220.com.br/" class="text-blue-500 font-semibold hover:text-orange-500">lab220.com.br</a></p>
+                <p class="text-sm">{{ $t('site_greet') }} <a href="https://www.lab220.com.br/" class="textblue font-semibold">lab220.com.br</a></p>
             </div>
         </SplitterPanel>
     </Splitter>
 </template>
 
-<style scoped>
+<style>
 /* Regras para layout responsivo */
 @media (max-width: 768px) {
     .colunaesquerda {
@@ -274,6 +274,10 @@ onMounted(() => {
     height: 58px;
 }
 
+.textblue {
+    color: #326fd1;
+}
+
 .p-splitter-gutter {
     display: none !important; /* Esconde o separador */
 }
@@ -302,4 +306,22 @@ onMounted(() => {
     margin-right: 8px;
     vertical-align: middle;
 }
+
+.btn_button {
+    background-color:#326FD1 !important; 
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+.btn_button:hover {
+    background-color: #fb5c2b !important;
+    transform: scale(1.02);
+}
+
+
 </style>

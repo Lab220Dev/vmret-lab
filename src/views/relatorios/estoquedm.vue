@@ -81,7 +81,7 @@ const relatorioDM = async () => {
     } 
     // Caso o modelo não seja 2018 nem 2023, retorna o texto traduzido correspondente a 'placa_motor'.
     else {
-        return t('placa_motor');
+        return t('placa_posicao');
     }
 };
 

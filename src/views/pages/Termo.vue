@@ -4,7 +4,6 @@
 
         <!-- Título da seção, explicando o conteúdo da página -->
         <div>
-          <h5 class="my-4 text-2xl">{{t('termo_title')}}</h5>
           <!-- Editor de texto, vinculado ao modelo de dados "content" -->
           <Editor v-model="content"></Editor>
         </div>
@@ -13,7 +12,7 @@
         <LoadingSpinner v-if="loading" />
 
         <!-- Botão para salvar o conteúdo do editor -->
-        <Button class="mt-3 justify-content-end flex" style="width: 20%; " type="button" :label="$t('save_text')" icon="pi pi-pencil" severity="info" @click="SalvarTexto" />
+        <Button class="mt-3 flex" style="width: 20%; " type="button" :label="$t('save_text')" icon="pi pi-pencil" severity="info" @click="SalvarTexto" />
     </div>
 </template>
 
