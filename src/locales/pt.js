@@ -597,5 +597,6 @@ export default {
     QRCode: 'QR Code',
     QRCodeValido: 'QR Code Válido?',
     RespostaMaquina: 'Resposta da Máquina',
-    RetiradaEfetiva: 'Sucesso na Retirada?'
+    RetiradaEfetiva: 'Sucesso na Retirada?',
+    locker: 'Armário',
 };
