@@ -1,14 +1,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
+import { FilterMatchMode, FilterOperator, FilterService } from 'primevue/api';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/store/authStore';
 // Registro de filtro customizado para comparar arrays
-FilterService.register('filterByArrayEquals', (arr, value) => {
-    if (!value) {
-        return true;
-    }
-    return arr.includes(value);
-});
+const { t, locale } = useI18n();
+
 
 // Variáveis reativas para os dados, estado de carregamento e erros SSE
 const data = ref([]);
@@ -99,6 +96,7 @@ function connectSSE() {
 
 onMounted(() => {
     connectSSE();
+    
 });
 
 onUnmounted(() => {
@@ -122,88 +120,116 @@ function limparFiltros() {
         hora_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
     };
 }
+
+function tratarMensagemMaquin(StringMaquina){
+    switch (StringMaquina) {
+        case 'EXOK00':
+            return 'Passou Produto';
+        case 'EXNOK':
+            return 'NAO caiu produto';
+        case 'EXOKST':
+            return ' Processo Ok sem cuidar produto';
+        case 'EXLINIV':
+            return 'Linha fora de limites';
+        case 'EXCOLINV':
+            return 'Coluna fora de limites';
+        case 'EXTONF':
+            return ' Sem motor ligado na saída';
+        case 'EXLIMCORR':
+            return ' Corrente maxima atingida';
+        case 'EXTOST00':
+            return 'Timeout de volta';
+        case 'EXSC00':
+            return 'Sobrecorrente na Coluna';
+        case 'EXSC01':
+            return 'Sobrecorrente na Linha';
+        default:
+            return StringMaquina;
+    }
+}
 </script>
 <template>
-    <div class="card">
-        <h3 class="mt-3 p-0">Painel de Monitoramento</h3>
-        <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
-        <div v-if="sseError" class="error-message">A conexão com o servidor caiu. Tentando reconectar...</div>
-        <DataTable
-            v-model:filters="filters"
-            :value="formattedData"
-            stripedRows
-            showGridlines
-            paginator
-            :rows="50"
-            :rowsPerPageOptions="[50, 100, 500, 1000]"
-            rowHover
-            :globalFilterFields="['Nome', 'ID_DM', 'Qr_Code', 'Qr_COde_Valido', 'Retorno_Placa', 'Retorno_Infra']"
-            tableStyle="min-width: 50rem; table-layout: fixed;"
-            :sortField="'nome'"
-            :sortOrder="1"
-            removableSort
-            filterDisplay="menu"
-            :loading="loading"
-        >
-            <!-- Cabeçalho com total de registros e controles de filtro -->
-            <template #header>
-                <div class="flex justify-content-between align-items-center">
-                    <div>
-                        <span>Total de registros: {{ data.length }}</span>
-                    </div>
-                    <div class="flex justify-content-end align-items-center">
-                        <IconField iconPosition="left">
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Busca" />
-                        </IconField>
-                        <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
-                    </div>
+    <h1>{{ $t('title') }}
+        
+    </h1>
+    <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
+    <div v-if="sseError" class="error-message">A conexão com o servidor caiu. Tentando reconectar...</div>
+    <DataTable
+        v-model:filters="filters"
+        :value="formattedData"
+        stripedRows
+        showGridlines
+        paginator
+        :rows="50"
+        :rowsPerPageOptions="[50, 100, 500, 1000]"
+        rowHover
+        :globalFilterFields="['Nome', 'ID_DM', 'Qr_Code', 'Qr_COde_Valido', 'Retorno_Placa', 'Retorno_Infra']"
+        tableStyle="min-width: 50rem; table-layout: fixed;"
+        :sortField="'nome'"
+        :sortOrder="1"
+        filterDisplay="menu"
+        :loading="loading"
+    >
+        <!-- Cabeçalho com total de registros e controles de filtro -->
+        <template #header>
+            <div class="flex justify-content-between align-items-center">
+                <div>
+                    <span>{{ $t('totalRecords') }}: {{ data.length }}</span>
                 </div>
+                <div class="flex justify-content-end align-items-center">
+                    <IconField iconPosition="left">
+                        <InputIcon>
+                            <i class="pi pi-search" />
+                        </InputIcon>
+                        <InputText v-model="filters['global'].value" :placeholder="$t('searchPlaceholder')" />
+                    </IconField>
+                    <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
+                </div>
+            </div>
+        </template>
+
+        <!-- Mensagens para quando não houver dados ou durante o carregamento -->
+        <template #empty> {{t('noData')}} </template>
+        <template #loading> Carregando registros encontrados, aguarde... </template>
+
+        <!-- Definição das colunas com filtros customizados -->
+        <Column field="Nome" :header="$t('ProdutoNome')" sortable>
+            <!-- <template #filter="{ filterModel }">
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
+            </template> -->
+        </Column>
+        <Column field="ID_DM" :header="$t('MaquinaID')" sortable>
+            <!-- <template #filter="{ filterModel }">
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
+            </template> -->
+        </Column>
+        <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell">
+            <!-- <template #filter="{ filterModel }">
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
+            </template> -->
+        </Column>
+        <Column field="QR_Code_Valido":header="$t('QRCodeValido')" sortable>
+            <template #body="slotProps">
+                {{ slotProps.data.QR_Code_Valido? 'Valido':'Invalido' }}
             </template>
-            <!-- Mensagens para quando não houver dados ou durante o carregamento -->
-            <template #empty> Nenhum registro encontrado </template>
-            <template #loading> Carregando registros encontrados, aguarde... </template>
-            <!-- Definição das colunas com filtros customizados -->
-            <Column field="Nome" header="Nome"  sortable>
-                <template #filter="{ filterModel }">
-                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
-                </template>
-            </Column>
-            <Column field="ID_DM" header=" Máquina (ID)" sortable>
-                <template #filter="{ filterModel }">
-                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
-                </template>
-            </Column>
-            <Column field="Qr_Code" header="QR Code" sortable class="table-cell">
-                <template #filter="{ filterModel }">
-                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
-                </template>
-            </Column>
-            <Column field="Qr_COde_Valido" header="QR Code Válido?" sortable >
-                <template #body="slotProps">
-                    {{ slotProps.data.dia_retirada_formatada }}
-                </template>
-            </Column>
-            <Column field="Retorno_Placa" header="Resposta da Máquina" sortable>
-                <template #filter="{ filterModel }">
-                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
-                </template>
-            </Column>
-            <Column field="Retorno_Infra" header="Sucesso na Retirada?" sortable>
-                <template #body="slotProps">
-                    <span>
-                        <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
-                        {{ slotProps.data.Retirada }}
-                    </span>
-                </template>
-                <template #filter="{ filterModel }">
-                    <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" />
-                </template>
-            </Column>
-        </DataTable>
-    </div>
+        </Column>
+        <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
+            <!-- <template #filter="{ filterModel }">
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
+            </template> -->
+        </Column>
+        <Column field="Retorno_Infra" header="Sucesso na Retirada?" sortable>
+            <!-- <template #body="slotProps">
+                <span>
+                    <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
+                    {{ tratarMensagemMaquin(slotProps.data.Retorno_Placa) }}
+                </span>
+            </template>
+            <template #filter="{ filterModel }">
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" />
+            </template> -->
+        </Column>
+    </DataTable>
 </template>
 
 <style>

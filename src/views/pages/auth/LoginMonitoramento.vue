@@ -134,8 +134,8 @@ onMounted(() => {
 
                 <div class="block justify-content-center">
                     <!-- Título do sistema -->
-                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span class="font-bold textblue mt-0 mb-0">WEB</span></h1>
-                    <h4 class="text-lg m-0">{{ $t('login_title_home') }}</h4>
+                    <h1 class="align-items-center justify-content-center text-800 font-italic m-0">DM<span class="font-bold text-blue-600 mt-0 mb-0">WEB</span></h1>
+                    <H4 class="text-lg m-0">{{ $t('login_title_home_monitoring') }}</H4>
                 </div>
             </div>
         </SplitterPanel>

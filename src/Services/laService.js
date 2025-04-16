@@ -9,8 +9,16 @@ const laService = {
     },
     async listarCodigo(){
         return axios.get('/liberacaoavulsa/listarCodigo');
+    },
+    async listarLocker(){
+    return axios.get('/liberacaoavulsa/lockerdisponiveis');
+  },
+  async itensLocker(id_dm){
+    let data = {
+      id_dm: id_dm
     }
-
+  return axios.post('/liberacaoavulsa/lockerItens',data);
+}
 };
 
 export default laService;
