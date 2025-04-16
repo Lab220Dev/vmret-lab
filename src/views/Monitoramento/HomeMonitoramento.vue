@@ -1,127 +1,82 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from 'primevue/api';
+import { ref, onMounted,  computed } from 'vue';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/store/authStore';
-// Registro de filtro customizado para comparar arrays
+import { prepareNomadData } from '@/helpers/formHelper';
+import monitoramentoService from '@/services/Monitoramento/MonitoramentoService';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import '@vuepic/vue-datepicker/dist/main.css';
 const { t, locale } = useI18n();
 
-
-// Variáveis reativas para os dados, estado de carregamento e erros SSE
-const data = ref([]);
-const loading = ref(true);
-const sseError = ref(false);
-const store = useAuthStore();
-// Função auxiliar para formatação da data
-function formatDate(dateStr) {
-    if (!dateStr) return { dateObj: null, formatted: '' };
-    // Considera o formato dd/mm/yyyy
-    const [day, month, year] = dateStr.split('/');
-    const dateObj = new Date(year, month - 1, day);
-    // Ajusta para o fuso horário UTC-3
-    dateObj.setHours(dateObj.getHours() + 3);
-    return { dateObj, formatted: dateObj.toLocaleDateString('pt-BR') };
-}
-
-// Computed property que formata os dados antes de exibi-los na tabela
-const formattedData = computed(() => {
-    return data.value.map((item) => {
-        if (item.dia_retirada) {
-            const { dateObj, formatted } = formatDate(item.dia_retirada);
-            return {
-                ...item,
-                dia_retirada: dateObj,
-                dia_retirada_formatada: formatted
-            };
-        } else {
-            return { ...item, dia_retirada: null, dia_retirada_formatada: '' };
-        }
-    });
+const filtros = ref({
+    id_dm: null,
+    tipo_retorno: null,
+    qrCode_valido: null,
+    data_inicio: null,
+    data_fim: null
 });
+const listaDMs = [
+  { label: 'Todos', value: null },
+  { label: 'DM 1', value: 1 }
+]
 
-// Configuração dos filtros, sem duplicação de campos
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    Telefone: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    RG: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    Retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    dia_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-    hora_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
-});
+const listaTiposRetorno = [
+  { label: 'Todos', value: null },
+  { label: 'Passou Produto', value: 'EXOK00' },
+  { label: 'NAO caiu produto', value: 'EXNOK' },
+  { label: 'Processo Ok sem cuidar produto', value: 'EXOKST' },
+  { label: 'Linha fora de limites', value: 'EXLINIV' },
+  { label: 'Coluna fora de limites', value: 'EXCOLINV' },
+  { label: 'Sem motor ligado na saída', value: 'EXTONF' },
+  { label: 'Corrente maxima atingida', value: 'EXLIMCORR' },
+  { label: 'Timeout de volta', value: 'EXTOST00' },
+  { label: 'Sobrecorrente na Coluna', value: 'EXSC00' },
+  { label: 'Sobrecorrente na Linha', value: 'EXSC01' }
+]
 
-let eventSource = null;
-let reconnectTimeout = null;
+const listaQrValido = [
+  { label: 'Todos', value: null },
+  { label: 'Válido', value: '1' },
+  { label: 'Inválido', value: '0' }
+]
+const dados = ref([]);
+const carregando = ref(false);
 
-// Função para conectar via SSE, com tratamento de erro e reconexão automática
-function connectSSE() {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-    eventSource = new EventSource(`${baseURL}/nomad/updateNomad` ,{
-            headers: {
-                'Authorization': 'Bearer ' + store.token,
-            }
-        });
-
-    eventSource.onmessage = (event) => {
-        try {
-            const updates = JSON.parse(event.data);
-            if (updates) {
-                data.value = Array.isArray(updates) ? updates : [];
-            }
-            // Após a primeira mensagem, encerra o estado de carregamento
-            loading.value = false;
-            sseError.value = false;
-        } catch (error) {
-            console.error('Erro ao processar dados do EventSource:', error);
-        }
-    };
-
-    // Tratamento de erro e reconexão em caso de falha na conexão SSE
-    eventSource.onerror = (error) => {
-        console.error('Erro no EventSource:', error);
-        sseError.value = true;
-        loading.value = false;
-        if (eventSource) {
-            eventSource.close();
-        }
-        // Tenta reconectar após 5 segundos, caso a conexão falhe
-        if (!reconnectTimeout) {
-            reconnectTimeout = setTimeout(() => {
-                connectSSE();
-                reconnectTimeout = null;
-            }, 5000);
-        }
-    };
-}
+/**
+ * Função assíncrona responsável por buscar o relatório de retirada.
+ * 
+ * - Define o estado de carregamento como verdadeiro antes de iniciar a operação.
+ * - Prepara os dados necessários para a requisição utilizando a função `prepareNomadData`.
+ * - Envia a requisição ao serviço `monitoramentoService.relatorioRetirada` com o payload preparado.
+ * - Atualiza a variável `dados` com a resposta obtida.
+ * - Em caso de erro, exibe uma mensagem de erro no console.
+ * - Garante que o estado de carregamento seja definido como falso ao final da operação, 
+ *   independentemente de sucesso ou falha.
+ * 
+ * @async
+ * @function buscarRelatorio
+ * @returns {Promise<void>} Não retorna valor, mas atualiza os estados reativos `carregando` e `dados`.
+ */
+const buscarRelatorio = async () => {
+    carregando.value = true;
+    try {
+        const payload = prepareNomadData(filtros.value);
+        const response = await monitoramentoService.relatorioRetirada(payload);
+        dados.value = response;
+    } catch (error) {
+        console.error('Erro ao buscar relatório:', error);
+    } finally {
+        carregando.value = false;
+    }
+};
 
 onMounted(() => {
-    connectSSE();
-    
+    buscarRelatorio();
 });
 
-onUnmounted(() => {
-    if (eventSource) {
-        eventSource.close();
-    }
-    if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-    }
-});
-
-// Função para limpar os filtros, resetando-os para os valores iniciais
-function limparFiltros() {
-    filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        Telefone: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        RG: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        Retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        dia_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-        hora_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
-    };
-}
-
-function tratarMensagemMaquin(StringMaquina){
+function tratarMensagemMaquin(StringMaquina) {
     switch (StringMaquina) {
         case 'EXOK00':
             return 'Passou Produto';
@@ -149,74 +104,91 @@ function tratarMensagemMaquin(StringMaquina){
 }
 </script>
 <template>
-    <h1>{{ $t('title') }}
-        
-    </h1>
-    <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
-    <div v-if="sseError" class="error-message">A conexão com o servidor caiu. Tentando reconectar...</div>
-    <DataTable
-        :value="formattedData"
+    <div class="card vh">
+      <div class="form">
+        <div class="p-fluid formgrid grid col-12">
+          <!-- Filtro ID_DM -->
+          <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+            <label for="id_dm">DM:</label>
+            <Dropdown
+              v-model="filtros.id_dm"
+              :options="listaDMs"
+              optionLabel="label"
+              optionValue="value"
+              class="drop"
+              :placeholder="$t('all')"
+            />
+          </div>
+  
+          <!-- Filtro Tipo de Retorno -->
+          <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+            <label for="tipo_retorno">Tipo de Retorno:</label>
+            <Dropdown
+              v-model="filtros.tipo_retorno"
+              :options="listaTiposRetorno"
+              optionLabel="label"
+              optionValue="value"
+              class="drop"
+              :placeholder="$t('all')"
+            />
+          </div>
+  
+          <!-- Filtro QR Code Válido -->
+          <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+            <label for="qrCode_valido">QR Code Válido:</label>
+            <Dropdown
+              v-model="filtros.qrCode_valido"
+              :options="listaQrValido"
+              optionLabel="label"
+              optionValue="value"
+              class="drop"
+              :placeholder="$t('all')"
+            />
+          </div>
+  
+          <!-- Botão Buscar -->
+          <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+            <Button class="filtrar" :label="$t('filter_data')" icon="pi pi-search" @click="buscarRelatorio" />
+          </div>
+        </div>
+      </div>
+  
+      <DataTable
+        :value="dados"
         stripedRows
         showGridlines
         paginator
         :rows="50"
-        :rowsPerPageOptions="[50, 100, 500, 1000]"
+        :rowsPerPageOptions="[50, 100, 500]"
         rowHover
-        tableStyle="min-width: 50rem; table-layout: fixed;"
-        :sortField="'nome'"
-        :sortOrder="1"
-        :loading="loading"
-    >
-        <!-- Cabeçalho com total de registros e controles de filtro -->
+        tableStyle="min-width: 50rem"
+        :loading="carregando"
+      >
         <template #header>
-            <div class="flex justify-content-between align-items-center">
-                <div>
-                    <span>{{ $t('totalRecords') }}: {{ data.length }}</span>
-                </div>
-                <div class="flex justify-content-end align-items-center">
-                    <IconField iconPosition="left">
-                        <InputIcon>
-                            <i class="pi pi-search" />
-                        </InputIcon>
-                        <InputText v-model="filters['global'].value" :placeholder="$t('searchPlaceholder')" />
-                    </IconField>
-                    <!-- <Button class="ml-4" type="button" icon="pi pi-filter-slash" :label="$t('clearFilters')" outlined @click="limparFiltros()" /> -->
-                </div>
+          <div class="flex justify-content-between align-items-center">
+            <div>
+              <span>{{ $t('totalRecords') }}: {{ dados.length }}</span>
             </div>
+          </div>
         </template>
-
-        <!-- Mensagens para quando não houver dados ou durante o carregamento -->
-        <template #empty> {{t('noData')}} </template>
-        <!-- <template #loading> {{t('loadingData')}} </template> -->
-
-        <!-- Definição das colunas com filtros customizados -->
-        <Column field="Nome" :header="$t('ProdutoNome')" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
-            </template> -->
-        </Column>
-        <Column field="ID_DM" :header="$t('MaquinaID')" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
-            </template> -->
-        </Column>
-        <Column field="Qr_Code" :header="$t('QRCode')" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
-            </template> -->
-        </Column>
-        <Column field="QR_Code_Valido":header="$t('QRCodeValido')" sortable>
-            <template #body="slotProps">
-                {{ slotProps.data.QR_Code_Valido? 'Valido':'Invalido' }}
-            </template>
+  
+        <template #empty> {{ $t('noData') }} </template>
+  
+        <Column field="Nome" :header="$t('ProdutoNome')" sortable />
+        <Column field="ID_DM" :header="$t('MaquinaID')" sortable />
+        <Column field="QR_Code_Valido" :header="$t('QRCodeValido')" sortable>
+          <template #body="{ data }">
+            {{ data.QR_Code_Valido ? 'Válido' : 'Inválido' }}
+          </template>
         </Column>
         <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
-            <template #body="slotProps">
-                {{ tratarMensagemMaquin(slotProps.data.Retorno_Placa) }}
-            </template>
+          <template #body="{ data }">
+            {{ tratarMensagemMaquin(data.Retorno_Placa) }}
+          </template>
         </Column>
-    </DataTable>
-</template>
+      </DataTable>
+    </div>
+  </template>
 
 <style>
 .new-row {
