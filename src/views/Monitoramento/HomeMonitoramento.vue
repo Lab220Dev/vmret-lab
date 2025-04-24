@@ -3,114 +3,82 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/store/authStore';
-// Registro de filtro customizado para comparar arrays
+import { prepareNomadData } from '@/helpers/formHelper';
+import monitoramentoService from '@/services/Monitoramento/MonitoramentoService';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import {  gerarEbaixarCSV, gerarEbaixarJSON,isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
+import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import '@vuepic/vue-datepicker/dist/main.css';
 const { t, locale } = useI18n();
-
-// Variáveis reativas para os dados, estado de carregamento e erros SSE
-const data = ref([]);
-const loading = ref(true);
-const sseError = ref(false);
-const store = useAuthStore();
-// Função auxiliar para formatação da data
-function formatDate(dateStr) {
-    if (!dateStr) return { dateObj: null, formatted: '' };
-    // Considera o formato dd/mm/yyyy
-    const [day, month, year] = dateStr.split('/');
-    const dateObj = new Date(year, month - 1, day);
-    // Ajusta para o fuso horário UTC-3
-    dateObj.setHours(dateObj.getHours() + 3);
-    return { dateObj, formatted: dateObj.toLocaleDateString('pt-BR') };
-}
-
-// Computed property que formata os dados antes de exibi-los na tabela
-const formattedData = computed(() => {
-    return data.value.map((item) => {
-        if (item.dia_retirada) {
-            const { dateObj, formatted } = formatDate(item.dia_retirada);
-            return {
-                ...item,
-                dia_retirada: dateObj,
-                dia_retirada_formatada: formatted
-            };
-        } else {
-            return { ...item, dia_retirada: null, dia_retirada_formatada: '' };
-        }
-    });
+import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
+import exportCsv from '@/assets/images/export_csv.png';
+const filtros = ref({
+    id_dm: null,
+    tipo_retorno: null,
+    qrCode_valido: null,
+    data_inicio: null,
+    data_fim: null
 });
+const listaDMs = [
+    { label: 'Todos', value: null },
+    { label: 'DM 1', value: 1 }
+];
 
-// Configuração dos filtros, sem duplicação de campos
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    ID_DM: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    QR_Code_Valido: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    Retorno_Placa: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
-});
-// Função para limpar os filtros, resetando-os para os valores iniciais
-function limparFiltros() {
-    filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        ID_DM: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        QR_Code_Valido: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        Retorno_Placa: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
-    };
-}
-let eventSource = null;
-let reconnectTimeout = null;
+const listaTiposRetorno = [
+    { label: 'Todos', value: null },
+    { label: 'Passou Produto', value: 'EXOK00' },
+    { label: 'NAO caiu produto', value: 'EXNOK' },
+    { label: 'Processo Ok sem cuidar produto', value: 'EXOKST' },
+    { label: 'Outros erros', value: 'OUTROS' }
+];
 
-// Função para conectar via SSE, com tratamento de erro e reconexão automática
-function connectSSE() {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-    eventSource = new EventSource(`${baseURL}/nomad/updateNomad`, {
-        headers: {
-            Authorization: 'Bearer ' + store.token
-        }
-    });
+const listaQrValido = [
+    { label: 'Todos', value: null },
+    { label: 'Válido', value: '1' },
+    { label: 'Inválido', value: '0' }
+];
+const dados = ref([]);
+const carregando = ref(false);
 
-    eventSource.onmessage = (event) => {
-        try {
-            const updates = JSON.parse(event.data);
-            if (updates) {
-                data.value = Array.isArray(updates) ? updates : [];
-            }
-            // Após a primeira mensagem, encerra o estado de carregamento
-            loading.value = false;
-            sseError.value = false;
-        } catch (error) {
-            console.error('Erro ao processar dados do EventSource:', error);
-        }
-    };
+/**
+ * Função assíncrona responsável por buscar o relatório de retirada.
+ *
+ * - Define o estado de carregamento como verdadeiro antes de iniciar a operação.
+ * - Prepara os dados necessários para a requisição utilizando a função `prepareNomadData`.
+ * - Envia a requisição ao serviço `monitoramentoService.relatorioRetirada` com o payload preparado.
+ * - Atualiza a variável `dados` com a resposta obtida.
+ * - Em caso de erro, exibe uma mensagem de erro no console.
+ * - Garante que o estado de carregamento seja definido como falso ao final da operação,
+ *   independentemente de sucesso ou falha.
+ *
+ * @async
+ * @function buscarRelatorio
+ * @returns {Promise<void>} Não retorna valor, mas atualiza os estados reativos `carregando` e `dados`.
+ */
+const buscarRelatorio = async () => {
+    carregando.value = true;
+    try {
+        const payload = prepareNomadData(filtros.value);
+        const response = await monitoramentoService.relatorioRetirada(payload);
+        dados.value = response;
+    } catch (error) {
+        console.error('Erro ao buscar relatório:', error);
+    } finally {
+        carregando.value = false;
+    }
+};
+const exportCSV = () => {
+    gerarEbaixarCSV('RelatorioNomad', dados.value);
+};
 
-    // Tratamento de erro e reconexão em caso de falha na conexão SSE
-    eventSource.onerror = (error) => {
-        console.error('Erro no EventSource:', error);
-        sseError.value = true;
-        loading.value = false;
-        if (eventSource) {
-            eventSource.close();
-        }
-        // Tenta reconectar após 5 segundos, caso a conexão falhe
-        if (!reconnectTimeout) {
-            reconnectTimeout = setTimeout(() => {
-                connectSSE();
-                reconnectTimeout = null;
-            }, 5000);
-        }
-    };
-}
+// Exportação de dados em formato JSON
+const exportJSON = () => {
+    gerarEbaixarJSON('RelatorioNomad',dados.value);
+};
+const isMobile = isMobileDevice();
 
 onMounted(() => {
-    connectSSE();
-});
-
-onUnmounted(() => {
-    if (eventSource) {
-        eventSource.close();
-    }
-    if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
-    }
+    buscarRelatorio();
 });
 
 function tratarMensagemMaquin(StringMaquina) {
@@ -143,90 +111,77 @@ function tratarMensagemMaquin(StringMaquina) {
 }
 </script>
 <template>
-    <div class="flex">
-        <h2 class="mb-0">
-            {{ $t('title') }}
-            <hr class="mt-0" />
-        </h2>
-    </div>
-
-    <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
-    <div v-if="sseError" class="error-message justify-content-end flex "style="color: #fb2b2b !important; border-radius: 10px;">
-        A conexão com o servidor caiu. Tentando reconectar 
-        <span class="anim" >
-            ...
-        </span>
-    </div>
-    <DataTable
-        v-model:filters="filters"
-        :value="formattedData"
-        stripedRows
-        showGridlines
-        paginator
-        :rows="50"
-        :rowsPerPageOptions="[50, 100, 500, 1000]"
-        rowHover
-        :globalFilterFields="['Nome', 'ID_DM', 'Qr_Code', 'Qr_COde_Valido', 'Retorno_Placa', 'Retorno_Infra']"
-        tableStyle="min-width: 50rem; table-layout: fixed;"
-        :sortField="'nome'"
-        :sortOrder="1"
-        filterDisplay="menu"
-        :loading="loading"
-    >
-        <!-- Cabeçalho com total de registros e controles de filtro -->
-        <template #header>
-            <div class="flex justify-content-between align-items-center">
-                <div class="border-primary-500 px-4 py-2">
-                    <span>{{ $t('totalRecords') }}: {{ data.length }}</span>
+    <div class="card vh">
+        <div class="form">
+            <div class="p-fluid formgrid grid col-12">
+                <!-- Filtro ID_DM -->
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <label for="id_dm">DM:</label>
+                    <Dropdown v-model="filtros.id_dm" :options="listaDMs" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
-                <div class="flex justify-content-end align-items-center">
-                    <IconField iconPosition="left">
-                        <InputIcon>
-                            <i class="pi pi-search" />
-                        </InputIcon>
-                        <InputText v-model="filters['global'].value" :placeholder="$t('searchPlaceholder')" />
-                    </IconField>
-                    <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
+
+                <!-- Filtro Tipo de Retorno -->
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <label for="tipo_retorno">Tipo de Retorno:</label>
+                    <Dropdown v-model="filtros.tipo_retorno" :options="listaTiposRetorno" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
+                </div>
+
+                <!-- Filtro QR Code Válido -->
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <label for="qrCode_valido">QR Code Válido:</label>
+                    <Dropdown v-model="filtros.qrCode_valido" :options="listaQrValido" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
+                </div>
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
+                    </div>
+
+                    <!-- Botão para exportar dados em JSON -->
+                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
+                    </div>
+                <!-- Botão Buscar -->
+                <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <Button class="filtrar w-full" :label="$t('filter_data')" icon="pi pi-search" @click="buscarRelatorio" />
                 </div>
             </div>
-        </template>
+            <div v-if="!isMobile" class="flex justify-content-start align-items-center">
+            <!-- Imagem para exportar dados em CSV -->
+            <div class="">
+                <img :src="exportCsv" alt="Export CSV" @click="exportCSV" style="cursor: pointer" width="70" height="70" />
+            </div>
 
-        <!-- Mensagens para quando não houver dados ou durante o carregamento -->
-        <template #empty> {{ t('noData') }} </template>
-        <template #loading> Carregando registros encontrados, aguarde... </template>
+            <!-- Imagem para exportar dados em JSON -->
+            <div class="">
+                <img :src="exportJson" alt="Export JSON" @click="exportJSON" style="cursor: pointer" width="70" height="70" />
+            </div>
+        </div>
+        </div>
 
-        <!-- Definição das colunas com filtros customizados -->
-        <Column field="Nome" :header="$t('ProdutoNome')" sortable>
-            <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
+        <DataTable :value="dados" stripedRows showGridlines paginator :rows="50" :rowsPerPageOptions="[50, 100, 500]" rowHover tableStyle="min-width: 50rem" :loading="carregando">
+            <template #header>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span>{{ $t('totalRecords') }}: {{ dados.length }}</span>
+                    </div>
+                </div>
             </template>
-        </Column>
-        <Column field="ID_DM" :header="$t('MaquinaID')" sortable>
-            <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
-            </template>
-        </Column>
-        <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell"> </Column>
-        <Column field="QR_Code_Valido" :header="$t('QRCodeValido')" sortable>
-            <template #body="slotProps">
-                {{ slotProps.data.QR_Code_Valido ? 'Valido' : 'Invalido' }}
-            </template>
-            <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
-            </template>
-        </Column>
-        <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
-            <template #body="slotProps">
-                <span>
-                    <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
-                    {{ tratarMensagemMaquin(slotProps.data.Retorno_Placa) }}
-                </span>
-            </template>
-            <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
-            </template>
-        </Column>
-    </DataTable>
+
+            <template #empty> {{ $t('noData') }} </template>
+
+            <Column field="Nome" :header="$t('ProdutoNome')" sortable />
+            <Column field="ID_DM" :header="$t('MaquinaID')" sortable />
+            <Column field="QR_Code_Valido" :header="$t('QRCodeValido')" sortable>
+                <template #body="{ data }">
+                    {{ data.QR_Code_Valido ? 'Válido' : 'Inválido' }}
+                </template>
+            </Column>
+            <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
+                <template #body="{ data }">
+                    {{ tratarMensagemMaquin(data.Retorno_Placa) }}
+                </template>
+            </Column>
+        </DataTable>
+    </div>
 </template>
 
 <style>

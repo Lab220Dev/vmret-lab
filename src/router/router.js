@@ -319,6 +319,12 @@ const router = createRouter({
                     component: () => import('@/views/Monitoramento/AdicionarUsuario.vue'),
                     meta: { requiresAuth: true }
                 },
+                {
+                    path: 'relatorioevento',
+                    name: 'RelatorioEvento',
+                    component: () => import('@/views/Monitoramento/RelatorioEvento.vue'),
+                    meta: { requiresAuth: true }
+                },
             ]
           }
     ]

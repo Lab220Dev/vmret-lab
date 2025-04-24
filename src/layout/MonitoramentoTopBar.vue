@@ -65,7 +65,12 @@ const items = computed(() => [
         items: [{ label: t('logout'), icon: 'pi pi-power-off', command: fazerLogoff }]
     }
 ]);
-
+const isAdmin = computed(() => store.userRole === 'admin');
+const abrirRelatorio = () => {
+    if(isAdmin){
+        router.push({ name: 'RelatorioEvento' }); 
+    }
+};
 const toggle = (event) => menu.value.toggle(event);
 const toggleLingua = (event) => menuLingua.value.toggle(event);
 </script>
@@ -94,7 +99,11 @@ const toggleLingua = (event) => menuLingua.value.toggle(event);
                     <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd"> {{ padZero(minutes) }}:{{ padZero(seconds) }} </vue-countdown>
                 </div>
             </div>
-
+            <div v-if="isAdmin" class="formgrid mt-2">
+                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
+                    <i class="pi pi-list" />
+                </button>
+            </div>
             <div class="formgrid mt-2">
                 <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggleLingua($event)">
                     <i class="pi pi-language"></i>

@@ -378,3 +378,26 @@ export const resetProdutoSelecionadoSetor = (produtoSelecionado) => {
     quantidade: '',   
   });
 };
+
+export function prepareNomadData(filtros){
+  const data_inicio = filtros.data_inicio
+  ? DateTime.fromJSDate(filtros.data_inicio).startOf('day').toISO()
+  : null
+
+const data_fim = filtros.data_fim
+  ? DateTime.fromJSDate(filtros.data_fim).endOf('day').toISO()
+  : null
+
+return {
+  data: {
+    ativacao: filtros.ativacao || undefined,
+    evento: filtros.evento || undefined,
+    status: filtros.status || undefined,
+    id_dm: filtros.id_dm || undefined,
+    tipo_retorno: filtros.tipo_retorno || undefined,
+    qrCode_valido: filtros.qrCode_valido || undefined,
+    data_inicio,
+    data_fim
+  }
+}
+}
