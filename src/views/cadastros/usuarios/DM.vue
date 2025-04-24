@@ -124,14 +124,14 @@ const ListaProdutos = computed(() => {
       return codigoA - codigoB;
     });
 });
-const Controladoras = ref([]);
-const controladoraOptions = ref([]);
-const molasOptions = ref([]);
-const dipOptions = ref([]);
-const andarOptions = ref([]);
-const posicaoOptions = ref([]);
-const placaOptions = ref([]);
-const motorOptions = ref([]);
+const Controladoras = ref([]);// Declara um array reativo chamado Controladoras
+const controladoraOptions = ref([]);// Declara um array reativo chamado controladoraOptions
+const molasOptions = ref([]);// Declara um array reativo chamado molasOptions
+const dipOptions = ref([]);// Declara um array reativo chamado dipOptions
+const andarOptions = ref([]);// Declara um array reativo chamado andarOptions
+const posicaoOptions = ref([]);// Declara um array reativo chamado posicaoOptions
+const placaOptions = ref([]);// Declara um array reativo chamado placaOptions
+const motorOptions = ref([]);// Declara um array reativo chamado motorOptions
 const ListaDMS = ref([]);
 const controladoraRefs = ref([]);
 // Controles de Estado

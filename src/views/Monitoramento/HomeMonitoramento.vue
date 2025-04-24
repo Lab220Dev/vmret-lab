@@ -1,11 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from 'primevue/api';
+import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/store/authStore';
 // Registro de filtro customizado para comparar arrays
 const { t, locale } = useI18n();
-
 
 // Variáveis reativas para os dados, estado de carregamento e erros SSE
 const data = ref([]);
@@ -43,13 +42,20 @@ const formattedData = computed(() => {
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    Telefone: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    RG: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    Retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    dia_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-    hora_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
+    ID_DM: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    QR_Code_Valido: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    Retorno_Placa: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
 });
-
+// Função para limpar os filtros, resetando-os para os valores iniciais
+function limparFiltros() {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+        ID_DM: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+        QR_Code_Valido: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+        Retorno_Placa: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
+    };
+}
 let eventSource = null;
 let reconnectTimeout = null;
 
@@ -96,7 +102,6 @@ function connectSSE() {
 
 onMounted(() => {
     connectSSE();
-    
 });
 
 onUnmounted(() => {
@@ -108,20 +113,7 @@ onUnmounted(() => {
     }
 });
 
-// Função para limpar os filtros, resetando-os para os valores iniciais
-function limparFiltros() {
-    filters.value = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        Nome: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        Telefone: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        RG: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        Retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-        dia_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-        hora_retirada: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] }
-    };
-}
-
-function tratarMensagemMaquin(StringMaquina){
+function tratarMensagemMaquin(StringMaquina) {
     switch (StringMaquina) {
         case 'EXOK00':
             return 'Passou Produto';
@@ -143,17 +135,28 @@ function tratarMensagemMaquin(StringMaquina){
             return 'Sobrecorrente na Coluna';
         case 'EXSC01':
             return 'Sobrecorrente na Linha';
+        case 'N':
+            return 'Sem resposta da maquina';
         default:
             return StringMaquina;
     }
 }
 </script>
 <template>
-    <h1>{{ $t('title') }}
-        
-    </h1>
+    <div class="flex">
+        <h2 class="mb-0">
+            {{ $t('title') }}
+            <hr class="mt-0" />
+        </h2>
+    </div>
+
     <!-- Exibe uma mensagem de erro caso a conexão SSE seja interrompida -->
-    <div v-if="sseError" class="error-message">A conexão com o servidor caiu. Tentando reconectar...</div>
+    <div v-if="sseError" class="error-message justify-content-end flex "style="color: #fb2b2b !important; border-radius: 10px;">
+        A conexão com o servidor caiu. Tentando reconectar 
+        <span class="anim" >
+            ...
+        </span>
+    </div>
     <DataTable
         v-model:filters="filters"
         :value="formattedData"
@@ -173,7 +176,7 @@ function tratarMensagemMaquin(StringMaquina){
         <!-- Cabeçalho com total de registros e controles de filtro -->
         <template #header>
             <div class="flex justify-content-between align-items-center">
-                <div>
+                <div class="border-primary-500 px-4 py-2">
                     <span>{{ $t('totalRecords') }}: {{ data.length }}</span>
                 </div>
                 <div class="flex justify-content-end align-items-center">
@@ -189,49 +192,59 @@ function tratarMensagemMaquin(StringMaquina){
         </template>
 
         <!-- Mensagens para quando não houver dados ou durante o carregamento -->
-        <template #empty> {{t('noData')}} </template>
+        <template #empty> {{ t('noData') }} </template>
         <template #loading> Carregando registros encontrados, aguarde... </template>
 
         <!-- Definição das colunas com filtros customizados -->
         <Column field="Nome" :header="$t('ProdutoNome')" sortable>
-            <!-- <template #filter="{ filterModel }">
+            <template #filter="{ filterModel }">
                 <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
-            </template> -->
+            </template>
         </Column>
         <Column field="ID_DM" :header="$t('MaquinaID')" sortable>
-            <!-- <template #filter="{ filterModel }">
+            <template #filter="{ filterModel }">
                 <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela maquina" />
-            </template> -->
+            </template>
         </Column>
-        <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell">
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
-            </template> -->
-        </Column>
-        <Column field="QR_Code_Valido":header="$t('QRCodeValido')" sortable>
+        <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell"> </Column>
+        <Column field="QR_Code_Valido" :header="$t('QRCodeValido')" sortable>
             <template #body="slotProps">
-                {{ slotProps.data.QR_Code_Valido? 'Valido':'Invalido' }}
+                {{ slotProps.data.QR_Code_Valido ? 'Valido' : 'Invalido' }}
+            </template>
+            <template #filter="{ filterModel }">
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure por um QR Code" />
             </template>
         </Column>
         <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
-            <!-- <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
-            </template> -->
-        </Column>
-        <Column field="Retorno_Infra" header="Sucesso na Retirada?" sortable>
-            <!-- <template #body="slotProps">
+            <template #body="slotProps">
                 <span>
                     <i v-if="slotProps.data.updatedColumns && slotProps.data.updatedColumns.includes('Retirada')" class="pi pi-refresh updated-icon"></i>
                     {{ tratarMensagemMaquin(slotProps.data.Retorno_Placa) }}
                 </span>
             </template>
             <template #filter="{ filterModel }">
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" />
-            </template> -->
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
+            </template>
         </Column>
     </DataTable>
 </template>
 
 <style>
 
+.anim {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 0.15em solid #fb2b2b;
+    width: 0ch;
+    animation: typing 5s steps(5) infinite normal;
+}
+
+@keyframes typing {
+    from {
+        width: 0ch;
+    }
+    to {
+        width: 3ch;
+    }
+}
 </style>

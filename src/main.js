@@ -1,6 +1,6 @@
 
 import 'primeicons/primeicons.css'; // Ícones do PrimeVue
-import 'primeflex/primeflex.css';
+import 'primeflex/primeflex.css';// Estilos do PrimeFlex
 
 import { createApp } from 'vue';
 import axios from './axios';
@@ -100,16 +100,46 @@ const MyPreset = definePreset(Aura, {
     }
 });
 
-app.use(PrimeVue, {
-    theme: {
-        preset: MyPreset,
-        options: {
-            cssLayer: {
-                name: 'primevue',
-                order: 'theme, base, primevue'
+app.use(PrimeVue, {// Configuração do PrimeVue
+    theme: {// Definindo o tema do PrimeVue
+        preset: MyPreset,// Definindo o tema personalizado
+        options: {// Definindo as opções do tema
+            cssLayer: {// Definindo a camada CSS
+                name: 'primevue',// Definindo o nome da camada CSS
+                order: 'theme, base, primevue'// Definindo a ordem das camadas CSS
             }
         }
-    }
+    },
+    locale: { // Definindo o idioma para português do Brasil no componente DataTable Avançado
+        startsWith: 'Começa com',
+        contains: 'Contém',
+        notContains: 'Não contém',
+        endsWith: 'Termina com',
+        equals: 'Igual a',
+        notEquals: 'Diferente de',
+        noFilter: 'Sem filtro',
+        lt: 'Menor que',
+        lte: 'Menor ou igual a',
+        gt: 'Maior que',
+        gte: 'Maior ou igual a',
+        is: 'É',
+        isNot: 'Não é',
+        before: 'Antes de',
+        after: 'Depois de',
+        dateIs: 'Data é',
+        dateIsNot: 'Data não é',
+        dateBefore: 'Data antes de',
+        dateAfter: 'Data depois de',
+        clear: 'Limpar',
+        apply: 'Aplicar',
+        matchAll: 'Corresponde a todos',
+        matchAny: 'Corresponde a qualquer',
+        addRule: 'Adicionar regra',
+        removeRule: 'Remover regra',
+        accept: 'Aceitar',
+        reject: 'Rejeitar',
+    },
+    ripple: true // Ativar o efeito ripple
  });
 
 
@@ -117,8 +147,10 @@ app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
 
-app.directive('tooltip', Tooltip);
+
 app.directive('badge',);
+app.directive('tooltip', Tooltip);
+
 app.component('Accordion', Accordion);
 app.component('AccordionPanel', AccordionPanel);
 app.component('AccordionHeader', AccordionHeader);
