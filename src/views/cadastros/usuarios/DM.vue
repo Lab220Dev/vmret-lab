@@ -782,7 +782,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                                                 <InputIcon>
                                                     <i class="pi pi-search" />
                                                 </InputIcon>
-                                                <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" />
+                                                <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" autocomplete="off"/>
                                             </IconField>
                                         </div>
                                     </div>

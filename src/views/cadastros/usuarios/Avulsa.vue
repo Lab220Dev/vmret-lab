@@ -57,7 +57,7 @@ const toast = useToast();// Função para exibir notificações
                     <div class="full lg:col-12 md:col-12 sm:col-12">
                         <label for="name">Nome:</label>
                         <!-- Input para o nome do usuário -->
-                        <InputText class="my-2" v-model="libAvulsa.nome" id="name" type="text" />
+                        <InputText class="my-2" v-model="libAvulsa.nome" id="name" type="text" autocomplete="off"/>
                     </div>
 
                     <!-- Campo de Usuário -->

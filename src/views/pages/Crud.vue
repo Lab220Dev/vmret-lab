@@ -289,7 +289,7 @@ const initFilters = () => {
                             <h5 class="m-0">Manage Products</h5>
                             <IconField iconPosition="left" class="block mt-2 md:mt-0">
                                 <InputIcon class="pi pi-search" />
-                                <InputText class="w-full sm:w-auto" v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText class="w-full sm:w-auto" v-model="filters['global'].value" placeholder="Search..." autocomplete="off"/>
                             </IconField>
                         </div>
                     </template>

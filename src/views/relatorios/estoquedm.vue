@@ -164,7 +164,7 @@ const truncatedText = (text) => {
                                 <i class="pi pi-search" />
                                 <!-- Ícone de pesquisa -->
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" :placeholder="t('search')" />
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" autocomplete="off"/>
                             <!-- Campo de pesquisa -->
                         </IconField>
                     </div>

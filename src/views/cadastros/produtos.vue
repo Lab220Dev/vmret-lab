@@ -409,7 +409,7 @@ onMounted(async () => {
                             paginator
                             removableSort
                             :rows="10"
-                            :rowsPerPageOptions="[5, 10, 20, 50]"
+                            :rowsPerPageOptions="[5, 10]"
                             :totalRecords="totalRecords"
                             dataKey="id"
                             lazy
@@ -443,7 +443,7 @@ onMounted(async () => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off"/>
                                     </IconField>
                                 </div>
                             </template>

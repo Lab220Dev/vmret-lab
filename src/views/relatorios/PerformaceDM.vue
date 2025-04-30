@@ -296,17 +296,17 @@ const fetchFuncionarios = async () => {
 };
 
 // Função para fechar todos os select s
-const closeAllselect s = () => {
-    if (select 1.value?.overlayVisible) select 1.value.hide(); // Se o select 1 estiver aberto, fecha
-    if (select 2.value?.overlayVisible) select 2.value.hide(); // Se o select 2 estiver aberto, fecha
-    if (select 3.value?.overlayVisible) select 3.value.hide(); // Se o select 3 estiver aberto, fecha
-    if (select 4.value?.overlayVisible) select 4.value.hide(); // Se o select 4 estiver aberto, fecha
-    if (select 5.value?.overlayVisible) select 5.value.hide(); // Se o select 5 estiver aberto, fecha
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible)select1.value.hide(); // Se o select 1 estiver aberto, fecha
+    if (select2.value?.overlayVisible)select2.value.hide(); // Se o select 2 estiver aberto, fecha
+    if (select3.value?.overlayVisible)select3.value.hide(); // Se o select 3 estiver aberto, fecha
+    if (select4.value?.overlayVisible)select4.value.hide(); // Se o select 4 estiver aberto, fecha
+    if (select5.value?.overlayVisible)select5.value.hide(); // Se o select 5 estiver aberto, fecha
 };
 
 // Função chamada ao abrir o datepicker
 const handleDatepickerOpen = () => {
-    closeAllselect s(); // Fecha todos os select s ao abrir o datepicker
+    closeAllselects(); // Fecha todos os select s ao abrir o datepicker
 };
 
 // Função executada ao montar o componente
@@ -432,7 +432,7 @@ onMounted(() => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />  <!-- Campo de busca global -->
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" autocomplete="off"/>  <!-- Campo de busca global -->
                                 </IconField>
                             </div>
                         </template>

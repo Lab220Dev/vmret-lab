@@ -264,7 +264,7 @@ onMounted(() => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" autocomplete="off"/>
                                     </IconField>
                                 </div>
                             </template>
@@ -289,7 +289,7 @@ onMounted(() => {
                                         </div>
                                         <div class="full lg:col-12 md:col-12 sm:col-12">
                                             <label for="nome">{{ t('cost_center_name') }}:</label>
-                                            <InputText class="my-2 w-full" id="nome" v-model="cdc.Nome" required />
+                                            <InputText class="my-2 w-full" id="nome" v-model="cdc.Nome" required autocomplete="off"/>
                                         </div>
                                     </div>
                                     <div class="mr-1 mt-4 grid justify-content-end">

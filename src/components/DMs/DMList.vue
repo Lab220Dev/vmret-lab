@@ -35,7 +35,7 @@
                         <InputIcon>
                             <i class="pi pi-search" />
                         </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        <InputText v-model="filters['global'].value" placeholder="Busca" autocomplete="off" />
                     </IconField>
                 </div>
             </template>

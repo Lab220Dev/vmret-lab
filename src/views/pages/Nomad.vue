@@ -150,7 +150,7 @@ function limparFiltros() {
                         <InputIcon>
                             <i class="pi pi-search" />
                         </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        <InputText v-model="filters['global'].value" placeholder="Busca" autocomplete="off"/>
                     </IconField>
                     <Button class="ml-4" type="button" icon="pi pi-filter-slash" label="Limpar Filtros" outlined @click="limparFiltros()" />
                 </div>

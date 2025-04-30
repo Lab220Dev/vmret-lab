@@ -104,7 +104,7 @@ hr {
 
 /* Estilos para o tooltip, permitindo múltiplas linhas de texto */
 .v-tooltip {
-    max-width: 400px;
+    min-width: 500px;
     white-space: normal;
 }
 

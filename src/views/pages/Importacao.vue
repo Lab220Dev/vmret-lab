@@ -91,7 +91,7 @@
                                             </span>
                                         </template>
                                         <template #editor="{ data, field }">
-                                            <InputText v-model="data[field]" />
+                                            <InputText v-model="data[field]" autocomplete="off"/>
                                         </template>
                                     </Column>
                                 </DataTable>

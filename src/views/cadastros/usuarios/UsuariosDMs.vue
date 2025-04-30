@@ -335,7 +335,7 @@ const resetForm = () => {
                                                     <!-- Ícone de busca -->
                                                 </InputIcon>
                                                 <!-- Campo de texto para busca -->
-                                                <InputText v-model="filterDM['global'].value" :placeholder="t('search')" />
+                                                <InputText v-model="filterDM['global'].value" :placeholder="t('search')" autocomplete="off"/>
                                             </IconField>
                                         </div>
                                     </template>

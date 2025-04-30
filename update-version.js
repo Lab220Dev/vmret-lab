@@ -15,34 +15,34 @@ let [major, minor, patch, hotfix] = packageJson.version.split('.').map(Number);
 const versionType = process.argv[2] || 'patch'; // Default: patch
 
 // Define a nova versão com base no argumento passado
-if (versionType === 'major') {
-    major += 1;
-    minor = 0;
-    patch = 0;
+if (versionType === 'major') {// Incrementa a versão major
+    major += 1;// Reseta minor e patch
+    minor = 0;// Reseta hotfix
+    patch = 0;// Reseta hotfix
     hotfix = undefined; // Resetar hotfix ao subir versão major
-} else if (versionType === 'minor') {
-    minor += 1;
-    patch = 0;
-    hotfix = undefined;
-} else if (versionType === 'patch') {
-    patch += 1;
-    hotfix = undefined;
-} else if (versionType === 'hotfix') {
-    hotfix = hotfix !== undefined ? hotfix + 1 : 1;
-} else {
+} else if (versionType === 'minor') {// Incrementa a versão minor
+    minor += 1;// Reseta patch e hotfix
+    patch = 0;// Reseta hotfix
+    hotfix = undefined;// Reseta hotfix
+} else if (versionType === 'patch') {// Incrementa a versão patch
+    patch += 1;// Reseta hotfix
+    hotfix = undefined;// Reseta hotfix
+} else if (versionType === 'hotfix') {// Incrementa a versão hotfix
+    hotfix = hotfix !== undefined ? hotfix + 1 : 1;// Se hotfix já existir, incrementa; caso contrário, inicia em 1
+} else {// Tipo de versão inválido
     console.error('Tipo de versão inválido. Use "major", "minor", "patch" ou "hotfix".');
-    process.exit(1);
+    process.exit(1);// Encerra o processo com erro
 }
 
 // Monta a nova versão, incluindo hotfix apenas se existir
-const newVersion = hotfix !== undefined ? `${major}.${minor}.${patch}.${hotfix}` : `${major}.${minor}.${patch}`;
-packageJson.version = newVersion;
+const newVersion = hotfix !== undefined ? `${major}.${minor}.${patch}.${hotfix}` : `${major}.${minor}.${patch}`;// Se hotfix não existir, monta a versão sem ele
+packageJson.version = newVersion;// Atualiza a versão no package.json
 
 // Escreve a nova versão no package.json
-fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));// Formata o JSON com 2 espaços de indentação
 
 // Atualiza o .env.local com a nova versão
-const envContent = `VITE_APP_VERSION=${newVersion}\n`;
-fs.writeFileSync(envFilePath, envContent);
+const envContent = `VITE_APP_VERSION=${newVersion}\n`;      // Cria o conteúdo do .env.local com a nova versão
+fs.writeFileSync(envFilePath, envContent);  // Escreve o conteúdo no .env.local
 
-console.log(`📢 Versão atualizada para ${newVersion}`);
+console.log(`📢 Versão atualizada para ${newVersion}`); 

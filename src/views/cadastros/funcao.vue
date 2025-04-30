@@ -247,7 +247,7 @@ onMounted(() => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" />
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" autocomplete="off"/>
                                     </IconField>
                                 </div>
                             </template>
@@ -268,12 +268,12 @@ onMounted(() => {
                                         <!-- Campo para código da função -->
                                         <div class="lg:col-12 md:col-12 sm:col-12">
                                             <label for="id_funcao">{{ $t('function_code') }}:</label>
-                                            <InputText class="my-2 w-full" id="id_funcao" v-model="funcao.codigo" required />
+                                            <InputText class="my-2 w-full" id="id_funcao" v-model="funcao.codigo" required autocomplete="off"/>
                                         </div>
                                         <!-- Campo para nome da função -->
                                         <div class=" lg:col-12 md:col-12 sm:col-12">
                                             <label for="nome">{{ $t('function_name') }}:</label>
-                                            <InputText class="my-2 w-full" id="nome" v-model="funcao.nome" required />
+                                            <InputText class="my-2 w-full" id="nome" v-model="funcao.nome" required autocomplete="off"/>
                                         </div>
                                         <!-- Campo para selecionar o centro de custo -->
                                         <div class=" lg:col-12 md:col-12 sm:col-12">

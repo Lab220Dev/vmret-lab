@@ -86,50 +86,66 @@ const toggleLingua = (event) => menuLingua.value.toggle(event);
 
         <!-- Seção de usuário, imagem, nome e role -->
         <div class="mr-2 flex align-items-center justify-content-end mt-1" style="flex-grow: 1">
-            <!-- Imagem de avatar do usuário -->
-            <div class="mt-3 field pic">
-                <Avatar icon="pi pi-user" class="formgrid" size="large" shape="circle" />
-            </div>
+    <!-- Contêiner para imagem de avatar e informações -->
+    <div class="flex align-items-center">
+        <!-- Imagem de avatar do usuário -->
+        <div class="mr-2">
+            <Avatar icon="pi pi-user" class="formgrid" size="large" shape="circle" />
+        </div>
 
-            <!-- Exibe nome do usuário, seu papel e o relógio com contagem regressiva -->
-            <div class="formgrid field mx-2" style="display: flex; flex-direction: column; align-items: flex-start">
-                <h6 class="usuario mt-3 m-0">{{ nome }}</h6>
-                <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
-                <div class="relogio mt-1 mr-0" style="align-self: flex-start">
-                    <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd"> {{ padZero(minutes) }}:{{ padZero(seconds) }} </vue-countdown>
-                </div>
-            </div>
-            <div v-if="isAdmin" class="formgrid mt-2">
-                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
-                    <i class="pi pi-list" />
-                </button>
-            </div>
-            <div class="formgrid mt-2">
-                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggleLingua($event)">
-                    <i class="pi pi-language"></i>
-                </button>
-                <Menu ref="menuLingua" id="overlay_menu_Lingua" :model="linguas" :popup="true" :pt="{ item: { 'aria-hidden': false } }" />
-            </div>
-            <!-- Botão de menu com opções como 'Fazer Logoff' -->
-            <div class="formgrid mt-2">
-                <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
-                    <i class="pi pi-ellipsis-v"></i>
-                </button>
-                <!-- Menu suspenso com opções -->
-                <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+        <!-- Nome, papel e relógio -->
+        <div class="flex flex-column">
+            <h6 class="usuario m-0">{{ nome }}</h6>
+            <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
+            <div class="relogio mt-1">
+                <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd">
+                    {{ padZero(minutes) }}:{{ padZero(seconds) }}
+                </vue-countdown>
             </div>
         </div>
+    </div>
+
+    <!-- Botão extra (ex: mensagem, se quiser adicionar) -->
+    <div v-if="isAdmin" class="ml-3">
+        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
+            <i class="pi pi-list" />
+        </button>
+    </div>
+
+    <!-- Botões de idioma e menu -->
+    <div class="ml-1">
+        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggleLingua($event)">
+            <i class="pi pi-language"></i>
+        </button>
+        <Menu ref="menuLingua" id="overlay_menu_Lingua" :model="linguas" :popup="true" />
+    </div>
+    <div class="ml-1">
+        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
+            <i class="pi pi-ellipsis-v"></i>
+        </button>
+        <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
+    </div>
+</div>
+
     </div>
 </template>
 
 <style scoped>
+
+.layout-topbar .user-info-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Alinha os itens à esquerda */
+}
+
 .relogio {
-    font-size: 10pt; /* Define o tamanho da fonte para 10 pontos */
+    font-size: 10pt; /* Define o tamanho da fonte */
     font-weight: bold; /* Define o peso da fonte como negrito */
-    color: #efae33; /* Define a cor do texto como um tom de amarelo */
-    padding-top: 0px; /* Define o preenchimento superior como 0 pixels */
-    margin-left: 0px; /* Define a margem esquerda como 0 pixels */
-    margin-right: 10px; /* Define a margem direita como 10 pixels */
+    color: #efae33; /* Define a cor do texto */
+    width: 40px; /* Define uma largura fixa para evitar movimento */
+    text-align: left; /* Centraliza o texto */
+    position: relative; /* Remove o 'fixed' e usa 'relative' */
+    margin-left: 0; /* Ajusta a margem esquerda */
 }
 
 .layout-topbar .layout-topbar-sair-button i {

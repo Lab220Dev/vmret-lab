@@ -47,7 +47,7 @@
                             <i class="pi pi-search" />
                             <!-- Ícone de pesquisa -->
                         </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        <InputText v-model="filters['global'].value" placeholder="Busca" autocomplete="off"/>
                         <!-- Campo de input para filtro global, vinculado à propriedade filters['global'].value -->
                     </IconField>
 
@@ -67,21 +67,21 @@
         <Column field="Nome" header="Nome" sortable>
             <template #filter="{ filterModel }">
                 <!-- Filtro para a coluna 'Nome' -->
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" />
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo nome" autocomplete="off"/>
             </template>
         </Column>
 
         <Column field="Telefone" header="Telefone" sortable>
             <template #filter="{ filterModel }">
                 <!-- Filtro para a coluna 'Telefone' -->
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo telefone" />
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo telefone" autocomplete="off"/>
             </template>
         </Column>
 
         <Column field="RG" header="RG" sortable>
             <template #filter="{ filterModel }">
                 <!-- Filtro para a coluna 'RG' -->
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo RG" />
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pelo RG" autocomplete="off" />
             </template>
         </Column>
 
@@ -104,7 +104,7 @@
         <Column field="hora_retirada" header="Hora" sortable>
             <template #filter="{ filterModel }">
                 <!-- Filtro para a coluna 'hora_retirada' -->
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" />
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela hora" autocomplete="off"/>
             </template>
         </Column>
 
@@ -118,7 +118,7 @@
             </template>
             <template #filter="{ filterModel }">
                 <!-- Filtro para a coluna 'Retirada' -->
-                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" />
+                <InputText v-model="filterModel.value" type="text" class="p-column-filter" placeholder="Procure pela retirada" autocomplete="off"/>
             </template>
         </Column>
 

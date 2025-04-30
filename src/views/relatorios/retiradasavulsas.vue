@@ -308,7 +308,7 @@ onMounted(() => {
                                         <i class="pi pi-search" />
                                     </InputIcon>
                                     <!-- Campo de busca global na tabela -->
-                                    <InputText v-model="filters['global'].value" placeholder="Busca" />
+                                    <InputText v-model="filters['global'].value" placeholder="Busca" autocomplete="off"/>
                                 </IconField>
                             </div>
                         </template>

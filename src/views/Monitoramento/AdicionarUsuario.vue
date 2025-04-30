@@ -259,7 +259,7 @@ onMounted(() => {
                                     <InputIcon>
                                         <i class="pi pi-search" />
                                     </InputIcon>
-                                    <InputText v-model="filters['global'].value" :placeholder="t('search')"  type="search" @input="debouncedFilterChange" />
+                                    <InputText v-model="filters['global'].value" :placeholder="t('search')"  type="search" @input="debouncedFilterChange" autocomplete="off"/>
                                 </IconField>
                             </div>
                         </template>

@@ -470,7 +470,7 @@ const resetForm = () => {
                                                 <InputIcon>
                                                     <i class="pi pi-search" />
                                                 </InputIcon>
-                                                <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" />
+                                                <InputText v-model="filters['global'].value" :placeholder="t('search')"  @input="debouncedFilterChange" autocomplete="off"/>
                                                 <!-- Campo de busca global para filtrar os usuários -->
                                             </IconField>
                                         </div>

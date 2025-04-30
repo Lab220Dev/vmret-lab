@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { prepareNomadData } from '@/helpers/formHelper';
 import monitoramentoService from '@/services/Monitoramento/MonitoramentoService';
 import VueDatePicker from '@vuepic/vue-datepicker';
-import {  gerarEbaixarCSV, gerarEbaixarJSON,isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
+import { gerarEbaixarCSV, gerarEbaixarJSON, isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import '@vuepic/vue-datepicker/dist/main.css';
 const { t, locale } = useI18n();
@@ -73,7 +73,7 @@ const exportCSV = () => {
 
 // Exportação de dados em formato JSON
 const exportJSON = () => {
-    gerarEbaixarJSON('RelatorioNomad',dados.value);
+    gerarEbaixarJSON('RelatorioNomad', dados.value);
 };
 const isMobile = isMobileDevice();
 
@@ -115,49 +115,49 @@ function tratarMensagemMaquin(StringMaquina) {
         <div class="form">
             <div class="p-fluid formgrid grid col-12">
                 <!-- Filtro ID_DM -->
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
                     <label for="id_dm">DM:</label>
-                    <Dropdown v-model="filtros.id_dm" :options="listaDMs" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
+                    <Select v-model="filtros.id_dm" :options="listaDMs" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
 
                 <!-- Filtro Tipo de Retorno -->
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
                     <label for="tipo_retorno">Tipo de Retorno:</label>
-                    <Dropdown v-model="filtros.tipo_retorno" :options="listaTiposRetorno" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
+                    <Select v-model="filtros.tipo_retorno" :options="listaTiposRetorno" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
 
                 <!-- Filtro QR Code Válido -->
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
                     <label for="qrCode_valido">QR Code Válido:</label>
-                    <Dropdown v-model="filtros.qrCode_valido" :options="listaQrValido" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
+                    <Select v-model="filtros.qrCode_valido" :options="listaQrValido" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
-                        <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
-                    </div>
+                    <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
+                </div>
 
-                    <!-- Botão para exportar dados em JSON -->
-                    <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
-                        <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
-                    </div>
+                <!-- Botão para exportar dados em JSON -->
+                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
+                    <Button class="exportar" icon="pi pi-file" :label="$t('export_json')" @click="exportJSON"></Button>
+                </div>
                 <!-- Botão Buscar -->
-                <div class="field py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                <div class="field pt-3 mt-3 xl:col-3 lg:col-4 md:col-6 sm:col-12 pb-0 mb-0">
                     <Button class="filtrar w-full" :label="$t('filter_data')" icon="pi pi-search" @click="buscarRelatorio" />
                 </div>
             </div>
-            <div v-if="!isMobile" class="flex justify-content-start align-items-center">
-            <!-- Imagem para exportar dados em CSV -->
-            <div class="">
-                <img :src="exportCsv" alt="Export CSV" @click="exportCSV" style="cursor: pointer" width="70" height="70" />
-            </div>
+            <div v-if="!isMobile" class="flex justify-content-start align-items-center ">
+                <!-- Imagem para exportar dados em CSV -->
+                <div class="">
+                    <img :src="exportCsv" alt="Export CSV" @click="exportCSV" style="cursor: pointer" width="70" height="70" />
+                </div>
 
-            <!-- Imagem para exportar dados em JSON -->
-            <div class="">
-                <img :src="exportJson" alt="Export JSON" @click="exportJSON" style="cursor: pointer" width="70" height="70" />
+                <!-- Imagem para exportar dados em JSON -->
+                <div class="">
+                    <img :src="exportJson" alt="Export JSON" @click="exportJSON" style="cursor: pointer" width="70" height="70" />
+                </div>
             </div>
         </div>
-        </div>
 
-        <DataTable :value="dados" stripedRows showGridlines paginator :rows="50" :rowsPerPageOptions="[50, 100, 500]" rowHover tableStyle="min-width: 50rem" :loading="carregando">
+        <DataTable :value="dados" stripedRows showGridlines paginator :rows="50" :rowsPerPageOptions="[50, 100, 500]" rowHover tableStyle="min-width: 50rem; table-layout: fixed;" :loading="carregando">
             <template #header>
                 <div class="flex justify-content-between align-items-center">
                     <div>
@@ -175,6 +175,11 @@ function tratarMensagemMaquin(StringMaquina) {
                     {{ data.QR_Code_Valido ? 'Válido' : 'Inválido' }}
                 </template>
             </Column>
+             <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell">
+            <template #body="slotProps">
+                <span v-tooltip.left="{ value: slotProps.data.Qr_Code }">{{ slotProps.data.Qr_Code }}</span>
+
+            </template> </Column>
             <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
                 <template #body="{ data }">
                     {{ tratarMensagemMaquin(data.Retorno_Placa) }}
@@ -185,7 +190,6 @@ function tratarMensagemMaquin(StringMaquina) {
 </template>
 
 <style>
-
 .anim {
     overflow: hidden;
     white-space: nowrap;

@@ -41,7 +41,7 @@
                         <InputIcon>
                             <i class="pi pi-search" /> <!-- Ícone de pesquisa -->
                         </InputIcon>
-                        <InputText v-model="filters['global'].value" placeholder="Busca" />
+                        <InputText v-model="filters['global'].value" placeholder="Busca" autocomplete="off"/>
                         <!-- Input para o filtro global, ligado ao valor da variável filters['global'].value -->
                     </IconField>
                 </div>

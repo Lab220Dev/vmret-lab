@@ -15,7 +15,7 @@
         <!-- Seção para inserção do número da DM -->
         <div class="full lg:col-6 md:col-9 sm:col-12">
             <label for="Numero">Numero da DM:</label>
-            <InputText class="my-2" v-model="DM.Numero" id="Numero" />
+            <InputText class="my-2" v-model="DM.Numero" id="Numero" autocomplete="off"/>
         </div>
 
         <!-- Seção para inserção da identificação da DM -->

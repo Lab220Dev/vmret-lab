@@ -173,7 +173,7 @@ const handleDatepickerOpen = () => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value":placeholder="t('search')" />
+                            <InputText v-model="filters['global'].value":placeholder="t('search')" autocomplete="off"/>
                             <!-- Campo de busca global -->
                         </IconField>
                     </div>

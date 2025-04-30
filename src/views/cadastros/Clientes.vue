@@ -281,7 +281,7 @@ onMounted(() => {
                                             <i class="pi pi-search" />
                                             <!--Ícone de pesquisa -->
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search"  @input="debouncedFilterChange"/>
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search"  @input="debouncedFilterChange" autocomplete="off"/>
                                         <!-- Campo de busca -->
                                     </IconField>
                                 </div>
@@ -323,7 +323,7 @@ onMounted(() => {
                                         <!--Campo para o nome do cliente -->
                                         <div class=" lg:col-6 md:col-6 sm:col-12">
                                             <label for="id_planta">{{t('name')}}:</label>
-                                            <InputText class="my-2 w-full" id="id_planta" v-model="cliente.nome" required />
+                                            <InputText class="my-2 w-full" id="id_planta" v-model="cliente.nome" required autocomplete="off"/>
                                         </div>
                                         <!--Campo para o CNPJ do cliente -->
                                         <div :class="visible ? { 'lg:col-3 md:col-3 sm:col-12': true } : { 'lg:col-6 md:col-6 sm:col-12': true }">

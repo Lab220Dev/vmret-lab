@@ -275,7 +275,7 @@ onMounted(async () => {
                 <div class="formgrid grid">
                     <div class="lg:col-9 md:col-6 sm:col-4">
                         <label for="name">{{ t('name') }}:</label>
-                        <InputText class="w-full" disabled v-model="selectedProduct.nome_produto" id="name" type="text"></InputText>
+                        <InputText class="w-full" disabled v-model="selectedProduct.nome_produto" id="name" type="text" autocomplete="off"></InputText>
                     </div>
                     <div class="lg:col-3 md:col-6 sm:col-4">
                         <label for="Quantidade">{{ t('quantity') }}:</label>
