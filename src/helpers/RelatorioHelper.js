@@ -354,7 +354,7 @@ const canvas = await html2canvas(div, { scale: 2 }); // Converte o conteúdo do 
 
         pdf.setDrawColor(0, 0, 0); // Define a cor da borda
         pdf.setFillColor(143, 143, 143); // Define a cor de fundo
-        pdf.setLineWidth(0.1); // Largura da linha da borda
+        pdf.setLineWidth(0.5); // Largura da linha da borda
 
         // Adicionar borda ao redor da página
         pdf.rect(10, 10, imgWidth, 180); // Desenha o retângulo ao redor da página

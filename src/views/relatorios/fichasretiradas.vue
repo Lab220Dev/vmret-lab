@@ -161,7 +161,7 @@ onMounted(() => {
                     </div>
                     <!-- Botão para gerar a ficha -->
                     <div class="ml-0 pl-0 field xl:col-2 lg:col-4 md:col-4 sm:col-12">
-                        <Button class="w-full mt-5" type="button" :label="$t('generate_pdf')" icon="pi pi-download" severity="info" @click="generatePDF" />
+                        <Button class="w-full mt-5 nowrap" type="button" :label="$t('generate_pdf')" icon="pi pi-download" severity="info" @click="generatePDF" />
                     </div>
                 </div>
             </div>

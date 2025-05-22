@@ -17,7 +17,7 @@ const relatorio = ref({
 const loading = ref(false); // Variável reativa para controlar o estado de carregamento
 const dms = ref([]); // Variável reativa para armazenar a lista de DMs
 const formatedDms = ref([]); // Lista reativa para armazenar os DMs formatados (não utilizada atualmente)
-const select 1 = ref(null); // Referência para o primeiro select 
+const select1 = ref(null); // Referência para o primeiro select 
 
 // Função que será chamada quando o componente for montado
 onMounted(() => {
@@ -131,8 +131,8 @@ const exportJSON = () => {
  * Função que fecha todos os select s caso estejam abertos.
  * Verifica se o Select está visível e o fecha.
  */
-const closeAllselect s = () => {
-    if (select 1.value?.overlayVisible) select 1.value.hide(); // Verifica se o select 1 está visível e o esconde
+const closeAllselects = () => {
+    if (select1.value?.overlayVisible)select1.value.hide(); // Verifica se o select 1 está visível e o esconde
 };
 
 /**
@@ -140,7 +140,7 @@ const closeAllselect s = () => {
  * Fecha todos os select s ao abrir o datepicker.
  */
 const handleDatepickerOpen = () => {
-    closeAllselect s(); // Fecha todos os select s quando o datepicker é aberto
+    closeAllselects(); // Fecha todos os select s quando o datepicker é aberto
 };
 </script>
 

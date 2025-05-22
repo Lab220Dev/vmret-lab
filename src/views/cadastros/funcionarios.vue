@@ -789,7 +789,7 @@ const hideDialog = () => {
                                     </div>
                                     <div class="lg:col-4 md:col-6 sm:col-12">
                                         <label for="senha">{{ t('password') }}:</label>
-                                        <InputText type="password" class="my-2 w-full" id="senha" v-model="funcionario.senha" autocomplete="new-password" />
+                                        <InputText type="password" class="my-2 w-full" id="senha" v-model="funcionario.senha" autocomplete="new-password" placeholder="Digite uma senha" />
                                     </div>
                                     <div class="lg:col-4 md:col-6 sm:col-12">
                                         <label for="Hash">Hash 1:</label>

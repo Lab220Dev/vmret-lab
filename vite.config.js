@@ -22,6 +22,14 @@ export default defineConfig(() => {
             alias: {
                 '@': fileURLToPath(new URL('./src', import.meta.url))
             }
+        },
+        test: {
+            globals: true,             // Permite usar funções globais como `describe`, `it`, etc.
+            environment: 'jsdom', // Define o ambiente como JSDOM
+            include: ['**/*.test.js', '**/*.test.ts'],  // Arquivos de teste
+            coverage: {
+              reporter: ['text', 'html'], // Tipos de relatórios de cobertura de testes
+            },
         }
     };
 });
