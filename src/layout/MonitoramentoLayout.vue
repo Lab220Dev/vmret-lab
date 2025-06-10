@@ -3,6 +3,7 @@
 import {  watch, ref } from 'vue'; // ref para reatividade, watch para observar mudanças, computed para valores derivados
 import MyTopBar from './MonitoramentoTopBar.vue'; // Importa o componente da barra superior
 import AppFooter from './AppFooter.vue'; // Importa o componente do rodapé
+
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de spinner de carregamento
 import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação
 import { useToast } from 'primevue/usetoast'; // Importa o hook de notificações do PrimeVue
@@ -52,7 +53,6 @@ watch(
         <div v-else class="layout-wrapper" :class="containerClass">
             <!-- Barra superior do layout -->
             <MyTopBar></MyTopBar>
-
             <!-- Conteúdo principal -->
             <div class="layout-main-container">
                 <div class="layout-main">

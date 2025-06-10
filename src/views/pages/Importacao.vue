@@ -1,6 +1,6 @@
 <template>
     <div class="card justify-content-center">
-        <Stepper v-model:activeStep="active" value="1" linear>
+        <Stepper v-model:activeStep="active" value="1"><!-- não esquecer de colocar o linear -->
             <StepList>
                 <Step value="1"> </Step>
                 <Step value="2"></Step>
@@ -10,14 +10,14 @@
             <StepPanels>
                 <StepPanel v-slot="{ activateCallback }" value="1">
                     <div class="flex flex-column gap-2 mx-auto" style="min-height: 16rem; max-width: 20rem">
-                        <div class="text-center mt-3 mb-0 text-xl font-semibold">Selecione o Tipo de Importação</div>
+                        <div class="text-center mt-3 mb-0 text-xl font-semibold">{{$t('selecioneImportacao')}}</div>
                         <hr class="mt-0 mb-4" />
-                        <Select v-model="selectedImportType" :options="importTypes" optionLabel="label" optionValue="value" placeholder="Selecione o Tipo de Importação" @change="carregarComponente" />
+                        <Select v-model="selectedImportType" :options="importTypes" optionLabel="label" optionValue="value" :placeholder="$t('selecioneImportacao')" @change="carregarComponente" />
                         <div v-if="selectedImportType" class="mt-3 card border-1 upload">
-                            <FileUpload mode="basic" chooseLabel="Selecionar Arquivo" @select="handleFileUpload" accept=".csv" />
+                            <FileUpload mode="basic" :chooseLabel="$t('selecionarArquivo')" @select="handleFileUpload" accept=".csv" />
                         </div>
                         <p v-if="uploadError" class="!text-red-500">{{ uploadError }}</p>
-                        <Button label="Próximo" icon="pi pi-arrow-right" iconPos="right" @click="activateCallback('2')" :disabled="!fileUploaded" />
+                        <Button :label="$t('proximo')" icon="pi pi-arrow-right" iconPos="right" @click="activateCallback('2')" :disabled="!fileUploaded" />
                     </div>
                 </StepPanel>
 
@@ -27,8 +27,8 @@
                     <div>
                         <component v-if="componenteAtual" :is="componenteAtual" :fileData="fileData" @dados-validos="handleDadosValidos" @dados-invalidos="handleDadosInvalidos" @mapeamento-completo="updateValidacaoConcluida" />
                         <div class="flex justify-content-between mt-4">
-                            <Button label="Voltar" icon="pi pi-arrow-left" @click="activateCallback('1')" />
-                            <Button label="Próximo" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="activateCallback('3')" />
+                            <Button :label="$t('back')" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                            <Button :label="$t('proximo')" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="activateCallback('3')" />
                         </div>
                     </div>
                 </StepPanel>
@@ -39,21 +39,21 @@
                         <!-- Resumo Geral -->
                         <div class="grid col-12 mx-0">
                             <div class="grid col-12 gap-3 justify-content-center">
-                                <h3 class="text-center">Resumo da Importação</h3>
+                                <h3 class="text-center">{{t('resumoImportacao')}}</h3>
                                 <Divider class="mt-0 mb-4" />
                             </div>
                             <hr class="mt-0 mb-4" />
                             <div class="grid col-12 gap-3 justify-content-center">
                                 <div class="col-3 card text-center nowrap" style="height: 150px">
-                                    <h4 class="nowrap">Registros Processados</h4>
+                                    <h4 class="nowrap">{{t('registrosProcessados')}}</h4>
                                     <p class="font-bold text-2xl">{{ dadosValidos.length + dadosInvalidos.length }}</p>
                                 </div>
                                 <div class="col-3 card text-center" style="height: 150px">
-                                    <h4>Registros Válidos</h4>
+                                    <h4>{{t('registrosValidos')}}</h4>
                                     <p class="text-green-500 font-bold text-2xl">{{ dadosValidos.length }}</p>
                                 </div>
                                 <div class="col-3 card text-center" style="height: 150px">
-                                    <h4>Registros Inválidos</h4>
+                                    <h4>{{t('registrosInvalidos')}}</h4>
                                     <p class="red-500 font-bold text-2xl">{{ dadosInvalidos.length }}</p>
                                 </div>
                             </div>
@@ -64,7 +64,7 @@
                             <div v-if="dadosValidos.length || dadosInvalidos.length">
                                 <Chart type="pie" :data="chartData" style="max-width: 300px; margin: auto" />
                             </div>
-                            <p v-else class="text-center">Carregando dados do gráfico...</p>
+                            <p v-else class="text-center">{{t('graficoCarregando')}}</p>
                         </div>
 
                         <div v-if="dadosInvalidos.length">
@@ -109,7 +109,7 @@
                                     <!-- A rolagem é habilitada, permitindo que a tabela seja rolada quando o conteúdo exceder a altura definida -->
                                     <!-- A altura da área visível da tabela é definida como 400px, ativando a rolagem para os dados além desse limite -->
                                     <!-- Coluna Nome Completo Congelada -->
-                                    <Column field="Nome" header="Nome Completo" frozen alignFrozen="left" style="min-width: 150px; font-weight: bold;  background-color: #f5f5f5" />
+                                    <Column field="Nome" :header="t('nomeCompleto')" frozen alignFrozen="left" style="min-width: 150px; font-weight: bold;  background-color: #f5f5f5" />
                                     <!-- Outras Colunas -->
                                     <Column v-for="(field, index) in fields.filter((f) => f !== 'Nome')" :key="`column-${index}`" :field="field" :header="fieldLabels[field] || field" class="table-cell">
                                         <template #body="{ data, field }">
@@ -120,30 +120,30 @@
                                     </Column>
                                 </DataTable>
                                 <div class="flex justify-content-between mt-4 border-primary-500 p-4">
-                                    <Button label="Baixar CSV com Erros" icon="pi pi-download" class="p-button-info" @click="downloadErrors" />
+                                    <Button :label="t('baixarCSVcomErros')" icon="pi pi-download" class="p-button-info" @click="downloadErrors" />
                                     <div class="flex align-items-center">
-                                        <FileUpload mode="basic" chooseLabel="Reenviar Arquivo Corrigido" @select="handleFileReupload" accept=".csv" class="file-upload-left" />
+                                        <FileUpload mode="basic" :chooseLabel="t('reenviarCorrigido')" @select="handleFileReupload" accept=".csv" class="file-upload-left" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <!-- Mensagem quando não houver erros -->
                         <div v-else>
-                            <p class="text-center text-green-500 mt-4">Todos os registros foram validados com sucesso!</p>
+                            <p class="text-center text-green-500 mt-4">{{t('sucessoValidacao')}}</p>
                         </div>
                     </div>
                     <div class="flex justify-content-between mt-4">
                         <!-- Botão Voltar -->
                         <div class="mt-4">
-                            <Button label="Voltar" class="w-10rem" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
+                            <Button :label="t('back')" class="w-10rem" severity="secondary" icon="pi pi-arrow-left" @click="activateCallback('2')" />
                         </div>
                         <!-- Botão de Envio -->
                         <div class="mt-4">
-                            <Button label="Enviar Dados" icon="pi pi-send" class="p-button-success w-10rem" @click="submitData()" />
+                            <Button :label="t('enviarDados')" icon="pi pi-send" class="p-button-success w-10rem" @click="submitData()" />
                         </div>
                     </div>
-                    <Dialog header="Envio Concluído" v-model:visible="enviadoSucesso" style="width: 400px" :modal="true" :closable="false" :draggable="false">
-                        <p class="text-center">Os dados foram enviados com sucesso!</p>
+                    <Dialog :header="t('envioConcluido')" v-model:visible="enviadoSucesso" style="width: 400px" :modal="true" :closable="false" :draggable="false">
+                        <p class="text-center">{{$t('messageConcluido')}}</p>
                         <template #footer>
                             <Button
                                 :label="$t('ok')"

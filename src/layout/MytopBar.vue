@@ -1,6 +1,6 @@
 <script setup>
 // Importa as funções reativas e de ciclo de vida do Vue
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'; //`ref`: Cria referências reativas para elementos DOM ou variáveis no componente.`onMounted`: Executa código quando o componente é montado na tela.`onBeforeUnmount`: Executa código antes do componente ser desmontado.
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'; //`ref`: Cririoa referências reativas para elementos DOM ou variáveis no componente.`onMounted`: Executa código quando o componente é montado na tela.`onBeforeUnmount`: Executa código antes do componente ser desmontado.
 
 // Acessa as funções do layout, como alternar o menu lateral
 import { useLayout } from '@/layout/composables/layout';

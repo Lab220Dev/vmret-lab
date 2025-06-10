@@ -1,6 +1,6 @@
 <script setup>
 // Importação dos hooks e funções necessárias
-import { ref, computed , onMounted} from 'vue'; // Importa o hook ref para criar variáveis reativas
+import { ref, computed, onMounted, onBeforeMount } from 'vue'; // Importa o hook ref para criar variáveis reativas
 import { useRouter } from 'vue-router'; // Importa o hook useRouter para navegação entre páginas
 import axios from '@/axios.js'; // Importa a instância configurada do axios para realizar requisições HTTP
 import { useAuthStore } from '@/store/authStore'; // Importa o store de autenticação para gerenciar o estado do usuário
@@ -14,7 +14,7 @@ const { t, locale } = useI18n();
 // Variáveis reativas
 const isLoading = ref(false); // Controla o estado de carregamento (loading)
 const router = useRouter(); // Instancia o hook de navegação do Vue Router
-const username = ref(''); // Armazena o nome de usuário (email) para login
+const nome = ref(''); // Armazena o nome de usuário (email) para login
 const mail = ref(''); // Armazena o email para recuperação de senha
 const password = ref(''); // Armazena a senha para login
 const error = ref(null); // Armazena qualquer mensagem de erro
@@ -63,17 +63,23 @@ const login = async () => {
     isLoading.value = true; // Ativa o carregamento enquanto o login está sendo realizado
     error.value = ''; // Limpa qualquer erro anterior
     try {
-        // Envia as credenciais de login (email e senha) para a API
+        // Envia as credenciais de login (nome e senha) para a API
         const response = await axios.post('/nomad/login', {
-            email: username.value, // Envia o email como nome de usuário
+            nome: nome.value, // Envia o nome como nome de usuário
             senha: password.value // Envia a senha
         });
         // Verifica se o código de status da resposta é 200 (OK)
         if (response.status === 200) {
-            // Realiza o login no sistema armazenando o token e os dados do usuário no store
-            authStore.login({ token: response.data.token, usuario: response.data.user });
+           // Recebe o usuário do backend (garanta que ele tenha o campo role ou tipo)
+  const usuario = response.data.user;
+
+// Atualiza o estado do usuário no store inteiro, já com o role correto
+authStore.usuario = usuario;
+    
             countdownStore.startCountdown(60 * 60 * 1000);
-            router.push({ name: 'DashboardMonitoramento' });
+            console.log('Dados recebidos do backend:', response.data);
+            router.push({ name: 'AberturaPorta'});
+            console.log('Role:', authStore.userRole); // Deve mostrar "Administrador" ou outro valor
         }
     } catch (err) {
         console.error(err); // Adiciona um log para depuração do erro
@@ -84,36 +90,53 @@ const login = async () => {
     }
 };
 
- const linguas = computed(() => [  // Cria uma propriedade computada chamada 'linguas', que retorna uma lista de objetos
+const linguas = computed(() => [
+    // Cria uma propriedade computada chamada 'linguas', que retorna uma lista de objetos
     {
-        label: t('portuguese'),  // O rótulo para o idioma português, traduzido pela função 't'
-        value: 'pt',  // O valor da língua para o idioma português (código do idioma)
-        icon: brflag  // O ícone da bandeira do Brasil representando o português
+        label: t('portuguese'), // O rótulo para o idioma português, traduzido pela função 't'
+        value: 'pt', // O valor da língua para o idioma português (código do idioma)
+        icon: brflag // O ícone da bandeira do Brasil representando o português
     },
     {
-        label: t('english'),  // O rótulo para o idioma inglês, traduzido pela função 't'
-        value: 'en',  // O valor da língua para o idioma inglês (código do idioma)
-        icon: usflag  // O ícone da bandeira dos Estados Unidos representando o inglês
+        label: t('english'), // O rótulo para o idioma inglês, traduzido pela função 't'
+        value: 'en', // O valor da língua para o idioma inglês (código do idioma)
+        icon: usflag // O ícone da bandeira dos Estados Unidos representando o inglês
     },
     {
-        label: t('spanish'),  // O rótulo para o idioma espanhol, traduzido pela função 't'
-        value: 'es',  // O valor da língua para o idioma espanhol (código do idioma)
-        icon: arflag  // O ícone da bandeira da Argentina representando o espanhol
+        label: t('spanish'), // O rótulo para o idioma espanhol, traduzido pela função 't'
+        value: 'es', // O valor da língua para o idioma espanhol (código do idioma)
+        icon: arflag // O ícone da bandeira da Argentina representando o espanhol
     }
 ]);
 
 onMounted(() => {
     const browserLang = navigator.language.split('-')[0]; // Pega apenas o "pt", "en", "es"
-    const matchedLang = linguas.value.find(lang => lang.value === browserLang); // Encontra no array
+    const matchedLang = linguas.value.find((lang) => lang.value === browserLang); // Encontra no array
 
     if (matchedLang) {
         selectedLanguage.value = matchedLang; // Define o idioma automaticamente
         locale.value = matchedLang.value; // Atualiza Vue I18n
     } else {
         // Se não encontrar, define um idioma padrão (exemplo: inglês)
-        selectedLanguage.value = linguas.value.find(lang => lang.value === 'en');
+        selectedLanguage.value = linguas.value.find((lang) => lang.value === 'en');
         locale.value = 'en';
     }
+});
+onBeforeMount(() => {
+  // Reseta os stores
+  authStore.$reset()
+  countdownStore.$reset()
+
+  // Limpa storage
+  localStorage.clear()
+  sessionStorage.clear()
+
+  // Limpa cookies
+  document.cookie.split(';').forEach((c) => {
+    document.cookie = c
+      .trim()
+      .split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/'
+  })
 })
 </script>
 
@@ -147,7 +170,7 @@ onMounted(() => {
                 <div class="justify-content-start">
                     <img id="img" src="@/assets/images/LogoLabSF2.png" alt="Logo da empresa" />
                 </div>
-                <div class="justify-content-end">
+                <div class="justify-content-end mt-5">
                     <Select v-model="selectedLanguage" :options="linguas" optionLabel="label" @change="changeLanguage">
                         <template #value="slotProps">
                             <div v-if="slotProps.value" class="flex align-items-center">
@@ -173,10 +196,10 @@ onMounted(() => {
                             <h2 class="textblue text-5xl">{{ $t('login_inital_text') }}</h2>
                             <h4>{{ $t('login_intial_tex_sub') }}</h4>
 
-                            <!-- Campo de email -->
+                            <!-- Campo de nome -->
                             <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block">{{ $t('email') }}:</label>
-                                <input type="email" v-model="username" name="email" id="email" class="formstyle" :placeholder="t('login_email_placeholder')" autocomplete="on" />
+                                <label class="mb-2 inline font-semibold inline-block">{{ $t('user') }}:</label>
+                                <input type="nome" v-model="nome" name="nome" id="nome" class="formstyle" :placeholder="t('login_email_placeholder')" autocomplete="on" />
                             </div>
 
                             <!-- Campo de senha -->
@@ -195,27 +218,22 @@ onMounted(() => {
 
                             <!-- Link para recuperação de senha -->
                             <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = true" class="textblue font-semibold">{{$t('login_forgot_password')}}</a>
+                                <a href="#" @click.prevent="forgotPassword = true" class="textblue font-semibold">{{ $t('login_forgot_password') }}</a>
                             </h6>
                         </div>
 
                         <!-- Formulário de recuperação de senha (visível quando forgotPassword é true) -->
                         <div v-else>
                             <h2 class="textblue text-5xl">{{ $t('login_forgot_password') }}</h2>
-                            <h4>{{ $t('login_recover_email') }}</h4>
 
                             <!-- Campo de email para recuperação -->
-                            <div class="form mb-3">
-                                <label class="mb-2 inline font-semibold inline-block">{{$t('email')}}:</label>
-                                <input type="email" name="reset-email" id="reset-email" class="formstyle" placeholder="Digite o seu email" autocomplete="on" v-model="mail" />
-                            </div>
-
-                            <!-- Botão para enviar o link de recuperação -->
-                            <button @click.prevent="resetPassword" class="btn_button w-full py-3 px-3 border-round-sm text-nowrap">{{$t('login_forgot_link')}}</button>
+                            <Fieldset class="form mb-3 mt-5">
+                                <p class="mt-2">{{ $t('recuperar_monitoramento') }}</p>
+                            </Fieldset>
 
                             <!-- Link para voltar ao login -->
                             <h6 class="mt-3 text-center">
-                                <a href="#" @click.prevent="forgotPassword = false" class="textblue font-semibold">{{$t('return_login')}}</a>
+                                <a href="#" @click.prevent="forgotPassword = false" class="textblue font-semibold">{{ $t('return_login') }}</a>
                             </h6>
                         </div>
                     </form>
@@ -308,7 +326,7 @@ onMounted(() => {
 }
 
 .btn_button {
-    background-color:#326FD1 !important; 
+    background-color: #326fd1 !important;
     color: white;
     padding: 10px 20px;
     text-align: center;
@@ -322,6 +340,4 @@ onMounted(() => {
     background-color: #fb5c2b !important;
     transform: scale(1.02);
 }
-
-
 </style>

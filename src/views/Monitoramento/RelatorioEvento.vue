@@ -74,13 +74,13 @@ const buscarRelatorio = async () => {
 
                 <!-- Filtro Ativação -->
                 <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
-                    <label for="ativacao">Ativação:</label>
+                    <label for="ativacao">{{ $t('activation') }}:</label>
                     <Select class="drop" filter v-model="filtros.ativacao" :options="listaAtivacoes" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
 
                 <!-- Filtro Evento -->
                 <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
-                    <label for="evento">Evento:</label>
+                    <label for="evento">{{ $t('event') }}:</label>
                     <Select class="drop" filter v-model="filtros.evento" :options="listaEventos" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
 
@@ -90,12 +90,12 @@ const buscarRelatorio = async () => {
                     <Select class="drop" filter v-model="filtros.status" :options="listaStatus" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-2 my-2">
-                    <label for="data_inicio">{{ $t('initial_date') }}</label>
+                    <label for="data_inicio">{{ $t('initial_date') }}:</label>
                     <VueDatePicker class="drop" v-model="filtros.data_inicio" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('initial_date_placeholder')" teleport="body" />
                 </div>
                 <!-- Filtro Data Fim -->
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 pb-0 mb-0">
-                    <label for="data_fim">{{ $t('end_date') }}</label>
+                    <label for="data_fim">{{ $t('end_date') }}:</label>
                     <VueDatePicker class="drop" v-model="filtros.data_fim" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('end_date_placeholder')" teleport="body" />
                 </div>
 
@@ -107,8 +107,8 @@ const buscarRelatorio = async () => {
         </div>
 
         <DataTable :value="dados" stripedRows paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" showGridlines responsiveLayout="scroll" class="mt-5" tableStyle="min-width: 50rem; table-layout: fixed;">
-            <Column field="Ativacao" header="Ativação" sortable class="table-cell" />
-            <Column field="Evento" header="Evento" sortable class="table-cell" />
+            <Column field="Ativacao" :header="$t('activation')" sortable class="table-cell" />
+            <Column field="Evento" :header="$t('event')" sortable class="table-cell" />
             <Column field="Status" header="Status" sortable class="table-cell" />
             <Column field="Url" header="URL" class="table-cell">
                 <template #body="slotProps">
@@ -122,15 +122,14 @@ const buscarRelatorio = async () => {
             </Column>
             <Column field="Data" header="Data" class="table-cell">
                 <template #body="slotProps">
-                    {{ formatStringDate(slotProps.data.Data) }}
+                   <span v-tooltip.left ="{ value: formatStringDate(slotProps.data.Data)}">{{ formatStringDate(slotProps.data.Data) }}</span> 
                 </template>
             </Column>
-            <Column field="Retorno" header="Retorno" class="table-cell" >
-                <!-- <template #body="slotProps">
+            <Column field="Retorno" :header="$t('return')" class="table-cell" >
+                <template #body="slotProps">
                     <span v-tooltip.left="{ value: slotProps.data.Retorno }">{{ slotProps.data.Retorno }}</span>
-                </template> -->
+                </template>
             </Column>
-            <Column field="id_dm" header="DM" class="table-cell" />
         </DataTable>
 
         <LoadingSpinner v-if="carregando" />

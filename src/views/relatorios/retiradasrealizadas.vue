@@ -180,7 +180,7 @@ onMounted(() => {
                 
                 <div class="p-0 m-0 p-fluid formgrid grid col-12" v-if="show">
                     <!-- Filtro DM (Departamento ou Manager) -->
-                    <div class="field py-0 my-0 xl:col-3 lg:col-4 md:col-6 sm:col-12">
+                    <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="dm">{{ $t('dm') }}:</label>
                         <!-- Select para selecionar DM (vinculado a 'relatorio.id_dm') -->
                         <Select class="w-full" filter v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1"></select >
@@ -215,7 +215,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Filtro Data Inicial -->
-                    <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-6">
+                    <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ t('initial_date') }}:</label>
                         <!-- DatePicker para selecionar a Data Inicial -->
                         <VueDatePicker
@@ -255,7 +255,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Botão de filtro -->
-                    <div class=" pt-6 mt-0 field xl:col-3 lg:col-6 md:col-6 sm:col-12">
+                    <div class=" pt-6 mt-0 field xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <Button class="w-full" type="button" :label="$t('filter_data')" icon="pi pi-search" severity="info" @click="buscar" />
                     </div>
 

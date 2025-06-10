@@ -401,3 +401,18 @@ return {
   }
 }
 }
+
+export function prepareNomadData2(filtros) {
+  const data = filtros.data
+    ? DateTime.fromJSDate(filtros.data).startOf('day').toISO()
+    : null;
+
+  return {
+    data: {
+      data,
+      ID_User: filtros.ID_User || undefined,
+      Name: filtros.Name || undefined // manter o mesmo casing
+    }
+  };
+}
+

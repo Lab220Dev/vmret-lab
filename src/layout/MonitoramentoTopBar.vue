@@ -16,7 +16,7 @@ const role = store.userRole;
 const millisecondsRemaining = countdownStore.millisecondsRemaining;
 
 const menu = ref();
-const menuLingua = ref();
+const visible = ref(false);
 
 const fazerLogoff = () => {
     store.$reset();
@@ -48,90 +48,137 @@ const idiomasMapeados = {
     es: 'spanish'
 };
 
-const linguas = computed(() => [
-    {
-        label: t('languageOptions'),
-        items: [
-            { label: t('portuguese'), icon: 'custom-icon flag flag-br', command: () => alterarLingua('pt') },
-            { label: t('english'), icon: 'custom-icon flag flag-us', command: () => alterarLingua('en') },
-            { label: t('spanish'), icon: 'custom-icon flag flag-ar', command: () => alterarLingua('es') }
-        ]
-    }
-]);
 
 const items = computed(() => [
     {
         label: t('options'),
-        items: [{ label: t('logout'), icon: 'pi pi-power-off', command: fazerLogoff }]
+        items: [
+        { separator: true },
+            { label: t('portuguese'), icon: 'custom-icon flag flag-br', command: () => alterarLingua('pt') },
+            { label: t('english'), icon: 'custom-icon flag flag-us', command: () => alterarLingua('en') },
+            { label: t('spanish'), icon: 'custom-icon flag flag-ar', command: () => alterarLingua('es') },
+            { separator: true },
+            { label: t('logout'), icon: 'pi pi-power-off', command: fazerLogoff },
+        ]
     }
 ]);
-const isAdmin = computed(() => store.userRole === 'admin');
+
+const userAccessLevel = computed(() => {
+    const usuario = store.usuario?.value || store.usuario;
+
+    if (!usuario || typeof usuario !== 'object') return 'nenhum';
+
+    const { master = false, abastecimento = false, monitoramento = false } = usuario;
+
+    if ((master && (abastecimento || monitoramento)) || master) {//
+        return 'admin';
+    }
+
+    if (abastecimento || monitoramento && !master) {
+        return 'leitor';
+    }
+
+    return 'nenhum';
+});
+
+const isAdmin = computed(() => userAccessLevel.value === 'admin')
+
 const abrirRelatorio = () => {
-    if(isAdmin){
-        router.push({ name: 'RelatorioEvento' }); 
+    if (isAdmin) {
+        router.push({ name: 'RelatorioEvento' });
     }
 };
+
+const abrirMonitoramento = () => {
+    if (isAdmin) {
+        router.push({ name: 'Monitoramento' });
+    }
+};
+
+const abrirCadastro = () => {
+    if (isAdmin) {
+        router.push({ name: 'UsuarioCadMonitoramento' });
+    }
+};
+
+const abrirAbastecimento = () => {
+    if (isAdmin) {
+        router.push({ name: 'AberturaPorta' });
+    }
+};
+
 const toggle = (event) => menu.value.toggle(event);
-const toggleLingua = (event) => menuLingua.value.toggle(event);
 </script>
 
 <template>
     <div class="flex layout-topbar justify-content-between align-items-center">
+        <!-- Logo do Dashboard -->
+
         <div class="flex align-items-center ml-3">
             <!-- Link para a página do Dashboard -->
-            <router-link :to="{ name: 'DashboardMonitoramento' }">
+            <router-link :to="{ name: 'AberturaPorta' }">
                 <img src="@/assets/images/LogoDMBranco.png" width="200" />
             </router-link>
         </div>
 
         <!-- Seção de usuário, imagem, nome e role -->
         <div class="mr-2 flex align-items-center justify-content-end mt-1" style="flex-grow: 1">
-    <!-- Contêiner para imagem de avatar e informações -->
-    <div class="flex align-items-center">
-        <!-- Imagem de avatar do usuário -->
-        <div class="mr-2">
-            <Avatar icon="pi pi-user" class="formgrid" size="large" shape="circle" />
-        </div>
+            <!-- Contêiner para imagem de avatar e informações -->
+           <!-- Botão extra (cadastro) -->
+            <div v-if="isAdmin">
+                <button type="button" v-tooltip.bottom="{ value: t('cadastrarUsuario'), showDelay: 500, hideDelay: 300 }" aria-label="Cadastrar" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirCadastro">
+                    <i class="pi pi-user-plus" />
+                </button>
+            </div>
 
-        <!-- Nome, papel e relógio -->
-        <div class="flex flex-column">
-            <h6 class="usuario m-0">{{ nome }}</h6>
-            <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
-            <div class="relogio mt-1">
-                <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd">
-                    {{ padZero(minutes) }}:{{ padZero(seconds) }}
-                </vue-countdown>
+            <!-- Botão extra (relatório) -->
+            <div >
+                <button type="button" v-tooltip.bottom="{ value:  t('relatorioLogs'), showDelay: 500, hideDelay: 300 }" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
+                    <i class="pi pi-list" />
+                </button>
+            </div>
+
+            <!-- Botão extra (relatório) -->
+            <div>
+                <button type="button" v-tooltip.bottom="{ value: t('Abastecimento'), showDelay: 500, hideDelay: 300 }" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirAbastecimento">
+                    <i class="pi pi-cart-plus" />
+                </button>
+            </div>
+
+            <!-- Botão extra (response) -->
+            <div >
+                <button  type="button" v-tooltip.bottom="{ value: t('retiradas_title'), showDelay: 500, hideDelay: 300 }" class="mr-1 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirMonitoramento">
+                    <i class="pi pi-chart-bar" />
+                </button>
+            </div>
+            <Divider layout="vertical" />
+            
+ <div class=" ml-3 flex align-items-center" >
+                <!-- Imagem de avatar do usuário -->
+                <div class="mr-3">
+                    <Avatar icon="pi pi-user" class="formgrid" size="large" shape="circle" />
+                </div>
+
+                <!-- Nome, papel e relógio -->
+                <div class="flex flex-column">
+                    <h6 class="usuario m-0">{{ nome }}</h6>
+                    <span class="role" style="color: rgba(255, 255, 255, 0.5)">{{ role }}</span>
+                    <div class="relogio mt-1">
+                        <vue-countdown :time="millisecondsRemaining" v-slot="{ minutes, seconds }" @start="startCountdown" @end="onCountdownEnd"> {{ padZero(minutes) }}:{{ padZero(seconds) }} </vue-countdown>
+                    </div>
+                </div>
+            </div>
+            <div class="ml-3">
+                <button type="button" v-tooltip.left="{ value: t('options'), showDelay: 500, hideDelay: 300 }" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
+                    <i class="pi pi-ellipsis-v"></i>
+                </button>
+                <Menu class="mt-2" ref="menu" id="overlay_menu" :model="items" :popup="true" />
             </div>
         </div>
-    </div>
-
-    <!-- Botão extra (ex: mensagem, se quiser adicionar) -->
-    <div v-if="isAdmin" class="ml-3">
-        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
-            <i class="pi pi-list" />
-        </button>
-    </div>
-
-    <!-- Botões de idioma e menu -->
-    <div class="ml-1">
-        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggleLingua($event)">
-            <i class="pi pi-language"></i>
-        </button>
-        <Menu ref="menuLingua" id="overlay_menu_Lingua" :model="linguas" :popup="true" />
-    </div>
-    <div class="ml-1">
-        <button type="button" class="p-link layout-topbar-sair-button layout-topbar-button m-0" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
-            <i class="pi pi-ellipsis-v"></i>
-        </button>
-        <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
-    </div>
-</div>
-
     </div>
 </template>
 
 <style scoped>
-
 .layout-topbar .user-info-container {
     display: flex;
     align-items: center;
@@ -167,18 +214,17 @@ const toggleLingua = (event) => menuLingua.value.toggle(event);
     outline: 0 none;
     outline-offset: 0;
     transition: box-shadow 0.2s;
-    background-color: #052C65;
-    color:#768497;
+    background-color: #052c65;
+    color: #768497;
     border: none;
 }
 
 .layout-topbar .layout-menu-button {
     order: 0;
     margin-left: 2rem;
-    background-color: #052C65;
-    color:#768497;
+    background-color: #052c65;
+    color: #768497;
 }
-
 
 .layout-topbar .layout-menu-button:hover {
     order: 0;
@@ -188,7 +234,7 @@ const toggleLingua = (event) => menuLingua.value.toggle(event);
 
 .usuario {
     font-size: 12px; /* Define o tamanho da fonte para 12 pixels */
-    color:#FFFCFA;
+    color: #fffcfa;
 }
 
 .p-avatar {
@@ -222,6 +268,10 @@ const toggleLingua = (event) => menuLingua.value.toggle(event);
     margin-right: 8px; /* Define a margem direita como 8 pixels */
 }
 
+.buttonmenubar {
+    background-color: #052c65;
+    color: #768497;
+}
 /* Estilos para telas pequenas (menor que 767px) */
 @media (max-width: 767px) {
     .relogio,
@@ -237,19 +287,19 @@ const toggleLingua = (event) => menuLingua.value.toggle(event);
 }
 
 .p-overlay-badge .p-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  z-index: 1;
-  background-color: #2196f3; /* azul chamativo */
-  color: white;
-  padding: 0 6px;
-  border-radius: 10px;
-  font-size: 10px;
-  height: 18px;
-  line-height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 1;
+    background-color: #2196f3; /* azul chamativo */
+    color: white;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    height: 18px;
+    line-height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>

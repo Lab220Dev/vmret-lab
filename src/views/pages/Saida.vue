@@ -123,9 +123,9 @@ function selectTopic(topic) {
 </script>
 
 <template>
-    <div class="card vh">
+    <div  class="card vh">
         <h2 class="my-7 text-center">{{ t('guide_title') }}</h2>
-        <Fieldset class="m-2">
+        <Fieldset legend="Guia" class="m-2">
             <p class="mt-3">
                 {{ t('guide_description') }}
             </p>

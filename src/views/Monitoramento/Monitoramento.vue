@@ -68,12 +68,12 @@ const buscarRelatorio = async () => {
     }
 };
 const exportCSV = () => {
-    gerarEbaixarCSV('RelatorioNomad', dados.value);
+    gerarEbaixarCSV('Relatorio de Monitoramento', dados.value);
 };
 
 // Exportação de dados em formato JSON
 const exportJSON = () => {
-    gerarEbaixarJSON('RelatorioNomad', dados.value);
+    gerarEbaixarJSON('Relatorio de Monitoramento', dados.value);
 };
 const isMobile = isMobileDevice();
 
@@ -122,13 +122,13 @@ function tratarMensagemMaquin(StringMaquina) {
 
                 <!-- Filtro Tipo de Retorno -->
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
-                    <label for="tipo_retorno">Tipo de Retorno:</label>
+                    <label for="tipo_retorno">{{ $t('Tipo_Retorno') }}:</label>
                     <Select v-model="filtros.tipo_retorno" :options="listaTiposRetorno" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
 
                 <!-- Filtro QR Code Válido -->
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
-                    <label for="qrCode_valido">QR Code Válido:</label>
+                    <label for="qrCode_valido">{{ $t('QRCodeValido') }}</label>
                     <Select v-model="filtros.qrCode_valido" :options="listaQrValido" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">

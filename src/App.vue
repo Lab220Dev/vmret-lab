@@ -17,7 +17,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Carrega o compo
     <!-- Exibe o conteúdo da rota (componente correspondente à URL ativa) -->
     <!-- O <router-view /> renderiza o componente da rota que é carregado dinamicamente -->
     <router-view />
-    <link href="/src/styles.css" rel="stylesheet">
+    <link rel="stylesheet"> <!--<link href="/src/assets/styles.scss" rel="stylesheet">-->
 </template>
 
 <style>

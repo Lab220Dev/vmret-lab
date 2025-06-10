@@ -175,7 +175,7 @@ onMounted(() => {
                     </div>
 
                     <!-- Campo de filtro para Centro de Custo -->
-                    <div class="py-0 mt-0 field xl:col-3 lg:col-4 md:col-6 sm:col-6">
+                    <div class="py-0 mt-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Select para selecionar Centro de Custo -->
                         <Select filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 4" @change="filtroGenerico" />

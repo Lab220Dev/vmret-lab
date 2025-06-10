@@ -309,21 +309,27 @@ const router = createRouter({
             children: [
                 {
                     path: 'dashboard',
-                    name: 'DashboardMonitoramento',
-                    component: () => import('@/views/Monitoramento/HomeMonitoramento.vue'),
-                    meta: { requiresAuth: true }
+                    name: 'AberturaPorta',
+                    component: () => import('@/views/Monitoramento/AberturaPorta.vue'),
+                    meta: { requiresAuth: false }
                 },
                 {
-                    path: 'usuarioMonitoramento',
-                    name: 'UsuarioMonitoramento',
-                    component: () => import('@/views/Monitoramento/AdicionarUsuario.vue'),
-                    meta: { requiresAuth: true }
+                    path: 'monitoramento',
+                    name: 'Monitoramento',
+                    component: () => import('@/views/Monitoramento/Monitoramento.vue'),
+                    meta: { requiresAuth: false }
+                },
+                {
+                    path: 'usuarioCadMonitoramento',
+                    name: 'UsuarioCadMonitoramento',
+                    component: () => import('@/views/Monitoramento/CadastroUsuario.vue'),
+                    meta: { requiresAuth: false }
                 },
                 {
                     path: 'relatorioevento',
                     name: 'RelatorioEvento',
                     component: () => import('@/views/Monitoramento/RelatorioEvento.vue'),
-                    meta: { requiresAuth: true }
+                    meta: { requiresAuth: false }
                 },
             ]
           }
@@ -356,7 +362,7 @@ router.beforeEach((to, from, next) => {
         authStore.setGlobalMessage(i18n.global.t('page_unavailable'));
 
         if (isMonitoramento) {
-            next({ name: 'DashboardMonitoramento' }); 
+            next({ name: 'Monitoramento' }); 
         } else {
             next({ name: 'Dashboard' });
         }
