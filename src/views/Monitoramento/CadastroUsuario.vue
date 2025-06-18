@@ -253,7 +253,7 @@ const resetForm = () => {
 </script>
 
 <template>
-    <div class="grid">
+    <div class="grid vh">
         <!-- Container principal da página, com um layout em grid -->
         <div class="col-12">
             <!-- Coluna que ocupa toda a largura da tela -->
@@ -334,8 +334,8 @@ const resetForm = () => {
                                     <!-- Exibe mensagem de erro se a senha for inválida -->
                                 </div>
                                 <div class="xl:col-4 lg:col-4 md:col-6 sm:col-12">
-                                    <label for="senha" class="text-nowrap">{{ t('confirm_password') }}:</label>
-                                    <InputText class="my-2 w-full" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" autocomplete="off" aria-required="true" />
+                                    <label for="confirm-senha" class="text-nowrap">{{ t('confirm_password') }}:</label>
+                                    <InputText class="my-2 w-full" id="confirm-senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" autocomplete="off" aria-required="true" />
                                     <!-- Campo para confirmação de senha -->
                                     <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                                     <!-- Exibe mensagem de erro se as senhas não coincidirem -->

@@ -80,10 +80,17 @@ const buscar = async () => {
         // Atualiza a contagem de registros
         filteredCount.value = retiradas.value.length;
 
+        console.log('Dados retornados:', retiradas.value); // Exibe os dados retornados no console para depuração
         // Exibe um diálogo caso não haja dados retornados
         if (Array.isArray(retiradas.value) && retiradas.value.length === 0) {
             dialogMessage.value = t('no_data_found');
             showDialog.value = true;
+            toast.add({
+                severity: 'info',
+                summary: t('Nenhum dado encontrado'),
+                life: 3000,
+                detail: t('no_data_found')
+            });
         }
         if (retiradas.value.length === 0) {
             emptyMessage.value = t('no_data_found');

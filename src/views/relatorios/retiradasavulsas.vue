@@ -157,7 +157,7 @@ onMounted(() => {
                     <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">{{t('dispenser_machine')}}:</label>
                         <!-- Select para selecionar DM -->
-                        <Select filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 1" />
+                        <Select filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
                     </div>
 
                     <!-- Campo de filtro para Planta -->

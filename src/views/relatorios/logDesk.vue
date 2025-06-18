@@ -186,7 +186,7 @@ onMounted(() => {
                 <!-- Filtros para DM, Operação, Usuário, Funcionário, e Data -->
                 <div class="py-0 my-0 lg:col-2 md:col-6 sm:col-6">
                     <label for="operador">{{ t('dm') }}:</label>
-                    <Select class="w-full" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="select 1" @change="handleDmChange" />
+                    <Select class="w-full" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="select1" @change="handleDmChange" />
                 </div>
                 <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operador">{{ t('operator') }}:</label>
@@ -260,7 +260,7 @@ onMounted(() => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off"/>
+                            <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" autocomplete="off" />
                         </IconField>
                     </div>
                 </div>

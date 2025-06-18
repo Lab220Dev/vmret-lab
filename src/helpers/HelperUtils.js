@@ -169,6 +169,7 @@ export const formatStringDate = (dateString) => {
 
     return `${DatePart} - ${timePart}`;
 };
+
 export const getTimeFromString = (dateTimeString) => {
     if (!dateTimeString || typeof dateTimeString !== 'string') {
         throw new Error("O parâmetro 'dateTimeString' é obrigatório e deve ser uma string.");
@@ -189,6 +190,41 @@ export const getDateFromString = (dateTimeString) => {
     const [date] = dateTimeString.replace('T', ' ').split(' ');
     const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
+};
+
+//ABERTURADEPORTA
+export const formatStringDate2 = (dateString) => {
+    const DatePart = getDateFromString2(dateString);
+    const timePart = getTimeFromString2(dateString);
+
+    return `${DatePart} - ${timePart}`;
+};
+
+export const getDateFromString2 = (dateTimeString) => {
+    if (!dateTimeString) {
+        return '';
+    }
+
+    const date = new Date(dateTimeString);
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // mês começa do zero
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+};
+
+export const getTimeFromString2 = (dateTimeString) => {
+    if (!dateTimeString) {
+        return '';
+    }
+
+    const date = new Date(dateTimeString);
+
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${hours}:${minutes}`;
 };
 
 /**

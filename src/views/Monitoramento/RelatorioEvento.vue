@@ -46,15 +46,21 @@ const listaDMs = [
     { label: 'Todos', value: null },
     { label: 'DM 001', value: 1 }
 ];
+
 const dados = ref([]);
 const carregando = ref(false);
 const toast = useToast();
+
 const buscarRelatorio = async () => {
     carregando.value = true;
     try {
         const data = prepareNomadData(filtros.value);
         const response = await monitoramentoService.relatorio(data);
         dados.value = response;
+
+        if (dados.value.length === 0) {
+            toast.add({ severity: 'warn', summary: 'Não há dados para serem exibidos', detail: 'Verifique os critérios de busca e tente novamente', life: 5000 });
+        }
     } catch (err) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao buscar dados', life: 3000 });
     } finally {
@@ -91,12 +97,12 @@ const buscarRelatorio = async () => {
                 </div>
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-2 my-2">
                     <label for="data_inicio">{{ $t('initial_date') }}:</label>
-                    <VueDatePicker class="drop" v-model="filtros.data_inicio" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('initial_date_placeholder')" teleport="body" />
+                    <VueDatePicker class="drop" v-model="filtros.data_inicio" :format="'dd/MM/yyyy'" locale="pt-BR" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('initial_date_placeholder')" teleport="body" />
                 </div>
                 <!-- Filtro Data Fim -->
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 pb-0 mb-0">
                     <label for="data_fim">{{ $t('end_date') }}:</label>
-                    <VueDatePicker class="drop" v-model="filtros.data_fim" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('end_date_placeholder')" teleport="body" />
+                    <VueDatePicker class="drop" v-model="filtros.data_fim" :format="'dd/MM/yyyy'" locale="pt-BR" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('end_date_placeholder')" teleport="body" />
                 </div>
 
                 <!-- Botão de buscar -->
@@ -107,6 +113,9 @@ const buscarRelatorio = async () => {
         </div>
 
         <DataTable :value="dados" stripedRows paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" showGridlines responsiveLayout="scroll" class="mt-5" tableStyle="min-width: 50rem; table-layout: fixed;">
+            <!-- Mensagem a ser exibida quando não houver dados -->
+            <template #empty> {{ $t('empty_message') }}</template>
+
             <Column field="Ativacao" :header="$t('activation')" sortable class="table-cell" />
             <Column field="Evento" :header="$t('event')" sortable class="table-cell" />
             <Column field="Status" header="Status" sortable class="table-cell" />
@@ -122,10 +131,10 @@ const buscarRelatorio = async () => {
             </Column>
             <Column field="Data" header="Data" class="table-cell">
                 <template #body="slotProps">
-                   <span v-tooltip.left ="{ value: formatStringDate(slotProps.data.Data)}">{{ formatStringDate(slotProps.data.Data) }}</span> 
+                    <span v-tooltip.left="{ value: formatStringDate(slotProps.data.Data) }">{{ formatStringDate(slotProps.data.Data) }}</span>
                 </template>
             </Column>
-            <Column field="Retorno" :header="$t('return')" class="table-cell" >
+            <Column field="Retorno" :header="$t('return')" class="table-cell">
                 <template #body="slotProps">
                     <span v-tooltip.left="{ value: slotProps.data.Retorno }">{{ slotProps.data.Retorno }}</span>
                 </template>

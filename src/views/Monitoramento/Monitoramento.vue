@@ -1,13 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { FilterMatchMode, FilterOperator, FilterService } from '@primevue/core/api';
 import { useI18n } from 'vue-i18n';
-import { useAuthStore } from '@/store/authStore';
+import { useToast } from 'primevue/usetoast';
 import { prepareNomadData } from '@/helpers/formHelper';
 import monitoramentoService from '@/services/Monitoramento/MonitoramentoService';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import { gerarEbaixarCSV, gerarEbaixarJSON, isMobileDevice } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
-import LoadingSpinner from '@/components/LoadingSpinner.vue';
+import { gerarEbaixarCSV, gerarEbaixarJSON, isMobileDevice, formatStringDate } from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
 import '@vuepic/vue-datepicker/dist/main.css';
 const { t, locale } = useI18n();
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
@@ -24,6 +21,7 @@ const listaDMs = [
     { label: 'DM 1', value: 1 }
 ];
 
+const toast = useToast();
 const listaTiposRetorno = [
     { label: 'Todos', value: null },
     { label: 'Passou Produto', value: 'EXOK00' },
@@ -61,6 +59,11 @@ const buscarRelatorio = async () => {
         const payload = prepareNomadData(filtros.value);
         const response = await monitoramentoService.relatorioRetirada(payload);
         dados.value = response;
+
+        // Caso não haja registros, exibe uma mensagem de erro
+        if (dados.value.length === 0) {
+            toast.add({ severity: 'warn', summary: 'Não há dados para serem exibidos', detail: 'Verifique os critérios de busca e tente novamente', life: 5000 });
+        }
     } catch (error) {
         console.error('Erro ao buscar relatório:', error);
     } finally {
@@ -120,17 +123,6 @@ function tratarMensagemMaquin(StringMaquina) {
                     <Select v-model="filtros.id_dm" :options="listaDMs" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
                 </div>
 
-                <!-- Filtro Tipo de Retorno -->
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
-                    <label for="tipo_retorno">{{ $t('Tipo_Retorno') }}:</label>
-                    <Select v-model="filtros.tipo_retorno" :options="listaTiposRetorno" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
-                </div>
-
-                <!-- Filtro QR Code Válido -->
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
-                    <label for="qrCode_valido">{{ $t('QRCodeValido') }}</label>
-                    <Select v-model="filtros.qrCode_valido" :options="listaQrValido" optionLabel="label" optionValue="value" class="drop" :placeholder="$t('all')" />
-                </div>
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-6" v-if="isMobile">
                     <Button class="exportar" icon="pi pi-file" :label="$t('export_csv')" @click="exportCSV"></Button>
                 </div>
@@ -168,21 +160,18 @@ function tratarMensagemMaquin(StringMaquina) {
 
             <template #empty> {{ $t('noData') }} </template>
 
-            <Column field="Nome" :header="$t('ProdutoNome')" sortable />
-            <Column field="ID_DM" :header="$t('MaquinaID')" sortable />
-            <Column field="QR_Code_Valido" :header="$t('QRCodeValido')" sortable>
-                <template #body="{ data }">
-                    {{ data.QR_Code_Valido ? 'Válido' : 'Inválido' }}
-                </template>
-            </Column>
-             <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell">
+            <Column field="Nome" :header="$t('ProdutoNome')" sortable style="width: 15%;" />
+            <Column field="ID_DM" :header="$t('MaquinaID')" sortable style="width: 12%;"/>
+    
+             <Column field="Qr_Code" :header="$t('QRCode')" sortable class="table-cell" style="width: 50%;">
             <template #body="slotProps">
                 <span v-tooltip.left="{ value: slotProps.data.Qr_Code }">{{ slotProps.data.Qr_Code }}</span>
 
             </template> </Column>
-            <Column field="Retorno_Placa" :header="$t('RespostaMaquina')" sortable>
-                <template #body="{ data }">
-                    {{ tratarMensagemMaquin(data.Retorno_Placa) }}
+    
+            <Column field="Dia" :header="$t('date')" sortable>
+                <template #body="slotProps">
+                    <span v-tooltip.left="{ value: formatStringDate(slotProps.data.Dia) }">{{ formatStringDate(slotProps.data.Dia) }}</span>
                 </template>
             </Column>
         </DataTable>

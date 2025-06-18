@@ -1,6 +1,6 @@
 <template>
     <div class="card justify-content-center">
-        <Stepper v-model:activeStep="active" value="1"><!-- não esquecer de colocar o linear -->
+        <Stepper v-model:activeStep="active" value="1" linear><!-- não esquecer de colocar o linear -->
             <StepList>
                 <Step value="1"> </Step>
                 <Step value="2"></Step>

@@ -150,7 +150,7 @@ onMounted(() => {
                 <div class="justify-content-start">
                     <img id="img" src="@/assets/images/LogoLabSF2.png" alt="Logo da empresa" />
                 </div>
-                <div class="justify-content-end">
+                <div class="justify-content-end mt-5">
                     <Select v-model="selectedLanguage" :options="linguas" optionLabel="label" @change="changeLanguage">
                         <template #value="slotProps">
                             <div v-if="slotProps.value" class="flex align-items-center">

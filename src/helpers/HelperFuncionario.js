@@ -42,7 +42,7 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
     });
 
     // Campos obrigatórios
-    formData.append('id_cliente', store.userIdCliente); // Adiciona o ID do cliente ao FormData.
+    // formData.append('id_cliente', store.userIdCliente); // Adiciona o ID do cliente ao FormData.
     formData.append('id_usuario', store.userId);    // Adiciona o ID do usuário ao FormData.
 
     return formData;    // Retorna o FormData com os dados do funcionário.

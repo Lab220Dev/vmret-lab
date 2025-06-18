@@ -1,15 +1,15 @@
 <template>
     <div class="validation-container card">
-        <h3 class="text-center my-4">Mapeamento de Campos - Centro de Custo</h3>
+        <h3 class="text-center my-4">{{ $t('mapCampo') }} - {{$t('cost_center')}}</h3>
         <div class="mt-6">
             <div class="grid mb-4">
                 <div class="col-6 pb-0" style="height: 50px">
                     <!-- Rótulo para o nome da coluna esperada -->
-                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos Esperados</div>
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">{{$t('camposEsperado')}}</div>
                 </div>
                 <div class="col-6 pb-0" style="height: 50px">
                     <!-- Rótulo para o nome da coluna esperada -->
-                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos do Arquivo</div>
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">{{$t('camposArquivo')}}</div>
                 </div>
             </div>
             <div v-for="(expected, index) in expectedColumns" :key="index" class="grid align-items-baseline">
@@ -18,13 +18,13 @@
                     <label class="text-l font-semibold">{{ expected }}:</label>
                 </div>
                 <div class="col-6 py-0">
-                    <Select class="w-full" v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" placeholder="Selecione um campo" />
+                    <Select class="w-full" v-model="mappedColumns[expected]" :options="fileColumns" optionLabel="label" optionValue="value" :placeholder="t('selecioneCampo')" />
                 </div>
                 <hr/>
-                <Divider class="" />
+                <Divider />
         </div>
         </div>
-        <p v-if="!isMappingComplete" class="text-red-500 card">Por favor, complete o mapeamento de todos os campos.</p>
+        <p v-if="!isMappingComplete" class="text-red-500 card">{{$t('messageCampos')}}</p>
     </div>
 </template>
 
@@ -32,6 +32,8 @@
 import { ref, computed, watch } from 'vue'; // Importa as funcionalidades reativas e de observação do Vue
 import Select from 'primevue/select'; // Importa o componente Select do PrimeVue
 
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // Props recebidas do componente pai
 /**
  * @type {Object} props

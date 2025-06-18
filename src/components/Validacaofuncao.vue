@@ -1,17 +1,17 @@
 <template>
     <div class="validation-container card">
         <!-- Título da página de mapeamento -->
-        <h3 class="text-center my-4">Mapeamento de Campos - Função</h3>
+        <h3 class="text-center my-4">{{ $t('mapCampo') }} - {{$t('funcao_nivel_hierarquico')}}</h3>
         <!-- Container das colunas para mapeamento -->
         <div class="mt-6">
             <div class="grid mb-4">
                 <div class="col-6 pb-0" style="height: 50px">
                     <!-- Rótulo para o nome da coluna esperada -->
-                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos Esperados</div>
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">{{$t('camposEsperado')}}</div>
                 </div>
                 <div class="col-6 pb-0" style="height: 50px">
                     <!-- Rótulo para o nome da coluna esperada -->
-                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">Campos do Arquivo</div>
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">{{$t('camposArquivo')}}</div>
                 </div>
             </div>
             <!-- Loop para gerar um item de mapeamento para cada coluna esperada -->
@@ -22,14 +22,14 @@
                 </div>
                 <div class="col-6 py-0">
                     <!-- Select para selecionar a coluna do arquivo carregado -->
-                    <Select class="w-full" v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" placeholder="Selecione um campo" @change="handleMappingChange(expected)" />
+                    <Select class="w-full" v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" :placeholder="t('selecioneCampo')" @change="handleMappingChange(expected)" />
                 </div>
                 <hr/>
                 <Divider/>
             </div>
         </div>
         <!-- Mensagem de erro caso o mapeamento não esteja completo -->
-        <p v-if="!isMappingComplete" class="text-red-500 card">Por favor, complete o mapeamento de todos os campos.</p>
+        <p v-if="!isMappingComplete" class="text-red-500 card">{{$t('messageCampos')}}</p>
     </div>
 </template>
 
@@ -38,6 +38,10 @@ import { ref, computed, watch } from 'vue'; // Importando hooks do Vue para reat
 import Select from 'primevue/select'; // Componente Select do PrimeVue para seleção de opções
 import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
+
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Props recebidas do componente pai
 /**

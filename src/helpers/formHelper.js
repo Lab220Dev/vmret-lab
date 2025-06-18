@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 /**
  * Aplica um filtro global na lista de dados, baseado em um valor de busca.
  * @param {Object[]} dataList - Lista de dados a ser filtrada.
@@ -381,37 +382,45 @@ export const resetProdutoSelecionadoSetor = (produtoSelecionado) => {
 
 export function prepareNomadData(filtros){
   const data_inicio = filtros.data_inicio
-  ? DateTime.fromJSDate(filtros.data_inicio).startOf('day').toISO()
-  : null
+  ? DateTime.fromJSDate(filtros.data_inicio).startOf('day').toFormat("yyyy-MM-dd HH:mm:ss")
+  : null;
 
 const data_fim = filtros.data_fim
-  ? DateTime.fromJSDate(filtros.data_fim).endOf('day').toISO()
-  : null
+  ? DateTime.fromJSDate(filtros.data_fim).endOf('day').toFormat("yyyy-MM-dd HH:mm:ss")
+  : DateTime.now().endOf('day').toFormat("yyyy-MM-dd HH:mm:ss");
 
-return {
-  data: {
-    ativacao: filtros.ativacao || undefined,
-    evento: filtros.evento || undefined,
-    status: filtros.status || undefined,
-    id_dm: filtros.id_dm || undefined,
-    tipo_retorno: filtros.tipo_retorno || undefined,
-    qrCode_valido: filtros.qrCode_valido || undefined,
+const rawData = {
+    ativacao: filtros.ativacao,
+    evento: filtros.evento,
+    status: filtros.status,
+    id_dm: filtros.id_dm,
+    tipo_retorno: filtros.tipo_retorno,
+    qrCode_valido: filtros.qrCode_valido,
     data_inicio,
     data_fim
-  }
-}
+  };
+
+  // Remove campos nulos/undefined do objeto antes de enviar
+  const data = Object.fromEntries(
+    Object.entries(rawData).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+  );
+
+  return { data };
 }
 
 export function prepareNomadData2(filtros) {
-  const data = filtros.data
-    ? DateTime.fromJSDate(filtros.data).startOf('day').toISO()
-    : null;
+  const data_inicio = filtros.data_inicio
+  ? DateTime.fromJSDate(filtros.data_inicio).startOf('day').toFormat("yyyy-MM-dd HH:mm:ss")
+  : null;
+
+    const data_fim = filtros.data_fim
+  ? DateTime.fromJSDate(filtros.data_fim).endOf('day').toFormat("yyyy-MM-dd HH:mm:ss")
+  : DateTime.now().endOf('day').toFormat("yyyy-MM-dd HH:mm:ss");
 
   return {
     data: {
-      data,
-      ID_User: filtros.ID_User || undefined,
-      Name: filtros.Name || undefined // manter o mesmo casing
+      data_inicio,
+    data_fim
     }
   };
 }

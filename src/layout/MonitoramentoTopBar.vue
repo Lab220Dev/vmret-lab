@@ -1,13 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router'; 
 import { useAuthStore } from '@/store/authStore';
 import { useCountdownStore } from '@/store/countdown';
 import { useI18n } from 'vue-i18n';
 import VueCountdown from '@chenfengyuan/vue-countdown';
 
 const store = useAuthStore();
-const router = useRouter();
+const route = useRoute();// Importando useRoute para acessar a rota atual
+const router = useRouter();// Importando useRouter para navegar entre rotas
 const countdownStore = useCountdownStore();
 const { t, locale } = useI18n();
 
@@ -16,7 +17,7 @@ const role = store.userRole;
 const millisecondsRemaining = countdownStore.millisecondsRemaining;
 
 const menu = ref();
-const visible = ref(false);
+const isActive = (name) => route.name === name;
 
 const fazerLogoff = () => {
     store.$reset();
@@ -48,17 +49,16 @@ const idiomasMapeados = {
     es: 'spanish'
 };
 
-
 const items = computed(() => [
     {
         label: t('options'),
         items: [
-        { separator: true },
+            { separator: true },
             { label: t('portuguese'), icon: 'custom-icon flag flag-br', command: () => alterarLingua('pt') },
             { label: t('english'), icon: 'custom-icon flag flag-us', command: () => alterarLingua('en') },
             { label: t('spanish'), icon: 'custom-icon flag flag-ar', command: () => alterarLingua('es') },
             { separator: true },
-            { label: t('logout'), icon: 'pi pi-power-off', command: fazerLogoff },
+            { label: t('logout'), icon: 'pi pi-power-off', command: fazerLogoff }
         ]
     }
 ]);
@@ -70,24 +70,19 @@ const userAccessLevel = computed(() => {
 
     const { master = false, abastecimento = false, monitoramento = false } = usuario;
 
-    if ((master && (abastecimento || monitoramento)) || master) {//
+    if ((master && (abastecimento || monitoramento)) || master) {
+        //
         return 'admin';
     }
 
-    if (abastecimento || monitoramento && !master) {
+    if (abastecimento || (monitoramento && !master)) {
         return 'leitor';
     }
 
     return 'nenhum';
 });
 
-const isAdmin = computed(() => userAccessLevel.value === 'admin')
-
-const abrirRelatorio = () => {
-    if (isAdmin) {
-        router.push({ name: 'RelatorioEvento' });
-    }
-};
+const isAdmin = computed(() => userAccessLevel.value === 'admin');
 
 const abrirMonitoramento = () => {
     if (isAdmin) {
@@ -123,37 +118,34 @@ const toggle = (event) => menu.value.toggle(event);
 
         <!-- Seção de usuário, imagem, nome e role -->
         <div class="mr-2 flex align-items-center justify-content-end mt-1" style="flex-grow: 1">
-            <!-- Contêiner para imagem de avatar e informações -->
-           <!-- Botão extra (cadastro) -->
-            <div v-if="isAdmin">
-                <button type="button" v-tooltip.bottom="{ value: t('cadastrarUsuario'), showDelay: 500, hideDelay: 300 }" aria-label="Cadastrar" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirCadastro">
-                    <i class="pi pi-user-plus" />
-                </button>
-            </div>
-
-            <!-- Botão extra (relatório) -->
-            <div >
-                <button type="button" v-tooltip.bottom="{ value:  t('relatorioLogs'), showDelay: 500, hideDelay: 300 }" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
-                    <i class="pi pi-list" />
-                </button>
-            </div>
-
-            <!-- Botão extra (relatório) -->
+            <!-- Botão extra (Abastecimento) -->
             <div>
-                <button type="button" v-tooltip.bottom="{ value: t('Abastecimento'), showDelay: 500, hideDelay: 300 }" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirAbastecimento">
+                <button
+                    :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button': isActive('AberturaPorta') }]"
+                    @click="abrirAbastecimento"
+                    v-tooltip.bottom="{ value: t('Abastecimento'), showDelay: 500, hideDelay: 300 }"
+                >
                     <i class="pi pi-cart-plus" />
                 </button>
             </div>
 
-            <!-- Botão extra (response) -->
-            <div >
-                <button  type="button" v-tooltip.bottom="{ value: t('retiradas_title'), showDelay: 500, hideDelay: 300 }" class="mr-1 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirMonitoramento">
+            <!-- Botão extra (retiradas_title) -->
+            <div>
+                <button :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button': isActive('Monitoramento')}]" v-tooltip.bottom="{ value: t('retiradas_title'), showDelay: 500, hideDelay: 300 }"  @click="abrirMonitoramento">
                     <i class="pi pi-chart-bar" />
                 </button>
             </div>
+
+            <!-- Botão extra (cadastro) -->
+            <div v-if="isAdmin">
+                <button :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button' : isActive('UsuarioCadMonitoramento')}]" v-tooltip.bottom="{ value: t('cadastrarUsuario'), showDelay: 500, hideDelay: 300 }"  @click="abrirCadastro">
+                    <i class="pi pi-user-plus" />
+                </button>
+            </div>
+
             <Divider layout="vertical" />
-            
- <div class=" ml-3 flex align-items-center" >
+
+            <div class="ml-3 flex align-items-center">
                 <!-- Imagem de avatar do usuário -->
                 <div class="mr-3">
                     <Avatar icon="pi pi-user" class="formgrid" size="large" shape="circle" />
@@ -203,11 +195,18 @@ const toggle = (event) => menu.value.toggle(event);
     display: flex; /* Ensure it's a flex container */
 }
 
+.layout-topbar .layout-topbar-button.active-button {
+    background-color: #ffffffad !important; /* fundo branco */
+    color: #052c65 !important; /* texto azul escuro */
+    transition: background-color 0.3s;
+}
+
 .layout-topbar .layout-topbar-button:hover {
     outline: 0 none;
     outline-offset: 0;
     transition: box-shadow 0.2s;
     background-color: #ffffff;
+    color: #052c65; /* Ensure text/icon is visible on white */
 }
 
 .layout-topbar .layout-topbar-button {

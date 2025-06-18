@@ -6,16 +6,16 @@ import { useAuthStore } from '@/store/authStore.js'; // Importação do store de
 import { FilterMatchMode } from '@primevue/core/api'; // Importação do filtro de correspondência.
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importação do componente de spinner de carregamento.
 import { useDataStore } from '@/store/dataStore.js'; // Importação do store de dados.
-import { FormatarListaCliente } from '@/helpers/DMHelper.js';//Importa a função FormatarListaCliente do arquivo DMHelper.js localizado na pasta helpers
-import { prepareListData } from '@/helpers/HelperUtils.js';//Importa a função prepareListData do arquivo HelperUtils.js localizado na pasta helpers
-import usuarioService from '@/services/usuarioService';//Importa o serviço usuarioService do arquivo usuarioService.js localizado na pasta services
-import plantaService from '@/services/plantaService';//Importa o serviço plantaService do arquivo plantaService.js localizado na pasta services
-import { resetUsuario } from '@/helpers/formHelper.js';//Importa a função resetUsuario do arquivo formHelper.js localizado na pasta helpers
-import { useI18n } from 'vue-i18n';//Importa o hook useI18n da biblioteca vue-i18n para internacionalização
-const { t } = useI18n();//Desestruturação do hook useI18n para obter a função t, que é usada para tradução
+import { FormatarListaCliente } from '@/helpers/DMHelper.js'; //Importa a função FormatarListaCliente do arquivo DMHelper.js localizado na pasta helpers
+import { prepareListData } from '@/helpers/HelperUtils.js'; //Importa a função prepareListData do arquivo HelperUtils.js localizado na pasta helpers
+import usuarioService from '@/services/usuarioService'; //Importa o serviço usuarioService do arquivo usuarioService.js localizado na pasta services
+import plantaService from '@/services/plantaService'; //Importa o serviço plantaService do arquivo plantaService.js localizado na pasta services
+import { resetUsuario } from '@/helpers/formHelper.js'; //Importa a função resetUsuario do arquivo formHelper.js localizado na pasta helpers
+import { useI18n } from 'vue-i18n'; //Importa o hook useI18n da biblioteca vue-i18n para internacionalização
+const { t } = useI18n(); //Desestruturação do hook useI18n para obter a função t, que é usada para tradução
 
 // Variáveis reativas para controle da aplicação
-const active = ref("0");// Variável reativa para controlar a aba ativa.
+const active = ref('0'); // Variável reativa para controlar a aba ativa.
 const dataStore = useDataStore(); // Instância do store de dados.
 const store = useAuthStore(); // Instância do store de autenticação.
 const loading = ref(false); // Variável para controlar o estado de carregamento.
@@ -25,12 +25,13 @@ const visible = ref(false); // Variável para controlar a visibilidade do formul
 const senha = ref(''); // Variável reativa para senha.
 const senhaAlterada = ref(false); // Flag para indicar se a senha foi alterada.
 const SenhaBE = ref(''); // Variável para armazenar a senha original do backend.
-const plantas = computed(() => dataStore.plantasOptions);// Opção inicial de plantas.
+const plantas = computed(() => dataStore.plantasOptions); // Opção inicial de plantas.
 const isAdmin = ref(false); // Flag para verificar se o usuário é administrador.
 const item = ref({}); // Objeto reativo para armazenar informações do item selecionado.
 const errors = ref({}); // Objeto para armazenar mensagens de erro de validação de formulário.
 const ListaClientes = ref([]); // Lista de clientes.
-let usuario = reactive({// Objeto reativo para armazenar informações do usuário.
+let usuario = reactive({
+    // Objeto reativo para armazenar informações do usuário.
     nome: '',
     email: '',
     role: '',
@@ -38,7 +39,7 @@ let usuario = reactive({// Objeto reativo para armazenar informações do usuár
     senha: '',
     ativo: true,
     id_cliente: ''
-}); 
+});
 const lazyParams = ref({
     first: 0, // Índice inicial
     rows: 10, // Número de registros por página
@@ -158,7 +159,7 @@ const deleteUsuario = async (item) => {
  * Função para voltar à tela inicial.
  */
 const voltar = () => {
-    value.value = "0"; // Retorna para a aba de listagem de usuários.
+    value.value = '0'; // Retorna para a aba de listagem de usuários.
     resetForm(); // Reseta o formulário.
 };
 
@@ -177,7 +178,8 @@ const submitForm = () => {
     }
 };
 
-const saveUsuario = async () => {//Função para adicionar um novo usuário.
+const saveUsuario = async () => {
+    //Função para adicionar um novo usuário.
     let data = null;
     if (store.userRole === 'Administrador') {
         data = {}; // Dados para o administrador.
@@ -193,7 +195,7 @@ const saveUsuario = async () => {//Função para adicionar um novo usuário.
         const response = await usuarioService.adicionarUsuario(data);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('add_web_user_sucess'), life: 3000 }); // Exibe uma notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
-        active.value = "0"; // Retorna à aba inicial.
+        active.value = '0'; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
@@ -205,7 +207,8 @@ const saveUsuario = async () => {//Função para adicionar um novo usuário.
     loading.value = false; // Ativa o carregamento.
 };
 
-const atualizarUsuario = async () => {//Função para atualizar um usuário.
+const atualizarUsuario = async () => {
+    //Função para atualizar um usuário.
     loading.value = true; // Ativa o carregamento durante a atualização.
     const data = {
         ...usuario,
@@ -219,7 +222,7 @@ const atualizarUsuario = async () => {//Função para atualizar um usuário.
         const response = await usuarioService.atualizarUsuario(data);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('update_web_user_sucess'), life: 3000 }); // Notificação de sucesso.
         fetchUsuarios(); // Recarrega a lista de usuários.
-        active.value = "0"; // Retorna à aba inicial.
+        active.value = '0'; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error); // Log de erro.
@@ -349,14 +352,14 @@ const onRowSelect = (event) => {
     senha.value = usuario.senha; // Preenche o campo de senha.
     SenhaBE.value = usuario.senha; // Armazena a senha original do backend.
     senhaAlterada.value = false; // Reseta a flag de alteração da senha.
-    active.value = "1";
+    active.value = '1';
 };
 
 /**
  * Observador da variável `value`, que detecta mudanças nas abas e executa ações.
  */
 watch(active, (newIndex, oldIndex) => {
-    if (newIndex !== oldIndex && newIndex === "0") {
+    if (newIndex !== oldIndex && newIndex === '0') {
         // Se mudar para a aba 0 (listagem de usuários).
         senha.value = ''; // Reseta a senha.
         resetForm(); // Reseta o formulário.
@@ -370,32 +373,36 @@ watch(active, (newIndex, oldIndex) => {
  */
 const loadData = async () => {
     try {
-        if (!dataStore.plantas) await dataStore.fetchPlantas();// Tenta obter as plantas do store ou via API.
+        if (!dataStore.plantas) await dataStore.fetchPlantas(); // Tenta obter as plantas do store ou via API.
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 }); // Notificação de erro.
         console.error('Erro ao carregar dados iniciais:', error); // Log de erro ao carregar dados.
     }
 };
-function debounce(func, wait = 300) { // Declara uma função chamada debounce
+function debounce(func, wait = 300) {
+    // Declara uma função chamada debounce
     let timeout; // Declara uma variável para armazenar o timeout
-    return (...args) => { // Retorna uma função que recebe argumentos
+    return (...args) => {
+        // Retorna uma função que recebe argumentos
         clearTimeout(timeout); // Limpa o timeout anterior
         timeout = setTimeout(() => func.apply(this, args), wait); // Define um novo timeout para chamar a função após o tempo de espera
     };
 }
-const debouncedFilterChange = debounce(() => { // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
+const debouncedFilterChange = debounce(() => {
+    // Declara uma função chamada debouncedFilterChange que usa debounce para chamar onFilterChange após 300ms
     onFilterChange();
 }, 300);
 
-onMounted(async () => { // Declara uma função assíncrona chamada onMounted
-    if (store.userRole === 'Administrador') { // Verifica se o papel do usuário é 'Administrador'
+onMounted(async () => {
+    // Declara uma função assíncrona chamada onMounted
+    if (store.userRole === 'Administrador') {
+        // Verifica se o papel do usuário é 'Administrador'
         await fetchUsuarios(); // Busca a lista de usuários
     } else {
         loadData(); // Carrega os dados ao montar o componente
         fetchUsuarios(); // Recarrega a lista de usuários ao montar
     }
-    active.value = "0"; // Define a aba ativa como 0 (listagem de usuários)
-    
+    active.value = '0'; // Define a aba ativa como 0 (listagem de usuários)
 });
 
 /**
@@ -416,16 +423,16 @@ const resetForm = () => {
                 <Tabs v-model:value="active" :value="0">
                     <TabList>
                         <!-- Lista de abas (TabList) -->
-                        <Tab value="0">{{$t('list_web_users')}}</Tab>
-                        <Tab value="1">{{visible ? t('edit_user') : t('add_user')}}</Tab>
+                        <Tab value="0">{{ $t('list_web_users') }}</Tab>
+                        <Tab value="1">{{ visible ? t('edit_user') : t('add_user') }}</Tab>
                         <!-- Abas para listagem e edição/adicionar usuário -->
                     </TabList>
-                    <TabPanels >
+                    <TabPanels>
                         <TabPanel value="0">
                             <!-- Aba para listagem de usuários -->
                             <div>
                                 <DataTable
-                                class = "p-datatable p-datatable-striped"
+                                    class="p-datatable p-datatable-striped"
                                     v-model:filters="filters"
                                     :value="ListaUsuario"
                                     stripedRows
@@ -463,14 +470,24 @@ const resetForm = () => {
                                         <!-- Cabeçalho da tabela com total de registros e campo de busca -->
                                         <div class="flex justify-content-between mt-4">
                                             <div class="font-semibold">
-                                                <span>{{ $t('total_records' ,{count: filteredCount})}}</span>
+                                                <span>{{ $t('total_records', { count: filteredCount }) }}</span>
                                                 <!-- Exibe a quantidade de registros filtrados -->
                                             </div>
                                             <IconField iconPosition="left">
                                                 <InputIcon>
                                                     <i class="pi pi-search" />
                                                 </InputIcon>
-                                                <InputText v-model="filters['global'].value" :placeholder="t('search')"  @input="debouncedFilterChange" autocomplete="off"/>
+                                                <InputText
+                                                    v-model="filters['global'].value"
+                                                    :placeholder="t('search')"
+                                                    @input="debouncedFilterChange"
+                                                    autocomplete="off"
+                                                    autocorrect="off"
+                                                    autocapitalize="off"
+                                                    spellcheck="false"
+                                                    id="nao_autofill"
+                                                    name="nao_autofill"
+                                                />
                                                 <!-- Campo de busca global para filtrar os usuários -->
                                             </IconField>
                                         </div>
@@ -534,12 +551,12 @@ const resetForm = () => {
                             <!-- Aba para edição ou criação de usuário -->
                             <div class="mt-5 mx-0 grid">
                                 <!-- Formulário de edição ou adição -->
-                                <div class=" xl:col-6 lg:col-6 md:col-12 sm:col-12" >
+                                <div class="xl:col-6 lg:col-6 md:col-12 sm:col-12">
                                     <label for="name">{{ t('name') }}:</label>
-                                    <InputText class="my-2 w-full" v-model="usuario.nome" id="name" type="text"/>
+                                    <InputText class="my-2 w-full" v-model="usuario.nome" id="name" type="text" />
                                     <!-- Campo para nome do usuário -->
                                 </div>
-                                <div class=" xl:col-6 lg:col-6 md:col-6 sm:col-12">
+                                <div class="xl:col-6 lg:col-6 md:col-6 sm:col-12">
                                     <label for="email">{{ t('email') }}:</label>
                                     <InputText class="my-2 w-full" v-model="usuario.email" id="email" :invalid="!!errors.email" @blur="validateEmail" />
                                     <!-- Campo para e-mail do usuário, com validação -->
@@ -565,20 +582,20 @@ const resetForm = () => {
                                     <Select class="my-2 w-full" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Select>
                                     <!-- Select para selecionar o cliente, visível apenas se for admin -->
                                 </div>
-                                <div class=" xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
+                                <div class="xl:col-4 flex flex-column align-items-center m-0 lg:col-4 md:col-4 sm:col-12">
                                     <label class="mt-0 text-nowrap" for="switch2">{{ t('active_user') }}</label>
                                     <div class="grid mt-3 w-full align-items-center justify-content-center switch-wrapper">
-                                        <ToggleSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2 " />
+                                        <ToggleSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
                                         <span class="ml-2">{{ usuario.ativo ? $t('yes') : $t('no') }}</span>
                                         <!-- Switch para ativar/desativar o usuário -->
                                     </div>
                                 </div>
-                                <div class=" xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label for="perfil">{{ t('profile') }}:</label>
                                     <Select class="my-2 w-full" id="perfil" v-model="usuario.role" :options="selectItems" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')"></Select>
                                     <!-- Select para selecionar o perfil do usuário -->
                                 </div>
-                                <div class=" xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label for="planta">{{ t('factory') }}:</label>
                                     <Select class="my-2 w-full" filter id="planta" v-model="usuario.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')"></Select>
                                     <!-- Select para selecionar a planta -->
@@ -620,6 +637,4 @@ const resetForm = () => {
     </div>
 </template>
 
-<style>
-
-</style>
+<style></style>

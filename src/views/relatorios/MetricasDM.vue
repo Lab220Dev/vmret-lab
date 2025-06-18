@@ -17,7 +17,7 @@ const relatorio = ref({
 const loading = ref(false); // Variável reativa para controlar o estado de carregamento
 const dms = ref([]); // Variável reativa para armazenar a lista de DMs
 const formatedDms = ref([]); // Lista reativa para armazenar os DMs formatados (não utilizada atualmente)
-const select1 = ref(null); // Referência para o primeiro select 
+const select1 = ref(null); // Referência para o primeiro select
 
 // Função que será chamada quando o componente for montado
 onMounted(() => {
@@ -41,7 +41,7 @@ const fetchDMS = async () => {
                 Authorization: `Bearer ${store.token}` // Passa o token de autenticação no cabeçalho
             }
         });
-        // Mapeia a resposta para um formato esperado para a select 
+        // Mapeia a resposta para um formato esperado para a select
         dms.value = response.data.map(({ ID_DM, Numero }) => ({
             label: `${Numero}`, // Exibe o número da DM como label
             value: ID_DM // O ID da DM será o valor selecionado
@@ -132,7 +132,7 @@ const exportJSON = () => {
  * Verifica se o Select está visível e o fecha.
  */
 const closeAllselects = () => {
-    if (select1.value?.overlayVisible) select1.value.hide(); // Verifica se o select 1 está visível e o esconde
+    if (select1.value?.overlayVisible) select1.value.hide(); // Verifica se o select1 está visível e o esconde
 };
 
 /**
@@ -154,7 +154,7 @@ const handleDatepickerOpen = () => {
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">DM:</label>
                         <!-- Select para selecionar a DM -->
-                        <Select class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="select 1" />
+                        <Select class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" placeholder="Todos" ref="select1" />
                     </div>
                     <div class="field xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">Data Inicial:</label>
