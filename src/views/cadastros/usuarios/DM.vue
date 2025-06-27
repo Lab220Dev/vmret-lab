@@ -1188,18 +1188,25 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                     <label for="Produto" class="font-semibold">{{ t('product') }}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-                    <Select 
-                        v-model="produtoSelecionado.id_produto"
-                        class="w-full"
-                        removableSort
-                        :options="ListaProdutos"
-                        :virtualScrollerOptions="{ itemSize: 30 }"
-                        :filter="true"
-                        :filterBy="'label'"
-                        optionLabel="label"
-                        optionValue="value"
-                        :placeholder="t('select_product')"
-                    />
+<Select 
+    v-model="produtoSelecionado.id_produto"
+    class="w-full"
+    removableSort
+    :options="ListaProdutos"
+    :virtualScrollerOptions="{ itemSize: 30 }"
+    :filter="true"
+    :filterBy="'label'"
+    optionLabel="label"
+    optionValue="value"
+    :placeholder="t('select_product')"
+    v-tooltip="{ value: t('select_product'), showDelay: 1000, hideDelay: 300 }"
+>
+    <template #option="slotProps">
+        <span v-tooltip.top="slotProps.option.label">
+            {{ slotProps.option.label }}
+        </span>
+    </template>
+</Select>
                 </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Controladora" class="font-semibold">{{ t('controller') }}:</label>

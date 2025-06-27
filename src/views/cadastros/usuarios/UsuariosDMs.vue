@@ -11,7 +11,7 @@ import usuarioDMService from '@/services/usuarioDMService';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 // Variáveis reativas para controle da aplicação
-const active = ref("0"); // Controle de abas ativas
+const active = ref('0'); // Controle de abas ativas
 const dataStore = useDataStore(); // Acesso aos dados da store
 const store = useAuthStore(); // Acesso aos dados de autenticação
 const loading = ref(false); // Controle do estado de loading (carregamento)
@@ -44,7 +44,8 @@ const usuario = ref({
     nome: '',
     login: '',
     senha: '',
-    ativo: true
+    ativo: true,
+    admin: true
 });
 
 const ListaUsuario = ref([]); // Lista de usuários
@@ -68,11 +69,11 @@ const onRowSelect = (event) => {
     senha.value = usuario.value.senha; // Armazena a senha para edição
     SenhaBE.value = usuario.value.senha; // Armazena a senha original para comparação
     senhaAlterada.value = false; // Reseta a flag de senha alterada
-    active.value = "1"; // Ativa a aba de edição
+    active.value = '1'; // Ativa a aba de edição
 };
 
 const voltar = () => {
-    active.value = "0"; // Retorna à aba inicial
+    active.value = '0'; // Retorna à aba inicial
     resetForm(); // Reseta o formulário
 };
 
@@ -118,7 +119,7 @@ const saveUsuario = async () => {
         const response = await usuarioDMService.adicionarUsuarioDM(data); // Chamada API para adicionar o usuário
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM criado', life: 3000 }); // Exibe a mensagem de sucesso
         fetchUsuarios(); // Atualiza a lista de usuários
-        active.value = "0"; // Retorna à aba inicial.
+        active.value = '0'; // Retorna à aba inicial.
         resetForm(); // Reseta o formulário.
     } catch (error) {
         loading.value = false; // Desativa o carregamento em caso de erro.
@@ -144,7 +145,7 @@ const atualizarUsuario = async () => {
         const response = await usuarioDMService.atualizarUsuarioDM(data); // Chamada API para atualizar o usuário
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuario DM atualizado', life: 3000 }); // Exibe a mensagem de sucesso
         fetchUsuarios(); // Atualiza a lista de usuários
-        active.value = "0"; // Volta à aba de listagem
+        active.value = '0'; // Volta à aba de listagem
         resetForm(); // Reseta o formulário
     } catch (error) {
         console.error('Erro ao atualizar o Usuario:', error); // Mensagem de erro
@@ -205,20 +206,23 @@ watch(
 
 watch(active, (newIndex, oldIndex) => {
     // Quando a aba ativa mudar para "listagem de usuários" (aba 0)
-    if (newIndex === "0" && oldIndex !== newIndex) {
+    if (newIndex === '0' && oldIndex !== newIndex) {
         resetForm(); // Reseta o formulário
         fetchUsuarios(); // Atualiza a lista de usuários
         visible.value = false; // Oculta o formulário
     }
 });
 
-const loadData = async () => { // Declara uma função assíncrona chamada loadData
-    try { // Inicia um bloco try para capturar possíveis erros
+const loadData = async () => {
+    // Declara uma função assíncrona chamada loadData
+    try {
+        // Inicia um bloco try para capturar possíveis erros
         const dms = dataStore.dms || (await dataStore.fetchListaDms()); // Carrega os DMs
 
         // Exclui a opção 'Todos' e obtém os outros dados
         ListaDMS.value = dms.filter((dm) => dm.label !== 'Todos'); // Filtra os DMs
-    } catch (error) { // Captura qualquer erro que ocorrer durante a requisição
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a requisição
         console.error('Erro ao carregar dados iniciais:', error); // Mensagem de erro
     }
 };
@@ -227,11 +231,12 @@ const loadData = async () => { // Declara uma função assíncrona chamada loadD
 onMounted(() => {
     loadData(); // Carrega os DMs
     fetchUsuarios(); // Carrega a lista de usuários
-    if (isAdmin()) {//Se for admin
+    if (isAdmin()) {
+        //Se for admin
         fetchCliente(); // Carrega a lista de clientes
     }
 
-    active.value = "0";
+    active.value = '0';
 });
 
 /**
@@ -256,7 +261,7 @@ const deleteUsuario = async (item) => {
         toast.add({ severity: 'success', summary: 'Successful', detail: 'Usuário deletado', life: 3000 }); // Exibe mensagem de sucesso
         deleteUsuarioDialog.value = false; // Fecha o diálogo de confirmação
         fetchUsuarios(); // Atualiza a lista de usuários
-        active.value = "0"; // Volta à aba de listagem
+        active.value = '0'; // Volta à aba de listagem
     } catch {
         toast.add({ severity: 'error', summary: 'Error', detail: 'Erro ao deletar o usuário.', life: 3000 }); // Exibe mensagem de erro
     } finally {
@@ -270,6 +275,7 @@ const resetForm = () => {
     usuario.value.senha = ''; // Reseta a senha
     usuario.value.id_cliente = ''; // Reseta o cliente
     usuario.value.ativo = true; // Reseta o estado de ativo
+    usuario.value.admin = true; // Reseta o estado de ativo
     selectedDM.value = []; // Reseta as opções de DM
     senha.value = ''; // Reseta o campo "Confirme a Senha"
     SenhaBE.value = ''; // Reseta a senha original
@@ -335,7 +341,7 @@ const resetForm = () => {
                                                     <!-- Ícone de busca -->
                                                 </InputIcon>
                                                 <!-- Campo de texto para busca -->
-                                                <InputText v-model="filterDM['global'].value" :placeholder="t('search')" autocomplete="off"/>
+                                                <InputText v-model="filterDM['global'].value" :placeholder="t('search')" autocomplete="off" />
                                             </IconField>
                                         </div>
                                     </template>
@@ -357,6 +363,7 @@ const resetForm = () => {
                                             <i class="pi" :class="{ 'pi-check-circle pi-yes ': data.ativo, 'pi-times-circle pi-no': !data.ativo }"></i>
                                         </template>
                                     </Column>
+
                                     <!-- Coluna para o botão de excluir o usuário -->
                                     <Column style="min-width: 8rem">
                                         <template #body="slotProps">
@@ -371,37 +378,47 @@ const resetForm = () => {
                         <TabPanel value="1">
                             <div class="mt-5 mx-0 p-fluid grid">
                                 <!-- Campo para o nome do usuário -->
-                                <div class="xl:col-6 lg:col-6 md:col-8 sm:col-12">
+                                <div class="xl:col-12 lg:col-6 md:col-8 sm:col-12">
                                     <label for="name">{{ $t('name') }}:</label>
                                     <InputText class="my-2 w-full" v-model="usuario.nome" id="name" type="text" />
                                 </div>
                                 <!-- Campo para o login do usuário -->
-                                <div class=" xl:col-6 lg:col-6 md:col-8 sm:col-12">
+                                <div class="xl:col-4 lg:col-6 md:col-8 sm:col-12">
                                     <label for="email">{{ $t('login') }}:</label>
                                     <InputText class="my-2 w-full" v-model="usuario.login" id="email" />
                                 </div>
                                 <!-- Campo para a senha do usuário -->
-                                <div class=" xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label for="senha">{{ $t('password') }}:</label>
                                     <InputText class="my-2 w-full" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                     <!-- Exibe erro se a senha for inválida -->
                                     <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                                 </div>
                                 <!-- Campo para confirmar a senha -->
-                                <div class=" xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label for="senha">{{ $t('confirm_password') }}:</label>
                                     <InputText class="my-2 w-full" id="senha" v-model="senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
                                     <!-- Exibe erro se as senhas não coincidirem -->
                                     <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                                 </div>
                                 <!-- Campo para indicar se o usuário está ativo -->
-                                <div class=" flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label class="mt-0 text-nowrap" for="switch2">{{ $t('active_user') }}</label>
                                     <div class="grid mt-3">
                                         <ToggleSwitch v-model="usuario.ativo" inputId="switch2" class="mr-2" />
                                         <span class="ml-2">{{ usuario.ativo ? t('yes') : t('no') }}</span>
                                     </div>
                                 </div>
+
+                                <!-- Campo para indicar se o usuário é admin
+                                <div v-if="isAdmin()" class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch3">{{ $t('Admin?') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch v-model="usuario.admin" inputId="switch2" class="mr-2" />
+                                        <span class="ml-2">{{ usuario.admin ? t('yes') : t('no') }}</span>
+                                    </div>
+                                </div> -->
+
                                 <div v-if="isAdmin()" class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label for="perfil">{{ $t('client') }}</label>
                                     <Select class="my-2 w-full" id="perfil" v-model="usuario.id_cliente" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="$t('choose_one')" @change="fetchIdPlanta"></Select>
@@ -486,6 +503,4 @@ const resetForm = () => {
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

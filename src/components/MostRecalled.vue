@@ -53,7 +53,7 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
         <!-- Coluna para exibir o nome do produto -->
         <Column field="ProdutoNome" :header="t('item')" sortable>
             <template #body="{ data }">
-                <span class="tooltip-target" v-tooltip="data.ProdutoNome">{{ data.ProdutoNome }}</span>
+                <span class="tooltip-target" v-tooltip.top="data.ProdutoNome">{{ data.ProdutoNome }}</span>
             </template></Column
         >
         <!-- Coluna para exibir o número de retiradas -->

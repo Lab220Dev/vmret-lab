@@ -311,7 +311,7 @@ export default {
     quantity_short: 'Qty.',
     placa_mola: 'Board / Spring',
     andar_posicao: 'Floor / Position',
-    placa_posicao: 'Board / Position',
+    placa_posicao: 'Board / DIP / Position',
     no_search_made: 'No search has been made yet',
     no_data_found: 'No data found. Please check your query.',
     title: 'Error',

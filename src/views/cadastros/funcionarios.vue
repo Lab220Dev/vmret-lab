@@ -24,7 +24,7 @@ import funcionarioService from '@/Services/funcionarioService.js';
 import * as formatservices from '@/helpers/HelperUtils.js'; // Importa todas as funções de ajuda do arquivo HelperUtils.js
 // Importando funções de ajuda relacionadas ao formulário do funcionarios
 import { resetFuncionarioForm, resetItens as resetProduto } from '@/helpers/formHelper.js';
-import { validadorcpf, validadoremail, validateForm } from '@/helpers/HelperFuncionario.js';
+import { validadorcpf, validadoremail } from '@/helpers/HelperFuncionario.js';//validateForm
 import { useI18n } from 'vue-i18n';
 const { t, locale } = useI18n();
 const store = useAuthStore(); // Acessa o store de autenticação para obter dados sobre o usuário logado
@@ -63,20 +63,12 @@ const imageUploader = ref(null);
  */
 const imageUrl = ref(imagePlaceholder);
 
-// Cria uma referência reativa para armazenar os centros de custo, inicialmente um array vazio.
-let centroCusto = ref([]);
-
-// Cria uma referência reativa para armazenar os setores, inicialmente um array vazio.
-let setor = ref([]);
-
 // Cria uma referência reativa para armazenar as opções de hierarquia, inicialmente um array vazio.
 let hieraquiaoptions = ref([]);
 
 // Cria uma referência reativa para armazenar as opções de hierarquia formatadas, inicialmente um array vazio.
 let formatedHierarquiaOptions = ref([]);
 
-// Cria uma referência reativa para armazenar as plantas, inicialmente um array vazio.
-let plantas = ref([]);
 const centroCustoOptions = computed(() => dataStore.cdcsOptions);
 const plantaOptions = computed(() => dataStore.plantasOptions);
 const setorOptions = computed(() => dataStore.setoresOptions);
@@ -84,6 +76,8 @@ const produtosOptions = computed(() => dataStore.produtosOptions);
 const ListaProdutos = computed(() => {
     return produtosOptions.value.filter((produto) => produto.value !== null);
 });
+
+
 /**
  * Cria um objeto reativo para armazenar os dados de um funcionário, com as propriedades iniciais.
  *
@@ -118,6 +112,15 @@ let funcionario = reactive({
     nomearquivo: '', // Nome do arquivo do funcionário (por exemplo, foto ou documento).
     itens: [] // Lista de itens relacionados ao funcionário.
 });
+
+const SenhaBE = ref(''); // Armazena a senha original para comparação
+
+const isSameSenha = () => {
+    // Função para verificar se a senha inserida é a mesma
+    return funcionario.senha === SenhaBE.value;
+};
+
+const senhaAlterada = ref(false); // Flag para indicar se a senha foi alterada
 
 // Cria uma referência reativa para armazenar a lista de produtos, inicialmente um array vazio.
 // const ListaProdutos = ref([]);
@@ -252,6 +255,10 @@ const onRowSelect = async (event) => {
     // Faz uma requisição assíncrona para buscar a imagem do funcionário com base no nome do arquivo de imagem.
     await getImagem(funcionario.foto);
 
+senha.value = funcionario.senha; // Armazena a senha para edição
+    SenhaBE.value = funcionario.senha; // Armazena a senha original para comparação
+    senhaAlterada.value = false; // Reseta a flag de senha alterada
+    
     // Define o valor de `active` como 1, provavelmente indicando que o funcionário está ativo no sistema.
     active.value = '1';
 
@@ -354,10 +361,10 @@ watch(
 const adicionarFuncionario = async () => {
     try {
         loading.value = true;
-        const { isValid, errors } = validateForm(funcionario);
-        if (!isValid) {
-            throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
-        }
+        // const { isValid, errors } = validateForm(funcionario);
+        // if (!isValid) {
+        //     throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
+        // }
         await funcionarioService.adicionarFuncionario(funcionario, selectedFile);
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_added'), life: 3000 });
         dataStore.invalidateFuncionariosCache();
@@ -415,8 +422,8 @@ const fetchHieraquiaOptions = async () => {
         const response = await funcionarioService.fetchHieraquiaOptions();
         hieraquiaoptions = response.data;
         formatedHierarquiaOptions = hieraquiaoptions.map((hieraquiaoptions) => ({
-            label: ` ${hieraquiaoptions.id_funcao}`,
-            value: hieraquiaoptions.id_funcao
+            label: ` ${hieraquiaoptions.nome}`,
+            value: hieraquiaoptions.nome
         }));
     } catch (error) {
         // Captura qualquer erro que ocorrer durante a requisição
@@ -607,13 +614,20 @@ const editItem = (selectedItem) => {
 };
 
 const atualizarFuncionario = async () => {
+    loading.value = true;
+
+        if (isSameSenha()) {
+        // Se a senha não foi alterada
+        delete funcionario.senha; // Remove a senha do objeto
+    }
+    
     // Declara uma função assíncrona chamada atualizarFuncionario
     try {
-        loading.value = true;
-        const { isValid, errors } = validateForm(funcionario);
-        if (!isValid) {
-            throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
-        }
+        
+        // const { isValid, errors } = validateForm(funcionario);
+        // if (!isValid) {
+        //     throw new Error(t('employee_form_validation_error', { errors: JSON.stringify(errors) }));
+        // }
         await funcionarioService.atualizarFuncionario(funcionario, selectedFile); // Faz uma requisição para atualizar o funcionário
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('employee_update'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         dataStore.invalidateFuncionariosCache(); // Invalida o cache de funcionários no dataStore
@@ -858,10 +872,10 @@ const hideDialog = () => {
                                         </VueDatePicker>
                                     </div>
                                     <!-- primeira parte do nested -->
-                                    <div class="p-fluid formgrid grid nested-grid lg:col-8 md:col-6 sm:4 p-0 pt-1">
-                                        <Fieldset :legend="t('select_days_for_employee')" class="mt-5 p-1 lg:col-12 md:col-12 sm:col-12">
+                                    <div class="p-fluid formgrid grid nested-grid  lg:col-8 md:col-6 sm:4 p-0 pt-1">
+                                        <Fieldset :legend="t('select_days_for_employee')" class="mt-5 text-center p-1 lg:col-12 md:col-12 sm:col-12 ">
                                             <label for="fim"></label>
-                                            <div id="fim" class="checkbox-container flex align-content-end flex-wrap mx-4 mt-4">
+                                            <div id="fim" class="checkbox-container flex align-content-end justify-content-end flex-wrap mx-4 mt-4">
                                                 <div class="checkbox-items m-2 flex align-items-end">
                                                     <Checkbox v-model="funcionario.segunda" inputId="Segunda" name="Dias" value="Segunda" :binary="true" />
                                                     <label for="Segunda" class="ml-2"> {{ t('monday') }} </label>
@@ -893,7 +907,7 @@ const hideDialog = () => {
                                             </div>
                                         </Fieldset>
                                     </div>
-                                    <div class="mx-auto lg:col-4 md:col-6 sm:col-12 ml-2 ml-2 p-0">
+                                    <div class="ml-4 lg:col-4 md:col-6 sm:col-12  p-0">
                                         <ImageUpload ref="imageUploader" @fileSelected="handleFileSelected" @clearImage="handleClearImage" :externalImages="imageUrl" />
                                     </div>
                                 </div>

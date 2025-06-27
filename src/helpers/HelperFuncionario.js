@@ -29,7 +29,7 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
     }
 
     // Remova o campo `foto` da lógica de manipulação se um arquivo novo for enviado
-    const { foto, itens, ...restOfFuncionario } = funcionario;
+    const { foto, itens, id_cliente, ...restOfFuncionario } = funcionario;
 
     // Processar os itens do funcionário
     const itensUnicos = Array.from(new Set(itens.map((item) => item.id_produto))).map((id_produto) => itens.find((item) => item.id_produto === id_produto));
@@ -37,12 +37,14 @@ export const prepareFuncionarioData = (funcionario, selectedFile = null, isUpdat
     formData.append('itens', JSON.stringify(itensUnicos));
 
     // Adicionar os demais campos do funcionário
-    Object.entries(restOfFuncionario).forEach(([key, value]) => {   // Itera sobre os campos do funcionário.
-        formData.append(key, value);//
-    });
+    Object.entries(restOfFuncionario).forEach(([key, value]) => {
+  if (value !== undefined && value !== null) {
+    formData.append(key, value);
+  }
+});
 
     // Campos obrigatórios
-    // formData.append('id_cliente', store.userIdCliente); // Adiciona o ID do cliente ao FormData.
+    formData.append('id_cliente', store.userIdCliente); // Adiciona o ID do cliente ao FormData.
     formData.append('id_usuario', store.userId);    // Adiciona o ID do usuário ao FormData.
 
     return formData;    // Retorna o FormData com os dados do funcionário.
@@ -81,19 +83,19 @@ const store = useAuthStore();
  * @returns {boolean} isValid - Indicador de validade, verdadeiro se não houver erros.
  * @returns {Object} errors - Objeto contendo as mensagens de erro para cada campo inválido.
  */
-export const validateForm = (funcionario) => {  // Função que valida os dados de um formulário de funcionário.
-    const errors = {};  // Inicializa um objeto vazio para armazenar as mensagens de erro.
-    if (!funcionario.CPF || !isValidDocPessoaFisica(funcionario.CPF)) { // Verifica se o CPF foi fornecido e se é válido.
-        errors.CPF = 'CPF inválido';    // Adiciona uma mensagem de erro ao objeto de erros.
-    }
-    if (!funcionario.email || !isValidEmail(funcionario.email)) {   // Verifica se o e-mail foi fornecido e se é válido.
-        errors.email = 'E-mail inválido';   // Adiciona uma mensagem de erro ao objeto de erros.
-    }
-    return {    // Retorna um objeto contendo o resultado da validação.
-        isValid: Object.keys(errors).length === 0,  // Indicador de validade, verdadeiro se não houver erros.
-        errors  // Objeto contendo as mensagens de erro para cada campo inválido.
-    };
-};
+// export const validateForm = (funcionario) => {  // Função que valida os dados de um formulário de funcionário.
+//     const errors = {};  // Inicializa um objeto vazio para armazenar as mensagens de erro.
+//     if (!funcionario.CPF || !isValidDocPessoaFisica(funcionario.CPF)) { // Verifica se o CPF foi fornecido e se é válido.
+//         errors.CPF = 'CPF inválido';    // Adiciona uma mensagem de erro ao objeto de erros.
+//     }
+//     if (!funcionario.email || !isValidEmail(funcionario.email)) {   // Verifica se o e-mail foi fornecido e se é válido.
+//         errors.email = 'E-mail inválido';   // Adiciona uma mensagem de erro ao objeto de erros.
+//     }
+//     return {    // Retorna um objeto contendo o resultado da validação.
+//         isValid: Object.keys(errors).length === 0,  // Indicador de validade, verdadeiro se não houver erros.
+//         errors  // Objeto contendo as mensagens de erro para cada campo inválido.
+//     };
+// };
 
 /**
  * Valida o CPF informado.

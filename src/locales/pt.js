@@ -305,7 +305,7 @@ export default {
     current_quantity_short: 'Qd. Atual',
     placa_mola: 'Placa / Mola',
     andar_posicao: 'Andar / Posição',
-    placa_posicao: 'Placa / Posição',
+    placa_posicao: 'Placa / DIP / Posição',
     no_search_made: 'Ainda não foi feita nenhuma busca',
     no_data_found: 'Nenhum dado encontrado. Por favor, verifique sua consulta.',
     title_error: 'Erro',

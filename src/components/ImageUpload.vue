@@ -8,7 +8,7 @@
       <div class="image-container">
         <img :src="imageData || placeholderImage" alt="Uploaded or Placeholder Image" class="uploaded-image" />
         <!-- Botão de remoção da imagem carregada -->
-        <button v-if="imageData" class="remove-button" @click="removeImage">×</button>
+        <!-- <button v-if="imageData" class="remove-button" @click="removeImage">×</button> -->
       </div>
       
       <!-- Botão para acionar o envio de imagem -->

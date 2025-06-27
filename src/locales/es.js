@@ -321,7 +321,7 @@ export default {
     no_search_made: 'Aún no se ha realizado ninguna búsqueda',
     placa_mola: 'Placa / Resorte',
     andar_posicao: 'Piso / Posición',
-    placa_posicao: 'Placa / Posición',
+    placa_posicao: 'Placa / DIP / Posición',
     no_data_found: 'No se encontraron datos. Por favor, revise su consulta.',
     title: 'Error',
     fetch_data: 'Error al buscar datos.',
