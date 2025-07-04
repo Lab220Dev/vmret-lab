@@ -423,7 +423,7 @@ const fetchHieraquiaOptions = async () => {
         hieraquiaoptions = response.data;
         formatedHierarquiaOptions = hieraquiaoptions.map((hieraquiaoptions) => ({
             label: ` ${hieraquiaoptions.nome}`,
-            value: hieraquiaoptions.nome
+            value: hieraquiaoptions.id_funcao
         }));
     } catch (error) {
         // Captura qualquer erro que ocorrer durante a requisição

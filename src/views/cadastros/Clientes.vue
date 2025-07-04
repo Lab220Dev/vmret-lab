@@ -38,7 +38,7 @@ let cliente = reactive({
     nome: '', // Nome do cliente
     cnpj: '', // CNPJ do cliente
     ativo: true, // Se o cliente está ativo (booleano)
-    usar_api: false, // Se o cliente pode usar API (booleano)
+    usar_api: true, // Se o cliente pode usar API (booleano)
     textoretirada: '' // Campo de texto associado ao cliente (não especificado)
 });
 

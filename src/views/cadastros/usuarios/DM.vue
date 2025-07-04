@@ -926,34 +926,34 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                             </div>
                         </panel>
 
-                        <div v-if="selectedClient.usar_api" class="mt-5 mx-auto p-fluid grid">
-                            <div class="full flex align-items-start xl:col-12 lg:col-12 md:col-6 sm:col-12">
-                                <label class="mt-3 ml-4" for="switch3">Usa Mob?</label>
+                        <div v-if="selectedClient.usar_api" class="mt-5 card grid mb-5">
+                            <div class="flex xl:col-12 lg:col-12 md:col-12 sm:col-12 mt-3">
+                                <label class="mt-3 ml-4 mb-5" for="switch3">Usa Mob?</label>
                                 <ToggleSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
                             </div>
-                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="userapi">{{ t('userid_api') }}</label>
-                                <InputText class="my-2" id="userapi" v-model="DM.UserID" />
+                            <div class="lg:col-6 md:col-9 sm:col-12">
+                                <label for="userapi">{{ t('userid_api') }}:</label>
+                                <InputText class="my-2 w-full" id="userapi" v-model="DM.UserID" />
                             </div>
-                            <div class="full mt-4 lg:col-6 md:col-12 sm:col-12">
-                                <label for="senhaapi">{{ t('api_password') }}</label>
-                                <InputText class="my-2" id="senhaapi" v-model="DM.ChaveAPI" />
+                            <div class="lg:col-6 md:col-9 sm:col-12">
+                                <label for="senhaapi">{{ t('api_password') }}:</label>
+                                <InputText class="my-2 w-full" id="senhaapi" v-model="DM.ChaveAPI" />
                             </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="clienteAPI">{{ t('idclient_api') }}</label>
-                                <InputText class="my-2" id="clienteAPI" v-model="DM.ClienteID" />
+                            <div class="lg:col-6 md:col-9 sm:col-12">
+                                <label for="clienteAPI">{{ t('idclient_api') }}:</label>
+                                <InputText class="my-2 w-full" id="clienteAPI" v-model="DM.ClienteID" />
                             </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-12">
-                                <label for="urlapi">{{ t('url_api') }}</label>
-                                <InputText class="my-2" id="urlapi" v-model="DM.URL" />
+                            <div class="lg:col-6 md:col-9 sm:col-12">
+                                <label for="urlapi">{{ t('url_api') }}:</label>
+                                <InputText class="my-2 w-full" id="urlapi" v-model="DM.URL" />
                             </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-6">
-                                <label for="codigo">{{ t('key') }}</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
+                            <div class="lg:col-6 md:col-9 sm:col-12">
+                                <label for="codigo">{{ t('key') }}:</label>
+                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden w-full" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
                             </div>
-                            <div class="full lg:col-6 md:col-12 sm:col-6">
-                                <label for="validar">{{ t('validate_external_data') }}</label>
-                                <Button class="mt-4" icon="pi pi-check" :label="t('validate_external_data_text')" @click="validarDados" />
+                            <div class="mt-2 lg:col-6 md:col-9 sm:col-12">
+                                <!-- <label for="validar">{{ t('validate_external_data') }}</label> -->
+                                <Button class="mt-4 w-full " icon="pi pi-check" :label="t('validate_external_data_text')" @click="validarDados" />
                             </div>
                         </div>
                         <Button class="mt-7" icon="pi pi-plus" :label="t('new_controller')" @click="addControladora" />
