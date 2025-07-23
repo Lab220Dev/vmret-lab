@@ -254,6 +254,7 @@ export default {
     unit_measurement: 'Unidade de Medida',
     shelf_life: 'Validade',
     days: 'Dias',
+    dayPeriod: 'dia(s)',
     minimum_quantity: 'Quantidade Mínima',
     primary_image: 'Imagem Principal',
     secondary_image: 'Imagem Secundária',
@@ -337,7 +338,7 @@ export default {
     confirm_delete_item: 'Você tem certeza que deseja excluir o item {product}?',
     no_dm_added: 'Nenhuma DM adicionada.',
     select_controller: 'Selecione o tipo de controladora',
-    itens_dms: 'Itens da DM',
+    itens_dms: 'Itens da',
     no_added_item: 'Nenhum item adicionado.',
     controller_2018: 'Controladora / Placa / Motor 1 / Motor 2',
     controller_2023: 'Controladora / DIP / Andar / Posição',
@@ -638,4 +639,5 @@ export default {
     baixarCSVcomErros: 'Baixar CSV com Erros',
     reenviarCorrigido: 'Reenviar arquivo corrigido',
     nomeCompleto: 'Nome Completo',
+    period: 'Período',
 };

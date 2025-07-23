@@ -305,35 +305,35 @@ onMounted(async () => {
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="id_dm">{{ t('dispenser_machine') }}:</label>
                         <!-- selectpara selecionar o DM (documento de medição) -->
-                        <Select filter class="w-full" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
                     </div>
 
                     <!-- Filtro para Centro de Custo -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ t('cost_center') }}</label>
                         <!-- selectpara selecionar o centro de custo -->
-                        <Select filter class="w-full" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" @change="filtroGenerico" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro para Setor -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ t('sector') }}</label>
                         <!-- selectpara selecionar o setor -->
-                        <Select filter class="w-full" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" @change="filtroGenerico" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro para Planta -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="planta">{{ t('factory') }}:</label>
                         <!-- selectpara selecionar a planta -->
-                        <Select filter class="w-full" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" @change="filtroGenerico" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro para Funcionário -->
                     <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ t('employee') }}:</label>
                         <!-- selectpara selecionar o funcionário -->
-                        <Select filter class="w-full" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
                     </div>
 
                     <!-- Filtro para Data Inicial -->

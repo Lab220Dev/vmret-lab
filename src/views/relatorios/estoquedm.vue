@@ -121,7 +121,7 @@ const truncatedText = (text) => {
         <!-- Select para seleção de DM -->
         <div class="my-2">
             <label for="dm" class="ml-2">{{$t('dispenser_machine')}}:</label>
-            <Select id="dm" filter style="width: 200px" v-model="relatorio.id_dm" :options="dms" ref="select1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
+            <Select id="dm" filter style="width: 200px" panelStyle="width: 200px;" v-model="relatorio.id_dm" :options="dms" ref="select1" optionLabel="label" optionValue="value" :placeholder="$t('all')" class="mb-2 ml-2" @change="relatorioDM()" />
         </div>
 
         <!-- Tabela de Estoque -->

@@ -45,7 +45,7 @@ const usuario = ref({
     login: '',
     senha: '',
     ativo: true,
-    admin: true
+    admin: false
 });
 
 const ListaUsuario = ref([]); // Lista de usuários

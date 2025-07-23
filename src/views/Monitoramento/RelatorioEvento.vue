@@ -73,34 +73,35 @@ const buscarRelatorio = async () => {
         <div class="form">
             <div class="p-fluid formgrid grid col-12">
                 <!-- Filtro ID_DM -->
-                <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
+                <div class="field xl:col-3 lg:col-3 md:col-6 sm:col-12 py-2 my-2">
                     <label for="id_dm">DM:</label>
-                    <Select class="drop" filter v-model="filtros.id_dm" :options="listaDMs" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
+                    <Select class="drop" filter v-model="filtros.id_dm" panelStyle="width: 100px;" :options="listaDMs" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
 
                 <!-- Filtro Ativação -->
-                <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
+                <!-- <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
                     <label for="ativacao">{{ $t('activation') }}:</label>
                     <Select class="drop" filter v-model="filtros.ativacao" :options="listaAtivacoes" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
-                </div>
+                </div> -->
 
-                <!-- Filtro Evento -->
+                <!-- Filtro Evento
                 <div class="field xl:col-4 lg:col-4 md:col-6 sm:col-12 py-0 my-0">
                     <label for="evento">{{ $t('event') }}:</label>
                     <Select class="drop" filter v-model="filtros.evento" :options="listaEventos" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
-                </div>
+                </div> -->
 
-                <!-- Filtro Status -->
+                <!-- Filtro Status
                 <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-2 my-2">
                     <label for="status">Status:</label>
                     <Select class="drop" filter v-model="filtros.status" :options="listaStatus" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
-                </div>
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 py-2 my-2">
+                </div> -->
+
+                <div class="field xl:col-3 lg:col-3 md:col-6 sm:col-12 py-2 my-2">
                     <label for="data_inicio">{{ $t('initial_date') }}:</label>
                     <VueDatePicker class="drop" v-model="filtros.data_inicio" :format="'dd/MM/yyyy'" locale="pt-BR" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('initial_date_placeholder')" teleport="body" />
                 </div>
                 <!-- Filtro Data Fim -->
-                <div class="field xl:col-3 lg:col-4 md:col-6 sm:col-12 pb-0 mb-0">
+                <div class="field xl:col-3 lg:col-3 md:col-6 sm:col-12 pb-0 mb-0">
                     <label for="data_fim">{{ $t('end_date') }}:</label>
                     <VueDatePicker class="drop" v-model="filtros.data_fim" :format="'dd/MM/yyyy'" locale="pt-BR" showIcon :showOnFocus="false" auto-apply :enable-time-picker="false" :placeholder="$t('end_date_placeholder')" teleport="body" />
                 </div>
@@ -116,19 +117,19 @@ const buscarRelatorio = async () => {
             <!-- Mensagem a ser exibida quando não houver dados -->
             <template #empty> {{ $t('empty_message') }}</template>
 
-            <Column field="Ativacao" :header="$t('activation')" sortable class="table-cell" />
+            <!-- <Column field="Ativacao" :header="$t('activation')" sortable class="table-cell" /> -->
             <Column field="Evento" :header="$t('event')" sortable class="table-cell" />
             <Column field="Status" header="Status" sortable class="table-cell" />
-            <Column field="Url" header="URL" class="table-cell">
+            <!-- <Column field="Url" header="URL" class="table-cell">
                 <template #body="slotProps">
                     <span v-tooltip.left="{ value: slotProps.data.Url }">{{ slotProps.data.Url }}</span>
                 </template>
-            </Column>
-            <Column field="body" header="Body" class="table-cell">
+            </Column> -->
+            <!-- <Column field="body" header="Body" class="table-cell">
                 <template #body="slotProps">
                     <span v-tooltip.left="{ value: slotProps.data.body }">{{ slotProps.data.body }}</span>
                 </template>
-            </Column>
+            </Column> -->
             <Column field="Data" header="Data" class="table-cell">
                 <template #body="slotProps">
                     <span v-tooltip.left="{ value: formatStringDate(slotProps.data.Data) }">{{ formatStringDate(slotProps.data.Data) }}</span>

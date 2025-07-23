@@ -5,6 +5,9 @@ import { useToast } from 'primevue/usetoast'; // Importação do hook useToast p
 import '@vuepic/vue-datepicker/dist/main.css'; // Importação do CSS do VueDatePicker
 import { ref, onMounted, watch, computed } from 'vue'; // Importação dos hooks do Vue: ref, onMounted e watch
 import { useAuthStore } from '@/store/authStore.js'; // Importação do store para gerenciar o estado de autenticação
+
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
+
 import relatorioService from '@/Services/relatorioService'; // Serviço para buscar logs web
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
 import usuarioService from '@/services/usuarioService';
@@ -30,6 +33,9 @@ const operacao = computed(() => [
     { label: t('update'), value: 'UPDATE' },
     { label: t('delete'), value: 'DELETE' }
 ]);
+
+// Variável para controlar o carregamento dos dados (exibe o spinner)
+const loading = ref(false);
 
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para a DataTable (por padrão, filtra por "CONTÉM")
@@ -62,36 +68,18 @@ const format = (date) => {
     return `${day}/${month}/${year}`; // Retorna a data formatada como string
 };
 
-// Função que formata a data no formato dd/MM/yyyy
-const formatDate = (date) => {
-    const dia = date.getDate().toString().padStart(2, '0'); // Dia com dois dígitos
-    const mes = (date.getMonth() + 1).toString().padStart(2, '0'); // Mês com dois dígitos
-    const ano = date.getFullYear(); // Ano
-
-    return `${dia}/${mes}/${ano}`; // Retorna a data no formato dd/MM/yyyy
-};
-
-// Função que formata a hora no formato HH:mm
-const formatTime = (date) => {
-    const horas = date.getHours().toString().padStart(2, '0'); // Hora com dois dígitos
-    const minutos = date.getMinutes().toString().padStart(2, '0'); // Minutos com dois dígitos
-    return `${horas}:${minutos}`; // Retorna a hora no formato HH:mm
-};
-
-// Função que converte a data para o formato ISO
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null; // Se a data for válida, retorna em formato ISO
-};
-
 // Função que busca os logs filtrados
 const buscar = async () => {
     try {
+        loading.value = true; // Inicia o carregamento (exibe o spinner)
         historico.value = await relatorioService.logs(relatorio);
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
     } catch (error) {
         // Caso ocorra um erro na requisição
         console.error('Erro ao buscar logs:', error); // Exibe o erro no console
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar os logs.', life: 3000 }); // Exibe uma notificação de erro
+    }  finally {
+        loading.value = false; // Desativa o spinner de carregamento
     }
 };
 
@@ -194,11 +182,11 @@ onMounted(() => {
                 <!-- Campos para filtros -->
                 <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="usuario">{{ t('user') }}:</label>
-                    <Select filter class="drop" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
+                    <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.id_usuario" :options="usuario" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
                 </div>
                 <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operacao">{{ t('operation') }}:</label>
-                    <Select filter class="drop" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
+                    <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.id_operacao" :options="operacao" optionLabel="label" optionValue="value" :placeholder="$t('all')" />
                 </div>
                 <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="perfil">{{ t('initial_date') }}:</label>
@@ -311,6 +299,8 @@ onMounted(() => {
             <Column field="Resultado" sortable style="max-width: 10%" :header="t('result')"></Column>
         </DataTable>
     </div>
+    <!-- Spinner de carregamento, visível quando a variável 'loading' for verdadeira -->
+    <LoadingSpinner v-if="loading" />
 </template>
 
 <style scoped>

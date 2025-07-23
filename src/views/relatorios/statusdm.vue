@@ -89,7 +89,7 @@ const handleDatepickerOpen = () => {
         
         <div class="flex flex-row gap-3 mb-5">
             <!-- Select para selecionar DM -->
-            <Select filter id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="select1" @change="KeepAlive" />
+            <Select filter id="dm" panelStyle="width: 200px;" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="select1" @change="KeepAlive" />
             <!-- DatePicker para selecionar a data -->
             <VueDatePicker
                 class="drop w-full md:w-14rem"

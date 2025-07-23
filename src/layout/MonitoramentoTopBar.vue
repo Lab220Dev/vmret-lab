@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router'; 
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/authStore';
 import { useCountdownStore } from '@/store/countdown';
 import { useI18n } from 'vue-i18n';
 import VueCountdown from '@chenfengyuan/vue-countdown';
 
 const store = useAuthStore();
-const route = useRoute();// Importando useRoute para acessar a rota atual
-const router = useRouter();// Importando useRouter para navegar entre rotas
+const route = useRoute(); // Importando useRoute para acessar a rota atual
+const router = useRouter(); // Importando useRouter para navegar entre rotas
 const countdownStore = useCountdownStore();
 const { t, locale } = useI18n();
 
@@ -84,6 +84,12 @@ const userAccessLevel = computed(() => {
 
 const isAdmin = computed(() => userAccessLevel.value === 'admin');
 
+const abrirRelatorio = () => {
+    if (isAdmin) {
+        router.push({ name: 'RelatorioEvento' });
+    }
+};
+
 const abrirMonitoramento = () => {
     if (isAdmin) {
         router.push({ name: 'Monitoramento' });
@@ -116,7 +122,6 @@ const toggle = (event) => menu.value.toggle(event);
             </router-link>
         </div>
 
-        <!-- Seção de usuário, imagem, nome e role -->
         <div class="mr-2 flex align-items-center justify-content-end mt-1" style="flex-grow: 1">
             <!-- Botão extra (Abastecimento) -->
             <div>
@@ -131,14 +136,30 @@ const toggle = (event) => menu.value.toggle(event);
 
             <!-- Botão extra (retiradas_title) -->
             <div>
-                <button :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button': isActive('Monitoramento')}]" v-tooltip.bottom="{ value: t('retiradas_title'), showDelay: 500, hideDelay: 300 }"  @click="abrirMonitoramento">
+                <button
+                    :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button': isActive('Monitoramento') }]"
+                    v-tooltip.bottom="{ value: t('retiradas_title'), showDelay: 500, hideDelay: 300 }"
+                    @click="abrirMonitoramento"
+                >
                     <i class="pi pi-chart-bar" />
                 </button>
             </div>
 
+            <!-- Botão extra (relatório) -->
+            <div>
+                <button type="button" v-tooltip.bottom="{ value: t('relatorioLogs'), showDelay: 500, hideDelay: 300 }" class="mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0" @click="abrirRelatorio">
+                    <i class="pi pi-list" />
+                </button>
+            </div>
+            
+
             <!-- Botão extra (cadastro) -->
             <div v-if="isAdmin">
-                <button :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button' : isActive('UsuarioCadMonitoramento')}]" v-tooltip.bottom="{ value: t('cadastrarUsuario'), showDelay: 500, hideDelay: 300 }"  @click="abrirCadastro">
+                <button
+                    :class="['mr-2 p-link layout-topbar-sair-button layout-topbar-button m-0', { 'active-button': isActive('UsuarioCadMonitoramento') }]"
+                    v-tooltip.bottom="{ value: t('cadastrarUsuario'), showDelay: 500, hideDelay: 300 }"
+                    @click="abrirCadastro"
+                >
                     <i class="pi pi-user-plus" />
                 </button>
             </div>

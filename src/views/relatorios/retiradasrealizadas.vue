@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa o store de auten
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de autenticação para obter dados de usuário e token
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
-import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, formatTimeToString, getTimeFromString, getDateFromString, isMobileDevice ,formatStringDate} from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
+import { filtroGenericoReltorio, gerarEbaixarCSV, gerarEbaixarJSON, formatDateToString, isMobileDevice ,formatStringDate} from '@/helpers/HelperUtils.js'; // Importa funções utilitárias
 import { useI18n } from 'vue-i18n';
 import exportJson from '@/assets/images/export_json.png'; // Importa o ícone de exportação json
 import exportCsv from '@/assets/images/export_csv.png'; // Importa o ícone de exportação csv
@@ -33,7 +33,6 @@ const select5 = ref(null);
 
 // Refs para armazenar os dados retornados da API
 const retiradas = ref([]); // Lista de retiradas
-const todosOption = { label: 'Todos', value: null }; // Opção padrão para "Todos"
 
 // Refs para armazenar as opções de filtros que serão carregados dinamicamente
 const dms  = computed(() => dataStore.dmsOptions); // Lista de DM (Departamento/Manager)
@@ -190,35 +189,35 @@ onMounted(() => {
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="dm">{{ $t('dm') }}:</label>
                         <!-- Select para selecionar DM (vinculado a 'relatorio.id_dm') -->
-                        <Select class="w-full" filter v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1"></select >
+                        <Select class="w-full" panelStyle="width: 200px;" filter v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1"></select >
                     </div>
 
                     <!-- Filtro Centro de Custo -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ $t('cost_center') }}:</label>
                         <!-- Select para selecionar Centro de Custo, com a chamada do método filterSetor em caso de mudança -->
-                        <Select class="w-full" filter v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" @change="filtroGenerico" />
+                        <Select class="w-full" panelStyle="width: 200px;" filter v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro Setor -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ $t('sector') }}:</label>
                         <!-- Select para selecionar Setor, com a chamada do método filterFuncionarios em caso de mudança -->
-                        <Select class="w-full" filter v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" @change="filtroGenerico" />
+                        <Select class="w-full" panelStyle="width: 200px;" filter v-model="relatorio.id_setor" :options="ListaSetor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro Planta -->
                     <div class="field py-0 my-0 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="planta">{{ $t('factory') }}:</label>
                         <!-- Select para selecionar Planta, com a chamada do método filterFuncionarios em caso de mudança -->
-                        <Select class="w-full" filter v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" @change="filtroGenerico" />
+                        <Select class="w-full" panelStyle="width: 200px;" filter v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Filtro Funcionário -->
                     <div class="field py-0 mt-3 xl:col-3 lg:col-3 md:col-6 sm:col-12">
                         <label for="perfil">{{ t('employee') }}:</label>
                         <!-- Select para selecionar Funcionário -->
-                        <Select class="w-full" filter v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
+                        <Select class="w-full" panelStyle="width: 200px;" filter v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
                     </div>
 
                     <!-- Filtro Data Inicial -->

@@ -216,32 +216,32 @@ onMounted(() => {
                     <div class=" py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="dm">{{t('dm')}}:</label>
                         <!-- Componente selectpara escolher o DM -->
-                        <Select filter class="w-full" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
                     </div>
                     <!-- Filtro de Planta -->
                     <div class="py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
                         <!-- Componente Select para escolher a planta -->
-                        <Select filter class="w-full" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select2" />
                     </div>
                     <!-- Filtro de Setor -->
                     <div class="py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
                         <!-- Componente Select para escolher o setor -->
-                        <Select filter class="w-full" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select3" />
                     </div>
                     <!-- Filtro de Centro de Custo -->
                     <div class=" py-0 my-0 xl:col-3 lg:col-6 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Componente Select para escolher o centro de custo -->
-                        <Select filter class="w-full" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_centro_custo" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select4" />
                     </div>
 
                     <!-- Filtro de Operador -->
                     <div class=" py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('operator')}}:</label>
                         <!-- Componente Select para escolher o operador -->
-                        <Select filter class="w-full" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
+                        <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorio.id_operador" :options="ListaOperador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select5" />
                     </div>
                     <!-- Filtro de Data Inicial -->
                     <div class=" py-0 mt-2 xl:col-3 lg:col-4 md:col-6 sm:col-12">

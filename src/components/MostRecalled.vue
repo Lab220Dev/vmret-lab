@@ -1,10 +1,9 @@
 <script setup>
 import { defineProps } from 'vue'; // defineProps para declarar propriedades
 import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
-import { format } from 'date-fns'; // Função para formatar a data
 import { useI18n } from 'vue-i18n';
 const toast = useToast(); //toast para exibir mensagens de erro ou sucesso
-const { t } = useI18n();//t é usado para traduzir textos
+const { t } = useI18n(); //t é usado para traduzir textos
 
 /**
  * Propriedades do componente.
@@ -12,33 +11,26 @@ const { t } = useI18n();//t é usado para traduzir textos
  * @typedef {Object} Props
  * @property {Array<most>} most - Lista de produtos mais retirados, contendo a identificação da máquina, SKU, descrição e data/hora.
  */
-const props = defineProps({//defineProps é usado para definir as propriedades do componente
-    most: {//most é um array de objetos
-        type: Array,//define que most é um array
-        required: true//define que most é obrigatório
+const props = defineProps({
+    //defineProps é usado para definir as propriedades do componente
+    most: {
+        //most é um array de objetos
+        type: Array, //define que most é um array
+        required: true //define que most é obrigatório
     }
 });
 </script>
 
 <!-- Template do componente -->
 <template>
-    <div class="header" style="display: flex">  <!-- Cabeçalho da tabela -->
-        <div class="title mb-0" style="display: flex; align-items: center"> <!-- Título do cabeçalho -->
-            <h5 style="margin-right: 5px">{{ $t('most_withdrawn_items') }}</h5> 
-        </div>
-
-        <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
-    </div>  <!-- Ícone com tooltip explicativo -->
-
     <!-- DataTable exibindo os itens mais retirados -->
-    <DataTable 
-    :value="props.most" 
-    removableSort 
-    :rows="5" 
-    size="Normal"
-    columnResizeMode="fit"
-    responsiveLayout="scroll" 
-    class="mt-3">
+    <DataTable :value="props.most" removableSort :rows="5" size="Normal" columnResizeMode="fit" responsiveLayout="scroll" class="mt-3">
+        <template #header>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xl mb-3">{{ $t('most_withdrawn_items') }}</span>
+                <i v-tooltip="'Itens mais retirados nos últimos 6 meses.'" class="mt-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+            </div>
+        </template>
         <!-- A tabela exibe os dados provenientes de "props.most" -->
         <!-- O usuário pode remover a ordenação clicando na coluna de ordenação -->
         <!-- Define o número de linhas visíveis por página como 5 -->
@@ -46,10 +38,11 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
         <!-- Faz com que a tabela tenha um layout responsivo, com rolagem horizontal em telas menores -->
 
         <!-- Coluna para exibir o SKU do produto -->
-        <Column field="ProdutoSKU" :header="t('SKU')" style="width: 10%;" sortable>
+        <Column field="ProdutoSKU" :header="t('SKU')" style="width: 10%" sortable>
             <template #body="{ data }">
-                            <span class="tooltip-target" v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
-                        </template></Column>
+                <span class="tooltip-target" v-tooltip="data.ProdutoSKU">{{ data.ProdutoSKU }}</span>
+            </template></Column
+        >
         <!-- Coluna para exibir o nome do produto -->
         <Column field="ProdutoNome" :header="t('item')" sortable>
             <template #body="{ data }">
@@ -57,7 +50,7 @@ const props = defineProps({//defineProps é usado para definir as propriedades d
             </template></Column
         >
         <!-- Coluna para exibir o número de retiradas -->
-        <Column field="NumeroDeRetiradas" :header="t('quantity')" style="width: 10%; text-align: center;" sortable ></Column>
+        <Column field="NumeroDeRetiradas" :header="t('quantity')" style="width: 10%; text-align: center" sortable></Column>
         <!-- Mensagem exibida caso não haja dados na tabela -->
         <template #empty>
             <div class="empty-message" style="text-align: center; padding: 20px; color: gray">{{ $t('sem_retirada') }}</div>

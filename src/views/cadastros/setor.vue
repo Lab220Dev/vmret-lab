@@ -51,7 +51,8 @@ let setor = reactive({
 const produtoSelecionado = ref({
     // Cria uma referência reativa para armazenar o produto selecionado
     id_produto: '', // ID do produto selecionado
-    quantidade: '' // Quantidade do produto selecionado
+    quantidade: '', // Quantidade do produto selecionado
+    dias: '' // Prazo para devoluçao do produto selecionado
 });
 const onRowSelect = async (event) => {
     // Declara uma função assíncrona chamada onRowSelect
@@ -443,7 +444,7 @@ const debouncedFilterChange = debounce(() => {
                                         <InputIcon>
                                             <i class="pi pi-search" />
                                         </InputIcon>
-                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" autocomplete="off"/>
+                                        <InputText v-model="filters['global'].value" :placeholder="t('search')" type="search" @input="debouncedFilterChange" autocomplete="off" />
                                     </IconField>
                                 </div>
                             </div>
@@ -463,7 +464,7 @@ const debouncedFilterChange = debounce(() => {
                     <div class="col-12">
                         <div class="mt-5">
                             <form @submit.prevent="submitForm">
-                                <div class="p-fluid formgrid grid m-0 p-0">
+                                <div class="p-fluid formgrid m-0 p-0">
                                     <div class="lg:col-12 md:col-12 sm:col-12">
                                         <label for="codigo">{{ t('code') }}:</label>
                                         <InputText class="my-2 w-full" id="codigo" v-model="setor.codigo" required />
@@ -510,7 +511,7 @@ const debouncedFilterChange = debounce(() => {
                                                 <Column field="sku" sortable :header="t('sku')"></Column>
                                                 <Column field="nome" :header="t('name')"></Column>
                                                 <Column field="qtd_limite" :header="t('quantity')"></Column>
-                                                <Column field="dias" :header="t('best_before')"></Column>
+                                                <Column field="dias" :header="t('period')"></Column>
                                                 <Column style="width: 10%">
                                                     <template #body="slotProps">
                                                         <Button icon="pi pi-pencil" outlined rounded severity="info" @click="onRowSelectItem(slotProps)" />
@@ -529,29 +530,36 @@ const debouncedFilterChange = debounce(() => {
                                         ><hr class="p-0 m-0" />
                                         <div>
                                             <div class="formgrid grid">
-                                                <div class="field lg:col-9 md:col-9 sm:col-12">
+                                                <div class="field lg:col-6 md:col-12 sm:col-12">
                                                     <label class="mr-2" for="name">{{ t('name') }}:</label>
                                                     <InputText disabled class="w-full" v-model="item.nome" id="name" type="text"></InputText>
                                                 </div>
-                                                <div class="field lg:col-3 md:col-3 sm:col-12">
+                                                <div class="field lg:col-3 md:col-6 sm:col-12">
                                                     <label class="mr-2" for="Quantidade">{{ t('quantity') }}:</label>
                                                     <InputText id="Quantidade" class="w-full" v-model="item.qtd_limite" />
+                                                </div>
+                                                <div class="field lg:col-3 md:col-6 sm:col-12">
+                                                    <label class="mr-1" for="dias">{{ t('period') }}:</label>
+                                                    <i v-tooltip="'Defina o intervalo para retirada desse item'" class="pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+                                                    <InputNumber id="dias" v-model="item.dias" autocomplete="off" min="1" class="w-full" aria-describedby="username-help" :suffix="` ${$t('dayPeriod')}`" required />
                                                 </div>
                                             </div>
                                         </div>
                                         <template #footer>
-                                            <Button :label="$t('cancel')" icon="pi pi-times" text @click="itemDialog = false" />
-                                            <Button :label="$t('save')" icon="pi pi-check" text @click="atualizarProdutoSetor" />
+                                            <form @submit.prevent="atualizarProdutoSetor" class="flex justify-content-end gap-2">
+                                                <Button type="button" :label="$t('cancel')" icon="pi pi-times" text @click="itemDialog = false" />
+                                                <Button type="submit" :label="$t('save')" icon="pi pi-check" text />
+                                            </form>
                                         </template>
                                     </Dialog>
 
                                     <!-- dialogo adicionar item-->
-                                    <Dialog v-model:visible="visible" :style="{ width: '450px' }" :modal="true" :header="t('add_items_to_sector')" class="p-2" :draggable="false">
+                                    <Dialog v-model:visible="visible" :style="{ width: '450px' }" :modal="true" :header="t('add_items_to_sector')" class="" :draggable="false">
                                         <hr class="p-0 m-0" />
                                         <div>
                                             <div class="formgrid grid">
-                                                <div class="field lg:col-9 md:col-9 sm:col-12">
-                                                    <label for="Produto" class="mr-2">{{ t('product') }}: </label>
+                                                <div class="field lg:col-6 md:col-12 sm:col-12">
+                                                    <label for="Produto" class="">{{ t('product') }}: </label>
                                                     <Select
                                                         v-model="produtoSelecionado.id_produto"
                                                         :options="ListaItensDisponiveis"
@@ -560,17 +568,32 @@ const debouncedFilterChange = debounce(() => {
                                                         optionValue="value"
                                                         :placeholder="$t('select_product')"
                                                         class="w-full"
-                                                    />
+                                                        v-tooltip="{ value: t('select_product'), showDelay: 1000, hideDelay: 300 }"
+                                                    >
+                                                        <template #option="slotProps">
+                                                            <span v-tooltip.top="slotProps.option.label">
+                                                                {{ slotProps.option.label }}
+                                                            </span>
+                                                        </template>
+                                                    </Select>
                                                 </div>
-                                                <div class="field lg:col-3 md:col-9 sm:col-12">
+                                                <div class="field lg:col-3 md:col-6 sm:col-12">
                                                     <label for="Quantidade" class="mr-2">{{ t('quantity') }}: </label>
-                                                    <InputText id="Quantidade" class="w-full" v-model="produtoSelecionado.quantidade" inputClass="col-3" autocomplete="off" required />
+                                                    <InputNumber id="Quantidade" class="w-full" v-model="produtoSelecionado.quantidade" autocomplete="off" required />
+                                                </div>
+                                                <div class="field lg:col-3 md:col-6 sm:col-12">
+                                                    <label for="dias">{{ t('period') }}: </label>
+                                                    <i v-tooltip="'Defina o intervalo para retirada desse item'" class="my-0 mx-1 pi pi-info-circle" style="cursor: pointer; font-size: 1.2em; color: gray"></i>
+                                                    <InputNumber id="dias" v-model="produtoSelecionado.dias" autocomplete="off" min="1" class="w-full" aria-describedby="username-help" :suffix="` ${$t('dayPeriod')}`" required />
                                                 </div>
                                             </div>
                                         </div>
+
                                         <template #footer>
-                                            <Button type="button" :label="$t('cancel')" severity="secondary" @click="visible = false" />
-                                            <Button type="button" :label="$t('add')" @click="SalvarProduto" />
+                                            <form @submit.prevent="SalvarProduto" class="flex justify-content-end gap-2">
+                                                <Button type="button" :label="$t('cancel')" icon="pi pi-times" text @click="itemDialog = false" />
+                                                <Button type="submit" :label="$t('save')" icon="pi pi-check" text />
+                                            </form>
                                         </template>
                                     </Dialog>
 
@@ -613,4 +636,11 @@ const debouncedFilterChange = debounce(() => {
     </div>
 </template>
 
-<style></style>
+<style scoped>
+::v-deep(.p-inputnumber input) {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    line-height: 1.5;
+}
+</style>

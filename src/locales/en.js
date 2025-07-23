@@ -258,6 +258,7 @@ export default {
     unit_measurement: 'Unit of Measurement',
     shelf_life: 'Shelf Life',
     days: 'Days',
+    dayPeriod: 'day(s)',
     minimum_quantity: 'Minimum Quantity',
     primary_image: 'Primary Image',
     secondary_image: 'Secondary Image',
@@ -607,4 +608,5 @@ export default {
     baixarCSVcomErros: 'Download CSV with errors',
     reenviarCorrigido: 'Resend Corrected File',
     nomeCompleto: 'Full Name',
+    period: 'Period',
 };

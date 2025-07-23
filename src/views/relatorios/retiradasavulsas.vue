@@ -157,42 +157,42 @@ onMounted(() => {
                     <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="dm">{{t('dispenser_machine')}}:</label>
                         <!-- Select para selecionar DM -->
-                        <Select filter class="drop" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
+                        <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select1" />
                     </div>
 
                     <!-- Campo de filtro para Planta -->
                     <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="planta">{{t('factory')}}:</label>
                         <!-- Select para selecionar Planta -->
-                        <Select filter class="drop" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 2" @change="filtroGenerico" />
+                        <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.id_planta" :options="plantas" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 2" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Setor -->
                     <div class="py-0 my-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('sector')}}:</label>
                         <!-- Select para selecionar Setor -->
-                        <Select filter class="drop" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" @change="filtroGenerico" />
+                        <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.id_setor" :options="setor" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Centro de Custo -->
                     <div class="py-0 mt-0 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('cost_center')}}:</label>
                         <!-- Select para selecionar Centro de Custo -->
-                        <Select filter class="drop" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 4" @change="filtroGenerico" />
+                        <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.ID_CentroCusto" :options="centroCusto" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 4" @change="filtroGenerico" />
                     </div>
 
                     <!-- Campo de filtro para Funcionário -->
                     <div class="py-0 mt-2 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">{{t('employee')}}:</label>
                         <!-- Select para selecionar Funcionário -->
-                        <Select filter class="drop" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 5" />
+                        <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 5" />
                     </div>
 
                     <!-- Campo de filtro para Voucher -->
                     <div class="py-0 mt-2 field xl:col-3 lg:col-4 md:col-6 sm:col-12">
                         <label for="perfil">Voucher:</label>
                         <!-- Select para selecionar Voucher -->
-                        <Select filter class="drop" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 6" />
+                        <Select filter class="drop" panelStyle="width: 200px;" v-model="relatorio.voucher" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 6" />
                     </div>
 
                     <!-- Campo de filtro para Data Inicial -->

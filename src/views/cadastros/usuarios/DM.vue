@@ -367,6 +367,7 @@ const handleRowSelection = async (event) => {
 
     // Atualiza o produto selecionado com base no tipo de controladora
     updateProdutoSelecionado(produtoSelecionado.value, controladora, valores); // Atualiza o produto selecionado
+    console.log('Produto selecionado:', produtoSelecionado.value); // Loga o produto selecionado no console
     await nextTick(); // Aguarda a próxima atualização do DOM
     handleControladoraChange(); // Chama a função handleControladoraChange
 };
@@ -1104,7 +1105,7 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                     <div class="mx-0 grid">
                         <div class="col-12">
                             <div class="flex mt-5 justify-content-between">
-                                <h5>{{ t('itens_dms') }}</h5>
+                                <h5>{{ t('itens_dms') }} {{DM.Identificacao}} </h5>
                                 <Button :label="$t('add_items')" @click="showDialogProduto = true" />
                             </div>
                             <DataTable

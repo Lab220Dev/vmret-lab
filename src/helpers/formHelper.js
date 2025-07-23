@@ -205,7 +205,9 @@ export const resetSetorForm = (setor) => {
       nome: '',    // O nome do setor será redefinido como uma string vazia.
       
       // Reseta o valor da propriedade 'id_centro_custo' para uma string vazia.
-      id_centro_custo: ''  // O ID do centro de custo será redefinido como uma string vazia.
+      id_centro_custo: '',  // O ID do centro de custo será redefinido como uma string vazia.
+
+      dias: 0, // O número de dias será redefinido como 0.
   });
 };
 
@@ -329,7 +331,8 @@ export const resetProdutoSelecionado = (produtoSelecionado) => {
       Posicao: null, 
       
       // A capacidade do produto ou da controladora associada, pode ser nula.
-      Capacidade: null 
+      Capacidade: null ,
+      
   };
 };
 /**
@@ -377,6 +380,7 @@ export const resetProdutoSelecionadoSetor = (produtoSelecionado) => {
   Object.assign(produtoSelecionado.value, {
     id_produto: '',  
     quantidade: '',   
+    dias: 0, // O número de dias será redefinido como 0.
   });
 };
 

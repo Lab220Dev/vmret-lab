@@ -6,7 +6,7 @@ import { useToast } from 'primevue/usetoast'; // Função para exibir mensagens 
 import '@vuepic/vue-datepicker/dist/main.css'; // Estilo do VueDatePicker
 import { ref, onMounted, watch, computed } from 'vue'; // Funções do Vue para reatividade e ciclo de vida
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação e dados do usuário
-
+import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de loading (spinner)
 import dmService from '@/services/DmService'; // Serviço para manipulação de dados DE dm
 import usuarioDMService from '@/services/usuarioDMService';
 
@@ -31,6 +31,9 @@ const todosOption = { label: 'Todos', value: null }; // Opção padrão para "To
 // Variáveis para armazenar os dados de DMs, operações e filtros
 const historico = ref([]); // Armazena os registros históricos
 const dms = ref([todosOption]); // Lista de DMs para o select
+
+// Variável para controlar o carregamento dos dados (exibe o spinner)
+const loading = ref(false);
 
 // Filtros globais para busca
 const filters = ref({
@@ -61,27 +64,6 @@ const format = (date) => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`; // Retorna a data no formato desejado
 };
-
-// Função para formatar a data de forma mais legível, com dois dígitos para o dia e mês
-const formatDate = (date) => {
-    const dia = date.getDate().toString().padStart(2, '0');
-    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-    const ano = date.getFullYear();
-    return `${dia}/${mes}/${ano}`; // Formato de data: dd/MM/yyyy
-};
-
-// Função para formatar a hora no formato HH:mm
-const formatTime = (date) => {
-    const horas = date.getHours().toString().padStart(2, '0');
-    const minutos = date.getMinutes().toString().padStart(2, '0');
-    return `${horas}:${minutos}`; // Formato de hora: HH:mm
-};
-
-// Função para converter uma data para o formato ISO
-const toISODate = (date) => {
-    return date ? new Date(date).toISOString() : null; // Retorna a data em formato ISO, ou null se não houver data
-};
-
 // Função que monitora mudanças no filtro global e atualiza o contador de registros filtrados
 watch(
     () => filters.value.global.value,
@@ -147,11 +129,15 @@ const fetchFuncionarios = async () => {
 
 const buscar = async () => {
     try {
+        loading.value = true; // Inicia o carregamento (exibe o spinner)
         historico.value = await relatorioService.logDesktop(relatorioDesk); // Requisição para buscar logs
         filteredCount.value = historico.value.length; // Atualiza o contador de registros filtrados
     } catch (error) {
         console.error('Erro ao buscar logs:', error); // Log de erro caso a requisição falhe
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('log_query_error'), life: 3000 }); // Mensagem de erro
+    }
+    finally {
+        loading.value = false; // Desativa o spinner de carregamento
     }
 };
 
@@ -186,15 +172,15 @@ onMounted(() => {
                 <!-- Filtros para DM, Operação, Usuário, Funcionário, e Data -->
                 <div class="py-0 my-0 lg:col-2 md:col-6 sm:col-6">
                     <label for="operador">{{ t('dm') }}:</label>
-                    <Select class="w-full" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="select1" @change="handleDmChange" />
+                    <Select class="w-full" panelStyle="width: 100px;" v-model="relatorioDesk.dm" :options="dms" optionLabel="label" filter :placeholder="$t('all')" ref="select1" @change="handleDmChange" />
                 </div>
                 <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operador">{{ t('operator') }}:</label>
-                    <Select class="w-full" filter v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 2" />
+                    <Select class="w-full" panelStyle="width: 200px;" filter v-model="relatorioDesk.id_usuario" :options="operador" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 2" />
                 </div>
                 <div class="py-0 my-0 lg:col-3 md:col-6 sm:col-6">
                     <label for="operador">{{ t('employee') }}:</label>
-                    <Select filter class="w-full" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" />
+                    <Select filter class="w-full" panelStyle="width: 200px;" v-model="relatorioDesk.id_funcionario" :options="ListaFuncionarios" optionLabel="label" optionValue="value" :placeholder="$t('all')" ref="select 3" />
                 </div>
                 <div class="py-0 my-0 lg:col-2 md:col-6 sm:col-6">
                     <label for="perfil">{{ t('initial_date') }}:</label>
@@ -283,6 +269,8 @@ onMounted(() => {
             <Column field="Resultado" sortable :header="t('result')"></Column>
         </DataTable>
     </div>
+    <!-- Spinner de carregamento, visível quando a variável 'loading' for verdadeira -->
+    <LoadingSpinner v-if="loading" />
 </template>
 
 <style></style>

@@ -4,6 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useI18n } from 'vue-i18n';
 import { FilterMatchMode } from '@primevue/core/api';
 import usuarioService from '@/Services/usuariodashService.js';
+import { $t } from '@primeuix/themes';
 
 const { t } = useI18n();
 const active = ref(0);
@@ -26,7 +27,7 @@ const filterDM = ref({
 const validateSenha = () => {
     if (senha.value !== UsarioDash.value.senha) {
         // Se as senhas não coincidem
-        errors.value.senha = 'A senha NÃO é a mesma'; // Mensagem de erro
+        errors.value.senha = $t('invalid_password'); // Mensagem de erro
     } else {
         errors.value.senha = null; // Senha válida, reseta o erro
     }
