@@ -161,4 +161,21 @@ h6 a:hover {
     background-color: rgba(135, 194, 252, 0.152);
 }
 
+/* Força o modo claro e ignora o modo escuro */
+@media (prefers-color-scheme: dark) {
+  body {
+    color-scheme: light;
+    background-color: white !important;
+    color: black !important;
+  }
 
+  .p-card {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .p-dropdown, .p-inputtext {
+    background-color: white !important;
+    color: black !important;
+  }
+}
