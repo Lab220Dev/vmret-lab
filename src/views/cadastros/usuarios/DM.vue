@@ -1,6 +1,6 @@
 <script setup>
 import { useToast } from 'primevue/usetoast'; // Função para exibir notificações
-import { reactive, ref, onMounted, watch, computed} from 'vue'; // Hooks do Vue.js
+import { reactive, ref, onMounted, watch, computed } from 'vue'; // Hooks do Vue.js
 import { useAuthStore } from '@/store/authStore.js'; // Store para autenticação de usuário
 import { FilterMatchMode } from '@primevue/core/api'; // Modo de filtro global para PrimeVue
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Componente de loading
@@ -112,38 +112,39 @@ const ListaItens = ref([]);
 const ListaClientes = ref([]);
 const produtos = computed(() => dataStore.produtos);
 const ListaProdutos = computed(() => {
-  return produtos.value
-    .filter((produto) => produto.value !== null)
-    .map(({ value, codigo, label }) => ({
-      label: `${codigo} | ${label}`,
-      value
-    }))
-    .sort((a, b) => {
-      const codigoA = parseInt(a.label.split(' | ')[0], 10);
-      const codigoB = parseInt(b.label.split(' | ')[0], 10);
-      return codigoA - codigoB;
-    });
+    return produtos.value
+        .filter((produto) => produto.value !== null)
+        .map(({ value, codigo, label }) => ({
+            label: `${codigo} | ${label}`,
+            value
+        }))
+        .sort((a, b) => {
+            const codigoA = parseInt(a.label.split(' | ')[0], 10);
+            const codigoB = parseInt(b.label.split(' | ')[0], 10);
+            return codigoA - codigoB;
+        });
 });
-const Controladoras = ref([]);// Declara um array reativo chamado Controladoras
-const controladoraOptions = ref([]);// Declara um array reativo chamado controladoraOptions
-const molasOptions = ref([]);// Declara um array reativo chamado molasOptions
-const dipOptions = ref([]);// Declara um array reativo chamado dipOptions
-const andarOptions = ref([]);// Declara um array reativo chamado andarOptions
-const posicaoOptions = ref([]);// Declara um array reativo chamado posicaoOptions
-const placaOptions = ref([]);// Declara um array reativo chamado placaOptions
-const motorOptions = ref([]);// Declara um array reativo chamado motorOptions
+const Controladoras = ref([]); // Declara um array reativo chamado Controladoras
+const controladoraOptions = ref([]); // Declara um array reativo chamado controladoraOptions
+const molasOptions = ref([]); // Declara um array reativo chamado molasOptions
+const dipOptions = ref([]); // Declara um array reativo chamado dipOptions
+const andarOptions = ref([]); // Declara um array reativo chamado andarOptions
+const posicaoOptions = ref([]); // Declara um array reativo chamado posicaoOptions
+const placaOptions = ref([]); // Declara um array reativo chamado placaOptions
+const motorOptions = ref([]); // Declara um array reativo chamado motorOptions
 const ListaDMS = ref([]);
 const controladoraRefs = ref([]);
 // Controles de Estado
 const totalRecords = ref(0); // Declara uma variável reativa chamada totalRecords com valor inicial 0
 const isEditMode = ref(false); // Declara uma variável reativa chamada isEditMode com valor inicial false
 const showDialogProduto = ref(false); // Declara uma variável reativa chamada showDialogProduto com valor inicial false
-const active = ref("0");// Declara uma variável reativa chamada active com valor inicial 0
+const active = ref('0'); // Declara uma variável reativa chamada active com valor inicial 0
 const showDialogDVM = ref(false); // Declara uma variável reativa chamada showDialogDVM com valor inicial false
 const showDialogDItem = ref(false); // Declara uma variável reativa chamada showDialogDItem com valor inicial false
 const showDialogControl = ref(false); // Declara uma variável reativa chamada showDialogControl com valor inicial false
 const show = ref(false); // Declara uma variável reativa chamada show com valor inicial false
 const usarApi = ref(false); // Declara uma variável reativa chamada usarApi com valor inicial false
+const seforlocker = ref(false); // Declara uma variável reativa chamada seforlocker com valor inicial false
 const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false }); // Declara um objeto reativo chamado selectedClient com propriedades id_cliente, nome_cliente e usar_api
 const dialogMessage = ref(''); // Declara uma variável reativa chamada dialogMessage com valor inicial vazio
 const selectedItem = ref(null); // Declara uma variável reativa chamada selectedItem com valor inicial null
@@ -433,23 +434,32 @@ const validarDados = async () => {
     }
 };
 const adicionarDM = async () => {
-    // Declara uma função assíncrona chamada adicionarDM
-    loading.value = true; // Ativa o estado de loading
+    loading.value = true;
     try {
-        // Inicia um bloco try para capturar possíveis erros
-        const data = prepareDMData('adicionar', DM, selectedClient.value, Controladoras.value); // Prepara os dados para adicionar a DM
-        await dmService.adicionarDM(data); // Faz uma requisição para adicionar a DM
-        dataStore.invalidateDMCache(); // Invalida o cache de DM no dataStore
-        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_added_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
-        fetchDMS(); // Busca as DMs atualizadas
-        active.value = "0"; // Define o valor de active como 0
-        resetDMForm(DM, Controladoras, selectedClient.value, nextValues); // Reseta o formulário de DM
+        const data = prepareDMData('adicionar', DM, selectedClient.value, Controladoras.value);
+
+        // Adiciona a DM e já pega o ID retornado
+        const novaDM = await dmService.adicionarDM(data); // backend deve retornar { id_dm: 123 }
+
+        // Só chama seforlocker se for marcado como locker
+        if (seforlocker.value) {
+            await dmService.seforlocker({
+                id_cliente: selectedClient.value.id_cliente, // pegando só o número
+                id_dm: novaDM.data.id_dm, // ou o id_dm retornado do adicionarDM
+                is_locker: seforlocker.value
+            });
+        }
+
+        dataStore.invalidateDMCache();
+        toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_added_sucess'), life: 3000 });
+        fetchDMS();
+        active.value = '0';
+        resetDMForm(DM, Controladoras, selectedClient.value, nextValues);
     } catch (error) {
-        // Captura qualquer erro que ocorrer durante a adição
-        toast.add({ severity: 'error', summary: t('title_error'), detail: t('dm_added_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
-        console.error('Erro ao adicionar DM:', error); // Loga a mensagem de erro no console
+        toast.add({ severity: 'error', summary: t('title_error'), detail: t('dm_added_error'), life: 3000 });
+        console.error('Erro ao adicionar DM:', error);
     } finally {
-        loading.value = false; // Desativa o estado de loading
+        loading.value = false;
     }
 };
 
@@ -469,7 +479,7 @@ const atualizarDM = async () => {
         await dmService.atualizarDM(data); // Faz uma requisição para atualizar a DM
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_update_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         fetchDMS(); // Busca as DMs atualizadas
-        active.value = "0"; // Define o valor de active como 0
+        active.value = '0'; // Define o valor de active como 0
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues); // Reseta o formulário de DM
     } catch (error) {
         // Captura qualquer erro que ocorrer durante a atualização
@@ -560,24 +570,28 @@ const configurarVisibilidade = () => {
         preencherControladoraOptions(); // Chama a função preencherControladoraOptions para preencher as opções de controladoras
         operador.value = true; // Define a variável reativa operador como true
     } else {
-        active.value = "1"; // Define a variável reativa active como 1
+        active.value = '1'; // Define a variável reativa active como 1
     }
 };
 
-const adicionarProduto = async () => { // Declara uma função assíncrona chamada adicionarProduto
-    if (!validarCampos()) { // Verifica se a validação dos campos falhou
+const adicionarProduto = async () => {
+    // Declara uma função assíncrona chamada adicionarProduto
+    if (!validarCampos()) {
+        // Verifica se a validação dos campos falhou
         return; // Se falhar, não continua
     }
 
     const data = prepareItemDMData('adicionar', DM, produtoSelecionado, Controladoras); // Prepara os dados do item para adicionar
-    try { // Inicia um bloco try para capturar possíveis erros
+    try {
+        // Inicia um bloco try para capturar possíveis erros
         loading.value = true; // Ativa o estado de loading
         await dmService.adicionarItem(data); // Faz uma requisição para adicionar o item
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_added_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         showDialogProduto.value = false; // Fecha o diálogo de produto
         resetProdutoSelecionado(produtoSelecionado); // Reseta o produto selecionado
         fetchItemDM(); // Busca os itens do DM atualizados
-    } catch (error) { // Captura qualquer erro que ocorrer durante a adição
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a adição
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_added_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
         console.error('Erro ao carregar produtos:', error); // Loga a mensagem de erro no console
     } finally {
@@ -586,16 +600,19 @@ const adicionarProduto = async () => { // Declara uma função assíncrona chama
 };
 
 // Função para atualizar o produto selecionado
-const atualizarProduto = async () => { // Declara uma função assíncrona chamada atualizarProduto
+const atualizarProduto = async () => {
+    // Declara uma função assíncrona chamada atualizarProduto
     const data = prepareItemDMData('atualizar', DM, produtoSelecionado, Controladoras); // Prepara os dados do item para atualizar
-    try { // Inicia um bloco try para capturar possíveis erros
+    try {
+        // Inicia um bloco try para capturar possíveis erros
         loading.value = true; // Ativa o estado de loading
         await dmService.atualizarProduto(data); // Faz uma requisição para atualizar o produto
         showDialogProduto.value = false; // Fecha o diálogo de produto
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_update_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
         resetProdutoSelecionado(produtoSelecionado); // Reseta o produto selecionado
         fetchItemDM(); // Busca os itens do DM atualizados
-    } catch (error) { // Captura qualquer erro que ocorrer durante a atualização
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a atualização
         console.error('Erro ao carregar produtos:', error); // Loga a mensagem de erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_update_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
     } finally {
@@ -607,7 +624,8 @@ const atualizarProduto = async () => { // Declara uma função assíncrona chama
  * Função chamada quando o usuário deseja excluir um item.
  * Exibe o diálogo de confirmação de exclusão com a mensagem personalizada.
  */
- const deleteItem = async (item) => { // Declara uma função assíncrona chamada deleteItem
+const deleteItem = async (item) => {
+    // Declara uma função assíncrona chamada deleteItem
     dialogMessage.value = t('confirm_delete_item', { product: item.Nome_Produto }); // Define a mensagem de diálogo com o nome do produto
     showDialogDItem.value = true; // Exibe o diálogo de confirmação de exclusão
     selectedItem.value = item; // Define o item selecionado como o produto a ser excluído
@@ -617,10 +635,12 @@ const atualizarProduto = async () => { // Declara uma função assíncrona chama
  * Função chamada para confirmar a exclusão do item.
  * Realiza a requisição para excluir o item e atualiza a lista de itens.
  */
- const confirmDeleteItem = async () => { // Declara uma função assíncrona chamada confirmDeleteItem
+const confirmDeleteItem = async () => {
+    // Declara uma função assíncrona chamada confirmDeleteItem
     if (!selectedItem.value) return; // Verifica se não há item selecionado e retorna se for o caso
     console.log(selectedItem.value); // Loga o item selecionado no console
-    try { // Inicia um bloco try para capturar possíveis erros
+    try {
+        // Inicia um bloco try para capturar possíveis erros
         showDialogDItem.value = false; // Fecha o diálogo de confirmação de exclusão
         loading.value = true; // Ativa o estado de loading
         const data = prepareItemDMData('deletar', DM, selectedItem); // Prepara os dados para deletar o item
@@ -629,7 +649,8 @@ const atualizarProduto = async () => { // Declara uma função assíncrona chama
         fetchItemDM(); // Busca os itens do DM atualizados
 
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('product_delete_sucess'), life: 3000 }); // Adiciona uma mensagem de sucesso ao toast
-    } catch (error) { // Captura qualquer erro que ocorrer durante a exclusão
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a exclusão
         console.error('Erro ao excluir item:', error); // Loga a mensagem de erro no console
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('product_delete_error'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
     } finally {
@@ -638,12 +659,15 @@ const atualizarProduto = async () => { // Declara uma função assíncrona chama
     }
 };
 
-const fetchCliente = async () => { // Declara uma função assíncrona chamada fetchCliente
+const fetchCliente = async () => {
+    // Declara uma função assíncrona chamada fetchCliente
     loading.value = true; // Ativa o estado de loading
-    try { // Inicia um bloco try para capturar possíveis erros
+    try {
+        // Inicia um bloco try para capturar possíveis erros
         const response = await dmService.listarClientes(); // Faz uma requisição para listar os clientes
         ListaClientes.value = [todosOption, ...FormatarListaCliente(response.data)]; // Formata e atualiza a lista de clientes
-    } catch (error) { // Captura qualquer erro que ocorrer durante a requisição
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a requisição
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_client_list'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
         console.error('Erro ao carregar clientes:', error); // Loga a mensagem de erro no console
     } finally {
@@ -651,9 +675,11 @@ const fetchCliente = async () => { // Declara uma função assíncrona chamada f
     }
 };
 
- const configurarCliente = () => { // Declara uma função chamada configurarCliente
+const configurarCliente = () => {
+    // Declara uma função chamada configurarCliente
     const cliente = ListaClientes.value.find((c) => c.value.id_cliente === DM.id_cliente); // Encontra o cliente correspondente ao ID do cliente no DM
-    if (cliente) { // Verifica se o cliente foi encontrado
+    if (cliente) {
+        // Verifica se o cliente foi encontrado
         selectedClient.value = cliente; // Define o cliente selecionado
         usarApi.value = cliente.value.usar_api; // Define se o cliente usa API
     } else {
@@ -661,13 +687,16 @@ const fetchCliente = async () => { // Declara uma função assíncrona chamada f
     }
 };
 
-const fetchItemDM = async () => { // Declara uma função assíncrona chamada fetchItemDM
+const fetchItemDM = async () => {
+    // Declara uma função assíncrona chamada fetchItemDM
     loading.value = true; // Ativa o estado de loading
-    try { // Inicia um bloco try para capturar possíveis erros
+    try {
+        // Inicia um bloco try para capturar possíveis erros
         const data = prepareItemDMData('listar', DM); // Prepara os dados para listar os itens do DM
         const response = await dmService.fetchItemDM(data); // Faz uma requisição para buscar os itens do DM
         ListaItens.value = response.data; // Atualiza a lista de itens com a resposta
-    } catch (error) { // Captura qualquer erro que ocorrer durante a requisição
+    } catch (error) {
+        // Captura qualquer erro que ocorrer durante a requisição
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_client_dm_iten_list'), life: 3000 }); // Adiciona uma mensagem de erro ao toast
         console.error('Erro ao carregar Itens:', error); // Loga a mensagem de erro no console
     } finally {
@@ -678,7 +707,6 @@ const loadData = async () => {
     loading.value = true;
     try {
         if (!dataStore.produtos) await dataStore.fetchProdutos();
-
     } catch (error) {
         toast.add({ severity: 'error', summary: t('title_error'), detail: t('load_initial_data'), life: 3000 });
         console.error('Erro ao carregar dados iniciais:', error);
@@ -687,8 +715,10 @@ const loadData = async () => {
     }
 };
 
-const handleSalvarDadosChange = () => { // Declara uma função chamada handleSalvarDadosChange
-    if (!salvardados.value) { // Verifica se a variável reativa salvardados é false
+const handleSalvarDadosChange = () => {
+    // Declara uma função chamada handleSalvarDadosChange
+    if (!salvardados.value) {
+        // Verifica se a variável reativa salvardados é false
         supe.value = false; // Define a variável reativa supe como false
         dupe.value = false; // Define a variável reativa dupe como false
     }
@@ -696,9 +726,11 @@ const handleSalvarDadosChange = () => { // Declara uma função chamada handleSa
 
 watch(
     () => DM.ID_Cliente, // Observa mudanças no ID do cliente no objeto DM
-    (newClienteId) => { // Função de callback chamada quando o ID do cliente muda
+    (newClienteId) => {
+        // Função de callback chamada quando o ID do cliente muda
         const client = ListaClientes.value.find((client) => client.value.id_cliente === newClienteId); // Encontra o cliente correspondente ao novo ID do cliente
-        if (client) { // Verifica se o cliente foi encontrado
+        if (client) {
+            // Verifica se o cliente foi encontrado
             selectedClient.value = { ...client.value }; // Atualiza selectedClient com o cliente selecionado
             usarApi.value = client.value.usar_api ?? false; // Verifica se usar_api é nulo e define como false
         } else {
@@ -707,8 +739,10 @@ watch(
     }
 );
 
-watch(active, (newIndex, oldIndex) => { // Observa mudanças na variável reativa active
-    if (newIndex !== oldIndex && newIndex === 0) { // Verifica se o índice mudou e se o novo índice é 0
+watch(active, (newIndex, oldIndex) => {
+    // Observa mudanças na variável reativa active
+    if (newIndex !== oldIndex && newIndex === 0) {
+        // Verifica se o índice mudou e se o novo índice é 0
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues); // Reseta o formulário de DM
         //fetchDMS(); // Busca as DMs (comentado)
         visible.value = false; // Define a variável reativa visible como false
@@ -730,12 +764,13 @@ watch(
     { immediate: true } // Executa a função de busca imediatamente ao observar a mudança
 );
 
-onMounted(async () => { // Declara uma função assíncrona chamada onMounted
+onMounted(async () => {
+    // Declara uma função assíncrona chamada onMounted
     await loadData(); // Carrega os dados iniciais
     await fetchCliente(); // Busca a lista de clientes
     await fetchDMS(); // Busca a lista de DMs
 
-    active.value = "0"; 
+    active.value = '0';
 });
 </script>
 
@@ -745,367 +780,375 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
             <div class="card">
                 <Tabs v-model:value="active" :value="0" v-if="!show">
                     <TabList>
-                        <Tab  value="0">{{ $t('dispenser_machine_list') }}</Tab>
+                        <Tab value="0">{{ $t('dispenser_machine_list') }}</Tab>
                         <Tab v-if="admin()" value="1">{{ visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine') }}</Tab>
                     </TabList>
                     <TabPanels>
-                    <TabPanel value="0">
-                        <div class="col-12">
-                            <DataTable
-                                v-model:filters="filters"
-                                :value="ListaDMS"
-                                stripedRows
-                                removableSort
-                                paginator
-                                lazy
-                                :totalRecords="totalRecords"
-                                :rows="lazyParams.value?.rows || 10"
-                                :rowsPerPageOptions="[5, 10, 20, 50]"
-                                :globalFilterFields="['Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']"
-                                selectionMode="single"
-                                tableStyle="min-width: 50rem; table-layout: fixed;"
-                                dataKey="id"
-                                :metaKeySelection="false"
-                                @rowSelect="onRowSelect"
-                                :sortOrder="lazyParams.value?.sortOrder || 1"
-                                :sortField="lazyParams.value?.sortField || 'Identificacao'"
-                                @filter="onFilterChange($event)"
-                                @page="onPageChange($event)"
-                                @sort="onSortChange($event)"
-                            >
-                                <template #header>
-                                    <div class="flex justify-content-between align-items-center">
-                                        <div class="flex justify-content-start">
-                                            <span>{{ $t('total_records', { count: totalRecords }) }}</span>
+                        <TabPanel value="0">
+                            <div class="col-12">
+                                <DataTable
+                                    v-model:filters="filters"
+                                    :value="ListaDMS"
+                                    stripedRows
+                                    removableSort
+                                    paginator
+                                    lazy
+                                    :totalRecords="totalRecords"
+                                    :rows="lazyParams.value?.rows || 10"
+                                    :rowsPerPageOptions="[5, 10, 20, 50]"
+                                    :globalFilterFields="['Numero', 'Identificacao', 'ClienteNome', 'local', 'Updated']"
+                                    selectionMode="single"
+                                    tableStyle="min-width: 50rem; table-layout: fixed;"
+                                    dataKey="id"
+                                    :metaKeySelection="false"
+                                    @rowSelect="onRowSelect"
+                                    :sortOrder="lazyParams.value?.sortOrder || 1"
+                                    :sortField="lazyParams.value?.sortField || 'Identificacao'"
+                                    @filter="onFilterChange($event)"
+                                    @page="onPageChange($event)"
+                                    @sort="onSortChange($event)"
+                                >
+                                    <template #header>
+                                        <div class="flex justify-content-between align-items-center">
+                                            <div class="flex justify-content-start">
+                                                <span>{{ $t('total_records', { count: totalRecords }) }}</span>
+                                            </div>
+                                            <div>
+                                                <IconField iconPosition="left">
+                                                    <InputIcon>
+                                                        <i class="pi pi-search" />
+                                                    </InputIcon>
+                                                    <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" autocomplete="off" />
+                                                </IconField>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <IconField iconPosition="left">
-                                                <InputIcon>
-                                                    <i class="pi pi-search" />
-                                                </InputIcon>
-                                                <InputText v-model="filters['global'].value" :placeholder="t('search')" @input="debouncedFilterChange" autocomplete="off"/>
-                                            </IconField>
-                                        </div>
+                                    </template>
+                                    <template #empty>{{ $t('no_dm_added') }} </template>
+                                    <Column field="Identificacao" sortable :header="t('identification')">
+                                        <template #body="{ data }">
+                                            <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
+                                        </template></Column
+                                    >
+                                    <Column field="Numero" sortable :header="t('number')">
+                                        <template #body="{ data }">
+                                            <span class="tooltip-target" v-tooltip="data.Numero">{{ data.Numero }}</span>
+                                        </template>
+                                    </Column>
+
+                                    <Column field="ClienteNome" sortable :header="t('client')">
+                                        <template #body="{ data }">
+                                            <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
+                                        </template></Column
+                                    >
+                                    <Column field="local" sortable :header="t('station')">
+                                        <template #body="{ data }">
+                                            <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
+                                        </template></Column
+                                    >
+                                    <Column field="Ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
+                                        <template #body="{ data }">
+                                            <i class="pi" :class="{ 'pi-check-circle pi-yes ': data.Ativo, 'pi-times-circle pi-no': !data.Ativo }"></i>
+                                        </template>
+                                    </Column>
+                                    <Column field="Updated" style="width: 15%" sortable :header="t('updated')">
+                                        <template #body="{ data }">
+                                            {{ normalizeDateTime(data.Updated, true) }}
+                                        </template>
+                                    </Column>
+                                    <Column style="min-width: 8rem" v-if="admin()">
+                                        <template #body="slotProps">
+                                            <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteDM(slotProps.data)" />
+                                        </template>
+                                    </Column>
+                                </DataTable>
+                            </div>
+                        </TabPanel>
+                        <TabPanel value="1">
+                            <div class="mt-5 mx-0 p-fluid grid">
+                                <div class="lg:col-12 md:col-12 sm:col-12">
+                                    <label for="name">{{ t('client') }}:</label>
+                                    <Select class="my-2 w-full" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
+                                </div>
+
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="indetificacao">{{ t('dm_identification') }}</label>
+                                    <InputText class="my-2 w-full" v-model="DM.Identificacao" id="indetificacao" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="numero">{{ t('dm_number') }}:</label>
+                                    <InputText class="my-2 w-full" v-model="DM.Numero" id="numero" />
+                                </div>
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch2">{{ t('dm_active') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
+                                        <span class="ml-2">{{ DM.Ativo ? $t('yes') : $t('no') }}</span>
                                     </div>
-                                </template>
-                                <template #empty>{{ $t('no_dm_added') }} </template>
-                                <Column field="Identificacao" sortable :header="t('identification')">
-                                    <template #body="{ data }">
-                                        <span class="tooltip-target" v-tooltip="data.Identificacao">{{ data.Identificacao }}</span>
-                                    </template></Column
-                                >
-                                <Column field="Numero" sortable :header="t('number')">
-                                    <template #body="{ data }">
-                                        <span class="tooltip-target" v-tooltip="data.Numero">{{ data.Numero }}</span>
-                                    </template>
-                                </Column>
-
-                                <Column field="ClienteNome" sortable :header="t('client')">
-                                    <template #body="{ data }">
-                                        <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
-                                    </template></Column
-                                >
-                                <Column field="local" sortable :header="t('station')">
-                                    <template #body="{ data }">
-                                        <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
-                                    </template></Column
-                                >
-                                <Column field="Ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
-                                    <template #body="{ data }">
-                                        <i class="pi" :class="{ 'pi-check-circle pi-yes ': data.Ativo, 'pi-times-circle pi-no': !data.Ativo }"></i>
-                                    </template>
-                                </Column>
-                                <Column field="Updated" style="width: 15%" sortable :header="t('updated')">
-                                    <template #body="{ data }">
-                                        {{ normalizeDateTime(data.Updated, true) }}
-                                    </template>
-                                </Column>
-                                <Column style="min-width: 8rem" v-if="admin()">
-                                    <template #body="slotProps">
-                                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="deleteDM(slotProps.data)" />
-                                    </template>
-                                </Column>
-                            </DataTable>
-                        </div>
-                    </TabPanel>
-                    <TabPanel value="1">
-                        <div class="mt-5 mx-0 p-fluid grid">
-                            <div class="lg:col-12 md:col-12 sm:col-12">
-                                <label for="name">{{ t('client') }}:</label>
-                                <Select class="my-2 w-full" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
-                            </div>
-
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="indetificacao">{{ t('dm_identification') }}</label>
-                                <InputText class="my-2 w-full" v-model="DM.Identificacao" id="indetificacao" />
-                            </div>
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="numero">{{ t('dm_number') }}:</label>
-                                <InputText class="my-2 w-full" v-model="DM.Numero" id="numero" />
-                            </div>
-                            <div class="flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch2">{{ t('dm_active') }}</label>
-                                <div class="grid mt-3">
-                                    <ToggleSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
-                                    <span class="ml-2">{{ DM.Ativo ? $t('yes') : $t('no') }}</span>
+                                </div>
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch3">{{ t('dm_return') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
+                                        <span class="ml-2">{{ DM.Devolucao ? $t('yes') : $t('no') }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch4">{{ t('dm_locker') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch class="mr-2" v-model="aqui" inputId="switch4" />
+                                        <span class="ml-2">{{ aqui ? $t('yes') : $t('no') }}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class=" flex flex-column align-items-center xl:col-6 lg:col-6 md:col-6 sm:col-12">
-                                <label class="mt-0 text-nowrap" for="switch3">{{ t('dm_return') }}</label>
-                                <div class="grid mt-3">
-                                    <ToggleSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
-                                    <span class="ml-2">{{ DM.Devolucao ? $t('yes') : $t('no') }}</span>
-                                </div>
-                            </div>
-                        </div><hr/>
+                            <hr />
 
-                        <panel :header="$t('dm_options')" class="mt-4">
-                            <div class="grid mt-5 mx-0 p-fluid">
-                                <!-- Painel Configuração da Máquina -->
-                                <div class="col-12 md:col-6">
-                                    <panel :header="$t('dm_config_with')">
-                                        <div id="fim" class="flex flex-column gap-3 mt-3">
-                                            <div class="flex align-items-center">
-                                                <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
-                                                <label for="Voucher" class="ml-2"> {{ t('voucher') }} </label>
-                                            </div>
-                                            <div class="flex align-items-center">
-                                                <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
-                                                <label for="cracha" class="ml-2"> {{ t('badge') }} </label>
-                                            </div>
-                                            <div class="flex align-items-center">
-                                                <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
-                                                <label for="Biometria" class="ml-2"> {{ t('biometric_reader') }} </label>
-                                            </div>
-                                            <div class="flex align-items-center">
-                                                <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
-                                                <label for="Facial" class="ml-2">{{ t('facial_recognition') }}</label>
-                                            </div>
-                                            <div class="flex align-items-center">
-                                                <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
-                                                <label for="Senha" class="ml-2"> {{ t('password') }} </label>
-                                            </div>
-                                        </div>
-                                    </panel>
-                                </div>
-
-                                <!-- Painel Opções de Retirada -->
-                                <div class="col-12 md:col-6">
-                                    <panel :header="$t('dm_config')">
-                                        <div class="flex flex-column gap-3 mt-3">
-                                            <div class="flex align-items-center flex-column">
-                                                <label for="switch4" class="mt-0 text-nowrap"> {{ $t('dm_config_data') }}</label>
-                                                <div class="grid mt-3">
-                                                    <ToggleSwitch class="mr-2" v-model="salvardados" inputId="switch4" @change="handleSalvarDadosChange" />
-                                                    <span class="ml-2">{{ salvardados ? $t('yes') : $t('no') }}</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="flex flex-column gap-3">
+                            <panel :header="$t('dm_options')" class="mt-4">
+                                <div class="grid mt-5 mx-0 p-fluid">
+                                    <!-- Painel Configuração da Máquina -->
+                                    <div class="col-12 md:col-6">
+                                        <panel :header="$t('dm_config_with')">
+                                            <div id="fim" class="flex flex-column gap-3 mt-3">
                                                 <div class="flex align-items-center">
-                                                    <Checkbox v-model="supe" inputId="supe" :binary="true" :disabled="!salvardados" />
-                                                    <label for="supe" class="ml-2">{{ $t('employee_name') }} </label>
+                                                    <Checkbox v-model="DM.voucher" inputId="Voucher" :binary="true" />
+                                                    <label for="Voucher" class="ml-2"> {{ t('voucher') }} </label>
                                                 </div>
                                                 <div class="flex align-items-center">
-                                                    <Checkbox v-model="dupe" inputId="dupe" :binary="true" :disabled="!salvardados" />
-                                                    <label for="dupe" class="ml-2"> {{ $t('employee_id') }} </label>
+                                                    <Checkbox v-model="DM.cracha" inputId="cracha" :binary="true" />
+                                                    <label for="cracha" class="ml-2"> {{ t('badge') }} </label>
+                                                </div>
+                                                <div class="flex align-items-center">
+                                                    <Checkbox v-model="DM.OP_Biometria" inputId="Biometria" :binary="true" />
+                                                    <label for="Biometria" class="ml-2"> {{ t('biometric_reader') }} </label>
+                                                </div>
+                                                <div class="flex align-items-center">
+                                                    <Checkbox v-model="DM.OP_Facial" inputId="Facial" :binary="true" />
+                                                    <label for="Facial" class="ml-2">{{ t('facial_recognition') }}</label>
+                                                </div>
+                                                <div class="flex align-items-center">
+                                                    <Checkbox v-model="DM.OP_Senha" inputId="Senha" :binary="true" />
+                                                    <label for="Senha" class="ml-2"> {{ t('password') }} </label>
                                                 </div>
                                             </div>
-                                            <hr />
-                                            <div class="flex flex-column gap-3">
-                                                <div class="flex align-items-center flex-column mt-4">
-                                                    <label for="switch4" class="mt-0 text-nowrap">{{ $t('dm_config_data_save') }}</label>
+                                        </panel>
+                                    </div>
+
+                                    <!-- Painel Opções de Retirada -->
+                                    <div class="col-12 md:col-6">
+                                        <panel :header="$t('dm_config')">
+                                            <div class="flex flex-column gap-3 mt-3">
+                                                <div class="flex align-items-center flex-column">
+                                                    <label for="switch4" class="mt-0 text-nowrap"> {{ $t('dm_config_data') }}</label>
                                                     <div class="grid mt-3">
-                                                        <ToggleSwitch class="mr-2" v-model="salvardadosMaquina" inputId="switch4" />
-                                                        <span class="ml-2">{{ salvardadosMaquina ? $t('yes') : $t('no') }}</span>
+                                                        <ToggleSwitch class="mr-2" v-model="salvardados" inputId="switch4" @change="handleSalvarDadosChange" />
+                                                        <span class="ml-2">{{ salvardados ? $t('yes') : $t('no') }}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex flex-column gap-3">
+                                                    <div class="flex align-items-center">
+                                                        <Checkbox v-model="supe" inputId="supe" :binary="true" :disabled="!salvardados" />
+                                                        <label for="supe" class="ml-2">{{ $t('employee_name') }} </label>
+                                                    </div>
+                                                    <div class="flex align-items-center">
+                                                        <Checkbox v-model="dupe" inputId="dupe" :binary="true" :disabled="!salvardados" />
+                                                        <label for="dupe" class="ml-2"> {{ $t('employee_id') }} </label>
+                                                    </div>
+                                                </div>
+                                                <hr />
+                                                <div class="flex flex-column gap-3">
+                                                    <div class="flex align-items-center flex-column mt-4">
+                                                        <label for="switch4" class="mt-0 text-nowrap">{{ $t('dm_config_data_save') }}</label>
+                                                        <div class="grid mt-3">
+                                                            <ToggleSwitch class="mr-2" v-model="salvardadosMaquina" inputId="switch4" />
+                                                            <span class="ml-2">{{ salvardadosMaquina ? $t('yes') : $t('no') }}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </panel>
+                                        </panel>
+                                    </div>
+                                </div>
+                            </panel>
+
+                            <div v-if="selectedClient.usar_api" class="mt-5 card grid mb-5">
+                                <div class="flex xl:col-12 lg:col-12 md:col-12 sm:col-12 mt-3">
+                                    <label class="mt-3 ml-4 mb-5" for="switch3">Usa Mob?</label>
+                                    <ToggleSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="userapi">{{ t('userid_api') }}:</label>
+                                    <InputText class="my-2 w-full" id="userapi" v-model="DM.UserID" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="senhaapi">{{ t('api_password') }}:</label>
+                                    <InputText class="my-2 w-full" id="senhaapi" v-model="DM.ChaveAPI" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="clienteAPI">{{ t('idclient_api') }}:</label>
+                                    <InputText class="my-2 w-full" id="clienteAPI" v-model="DM.ClienteID" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="urlapi">{{ t('url_api') }}:</label>
+                                    <InputText class="my-2 w-full" id="urlapi" v-model="DM.URL" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="codigo">{{ t('key') }}:</label>
+                                    <Textarea v-model="DM.Chave" class="my-2 overflow-hidden w-full" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
+                                </div>
+                                <div class="mt-2 lg:col-6 md:col-9 sm:col-12">
+                                    <!-- <label for="validar">{{ t('validate_external_data') }}</label> -->
+                                    <Button class="mt-4 w-full" icon="pi pi-check" :label="t('validate_external_data_text')" @click="validarDados" />
                                 </div>
                             </div>
-                        </panel>
+                            <Button class="mt-7" icon="pi pi-plus" :label="t('new_controller')" @click="addControladora" />
 
-                        <div v-if="selectedClient.usar_api" class="mt-5 card grid mb-5">
-                            <div class="flex xl:col-12 lg:col-12 md:col-12 sm:col-12 mt-3">
-                                <label class="mt-3 ml-4 mb-5" for="switch3">Usa Mob?</label>
-                                <ToggleSwitch class="grid mt-3 ml-3" v-model="DM.Integracao" inputId="switch3" />
-                            </div>
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="userapi">{{ t('userid_api') }}:</label>
-                                <InputText class="my-2 w-full" id="userapi" v-model="DM.UserID" />
-                            </div>
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="senhaapi">{{ t('api_password') }}:</label>
-                                <InputText class="my-2 w-full" id="senhaapi" v-model="DM.ChaveAPI" />
-                            </div>
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="clienteAPI">{{ t('idclient_api') }}:</label>
-                                <InputText class="my-2 w-full" id="clienteAPI" v-model="DM.ClienteID" />
-                            </div>
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="urlapi">{{ t('url_api') }}:</label>
-                                <InputText class="my-2 w-full" id="urlapi" v-model="DM.URL" />
-                            </div>
-                            <div class="lg:col-6 md:col-9 sm:col-12">
-                                <label for="codigo">{{ t('key') }}:</label>
-                                <Textarea v-model="DM.Chave" class="my-2 overflow-hidden w-full" style="min-height: 50px; min-width: 450px" inputClass="w-full" rows="2" cols="30" />
-                            </div>
-                            <div class="mt-2 lg:col-6 md:col-9 sm:col-12">
-                                <!-- <label for="validar">{{ t('validate_external_data') }}</label> -->
-                                <Button class="mt-4 w-full " icon="pi pi-check" :label="t('validate_external_data_text')" @click="validarDados" />
-                            </div>
-                        </div>
-                        <Button class="mt-7" icon="pi pi-plus" :label="t('new_controller')" @click="addControladora" />
+                            <div>
+                                <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
+                                    <div class="flex justify-content-between flex-wrap">
+                                        <h5>{{ $t('controller_number', { number: index + 1 }) }}</h5>
 
-                        <div>
-                            <div v-for="(controladora, index) in Controladoras" :key="index" class="mt-5 card" v-show="!DM.ID_DM || !controladora?.deleted" :ref="setRefs">
-                                <div class="flex justify-content-between flex-wrap">
-                                    <h5>{{ $t('controller_number', { number: index + 1 }) }}</h5>
-
-                                    <!-- Botão de Remoção -->
-                                    <Button icon="pi pi-trash" :label="$t('remove')" class="p-button-danger" @click="removeControladora(index)" />
-                                </div>
-
-                                <div class="field mt-3 col-12">
-                                    <label class="mr-3">{{ t('model') }}: </label>
-                                    <Select 
-                                        class="select"
-                                        style="width: 250px"
-                                        v-model="controladora.tipo"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        :options="tipoControladoras"
-                                        :placeholder="$t('select_controller')"
-                                        @change="updateTipoControladora(index, controladora.tipo)"
-                                    />
-                                </div>
-
-                                <!<!-- Controladora 2018 -->
-                                <div class="" v-if="controladora.tipo === '2018'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">{{ t('board') }}: </label>
-                                        <InputText class="" style="width: 250px" v-model="controladora.dados.placa" />
+                                        <!-- Botão de Remoção -->
+                                        <Button icon="pi pi-trash" :label="$t('remove')" class="p-button-danger" @click="removeControladora(index)" />
                                     </div>
 
-                                    <fieldset class="field card mt-4">
-                                        <legend>{{ t('spring') }}</legend>
-
-                                        <div class="checkbox-group mt-3" style="text-align: center">
-                                            <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
-                                                <Checkbox v-model="controladora.dados.molas" :value="i" />
-                                                <label>{{ i }}</label>
-                                            </div>
-                                        </div>
-
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
-                                        </div>
-                                    </fieldset>
-                                </div>
-
-                                <!-- Controladora 2023 -->
-                                <div v-if="controladora.tipo === '2023'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">{{ t('dip') }}: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                    <div class="field mt-3 col-12">
+                                        <label class="mr-3">{{ t('model') }}: </label>
+                                        <Select
+                                            class="select"
+                                            style="width: 250px"
+                                            v-model="controladora.tipo"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            :options="tipoControladoras"
+                                            :placeholder="$t('select_controller')"
+                                            @change="updateTipoControladora(index, controladora.tipo)"
+                                        />
                                     </div>
-                                    <div class="card mt-5">
-                                        <div class="field mt-3">
-                                            <h4>{{ t('level_floor') }}:</h4>
-                                            <div class="checkbox-group">
-                                                <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
-                                                    <Checkbox v-model="controladora.dados.andar" :value="i" />
+
+                                    <!<!-- Controladora 2018 -->
+                                    <div class="" v-if="controladora.tipo === '2018'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-5 p-0">{{ t('board') }}: </label>
+                                            <InputText class="" style="width: 250px" v-model="controladora.dados.placa" />
+                                        </div>
+
+                                        <fieldset class="field card mt-4">
+                                            <legend>{{ t('spring') }}</legend>
+
+                                            <div class="checkbox-group mt-3" style="text-align: center">
+                                                <div v-for="i in 10" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.molas" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
+
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                            </div>
+                                        </fieldset>
+                                    </div>
+
+                                    <!-- Controladora 2023 -->
+                                    <div v-if="controladora.tipo === '2023'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-6 p-0">{{ t('dip') }}: </label>
+                                            <InputText style="width: 250px" v-model="controladora.dados.dip" />
                                         </div>
-                                        <div class="field mt-6">
+                                        <div class="card mt-5">
+                                            <div class="field mt-3">
+                                                <h4>{{ t('level_floor') }}:</h4>
+                                                <div class="checkbox-group">
+                                                    <div v-for="i in 6" :key="i" class="checkbox-item mt-3">
+                                                        <Checkbox v-model="controladora.dados.andar" :value="i" />
+                                                        <label>{{ i }}</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="field mt-6">
+                                                <h4>{{ t('position') }}</h4>
+                                                <div class="checkbox-group">
+                                                    <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
+                                                        <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                        <label>{{ i }}</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Controladora 2024 -->
+                                    <div v-if="controladora.tipo === '2024'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-5 p-0">{{ t('board') }}: </label>
+                                            <InputText style="width: 250px" v-model="controladora.dados.placa" />
+                                        </div>
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-5 p-0">{{ t('motor') }}: </label>
+                                            <InputText style="width: 250px" v-model="controladora.dados.motor" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Controladora Locker -->
+                                    <div v-if="controladora.tipo === 'Locker-Padrao'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-6 p-0">{{ t('dip') }}: </label>
+                                            <InputText style="width: 250px" v-model="controladora.dados.dip" />
+                                        </div>
+                                        <div class="field card">
                                             <h4>{{ t('position') }}</h4>
                                             <div class="checkbox-group">
-                                                <div v-for="i in 15" :key="i" class="checkbox-item mt-3">
+                                                <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
                                                     <Checkbox v-model="controladora.dados.posicao" :value="i" />
                                                     <label>{{ i }}</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Controladora 2024 -->
-                                <div v-if="controladora.tipo === '2024'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">{{ t('board') }}: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.placa" />
-                                    </div>
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-5 p-0">{{ t('motor') }}: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.motor" />
-                                    </div>
-                                </div>
-
-                                <!-- Controladora Locker -->
-                                <div v-if="controladora.tipo === 'Locker-Padrao'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">{{ t('dip') }}: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
-                                    </div>
-                                    <div class="field card">
-                                        <h4>{{ t('position') }}</h4>
-                                        <div class="checkbox-group">
-                                            <div v-for="i in 20" :key="i" class="checkbox-item mt-3">
-                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                <label>{{ i }}</label>
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
                                             </div>
                                         </div>
-
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                    </div>
+                                    <div v-if="controladora.tipo === 'Locker-Ker'">
+                                        <div class="field col-12 mt-3">
+                                            <label class="mr-6 p-0">{{ t('dip') }}: </label>
+                                            <InputText style="width: 250px" v-model="controladora.dados.dip" />
                                         </div>
-                                    </div>
-                                </div>
-                                <div v-if="controladora.tipo === 'Locker-Ker'">
-                                    <div class="field col-12 mt-3">
-                                        <label class="mr-6 p-0">{{ t('dip') }}: </label>
-                                        <InputText style="width: 250px" v-model="controladora.dados.dip" />
-                                    </div>
-                                    <div class="field card">
-                                        <h4>{{ t('position') }}</h4>
-                                        <div class="checkbox-group">
-                                            <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
-                                                <Checkbox v-model="controladora.dados.posicao" :value="i" />
-                                                <label>{{ i }}</label>
+                                        <div class="field card">
+                                            <h4>{{ t('position') }}</h4>
+                                            <div class="checkbox-group">
+                                                <div v-for="i in 12" :key="i" class="checkbox-item mt-3">
+                                                    <Checkbox v-model="controladora.dados.posicao" :value="i" />
+                                                    <label>{{ i }}</label>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div class="button-group mt-5" style="text-align: end">
-                                            <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
-                                            <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                            <div class="button-group mt-5" style="text-align: end">
+                                                <Button class="mr-3" style="width: 200px" :label="$t('select_all')" @click="selectAllCliente(index)" />
+                                                <Button style="width: 200px" :label="$t('deselect')" @click="desselectAllCliente(index)" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="mt-5 mx-0 p-fluid grid">
-                            <Button v-if="!visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
-                            <Button v-if="visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="atualizarDM" class="full mt-4 mr-2" />
-                        </div>
-                    </TabPanel>
-                </TabPanels>
+                            <div class="mt-5 mx-0 p-fluid grid">
+                                <Button v-if="!visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="adicionarDM" class="full mt-4 mr-2" />
+                                <Button v-if="visible" :label="$t('save')" icon="pi pi-check" severity="info" @click="atualizarDM" class="full mt-4 mr-2" />
+                            </div>
+                        </TabPanel>
+                    </TabPanels>
                 </Tabs>
                 <div class="card" v-if="operador">
                     <div class="mx-0 grid">
                         <div class="col-12">
                             <div class="flex mt-5 justify-content-between">
-                                <h5>{{ t('itens_dms') }} {{DM.Identificacao}} </h5>
+                                <h5>{{ t('itens_dms') }} {{ DM.Identificacao }}</h5>
                                 <Button :label="$t('add_items')" @click="showDialogProduto = true" />
                             </div>
                             <DataTable
@@ -1189,25 +1232,25 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
                     <label for="Produto" class="font-semibold">{{ t('product') }}:</label>
                 </div>
                 <div class="lg:col-8 md:col-8 sm:col-8 flex justify-content-end">
-<Select 
-    v-model="produtoSelecionado.id_produto"
-    class="w-full"
-    removableSort
-    :options="ListaProdutos"
-    :virtualScrollerOptions="{ itemSize: 30 }"
-    :filter="true"
-    :filterBy="'label'"
-    optionLabel="label"
-    optionValue="value"
-    :placeholder="t('select_product')"
-    v-tooltip="{ value: t('select_product'), showDelay: 1000, hideDelay: 300 }"
->
-    <template #option="slotProps">
-        <span v-tooltip.top="slotProps.option.label">
-            {{ slotProps.option.label }}
-        </span>
-    </template>
-</Select>
+                    <Select
+                        v-model="produtoSelecionado.id_produto"
+                        class="w-full"
+                        removableSort
+                        :options="ListaProdutos"
+                        :virtualScrollerOptions="{ itemSize: 30 }"
+                        :filter="true"
+                        :filterBy="'label'"
+                        optionLabel="label"
+                        optionValue="value"
+                        :placeholder="t('select_product')"
+                        v-tooltip="{ value: t('select_product'), showDelay: 1000, hideDelay: 300 }"
+                    >
+                        <template #option="slotProps">
+                            <span v-tooltip.top="slotProps.option.label">
+                                {{ slotProps.option.label }}
+                            </span>
+                        </template>
+                    </Select>
                 </div>
                 <div class="lg:col-4 md:col-4 sm:col-4 flex align-items-center">
                     <label for="Controladora" class="font-semibold">{{ t('controller') }}:</label>
@@ -1295,8 +1338,8 @@ onMounted(async () => { // Declara uma função assíncrona chamada onMounted
         </div>
 
         <div class="flex justify-content-end gap-2 mt-4">
-            <Button type="button"  :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
-            <Button type="button" style="width:300px !important;" :label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
+            <Button type="button" :label="$t('cancel')" severity="secondary" @click="handleCancelar()"></Button>
+            <Button type="button" style="width: 300px !important" :label="isEditMode ? $t('update') : $t('save')" @click="isEditMode ? atualizarProduto() : adicionarProduto()"></Button>
         </div>
     </Dialog>
     <Dialog :header="$t('dialog_delete_item')" :visible.sync="showDialogDItem" style="width: 30vw" :modal="true" :closable="false" :draggable="false">

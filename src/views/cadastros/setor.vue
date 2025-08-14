@@ -591,7 +591,7 @@ const debouncedFilterChange = debounce(() => {
 
                                         <template #footer>
                                             <form @submit.prevent="SalvarProduto" class="flex justify-content-end gap-2">
-                                                <Button type="button" :label="$t('cancel')" icon="pi pi-times" text @click="itemDialog = false" />
+                                                 <Button type="button" :label="$t('cancel')" icon="pi pi-times" text @click="visible = false" />
                                                 <Button type="submit" :label="$t('save')" icon="pi pi-check" text />
                                             </form>
                                         </template>

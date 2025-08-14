@@ -58,6 +58,10 @@ const dmService = { // Declara um objeto chamado dmService que contém vários m
     async validarExternalData(data) {
         return postRequest('/DM/validar', data);
     },
+    // Método para verificar se o DM é um locker
+    async seforlocker(data) {
+        return postRequest('/DM/seforlocker', data);
+    }
 };
 
 export default dmService;

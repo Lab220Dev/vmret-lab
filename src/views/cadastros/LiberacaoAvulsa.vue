@@ -3,19 +3,18 @@
  * Importa o composable useToast do PrimeVue, usado para exibir mensagens de notificação.
  */
 import { useToast } from 'primevue/usetoast';
-import Message from 'primevue/message'
+import Message from 'primevue/message';
 import { reactive, ref, onMounted, computed } from 'vue';
 import { useDataStore } from '@/store/dataStore.js';
-import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import * as formatservices from '@/helpers/HelperUtils.js';
 import laService from '@/Services/laService.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useI18n } from 'vue-i18n';
 const { t, locale } = useI18n();
-import { DateTime } from 'luxon';
-
-const timeZone = 'America/Sao_Paulo';
+const listaDIPs = ref([]);
+const dipSelecionado = ref(null);
+const dipsComPosicoes = ref([]);
 const loading = ref(false);
 const toast = useToast();
 const dataStore = useDataStore();
@@ -23,22 +22,11 @@ const posicaoSelecionada = ref(null);
 const dialogoPosicao = ref(false);
 const posicaoOcupada = ref(false);
 const detalhesPosicao = ref({});
-const libAvulsa = reactive({
-    id_funcionario: '',
-    limiteRetirada: new Date(),
-    enviarEmail: false
-});
-const funcionarioOptions = computed(() => dataStore.funcionariosOptions);
-const listaFuncionarios = computed(() => {
-    return funcionarioOptions.value.filter((f) => f.value !== null);
-});
 const itemCache = ref({}); // objeto com chave = id_dm e valor = lista de itens
 const itensAtuais = ref([]);
 const listaArmarios = ref([]);
+const listaPosicoes = ref([]);
 const produtosOptions = computed(() => dataStore.produtosOptions);
-const ListaProdutos = computed(() => {
-    return produtosOptions.value.filter((produto) => produto.value !== null);
-});
 const ListaProdutoFuncionario = ref([]);
 const deleteProductDialog = ref(false);
 const itemDialog = ref(false);
@@ -48,50 +36,59 @@ const codigo = ref('');
 const codigoMensagem = ref('');
 const erroMensagem = ref('');
 const AbrirDialogoCodigo = ref(false);
-const novaMatricula = ref('');
 const novaRequisicao = ref('');
-const novaDataLimite = ref(new Date());
-const format = (date) => {
-    return formatservices.formatDateToString(date);
-};
-const gerarCodigo = async () => {
-    loading.value = true;
-    try {
-        const data = formatservices.preparelaData(ListaProdutoFuncionario.value, libAvulsa);
-        const response = await laService.adicionar(data);
-        codigo.value = `Código gerado: ${response.data.codigo}`;
-        erroMensagem.value = '';
-    } catch (error) {
-        erroMensagem.value = `Erro na criação do código: ${error.message}`;
-        codigoMensagem.value = '';
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: error.message });
-    } finally {
-        loading.value = false;
-        AbrirDialogoCodigo.value = true;
-    }
-};
-const adicionarProduto = () => {
-    if (!selectedProduct.value) {
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: t('product_empty_list') });
-        return;
-    }
-    if (!selectedProduct.value.value) {
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'todos não e um valor valido' });
-        return;
-    }
-    const produtoLabel = selectedProduct.value.label || selectedProduct.value.nome;
-    const produtoExistente = ListaProdutoFuncionario.value.find((item) => item.nome_produto === produtoLabel);
 
-    if (produtoExistente) {
-        produtoExistente.quantidade++;
-    } else {
-        ListaProdutoFuncionario.value.push({
-            ...selectedProduct.value,
-            nome_produto: selectedProduct.value.label,
-            quantidade: 1
+const salvarRequisicao = async () => {
+    if (!dmSelecionado.value) {
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: t('select_locker') });
+        return;
+    }
+    try {
+        const response = await laService.adicionar({
+            id_dm: dmSelecionado.value,
+            requisicao: novaRequisicao.value
         });
+        codigoMensagem.value = response.data.codigo;
+        toast.add({ severity: 'success', summary: 'Sucesso', life: 3000, detail: t('liberation_successful') });
+        codigo.value = response.data.codigo;
+        AbrirDialogoCodigo.value = true;
+    } catch (error) {
+        erroMensagem.value = error.message || t('liberation_error');
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: erroMensagem.value });
     }
 };
+
+async function carregarDIPsComPosicoes() {
+    dipsComPosicoes.value = []; // limpa
+
+    if (!dmSelecionado.value) return;
+
+    try {
+        const response = await laService.listarDIPs(dmSelecionado.value);
+        const dips = response.data;
+
+        for (const dip of dips) {
+            const responsePos = await laService.listarPosicoes({
+                id_dm: dmSelecionado.value,
+                dips: [{ tipo: dip.Tipo_Controladora, dip: dip.DIP }]
+            });
+
+            dipsComPosicoes.value.push({
+                tipo: dip.Tipo_Controladora,
+                dip: dip.DIP,
+                posicoes: responsePos.data.map((p) => ({
+                    index: p.Posicao, // mantém numeração real do banco
+                    ocupado: p.ocupado || false, // se precisar marcar ocupação
+                    item: p.item || null
+                }))
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar DIPs e posições:', error);
+        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Falha ao carregar DIPs e posições' });
+    }
+}
+
 function aoClicarNaPosicao(pos) {
     posicaoSelecionada.value = pos.index;
     const item = itensAtuais.value.find((i) => i.Posicao === pos.index);
@@ -101,35 +98,12 @@ function aoClicarNaPosicao(pos) {
         detalhesPosicao.value = item;
     } else {
         posicaoOcupada.value = false;
-        novaMatricula.value = '';
         novaRequisicao.value = '';
-        novaDataLimite.value = new Date();
     }
 
     dialogoPosicao.value = true;
 }
-const editarProduto = () => {
-    const index = ListaProdutoFuncionario.value.findIndex((item) => item.value === selectedProduct.value.value);
-    if (index !== -1) {
-        // Atualiza a quantidade do produto na lista com a quantidade do sp
-        ListaProdutoFuncionario.value[index].quantidade = selectedProduct.value.quantidade;
-        toast.add({
-            severity: 'success',
-            summary: 'Sucesso',
-            life: 3000,
-            detail: t('product_updated')
-        });
-    } else {
-        toast.add({
-            severity: 'error',
-            summary: 'Erro',
-            life: 3000,
-            detail: t('product_not_found')
-        });
-    }
 
-    hideDialog();
-};
 const removerProduto = () => {
     // Procura o índice do produto na lista usando o id_produto
     const index = ListaProdutoFuncionario.value.findIndex((item) => item.id_produto === selectedProduct.value.id_produto);
@@ -172,18 +146,15 @@ async function carregarItens(id_dm) {
     }
 }
 function adicionarNovoItemNaPosicao() {
-    if (!novaMatricula.value || !novaRequisicao.value) {
+    if (!novaRequisicao.value) {
         toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos' });
         return;
     }
-    const dataLuxon = DateTime.fromJSDate(novaDataLimite.value).setZone(timeZone);
     const novoItem = {
         id_dm: dmSelecionado.value,
         Posicao: posicaoSelecionada.value, // respeitando o campo usado no `gridPosicoes`
         nome_produto: 'Novo item manual', // você pode mudar conforme necessário
-        matricula: novaMatricula.value,
-        requisicao: novaRequisicao.value,
-        data_limite: dataLuxon.toISO()
+        requisicao: novaRequisicao.value
     };
     itensAtuais.value.push(novoItem);
     const cache = itemCache.value[dmSelecionado.value] || [];
@@ -193,24 +164,10 @@ function adicionarNovoItemNaPosicao() {
     dialogoPosicao.value = false;
     toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item adicionado' });
 }
-const gridPosicoes = computed(() => {
-    const total = listaArmarios.value.find((item) => item.value === dmSelecionado.value)?.posicoes || 0;
 
-    return Array.from({ length: total }, (_, i) => {
-        const posicao = i + 1;
-        const item = itensAtuais.value.find((i) => i.Posicao === posicao);
-        return {
-            index: posicao,
-            ocupado: !!item,
-            item: item || null
-        };
-    });
-});
 onMounted(async () => {
     loading.value = true;
     try {
-        listaFuncionarios.value = dataStore.funcionarios || (await dataStore.fetchFuncionarios());
-        ListaProdutos.value = dataStore.produtos || (await dataStore.fetchProdutos());
         let resultArmarios = await laService.listarLocker();
         listaArmarios.value = resultArmarios.data.map((item) => ({
             label: item.Identificacao,
@@ -229,44 +186,33 @@ onMounted(async () => {
 <template>
     <!-- Estrutura principal da interface -->
     <div class="card">
-        <h5 class="my-6 ml-2 text-2xl">{{ t('one_time_release') }}</h5>
-
         <!-- Grid interno para organizar os campos de entrada -->
-        <div class="card my-6 mx-0 p-fluid grid">
-            <div class="full lg:col-4 md:col-12 sm:col-12">
-                <label for="armario">{{ t('locker') }}:</label>
-                <Dropdown class="my-2" v-model="dmSelecionado" :options="listaArmarios" optionLabel="label" optionValue="value" @change="carregarItens($event.value)" />
-            </div>
+        <!-- 1. Select de DM -->
+        <div class="lg:col-4 md:col-12 sm:col-12 mb-5">
+            <label class="m-3 text-lg">DM:</label>
+            <Select class="my-2 w-8" v-model="dmSelecionado" :options="listaArmarios" optionLabel="label" optionValue="value" @change="carregarDIPsComPosicoes" />
         </div>
-        <div class="card mt-4">
-            <h5 class="text-lg mb-3">{{ t('positions') }}</h5>
-            <div class="grid">
-                <div
-                    v-for="pos in gridPosicoes"
-                    :key="pos.index"
-                    class="col-2 text-center p-3 border-1 border-round font-bold cursor-pointer"
-                    :style="{ backgroundColor: pos.ocupado ? '#ef4444' : '#22c55e', color: '#fff' }"
-                    @click="aoClicarNaPosicao(pos)"
-                >
-                    <div class="text-sm font-semibold">{{ t('position') }} {{ pos.index }}</div>
 
-                    <div v-if="pos.ocupado && pos.item">
-                        <div v-if="pos.item.matricula">
-                            <div class="text-xs mt-1">Req: {{ pos.item.requisicao || '--' }}</div>
-                            <div class="text-xs">Mat: {{ pos.item.matricula }}</div>
-                            <div class="text-xs">{{ pos.item.nome_funcionario || '---' }}</div>
-                        </div>
-                        <div v-else>
-                            <div class="text-xs mt-1">Cod: {{ pos.item.ProdutoCodigo }}</div>
-                            <div class="text-xs">{{ pos.item.nome_produto }}</div>
-                        </div>
+        <div class="flex flex-wrap gap-2 container-portas text-center">
+            <div v-for="dipItem in dipsComPosicoes" :key="dipItem.tipo + '_' + dipItem.dip" class="my-4 mx-2">
+                <label class="text-md font-semibold">
+                    {{ dipItem.tipo }}<span v-if="dipItem.tipo !== '2018'"> DIP {{ dipItem.dip }}</span>
+                </label>
+                <div class="grid-portas ml-2 mt-2">
+                    <div v-for="pos in dipItem.posicoes" :key="pos.index" class="porta p-3 border-1 border-round font-bold cursor-pointer"
+                        :style="{ backgroundColor: pos.ocupado ? '#ef4444' : '#22c55e', color: '#fff' }"
+                        @click="aoClicarNaPosicao(pos)"
+                    >
+                        <div class="text-sm font-semibold">{{ t('position') }} {{ pos.index }}</div>
+                        <div v-if="pos.ocupado && pos.item && pos.item.requisicao" class="text-xs mt-1">Req: {{ pos.item.requisicao }}</div>
                     </div>
                 </div>
             </div>
         </div>
+
         <!-- Botão para salvar as informações -->
         <div class="flex align-items-center justify-content-end field col-12">
-            <Button label="Salvar" icon="pi pi-check" severity="info" @click="gerarCodigo" class="full mt-2" />
+            <Button label="Salvar" icon="pi pi-check" severity="info" @click="salvarRequisicao" class="full mt-2" />
             <!-- Mensagem esperada ao clicar:
                          - Liberação registrada com sucesso (toast com mensagem de sucesso). -->
         </div>
@@ -304,16 +250,7 @@ onMounted(async () => {
             <template v-if="posicaoOcupada">
                 <div class="p-fluid">
                     <p>
-                        <strong>{{ t('product') }}:</strong> {{ detalhesPosicao.nome_produto }}
-                    </p>
-                    <p>
                         <strong>{{ t('code') }}:</strong> {{ detalhesPosicao.codigo }}
-                    </p>
-                    <p>
-                        <strong>{{ t('employee') }}:</strong> {{ detalhesPosicao.matricula || '---' }}
-                    </p>
-                    <p>
-                        <strong>{{ t('withdrawal_deadline') }}:</strong> {{ formatservices.formatDateToString(detalhesPosicao.data_limite) }}
                     </p>
                 </div>
             </template>
@@ -321,17 +258,13 @@ onMounted(async () => {
             <template v-else>
                 <div class="p-fluid formgrid grid">
                     <div class="field col-12">
-                        <label for="matricula">{{ t('employee') }}</label>
-                        <InputText id="matricula" v-model="novaMatricula" />
+                        <label for="requisicao" class="mr-4">Nº Requisição: </label>
+                        <InputText id="requisicao" class="full" v-model="novaRequisicao" />
                     </div>
-                    <div class="field col-12">
-                        <label for="requisicao">Nº Requisição</label>
-                        <InputText id="requisicao" v-model="novaRequisicao" />
-                    </div>
-                    <div class="field col-12">
+                    <!-- <div class="field col-12">
                         <label>{{ t('withdrawal_deadline') }}</label>
                         <VueDatePicker v-model="novaDataLimite" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" />
-                    </div>
+                    </div> -->
                 </div>
             </template>
 
@@ -348,6 +281,23 @@ onMounted(async () => {
     </div>
 </template>
 
-<style>
+<style scoped>
+.container-portas {
+    background-color: #e5e5e562; /* fundo cinza como no exemplo */
+    justify-content: space-around;
+}
 
+.grid-portas {
+    display: grid;
+    grid-template-columns: repeat(2, auto); /* duas portas por linha */
+    background-color: #e5e5e5; /* fundo cinza como no exemplo */
+    padding: 10px;
+    border-radius: 6px;
+    width: fit-content; /* ajusta à quantidade de portas */
+}
+
+.porta {
+    width: 80px;
+    height: 60px;
+}
 </style>

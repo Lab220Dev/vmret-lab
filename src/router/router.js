@@ -59,6 +59,7 @@ const router = createRouter({
                     component: () => import('@/views/pages/Importacao.vue'),
                     meta: { requiresAuth: true, Availability: true }
                 },
+                //retiradas avulsas começa aqui
                 {
                     path: '/cadastros/LiberacaoAvulsa',
                     name: 'Liberação Avulsa',
