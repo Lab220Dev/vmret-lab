@@ -12,22 +12,14 @@ import laService from '@/Services/laService.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useI18n } from 'vue-i18n';
 const { t, locale } = useI18n();
-const listaDIPs = ref([]);
-const dipSelecionado = ref(null);
+
 const dipsComPosicoes = ref([]);
 const loading = ref(false);
 const toast = useToast();
 const dataStore = useDataStore();
-const posicaoSelecionada = ref(null);
-const dialogoPosicao = ref(false);
-const posicaoOcupada = ref(false);
-const detalhesPosicao = ref({});
 const itemCache = ref({}); // objeto com chave = id_dm e valor = lista de itens
 const itensAtuais = ref([]);
 const listaArmarios = ref([]);
-const listaPosicoes = ref([]);
-const produtosOptions = computed(() => dataStore.produtosOptions);
-const ListaProdutoFuncionario = ref([]);
 const deleteProductDialog = ref(false);
 const itemDialog = ref(false);
 const selectedProduct = ref(null);
@@ -37,6 +29,7 @@ const codigoMensagem = ref('');
 const erroMensagem = ref('');
 const AbrirDialogoCodigo = ref(false);
 const novaRequisicao = ref('');
+
 
 const salvarRequisicao = async () => {
     if (!dmSelecionado.value) {
@@ -67,68 +60,81 @@ async function carregarDIPsComPosicoes() {
         const response = await laService.listarDIPs(dmSelecionado.value);
         const dips = response.data;
 
+        // carrega todos os itens ocupados dessa DM
+        await carregarItens(dmSelecionado.value);
+
+        console.log('Itens carregados (ocupados):', itensAtuais.value);
+
         for (const dip of dips) {
             const responsePos = await laService.listarPosicoes({
                 id_dm: dmSelecionado.value,
                 dips: [{ tipo: dip.Tipo_Controladora, dip: dip.DIP }]
             });
 
+            console.log(`Posições retornadas para DIP ${dip.DIP} (${dip.Tipo_Controladora}):`, responsePos.data);
+
             dipsComPosicoes.value.push({
                 tipo: dip.Tipo_Controladora,
                 dip: dip.DIP,
-                posicoes: responsePos.data.map((p) => ({
-                    index: p.Posicao, // mantém numeração real do banco
-                    ocupado: p.ocupado || false, // se precisar marcar ocupação
-                    item: p.item || null
-                }))
+                posicoes: responsePos.data.map((p) => {
+                    let ocupado = false;
+                    let itemEncontrado = null;
+
+                    if (dip.Tipo_Controladora === '2018') {
+                        itemEncontrado = itensAtuais.value.find((item) => item.Controladora === '2018' && item.Placa == p.Placa && item.Mola1 == p.Mola1);
+                    } else if (dip.Tipo_Controladora === '2023') {
+                        itemEncontrado = itensAtuais.value.find((item) => item.Controladora === '2023' && item.Andar == p.Andar && item.Posicao == p.Posicao && item.DIP == dip.DIP);
+                    } else {
+                        // Locker-Padrao
+                        itemEncontrado = itensAtuais.value.find((item) => item.Controladora === 'Locker-Padrao' && item.Posicao == p.Posicao && item.DIP == dip.DIP);
+                    }
+
+                    ocupado = !!itemEncontrado;
+
+                    if (ocupado) {
+                        console.log('🔴 Ocupado encontrado:', {
+                            tipo: dip.Tipo_Controladora,
+                            placa: p.Placa,
+                            mola: p.Mola1,
+                            andar: p.Andar,
+                            posicao: p.Posicao,
+                            dip: dip.DIP
+                        });
+                    } else {
+                        console.log('🟢 Livre:', {
+                            tipo: dip.Tipo_Controladora,
+                            placa: p.Placa,
+                            mola: p.Mola1,
+                            andar: p.Andar,
+                            posicao: p.Posicao,
+                            dip: dip.DIP
+                        });
+                    }
+
+                    return {
+                        index: p.Posicao,
+                        andar: p.Andar || null,
+                        mola: p.Mola1 || null,
+                        placa: p.Placa || null,
+                        ocupado,
+                        item: itemEncontrado
+                    };
+                })
             });
         }
+
+        console.log('DIPs com posições finais:', dipsComPosicoes.value);
     } catch (error) {
         console.error('Erro ao carregar DIPs e posições:', error);
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Falha ao carregar DIPs e posições' });
     }
 }
 
-function aoClicarNaPosicao(pos) {
-    posicaoSelecionada.value = pos.index;
-    const item = itensAtuais.value.find((i) => i.Posicao === pos.index);
-
-    if (item) {
-        posicaoOcupada.value = true;
-        detalhesPosicao.value = item;
-    } else {
-        posicaoOcupada.value = false;
-        novaRequisicao.value = '';
-    }
-
-    dialogoPosicao.value = true;
-}
-
-const removerProduto = () => {
-    // Procura o índice do produto na lista usando o id_produto
-    const index = ListaProdutoFuncionario.value.findIndex((item) => item.id_produto === selectedProduct.value.id_produto);
-
-    if (index !== -1) {
-        ListaProdutoFuncionario.value.splice(index, 1);
-        toast.add({ severity: 'success', summary: 'Sucesso', life: 3000, detail: t('product_removed') });
-    } else {
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: t('product_not_found') });
-    }
-
-    hideDialog();
-};
 const hideDialog = () => {
     itemDialog.value = false;
     deleteProductDialog.value = false;
 };
-const confirmDeleteProduct = (item) => {
-    selectedProduct.value = { ...item };
-    deleteProductDialog.value = true;
-};
-const editItem = (selectedItem) => {
-    selectedProduct.value = { ...selectedItem };
-    itemDialog.value = true;
-};
+
 async function carregarItens(id_dm) {
     if (itemCache.value[id_dm]) {
         itensAtuais.value = itemCache.value[id_dm];
@@ -144,25 +150,6 @@ async function carregarItens(id_dm) {
     } catch (error) {
         console.error('Erro ao carregar itens:', error);
     }
-}
-function adicionarNovoItemNaPosicao() {
-    if (!novaRequisicao.value) {
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos' });
-        return;
-    }
-    const novoItem = {
-        id_dm: dmSelecionado.value,
-        Posicao: posicaoSelecionada.value, // respeitando o campo usado no `gridPosicoes`
-        nome_produto: 'Novo item manual', // você pode mudar conforme necessário
-        requisicao: novaRequisicao.value
-    };
-    itensAtuais.value.push(novoItem);
-    const cache = itemCache.value[dmSelecionado.value] || [];
-    cache.push(novoItem);
-    itemCache.value[dmSelecionado.value] = cache;
-    console.log('Enviar para backend:', novoItem);
-    dialogoPosicao.value = false;
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Item adicionado' });
 }
 
 onMounted(async () => {
@@ -199,12 +186,39 @@ onMounted(async () => {
                     {{ dipItem.tipo }}<span v-if="dipItem.tipo !== '2018'"> DIP {{ dipItem.dip }}</span>
                 </label>
                 <div class="grid-portas ml-2 mt-2">
-                    <div v-for="pos in dipItem.posicoes" :key="pos.index" class="porta p-3 border-1 border-round font-bold cursor-pointer"
+                    <div
+                        v-for="pos in dipItem.posicoes"
+                        :key="pos.index"
+                        class="porta p-3 border-1 border-round font-bold cursor-pointer"
                         :style="{ backgroundColor: pos.ocupado ? '#ef4444' : '#22c55e', color: '#fff' }"
-                        @click="aoClicarNaPosicao(pos)"
                     >
-                        <div class="text-sm font-semibold">{{ t('position') }} {{ pos.index }}</div>
-                        <div v-if="pos.ocupado && pos.item && pos.item.requisicao" class="text-xs mt-1">Req: {{ pos.item.requisicao }}</div>
+                        <!-- Caso seja 2018 -->
+                        <div v-if="dipItem.tipo === '2018'" class="text-sm font-semibold">
+                            Placa {{ pos.placa }} - {{ t('position') }} {{ pos.mola }}
+                            <template v-if="!pos.ocupado">
+                                <InputText class="w-12 mt-1" style="height: 10%" />
+                            </template>
+                        </div>
+                        <!-- Caso seja 2023 -->
+                        <div v-else-if="dipItem.tipo === '2023'" class="text-sm font-semibold">
+                            Andar {{ pos.andar }} - Posição {{ pos.index }}
+                            <span v-if="pos.ocupado && pos.item && pos.item.requisicao" class="text-xs mt-2 block"></span>
+                            <template v-if="!pos.ocupado">
+                                <InputText class="w-12 mt-1" style="height: 10%" />
+                            </template>
+                        </div>
+
+                        <!-- Outros tipos -->
+                        <div v-else class="text-sm font-semibold">{{ t('position') }} {{ pos.index }}
+                            <template v-if="!pos.ocupado">
+                                <InputText class="w-12 mt-1" style="height: 10%" />
+                            </template>
+                        </div>
+                        
+                        <!-- Exibir requisição se houver -->
+                        <div v-if="pos.ocupado && pos.item && pos.item.requisicao" class="text-xs mt-1">Req: {{ pos.item.requisicao }}
+                            
+                        </div>
                     </div>
                 </div>
             </div>
@@ -234,45 +248,7 @@ onMounted(async () => {
                 <Button :label="$t('save')" icon="pi pi-check" text @click="editarProduto" />
             </template>
         </Dialog>
-        <Dialog v-model:visible="deleteProductDialog" :draggable="false" :style="{ width: '450px' }" :header="$t('dialog_delete_item')" :modal="true">
-            <div class="confirmation-content">
-                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                <span v-if="selectedProduct.codigo">
-                    {{ t('dialog_delete_employee', { name: selectedProduct.nome_produto }) }}
-                </span>
-            </div>
-            <template #footer>
-                <Button :label="$t('no')" icon="pi pi-times" text @click="hideDialog" />
-                <Button :label="$t('yes')" icon="pi pi-check" text @click="removerProduto" />
-            </template>
-        </Dialog>
-        <Dialog v-model:visible="dialogoPosicao" :modal="true" :header="t('position') + ' ' + posicaoSelecionada" :style="{ width: '500px' }">
-            <template v-if="posicaoOcupada">
-                <div class="p-fluid">
-                    <p>
-                        <strong>{{ t('code') }}:</strong> {{ detalhesPosicao.codigo }}
-                    </p>
-                </div>
-            </template>
 
-            <template v-else>
-                <div class="p-fluid formgrid grid">
-                    <div class="field col-12">
-                        <label for="requisicao" class="mr-4">Nº Requisição: </label>
-                        <InputText id="requisicao" class="full" v-model="novaRequisicao" />
-                    </div>
-                    <!-- <div class="field col-12">
-                        <label>{{ t('withdrawal_deadline') }}</label>
-                        <VueDatePicker v-model="novaDataLimite" showIcon :showOnFocus="false" :format="format" :locale="locale" auto-apply :enable-time-picker="false" />
-                    </div> -->
-                </div>
-            </template>
-
-            <template #footer>
-                <Button :label="$t('cancel')" icon="pi pi-times" text @click="dialogoPosicao = false" />
-                <Button v-if="!posicaoOcupada" label="Adicionar" icon="pi pi-check" @click="adicionarNovoItemNaPosicao" />
-            </template>
-        </Dialog>
         <LoadingSpinner v-if="loading" />
         <Message v-if="codigoMensagem" severity="success" :text="codigoMensagem" />
 
@@ -297,7 +273,7 @@ onMounted(async () => {
 }
 
 .porta {
-    width: 80px;
-    height: 60px;
+    width: 100px;
+    height: 100px;
 }
 </style>

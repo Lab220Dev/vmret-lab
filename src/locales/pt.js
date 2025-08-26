@@ -76,6 +76,7 @@ export default {
     dm_active: 'DM ativa?',
     dm_return: 'DM aceita devolução?',
     dm_locker: 'DM é um locker?',
+    locker_list: 'Lista de Lockers',
     station: 'Localização',
     updated: 'Atualizado',
     dm_options: 'Opções de DM',

@@ -61,7 +61,10 @@ const dmService = { // Declara um objeto chamado dmService que contém vários m
     // Método para verificar se o DM é um locker
     async seforlocker(data) {
         return postRequest('/DM/seforlocker', data);
-    }
+    },
+    async getLocker(data) {
+        return postRequest('/DM/getlocker', data);
+    },
 };
 
 export default dmService;

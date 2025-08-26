@@ -42,129 +42,11 @@ const loadingControladoras = ref(true);
 //Objeto de DM
 let DM = reactive({
     Ativo: false,
-    Chave: '',
-    ChaveAPI: '',
-    ClienteID: '',
-    ClienteNome: '',
-    Created: '',
-    Enviada: '',
-    ID_CR_Usuario: '',
     ID_DM: '',
     IDcliente: '',
-    Identificacao: '',
-    Integracao: false,
-    Numero: '',
-    OP_Biometria: false,
-    OP_Facial: false,
-    OP_Senha: false,
-    voucher: false,
-    cracha: false,
-    URL: '',
-    Updated: '',
-    UserID: '',
-    Versao: '',
-    Devolucao: false
 });
-
-let locker = reactive({
-    // Declara um objeto reativo chamado locker
-    id_dm: '', // Define a propriedade 'id_dm' com valor inicial vazio
-    id_cliente: '', // Define a propriedade 'id_cliente' com valor inicial vazio
-    is_locker: false // Define a propriedade 'is_locker' com valor inicial false
-});
-
-const carregarLocker = async (id_dm, id_cliente) => {
-    try {
-        const res = await dmService.getLocker({ id_dm, id_cliente });
-        locker.id_dm = id_dm;
-        locker.id_cliente = id_cliente;
-        locker.is_locker = res.data?.exists === true || res.data?.exists === 'true';
-        console.log('exists recebido:', res.data?.exists, 'Tipo:', typeof res.data?.exists);
-    } catch (error) {
-        console.error('Erro ao carregar locker:', error);
-        locker.is_locker = false;
-    }
-};
-
-// Mapeamento de valores
-const nextValues = reactive({
-    // Declara um objeto reativo chamado nextValues
-    2018: { placa: 12 }, // Define a propriedade '2018' com um objeto contendo a propriedade 'placa' com valor 12
-    2023: { dip: 2 }, // Define a propriedade '2023' com um objeto contendo a propriedade 'dip' com valor 2
-    'Locker-Padrao': { dip: 2 }, // Define a propriedade 'Locker-Padrao' com um objeto contendo a propriedade 'dip' com valor 2
-    'Locker-Ker': { dip: 0 }, // Define a propriedade 'Locker-Ker' com um objeto contendo a propriedade 'dip' com valor 0
-    2024: { placa: 101 } // Define a propriedade '2024' com um objeto contendo a propriedade 'placa' com valor 101
-});
-const tipoControladoras = [
-    // Declara um array chamado tipoControladoras
-    { label: '2018', value: '2018' }, // Adiciona um objeto com as propriedades label e value
-    { label: '2023', value: '2023' }, // Adiciona um objeto com as propriedades label e value
-    { label: '2024', value: '2024' }, // Adiciona um objeto com as propriedades label e value
-    { label: 'Locker Padrão', value: 'Locker-Padrao' }, // Adiciona um objeto com as propriedades label e value
-    { label: 'Locker Ker', value: 'Locker-Ker' } // Adiciona um objeto com as propriedades label e value
-];
-// Objeto de produto selecionado
-const produtoSelecionado = ref({
-    // Declara um objeto reativo chamado produtoSelecionado
-    id_produto: '', // Define a propriedade 'id_produto' com valor inicial vazio
-    Porta: '', // Define a propriedade 'Porta' com valor inicial vazio
-    Placa: '', // Define a propriedade 'Placa' com valor inicial vazio
-    Posicao: '', // Define a propriedade 'Posicao' com valor inicial vazio
-    Andar: '', // Define a propriedade 'Andar' com valor inicial vazio
-    Dip: '', // Define a propriedade 'Dip' com valor inicial vazio
-    Motor1: '', // Define a propriedade 'Motor1' com valor inicial vazio
-    Motor2: '', // Define a propriedade 'Motor2' com valor inicial vazio
-    Controladora: '', // Define a propriedade 'Controladora' com valor inicial vazio
-    Capacidade: 1 // Define a propriedade 'Capacidade' com valor inicial 1
-});
-//Listas Reativas
-const filters = ref({
-    // Declara um objeto reativo chamado filters
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Define a propriedade global com um objeto contendo value inicial null e matchMode como FilterMatchMode.CONTAINS
-});
-const lazyParams = ref({
-    first: 0, // Índice inicial
-    rows: 10, // Número de registros por página
-    sortField: 'Identificacao', // Campo padrão para ordenação
-    sortOrder: 1, // Ordem padrão (1 = ascendente, -1 = descendente)
-    filters: {} // Filtros aplicados
-});
-const ListaItens = ref([]);
 const ListaClientes = ref([]);
-const produtos = computed(() => dataStore.produtos);
-const ListaProdutos = computed(() => {
-    return produtos.value
-        .filter((produto) => produto.value !== null)
-        .map(({ value, codigo, label }) => ({
-            label: `${codigo} | ${label}`,
-            value
-        }))
-        .sort((a, b) => {
-            const codigoA = parseInt(a.label.split(' | ')[0], 10);
-            const codigoB = parseInt(b.label.split(' | ')[0], 10);
-            return codigoA - codigoB;
-        });
-});
-const Controladoras = ref([]); // Declara um array reativo chamado Controladoras
-const controladoraOptions = ref([]); // Declara um array reativo chamado controladoraOptions
-const molasOptions = ref([]); // Declara um array reativo chamado molasOptions
-const dipOptions = ref([]); // Declara um array reativo chamado dipOptions
-const andarOptions = ref([]); // Declara um array reativo chamado andarOptions
-const posicaoOptions = ref([]); // Declara um array reativo chamado posicaoOptions
-const placaOptions = ref([]); // Declara um array reativo chamado placaOptions
-const motorOptions = ref([]); // Declara um array reativo chamado motorOptions
-const ListaDMS = ref([]);
-const controladoraRefs = ref([]);
-// Controles de Estado
-const totalRecords = ref(0); // Declara uma variável reativa chamada totalRecords com valor inicial 0
-const isEditMode = ref(false); // Declara uma variável reativa chamada isEditMode com valor inicial false
-const showDialogProduto = ref(false); // Declara uma variável reativa chamada showDialogProduto com valor inicial false
 const active = ref('0'); // Declara uma variável reativa chamada active com valor inicial 0
-const showDialogDVM = ref(false); // Declara uma variável reativa chamada showDialogDVM com valor inicial false
-const showDialogDItem = ref(false); // Declara uma variável reativa chamada showDialogDItem com valor inicial false
-const showDialogControl = ref(false); // Declara uma variável reativa chamada showDialogControl com valor inicial false
-const show = ref(false); // Declara uma variável reativa chamada show com valor inicial false
-const usarApi = ref(false); // Declara uma variável reativa chamada usarApi com valor inicial false
 const seforlocker = ref(false); // Declara uma variável reativa chamada seforlocker com valor inicial false
 const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false }); // Declara um objeto reativo chamado selectedClient com propriedades id_cliente, nome_cliente e usar_api
 const dialogMessage = ref(''); // Declara uma variável reativa chamada dialogMessage com valor inicial vazio
@@ -348,7 +230,6 @@ const onRowSelect = async (event) => {
         // Inicia um bloco try para capturar possíveis erros
         // DM = {...event.data};
         Object.assign(DM, event.data); // Atribui os dados do evento ao objeto DM
-        active.value = '1'; // Altera o índice ativo para 1 (indicando que a dm está sendo editada)
         visible.value = true; // Define a variável reativa visible como true
         await mapControladoras(DM); // Mapeia as controladoras do DM
         configurarCliente(DM); // Configura o cliente do DM
@@ -357,20 +238,6 @@ const onRowSelect = async (event) => {
         // Captura qualquer erro que ocorrer durante a execução
         console.error('Erro ao selecionar a DM:', error); // Loga a mensagem de erro no console
         loadingControladoras.value = false; // Define a variável reativa loadingControladoras como false
-    }
-};
-
-/**
- * Função chamada ao submeter o formulário.
- * Dependendo da visibilidade do formulário, ele pode ser para adicionar ou atualizar um cliente.
- */
-const submitForm = () => {
-    if (visible.value) {
-        // Se o formulário estiver visível, indica que é uma atualização de cliente
-        atualizarDM();
-    } else {
-        // Caso contrário, trata-se da adição de um novo cliente
-        adicionarDM();
     }
 };
 
@@ -478,11 +345,11 @@ const adicionarDM = async () => {
         const novaDM = await dmService.adicionarDM(data); // backend deve retornar { id_dm: 123 }
 
         // Só chama seforlocker se for marcado como locker
-        if (locker.is_locker) {
+        if (seforlocker.value) {
             await dmService.seforlocker({
-                id_cliente: selectedClient.value.id_cliente,
-                id_dm: novaDM.data.id_dm,
-                is_locker: locker.is_locker // <-- aqui sim você pega o valor real do toggle
+                id_cliente: selectedClient.value.id_cliente, // pegando só o número
+                id_dm: novaDM.data.id_dm, // ou o id_dm retornado do adicionarDM
+                is_locker: seforlocker.value
             });
         }
 
@@ -517,8 +384,8 @@ const atualizarDM = async () => {
         // Sempre chama o seforlocker (tanto quando marcar quanto desmarcar)
         await dmService.seforlocker({
             id_cliente: selectedClient.value.id_cliente,
-            id_dm: DM.ID_DM,
-            is_locker: locker.is_locker // <-- aqui sim você pega o valor real do toggle
+            id_dm: DM.id_dm, // aqui já existe porque estamos atualizando
+            is_locker: seforlocker.value // true → insere, false → update deleted=1
         });
 
         toast.add({ severity: 'success', summary: t('title_sucess'), detail: t('dm_update_sucess'), life: 3000 });
@@ -532,6 +399,7 @@ const atualizarDM = async () => {
         loading.value = false;
     }
 };
+
 
 const deleteDM = async (item) => {
     // Função chamada quando o usuário deseja excluir uma DM
@@ -782,22 +650,12 @@ watch(
     }
 );
 
-watch(
-    () => DM.ID_DM,
-    (newIdDm) => {
-        const idCliente = DM.ID_Cliente; // pega direto do objeto DM
-        if (newIdDm && idCliente) {
-            carregarLocker(newIdDm, idCliente);
-        }
-    }
-);
-
 watch(active, (newIndex, oldIndex) => {
     // Observa mudanças na variável reativa active
-    if (newIndex !== oldIndex && newIndex === '0') {
+    if (newIndex !== oldIndex && newIndex === 0) {
         // Verifica se o índice mudou e se o novo índice é 0
         resetDMForm(DM, Controladoras, selectedClient.value, nextValues); // Reseta o formulário de DM
-        fetchDMS(); // Busca as DMs
+        //fetchDMS(); // Busca as DMs (comentado)
         visible.value = false; // Define a variável reativa visible como false
     }
 });
@@ -834,7 +692,7 @@ onMounted(async () => {
                 <Tabs v-model:value="active" :value="0" v-if="!show">
                     <TabList>
                         <Tab value="0">{{ $t('dispenser_machine_list') }}</Tab>
-                        <Tab v-if="admin()" value="1">{{ visible ? t('edit_dispenser_machine') : t('add_dispenser_machine') }}</Tab>
+                        <Tab v-if="admin()" value="1">{{ visible ? $t('edit_dispenser_machine') : $t('add_dispenser_machine') }}</Tab>
                     </TabList>
                     <TabPanels>
                         <TabPanel value="0">
@@ -855,7 +713,6 @@ onMounted(async () => {
                                     dataKey="id"
                                     :metaKeySelection="false"
                                     @rowSelect="onRowSelect"
-                                    @click="active.value = '1'"
                                     :sortOrder="lazyParams.value?.sortOrder || 1"
                                     :sortField="lazyParams.value?.sortField || 'Identificacao'"
                                     @filter="onFilterChange($event)"
@@ -894,21 +751,16 @@ onMounted(async () => {
                                             <span class="tooltip-target" v-tooltip="data.ClienteNome">{{ data.ClienteNome }}</span>
                                         </template></Column
                                     >
-                                    <!-- <Column field="local" sortable :header="t('station')">
+                                    <Column field="local" sortable :header="t('station')">
                                         <template #body="{ data }">
                                             <span class="tooltip-target" v-tooltip="data.local">{{ data.local }}</span>
                                         </template></Column
-                                    > -->
+                                    >
                                     <Column field="Ativo" sortable style="width: 9%; text-align: center" :header="t('active')">
                                         <template #body="{ data }">
                                             <i class="pi" :class="{ 'pi-check-circle pi-yes ': data.Ativo, 'pi-times-circle pi-no': !data.Ativo }"></i>
                                         </template>
                                     </Column>
-                                    <!-- <Column field="Locker" sortable style="width: 9%; text-align: center" :header="t('locker')">
-                                        <template #body="{ data }">
-                                            <i class="pi" :class="{ 'pi-check-circle pi-yes ': locker.is_locker, 'pi-times-circle pi-no': !locker.is_locker }"></i>
-                                        </template>
-                                    </Column> -->
                                     <Column field="Updated" style="width: 15%" sortable :header="t('updated')">
                                         <template #body="{ data }">
                                             {{ normalizeDateTime(data.Updated, true) }}
@@ -923,47 +775,39 @@ onMounted(async () => {
                             </div>
                         </TabPanel>
                         <TabPanel value="1">
-                            <div class="grid">
-                                <div class="col-12">
-                                    <div class="mt-5">
-                                        <!--Formulário para adicionar ou editar um cliente -->
-                                        <form @submit.prevent="submitForm">
-                                            <div class="mt-5 mx-0 p-fluid grid">
-                                                <div class="lg:col-12 md:col-12 sm:col-12">
-                                                    <label for="name">{{ t('client') }}:</label>
-                                                    <Select class="my-2 w-full" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
-                                                </div>
-                                                <div class="lg:col-6 md:col-9 sm:col-12">
-                                                    <label for="indetificacao">{{ t('dm_identification') }}</label>
-                                                    <InputText class="my-2 w-full" v-model="DM.Identificacao" id="indetificacao" />
-                                                </div>
-                                                <div class="lg:col-6 md:col-9 sm:col-12">
-                                                    <label for="numero">{{ t('dm_number') }}:</label>
-                                                    <InputText class="my-2 w-full" v-model="DM.Numero" id="numero" />
-                                                </div>
-                                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                                    <label class="mt-0 text-nowrap" for="switch2">{{ t('dm_active') }}</label>
-                                                    <div class="grid mt-3">
-                                                        <ToggleSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
-                                                        <span class="ml-2">{{ DM.Ativo ? $t('yes') : $t('no') }}</span>
-                                                    </div>
-                                                </div>
-                                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                                    <label class="mt-0 text-nowrap" for="switch3">{{ t('dm_return') }}</label>
-                                                    <div class="grid mt-3">
-                                                        <ToggleSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
-                                                        <span class="ml-2">{{ DM.Devolucao ? $t('yes') : $t('no') }}</span>
-                                                    </div>
-                                                </div>
-                                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
-                                                    <label class="mt-0 text-nowrap" for="switch4">{{ t('dm_locker') }}</label>
-                                                    <div class="grid mt-3">
-                                                        <ToggleSwitch v-model="locker.is_locker" inputId="switch4" />
-                                                        <span class="ml-2">{{ locker.is_locker ? $t('yes') : $t('no') }}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
+                            <div class="mt-5 mx-0 p-fluid grid">
+                                <div class="lg:col-12 md:col-12 sm:col-12">
+                                    <label for="name">{{ t('client') }}:</label>
+                                    <Select class="my-2 w-full" v-model="selectedClient" :options="ListaClientes" optionLabel="label" optionValue="value" :placeholder="t('select_one')" />
+                                </div>
+
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="indetificacao">{{ t('dm_identification') }}</label>
+                                    <InputText class="my-2 w-full" v-model="DM.Identificacao" id="indetificacao" />
+                                </div>
+                                <div class="lg:col-6 md:col-9 sm:col-12">
+                                    <label for="numero">{{ t('dm_number') }}:</label>
+                                    <InputText class="my-2 w-full" v-model="DM.Numero" id="numero" />
+                                </div>
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch2">{{ t('dm_active') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch class="mr-2" v-model="DM.Ativo" inputId="switch2" />
+                                        <span class="ml-2">{{ DM.Ativo ? $t('yes') : $t('no') }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch3">{{ t('dm_return') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch class="mr-2" v-model="DM.Devolucao" inputId="switch3" />
+                                        <span class="ml-2">{{ DM.Devolucao ? $t('yes') : $t('no') }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-column align-items-center xl:col-4 lg:col-4 md:col-4 sm:col-12">
+                                    <label class="mt-0 text-nowrap" for="switch4">{{ t('dm_locker') }}</label>
+                                    <div class="grid mt-3">
+                                        <ToggleSwitch class="mr-2" v-model="aqui" inputId="switch4" />
+                                        <span class="ml-2">{{ aqui ? $t('yes') : $t('no') }}</span>
                                     </div>
                                 </div>
                             </div>

@@ -77,6 +77,7 @@ export default {
     dm_active: 'Active?',
     dm_return: 'Return?',
     dm_locker: 'Locker?',
+    locker_list: 'Locker List',
     station: 'Station',
     updated: 'Updated',
     dm_options: 'DM Options',
