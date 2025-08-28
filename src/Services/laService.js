@@ -5,26 +5,31 @@ const laService = {
         return axios.post('/liberacaoavulsa/adicionar', data);
     },
     async listar(data) {
-        return axios.post('/liberacaoavulsa/listar',data);
+        return axios.post('/liberacaoavulsa/listar', data);
     },
-    async listarDIPs(id_dm){
+    async listarDIPs(id_dm) {
         return axios.get('/liberacaoavulsa/listarDIP', {
-        params: { id_dm }
-    });
+            params: { id_dm }
+        });
     },
-    async listarLocker(){
-    return axios.get('/liberacaoavulsa/lockerdisponiveis');
+    async listarLocker() {
+        return axios.get('/liberacaoavulsa/lockerdisponiveis');
     },
-  async itensLocker(id_dm){
-    let data = {
-      id_dm: id_dm
-    }
-  return axios.post('/liberacaoavulsa/lockerItens',data);
+    async itensLocker(id_dm) {
+        let data = {
+            id_dm: id_dm
+        };
+        return axios.post('/liberacaoavulsa/lockerItens', data);
+    },
+    async requisicoesSalvas(id_dm) {
+        return axios.post('/liberacaoavulsa/requisicoesAvulsas', { id_dm });
     },
     async listarPosicoes(data) {
-  return axios.post('/liberacaoavulsa/listarPosicoes', data);
-}
-
+        return axios.post('/liberacaoavulsa/listarPosicoes', data);
+    },
+    async excluirRequisicao(data) {
+        return axios.post('/liberacaoavulsa/excluirRequisicao', data);
+    }
 };
 
 export default laService;

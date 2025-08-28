@@ -4,50 +4,99 @@
  */
 import { useToast } from 'primevue/usetoast';
 import Message from 'primevue/message';
-import { reactive, ref, onMounted, computed } from 'vue';
-import { useDataStore } from '@/store/dataStore.js';
+import { ref, onMounted } from 'vue';
 import '@vuepic/vue-datepicker/dist/main.css';
-import * as formatservices from '@/helpers/HelperUtils.js';
 import laService from '@/Services/laService.js';
 import LoadingSpinner from '@/components/LoadingSpinner.vue';
 import { useI18n } from 'vue-i18n';
-const { t, locale } = useI18n();
+const { t } = useI18n();
 
 const dipsComPosicoes = ref([]);
 const loading = ref(false);
 const toast = useToast();
-const dataStore = useDataStore();
 const itemCache = ref({}); // objeto com chave = id_dm e valor = lista de itens
 const itensAtuais = ref([]);
 const listaArmarios = ref([]);
-const deleteProductDialog = ref(false);
-const itemDialog = ref(false);
-const selectedProduct = ref(null);
 const dmSelecionado = ref(null);
-const codigo = ref('');
 const codigoMensagem = ref('');
 const erroMensagem = ref('');
-const AbrirDialogoCodigo = ref(false);
-const novaRequisicao = ref('');
-
 
 const salvarRequisicao = async () => {
     if (!dmSelecionado.value) {
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: t('select_locker') });
         return;
     }
+
     try {
-        const response = await laService.adicionar({
-            id_dm: dmSelecionado.value,
-            requisicao: novaRequisicao.value
-        });
-        codigoMensagem.value = response.data.codigo;
-        toast.add({ severity: 'success', summary: 'Sucesso', life: 3000, detail: t('liberation_successful') });
-        codigo.value = response.data.codigo;
-        AbrirDialogoCodigo.value = true;
+        let requisicoesEnviadas = 0;
+
+        for (const dipItem of dipsComPosicoes.value) {
+            for (const pos of dipItem.posicoes) {
+                if (pos.requisicao && !pos.ocupado) {
+                    // Define modulo e posicao de acordo com o tipo da controladora
+                    let modulo = null;
+                    let posicao = null;
+                    let andar = null;
+
+                    if (dipItem.tipo === '2018') {
+                        // módulo = placa, posição = mola
+                        modulo = pos.placa;
+                        posicao = pos.mola;
+                    } else if (dipItem.tipo === '2023') {
+                        // módulo = DIP, posição = pos.index
+                        modulo = dipItem.dip;
+                        posicao = pos.index;
+                        andar = pos.andar;
+                    } else {
+                        // Locker padrão
+                        modulo = dipItem.dip;
+                        posicao = pos.index;
+                    }
+
+                    // chamada ao backend com os campos certos
+                    await laService.adicionar({
+                        id_dm: dmSelecionado.value,
+                        modulo,
+                        posicao,
+                        andar,
+                        requisicao: pos.requisicao
+                    });
+
+                    // Marca como ocupado no frontend
+                    pos.ocupado = true;
+                    pos.item = { requisicao: pos.requisicao };
+                    requisicoesEnviadas++;
+                }
+            }
+        }
+
+
+        if (requisicoesEnviadas > 0) {
+            // limpa cache para forçar atualização
+            delete itemCache.value[dmSelecionado.value];
+
+            await carregarDIPsComPosicoes(); // 🔄 recarrega a grid completa
+            toast.add({
+                severity: 'success',
+                summary: 'Sucesso',
+                life: 3000,
+                detail: `${requisicoesEnviadas} requisições enviadas com sucesso.`
+            });
+        } else {
+            toast.add({
+                severity: 'warn',
+                summary: 'Aviso',
+                life: 3000,
+                detail: 'Nenhuma requisição foi preenchida.'
+            });
+        }
     } catch (error) {
-        erroMensagem.value = error.message || t('liberation_error');
-        toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: erroMensagem.value });
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            life: 3000,
+            detail: 'Erro ao adicionar, verifique se a requisição já existe ou foi retirada'
+        });
     }
 };
 
@@ -81,15 +130,39 @@ async function carregarDIPsComPosicoes() {
                     let itemEncontrado = null;
 
                     if (dip.Tipo_Controladora === '2018') {
-                        itemEncontrado = itensAtuais.value.find((item) => item.Controladora === '2018' && item.Placa == p.Placa && item.Mola1 == p.Mola1);
+                        itemEncontrado = itensAtuais.value.find((item) => {
+                            // Dados vindos da tabela Retirada_Avulsa
+                            if (item.origem === 'Retirada_Avulsa') {
+                                return item.modulo == p.Placa && item.posicao == p.Mola1;
+                                // aqui você compara com a mola (posição equivalente na 2018)
+                            }
+
+                            // Dados de DM_Itens (2018 usa Placa + Motor1)
+                            return item.Controladora === '2018' && item.Placa == p.Placa && item.Motor1 == p.Mola1;
+                        });
                     } else if (dip.Tipo_Controladora === '2023') {
-                        itemEncontrado = itensAtuais.value.find((item) => item.Controladora === '2023' && item.Andar == p.Andar && item.Posicao == p.Posicao && item.DIP == dip.DIP);
+                        itemEncontrado = itensAtuais.value.find((item) => {
+                            if (item.origem === 'Retirada_Avulsa') {
+                                return item.modulo == dip.DIP && item.posicao == p.Posicao && item.andar == p.Andar;
+                            }
+
+                            return item.Controladora === '2023' && item.Andar == p.Andar && item.Posicao == p.Posicao && item.DIP == dip.DIP;
+                        });
                     } else {
-                        // Locker-Padrao
-                        itemEncontrado = itensAtuais.value.find((item) => item.Controladora === 'Locker-Padrao' && item.Posicao == p.Posicao && item.DIP == dip.DIP);
+                        itemEncontrado = itensAtuais.value.find((item) => {
+                            // Dados vindos da tabela Retirada_Avulsa
+                            if (item.origem === 'Retirada_Avulsa') {
+                                return item.modulo == dip.DIP && item.posicao == p.Posicao;
+                            }
+
+                            // Dados de DM_Itens
+                            return (item.Controladora === 'Locker-Padrao' || item.Controladora === 'Locker-Ker') && item.Posicao == p.Posicao && item.DIP == dip.DIP;
+                        });
                     }
 
                     ocupado = !!itemEncontrado;
+
+                    console.log(itemEncontrado);
 
                     if (ocupado) {
                         console.log('🔴 Ocupado encontrado:', {
@@ -97,6 +170,7 @@ async function carregarDIPsComPosicoes() {
                             placa: p.Placa,
                             mola: p.Mola1,
                             andar: p.Andar,
+                            produto: itemEncontrado?.id_produto, // ✔
                             posicao: p.Posicao,
                             dip: dip.DIP
                         });
@@ -116,8 +190,11 @@ async function carregarDIPsComPosicoes() {
                         andar: p.Andar || null,
                         mola: p.Mola1 || null,
                         placa: p.Placa || null,
+                        produto: itemEncontrado ? itemEncontrado.id_produto : null, // ✔ agora vem do itemEncontrado
                         ocupado,
-                        item: itemEncontrado
+                        item: itemEncontrado,
+                        ocupadoPor: itemEncontrado ? (itemEncontrado.origem === 'DM_Itens' ? `ITEM ALOCADO` : `Req: ${itemEncontrado.codigo_requisicao}`) : null,
+                        requisicao: itemEncontrado?.origem === 'Retirada_Avulsa' ? itemEncontrado.requisicao : ''
                     };
                 })
             });
@@ -130,11 +207,6 @@ async function carregarDIPsComPosicoes() {
     }
 }
 
-const hideDialog = () => {
-    itemDialog.value = false;
-    deleteProductDialog.value = false;
-};
-
 async function carregarItens(id_dm) {
     if (itemCache.value[id_dm]) {
         itensAtuais.value = itemCache.value[id_dm];
@@ -142,15 +214,73 @@ async function carregarItens(id_dm) {
     }
 
     try {
-        const response = await laService.itensLocker(id_dm);
-        const dados = response.data;
+        const responseDMItens = await laService.itensLocker(id_dm);
+        const responseAvulsa = await laService.requisicoesSalvas(id_dm);
 
-        itemCache.value[id_dm] = dados;
-        itensAtuais.value = dados;
+        const dadosDM = responseDMItens.data || [];
+        const dadosAvulsa = responseAvulsa.data || [];
+
+        // Marcar origem se quiser identificar depois
+        const todosItens = [...dadosDM.map((item) => ({ ...item, origem: 'DM_Itens', id_produto: item.id_produto })), ...dadosAvulsa.map((item) => ({ ...item, origem: 'Retirada_Avulsa' }))];
+
+        itemCache.value[id_dm] = todosItens;
+        itensAtuais.value = todosItens;
     } catch (error) {
         console.error('Erro ao carregar itens:', error);
     }
 }
+
+const excluirRequisicao = async (dipItem, pos) => {
+    try {
+        let modulo = null;
+        let posicao = null;
+        let andar = null;
+
+        if (dipItem.tipo === '2018') {
+            modulo = pos.placa;
+            posicao = pos.mola;
+        } else if (dipItem.tipo === '2023') {
+            modulo = dipItem.dip;
+            posicao = pos.index;
+            andar = pos.andar;
+        } else {
+            modulo = dipItem.dip;
+            posicao = pos.index;
+        }
+
+        await laService.excluirRequisicao({
+            id_dm: dmSelecionado.value,
+            modulo,
+            posicao,
+            andar,
+            requisicao: pos.item.codigo_requisicao
+        });
+
+        // Atualiza frontend
+        pos.requisicao = '';
+        pos.ocupado = false;
+        pos.item = null;
+        pos.ocupadoPor = null;
+
+        delete itemCache.value[dmSelecionado.value];
+        await carregarDIPsComPosicoes();
+
+        toast.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            life: 3000,
+            detail: 'Requisição excluída com sucesso.'
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'Erro',
+            life: 3000,
+            detail: 'Erro ao excluir a requisição.'
+        });
+    }
+};
+
 
 onMounted(async () => {
     loading.value = true;
@@ -176,8 +306,9 @@ onMounted(async () => {
         <!-- Grid interno para organizar os campos de entrada -->
         <!-- 1. Select de DM -->
         <div class="lg:col-4 md:col-12 sm:col-12 mb-5">
-            <label class="m-3 text-lg">DM:</label>
-            <Select class="my-2 w-8" v-model="dmSelecionado" :options="listaArmarios" optionLabel="label" optionValue="value" @change="carregarDIPsComPosicoes" />
+            <label class="m-3 text-lg">Locker:</label>
+            <Select class="my-2 w-8" v-model="dmSelecionado" :options="listaArmarios" optionLabel="label"
+                optionValue="value" @change="carregarDIPsComPosicoes" />
         </div>
 
         <div class="flex flex-wrap gap-2 container-portas text-center">
@@ -186,38 +317,51 @@ onMounted(async () => {
                     {{ dipItem.tipo }}<span v-if="dipItem.tipo !== '2018'"> DIP {{ dipItem.dip }}</span>
                 </label>
                 <div class="grid-portas ml-2 mt-2">
-                    <div
-                        v-for="pos in dipItem.posicoes"
-                        :key="pos.index"
+                    <div v-for="pos in dipItem.posicoes" :key="pos.index"
                         class="porta p-3 border-1 border-round font-bold cursor-pointer"
-                        :style="{ backgroundColor: pos.ocupado ? '#ef4444' : '#22c55e', color: '#fff' }"
-                    >
+                        :style="{ backgroundColor: pos.ocupado ? '#ef4444' : '#22c55e', color: '#fff' }">
                         <!-- Caso seja 2018 -->
                         <div v-if="dipItem.tipo === '2018'" class="text-sm font-semibold">
-                            Placa {{ pos.placa }} - {{ t('position') }} {{ pos.mola }}
+                            <p class="mb-0 nowrap">Placa {{ pos.placa }} - {{ t('position') }} {{ pos.mola }}</p>
+                            <hr class="mt-0 pt-0">
+                            </hr>
                             <template v-if="!pos.ocupado">
-                                <InputText class="w-12 mt-1" style="height: 10%" />
+                                <InputText v-model="pos.requisicao" class="w-12 mt-1" style="height: 10%" />
                             </template>
                         </div>
+
                         <!-- Caso seja 2023 -->
                         <div v-else-if="dipItem.tipo === '2023'" class="text-sm font-semibold">
-                            Andar {{ pos.andar }} - Posição {{ pos.index }}
-                            <span v-if="pos.ocupado && pos.item && pos.item.requisicao" class="text-xs mt-2 block"></span>
+                            <p class="mb-0 nowrap">Andar {{ pos.andar }} - Posição {{ pos.index }}</p>
+                            <hr class="mt-0 pt-0">
+                            </hr>
                             <template v-if="!pos.ocupado">
-                                <InputText class="w-12 mt-1" style="height: 10%" />
+                                <InputText v-model="pos.requisicao" class="w-12 mt-1" style="height: 10%" />
                             </template>
                         </div>
 
                         <!-- Outros tipos -->
-                        <div v-else class="text-sm font-semibold">{{ t('position') }} {{ pos.index }}
+                        <div v-else class="text-sm font-semibold">
+                            <p class="mb-0 nowrap">{{ t('position') }} {{ pos.index }}</p>
+                            <hr class="mt-0 pt-0">
+                            </hr>
                             <template v-if="!pos.ocupado">
-                                <InputText class="w-12 mt-1" style="height: 10%" />
+                                <InputText v-model="pos.requisicao" class="w-12 mt-1" style="height: 10%" />
                             </template>
                         </div>
-                        
-                        <!-- Exibir requisição se houver -->
-                        <div v-if="pos.ocupado && pos.item && pos.item.requisicao" class="text-xs mt-1">Req: {{ pos.item.requisicao }}
-                            
+
+                        <div v-if="pos.ocupado" class="card-ocupado flex justify-between items-center">
+                            <div class="texto-ocupado" :class="{
+                                'bg-red-400': pos.item?.origem === 'Retirada_Avulsa', // Requisição (vermelho)
+                                'bg-gray-400': pos.item?.origem === 'DM_Itens' // Produto (cinza)
+                            }">
+                            <span>{{ pos.ocupadoPor }}</span>
+                        </div> 
+                            <Button v-if="pos.item?.origem === 'Retirada_Avulsa'" icon="pi pi-trash"
+                                severity="danger" size="small" text rounded class="delete-btn"
+                                @click="excluirRequisicao(dipItem, pos)" />
+
+
                         </div>
                     </div>
                 </div>
@@ -230,24 +374,6 @@ onMounted(async () => {
             <!-- Mensagem esperada ao clicar:
                          - Liberação registrada com sucesso (toast com mensagem de sucesso). -->
         </div>
-        <Dialog v-model:visible="itemDialog" :style="{ width: '450px' }" :header="$t('item_edit')" :draggable="false" :modal="true" class="p-fluid">
-            <div>
-                <div class="formgrid grid">
-                    <div class="lg:col-9 md:col-6 sm:col-4">
-                        <label for="name">{{ t('name') }}:</label>
-                        <InputText class="w-full" disabled v-model="selectedProduct.nome_produto" id="name" type="text" autocomplete="off"></InputText>
-                    </div>
-                    <div class="lg:col-3 md:col-6 sm:col-4">
-                        <label for="Quantidade">{{ t('quantity') }}:</label>
-                        <InputText class="w-full" id="Quantidade" v-model="selectedProduct.quantidade" />
-                    </div>
-                </div>
-            </div>
-            <template #footer>
-                <Button :label="$t('cancel')" icon="pi pi-times" text @click="hideDialog" />
-                <Button :label="$t('save')" icon="pi pi-check" text @click="editarProduto" />
-            </template>
-        </Dialog>
 
         <LoadingSpinner v-if="loading" />
         <Message v-if="codigoMensagem" severity="success" :text="codigoMensagem" />
@@ -259,21 +385,62 @@ onMounted(async () => {
 
 <style scoped>
 .container-portas {
-    background-color: #e5e5e562; /* fundo cinza como no exemplo */
+    background-color: #e5e5e562;
+    /* fundo cinza como no exemplo */
     justify-content: space-around;
 }
 
 .grid-portas {
     display: grid;
-    grid-template-columns: repeat(2, auto); /* duas portas por linha */
-    background-color: #e5e5e5; /* fundo cinza como no exemplo */
+    grid-template-columns: repeat(2, auto);
+    /* duas portas por linha */
+    background-color: #e5e5e5;
+    /* fundo cinza como no exemplo */
     padding: 10px;
     border-radius: 6px;
-    width: fit-content; /* ajusta à quantidade de portas */
+    width: fit-content;
+    /* ajusta à quantidade de portas */
+
 }
 
 .porta {
-    width: 100px;
+    width: 160px;
     height: 100px;
+    align-content: center;
+}
+
+.textoOcupado {
+    font-weight: 400;
+    text-align: center;
+}
+
+.card-ocupado {
+    position: relative;
+    padding: 2px 2px;
+    background: #fba0a0;
+    /* vermelho */
+    border-radius: 5px;
+    color: white;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50%;
+    /* faz o card ocupar a altura da célula */
+}
+
+.card-ocupado .texto-ocupado {
+    flex: 1;
+    overflow: hidden;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-right: 1px;
+    /* para dar espaço entre o texto e o botão */
+}
+
+.delete-btn {
+    flex-shrink: 0;
+    margin-left: auto;
 }
 </style>
