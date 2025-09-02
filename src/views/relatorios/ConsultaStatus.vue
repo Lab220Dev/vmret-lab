@@ -1,8 +1,6 @@
 <script setup>
 
-import { ref, onMounted } from 'vue';  // Importa as funções 'ref' e 'onMounted' do Vue para criar variáveis reativas e executar código quando o componente for montado
-
-import VueDatePicker from '@vuepic/vue-datepicker'; // Importa o componente 'VueDatePicker', provavelmente utilizado para selecionar datas na interface 
+import { ref } from 'vue';  // Importa as funções 'ref' e 'onMounted' do Vue para criar variáveis reativas e executar código quando o componente for montado
 
 import axios from '@/axios.js';  // Importa a instância do axios configurada para realizar requisições HTTP, utilizando o arquivo de configuração '@/axios.js'
 
@@ -10,17 +8,12 @@ import { useAuthStore } from '@/store/authStore.js'; // Importa a função 'useA
 
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente 'LoadingSpinner', que provavelmente é usado para exibir um indicador de carregamento na interface 
 
-import relatorioService  from '@/services/relatorioService.js'; // Importa o serviço 'relatorioService', utilizado para interagir com a lógica de geração de relatórios 
-
 const liberAv = ref([  // Cria uma referência reativa chamada 'liberAv', que armazena as opções de liberação
     { label: 'Matrícula', value: '1' },  // A primeira opção, com o rótulo 'Matrícula' e valor '1'
     { label: 'Voucher', value: '2' }     // A segunda opção, com o rótulo 'Voucher' e valor '2'
 ]);
 
 const loading = ref(false); // Controle do estado de carregamento
-const relatorio = ref({ // Dados para a busca de liberações avulsas
-    busca: ''
-});
 
 const LiberacaoAvulsa = ref([]); // Armazenamento dos dados do relatório de liberações avulsas
 
@@ -37,32 +30,6 @@ const libMock = ref([
     { status: 'Inativo', voucher: 'B456', matricula: 'BTK456', nome: 'Não sei', dataliberacao: '00/00/0000', nome2: 'Ninguém', token: '27', dataret: '32/13/3000', dm: '6', compartimento: '10' }
 ]);
 
-const relatorioLA = async () => {
-    loading.value = true; // Inicia o carregamento
-
-    const data = { 
-        id_cliente: store.userIdCliente, // ID do cliente vindo da store de autenticação
-        id_usuario: store.userId, // ID do usuário logado
-        tipo_filtro: integracao.value, // Tipo de filtro (1 para Matrícula, 2 para Voucher)
-        valor_filtro: userid.value // Valor a ser filtrado (matrícula ou voucher)
-    };
-
-    try {
-        // Faz a requisição POST para o backend com os dados fornecidos
-        const response = await axios.post('/Estoque/relatorio', data, {
-            headers: {
-                Authorization: `Bearer ${store.token}` // Adiciona o token de autorização no cabeçalho
-            }
-        });
-        LiberacaoAvulsa.value = response.data; // Armazena os dados da resposta na variável LiberacaoAvulsa
-    } catch (error) {
-        // Caso ocorra um erro, exibe no console e exibe uma mensagem de erro
-        console.error('Erro ao gerar o Relatório de Liberações Avulsas:', error); // Exibe erro no console
-        toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao gerar o relatório.', life: 3000 }); // Mensagem de erro
-    } finally {
-        loading.value = false; // Finaliza o carregamento independentemente do sucesso ou falha
-    }
-};
 
 const selectedItem = ref(null); // Variável para armazenar o item selecionado na tabela
 

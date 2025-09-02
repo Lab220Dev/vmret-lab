@@ -193,7 +193,7 @@ async function carregarDIPsComPosicoes() {
                         produto: itemEncontrado ? itemEncontrado.id_produto : null, // ✔ agora vem do itemEncontrado
                         ocupado,
                         item: itemEncontrado,
-                        ocupadoPor: itemEncontrado ? (itemEncontrado.origem === 'DM_Itens' ? `ITEM ALOCADO` : `Req: ${itemEncontrado.codigo_requisicao}`) : null,
+                        ocupadoPor: itemEncontrado ? (itemEncontrado.origem === 'DM_Itens' ? `ITEM ALOCADO` : `${itemEncontrado.codigo_requisicao}`) : null,
                         requisicao: itemEncontrado?.origem === 'Retirada_Avulsa' ? itemEncontrado.requisicao : ''
                     };
                 })
@@ -305,9 +305,9 @@ onMounted(async () => {
     <div class="card">
         <!-- Grid interno para organizar os campos de entrada -->
         <!-- 1. Select de DM -->
-        <div class="lg:col-4 md:col-12 sm:col-12 mb-5">
-            <label class="m-3 text-lg">Locker:</label>
-            <Select class="my-2 w-8" v-model="dmSelecionado" :options="listaArmarios" optionLabel="label"
+        <div class="lg:col-4 md:col-12 sm:col-12 my-3">
+            <label class="m-3 text-lg">{{ t('locker') }}:</label>
+            <Select class="my-2 w-8 ml-3" v-model="dmSelecionado" :options="listaArmarios" optionLabel="label"
                 optionValue="value" @change="carregarDIPsComPosicoes" />
         </div>
 
@@ -395,7 +395,6 @@ onMounted(async () => {
     grid-template-columns: repeat(2, auto);
     /* duas portas por linha */
     background-color: #e5e5e5;
-    /* fundo cinza como no exemplo */
     padding: 10px;
     border-radius: 6px;
     width: fit-content;
@@ -407,11 +406,6 @@ onMounted(async () => {
     width: 160px;
     height: 100px;
     align-content: center;
-}
-
-.textoOcupado {
-    font-weight: 400;
-    text-align: center;
 }
 
 .card-ocupado {
@@ -426,7 +420,6 @@ onMounted(async () => {
     justify-content: space-between;
     align-items: center;
     height: 50%;
-    /* faz o card ocupar a altura da célula */
 }
 
 .card-ocupado .texto-ocupado {

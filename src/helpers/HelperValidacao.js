@@ -218,7 +218,7 @@ export const isValidVideoFile = (file) => {
     }
 
     // Verifica se o tamanho do arquivo excede 50MB.
-    if (file.size > 50 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
         return { valid: false, error: 'O tamanho do arquivo não pode exceder 5MB.' };  // Retorna um objeto indicando que o arquivo não é válido e fornece uma mensagem de erro.
     }
 

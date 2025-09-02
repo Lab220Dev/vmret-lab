@@ -168,17 +168,6 @@ onUnmounted(() => {
     }
 });
 
-// Função para definir a classe da linha com base no status do dado
-function rowClass(data) {
-    // Se a linha for nova, aplica a classe 'new-row'
-    if (data.isNew) return 'new-row';
-    
-    // Se a linha tiver colunas atualizadas, aplica a classe 'updated-row'
-    if (data.updatedColumns && data.updatedColumns.length > 0) return 'updated-row';
-    
-    // Caso contrário, não aplica nenhuma classe
-    return '';
-}
 </script>
 
 <style>

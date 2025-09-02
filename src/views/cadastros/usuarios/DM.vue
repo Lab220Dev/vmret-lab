@@ -8,7 +8,6 @@ import { useDataStore } from '@/store/dataStore.js'; // Store para dados gerais
 import {
     selectAll, // Importa a função selectAll do módulo DMHelper.js
     desselectAll, // Importa a função desselectAll do módulo DMHelper.js
-    configurarClienteSelecionado, // Importa a função configurarClienteSelecionado do módulo DMHelper.js
     handleControladoraChange as hcgHelper, // Importa a função handleControladoraChange do módulo DMHelper.js e a renomeia para hcgHelper
     mapControladoras as mapControladorasHelper, // Importa a função mapControladoras do módulo DMHelper.js e a renomeia para mapControladorasHelper
     preencherOpcoesControladoras as pocHelper, // Importa a função preencherOpcoesControladoras do módulo DMHelper.js e a renomeia para pocHelper
@@ -165,7 +164,6 @@ const showDialogDItem = ref(false); // Declara uma variável reativa chamada sho
 const showDialogControl = ref(false); // Declara uma variável reativa chamada showDialogControl com valor inicial false
 const show = ref(false); // Declara uma variável reativa chamada show com valor inicial false
 const usarApi = ref(false); // Declara uma variável reativa chamada usarApi com valor inicial false
-const seforlocker = ref(false); // Declara uma variável reativa chamada seforlocker com valor inicial false
 const selectedClient = ref({ id_cliente: '', nome_cliente: '', usar_api: false }); // Declara um objeto reativo chamado selectedClient com propriedades id_cliente, nome_cliente e usar_api
 const dialogMessage = ref(''); // Declara uma variável reativa chamada dialogMessage com valor inicial vazio
 const selectedItem = ref(null); // Declara uma variável reativa chamada selectedItem com valor inicial null
@@ -185,7 +183,6 @@ const tipoControladoraSelecionada = computed(() => {
     const controladora = Controladoras.value.find((c) => c.id === produtoSelecionado.value.Controladora); // Encontra a controladora correspondente ao ID da controladora selecionada
     return controladora ? controladora.tipo : null; // Retorna o tipo da controladora se encontrada, caso contrário, retorna null
 });
-const isArmarioSelecionado = computed(() => isArmario(tipo)); // Declara uma propriedade computada chamada isArmarioSelecionado que verifica se o tipo é um armário
 
 //Funções Ultilitárias
 const validarCampos = () => {

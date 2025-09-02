@@ -832,7 +832,7 @@ const hideDialog = () => {
                                     </div>
                                     <div class="lg:col-4 md:col-6 sm:col-12">
                                         <label for="email">{{ t('email') }}:</label>
-                                        <InputText class="my-2 w-full" id="email" v-model="funcionario.email" :invalid="!!errors.email" @blur="validateEmail" />
+                                        <InputText class="my-2 w-full" id="email" v-model="funcionario.email" :invalid="!!errors.email"/>
                                         <small v-if="errors.email" class="p-error">{{ errors.email }}</small>
                                     </div>
                                     <div class="lg:col-4 md:col-6 sm:col-12">

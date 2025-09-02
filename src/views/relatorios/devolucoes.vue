@@ -8,7 +8,6 @@ import axios from '@/axios.js'; // Importa a configuração do Axios para fazer 
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para acessar dados de usuário
 import { useDataStore } from '@/store/dataStore.js'; // Importa o store de dados para acessar listas e informações
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de carregamento
-import relatorioService from '@/Services/relatorioService.js'; // Importa o serviço de relatórios para buscar dados
 import {filtroGenericoReltorio,gerarEbaixarCSV,gerarEbaixarJSON, isMobileDevice} from '@/helpers/HelperUtils.js'; // Importa a função de filtro genérico
 import { useI18n } from 'vue-i18n';
 

@@ -22,7 +22,6 @@
  */
  import { ref, onMounted } from 'vue'; // Importa os hooks 'ref' (para reatividade) e 'onMounted' (para execução após o componente ser montado) do Vue
  import { useToast } from 'primevue/usetoast';
-import axios from '@/axios.js'; // Importa a instância do axios, que é uma biblioteca para realizar requisições HTTP, já configurada
 import { useAuthStore } from '@/store/authStore.js'; // Importa o store de autenticação para gerenciar o estado de login e dados do usuário
 import Editor from '@/components/Editor.vue'; // Importa o componente de Editor (provavelmente um editor de texto rico)
 import LoadingSpinner from '@/components/LoadingSpinner.vue'; // Importa o componente de spinner de carregamento para indicar ao usuário que o conteúdo está sendo carregado

@@ -82,15 +82,6 @@ const passo2 = computed(() => [
     // Outros tópicos e relatórios seguem a mesma estrutura.
 ]);
 
-function toggleApiKeyVisibility() {
-    isApiKeyVisible.value = !isApiKeyVisible.value; // Alterna a visibilidade da chave da API (show/hide).
-}
-
-function copyToClipboard() {
-    navigator.clipboard.writeText(apiKey.value); // Copia a chave da API para a área de transferência.
-    toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Chave de API copiada!', life: 3000 }); // Exibe uma notificação de sucesso.
-}
-
 /**
  * Função para selecionar um tópico no passo 1.
  * @param {Object} topic - O tópico a ser selecionado.

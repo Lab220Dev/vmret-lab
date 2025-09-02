@@ -142,13 +142,6 @@ const handleFile = (event) => { // Função para tratar o arquivo selecionado
     });
 };
 
-const handleFileUpdate = (updatedFile) => { // Função para atualizar o arquivo
-  // Atualiza o arquivo na lista (se necessário)
-  const fileIndex = props.dmList.findIndex(file => file.ID_DM === updatedFile.ID_DM);   // Encontra o índice do arquivo
-  if (fileIndex !== -1) {   // Se o arquivo existir
-    props.dmList[fileIndex] = updatedFile;  // Atualiza o arquivo
-  }
-}
 const handleDelete = async () => {  // Função para lidar com a exclusão
     try {   // Tenta
         await videoService.deleteVideo(selectedDM.value.ID_DM); // Exclui o vídeo

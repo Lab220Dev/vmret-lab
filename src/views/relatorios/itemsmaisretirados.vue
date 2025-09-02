@@ -90,12 +90,6 @@ const select5 = ref(null);
  */
 const retiradas = ref([]);
 
-/**
- * @type {Object}
- * Define a opção "Todos" como valor padrão para filtros de seleção.
- */
-const todosOption = { label: 'Todos', value: null };
-
 // Declarações das listas de dados filtráveis (DMs, Plantas, Setores, Centros de Custo, Funcionários)
 /**
  * @type {Ref<Array<any>>}

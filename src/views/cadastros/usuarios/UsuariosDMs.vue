@@ -390,7 +390,7 @@ const resetForm = () => {
                                 <!-- Campo para a senha do usuário -->
                                 <div class="xl:col-4 lg:col-4 md:col-4 sm:col-12">
                                     <label for="senha">{{ $t('password') }}:</label>
-                                    <InputText class="my-2 w-full" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" @blur="validateSenha" />
+                                    <InputText class="my-2 w-full" id="senha" v-model="usuario.senha" type="password" :invalid="!!errors.senha" />
                                     <!-- Exibe erro se a senha for inválida -->
                                     <small v-if="errors.senha" class="p-error">{{ errors.senha }}</small>
                                 </div>

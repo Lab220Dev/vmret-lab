@@ -10,12 +10,10 @@ const { t } = useI18n();
 // Declara as variáveis reativas
 const loading = ref(false); // Variável para controlar o estado de carregamento
 const relatorio = ref({ id_dm: null }); // Objeto para armazenar dados do filtro de DM (Documento de Movimentação)
-const todosOption = { label: 'Todos', value: null }; // Opção para o filtro de DM para mostrar todos
 const select1 = ref(null); // Referência para o Select de DM
 const EstoqueDM = ref([]); // Lista de itens de estoque filtrados
 const dms  = computed(() => dataStore.dmsOptions); // Lista de DM com a opção de "Todos"
 const store = useAuthStore(); // Instancia o store de autenticação
-const emptyMessage = computed(() => t('no_search_made')); // Mensagem a ser exibida quando não houver dados
 const dataStore = useDataStore(); // Acessa o store de dados para obter informações sobre plantas e outros dados
 
 // Filtros para a DataTable
@@ -198,11 +196,7 @@ const truncatedText = (text) => {
             <Column field="quantidade" :header="t('quantity')" sortable style="width: 12%; text-align: center">
 
             </Column>
-            <Column field="quantidademinima" sortable style="width: 12%; text-align: center">
-                <template #header>
-                    <span v-tooltip="$t('minimum_quantity')">{{t('minimal_quantity')}}</span>
-                    <!-- Tooltip para a coluna de quantidade mínima -->
-                </template>
+            <Column field="quantidademinima" :header="t('minimal_quantity')" v-tooltip="$t('minimum_quantity')" sortable style="width: 12%; text-align: center">
             </Column>
             <!-- Coluna para capacidade -->
             <Column field="capacidade" sortable style="width: 10%; text-align: center" :header="t('capacity')"></Column>

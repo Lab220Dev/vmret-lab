@@ -93,8 +93,6 @@ const historico = ref([]);
  * @type {ref<Array<object>>}
  */
 const ListaOperador = ref(null);
-const ListaOperadorOriginal = ref(null);
-
 /**
  * Lista de DM's disponíveis.
  * @type {ref<Array<object>>}
@@ -112,7 +110,6 @@ const plantas = computed(() => dataStore.plantasOptions);
  * @type {ref<Array<object>>}
  */
 const setor  = computed(() => dataStore.setoresOptions);
-const ListaSetorOriginal  = computed(() => dataStore.setoresOptions);
 
 /**
  * Lista de centros de custo disponíveis.

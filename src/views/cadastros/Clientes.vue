@@ -144,18 +144,6 @@ const deleteCliente = async (clienteId) => { // Declara uma função assíncrona
     }
 };
 
-// const deleteClienteWithProgress = async (clienteId) => {
-//     try {
-//         await clientesService.deletarCliente(clienteId); // Chama o serviço para deletar o cliente
-//         toast.add({ severity: 'success', summary:  t('title_sucess'), detail: t('client_delete_sucess'), life: 3000  }); // Exibe uma mensagem de sucesso
-//         loadClientes(); // Recarrega a lista de clientes
-//     } catch {
-//         // Caso ocorra um erro, exibe uma mensagem de erro
-//         toast.add({ severity: 'error', summary:  t('title_sucess'), life:3000,detail: t('client_delete_fail'), life: 3000  });
-//     }finally{
-//         deleteClienteDialog.value = false; // Fecha o diálogo de confirmação de exclusão
-//     }
-// };
 /**
  * Função assíncrona para carregar a lista de clientes.
  * Chama o serviço `clientesService.listarClientes` para obter os dados dos clientes.
