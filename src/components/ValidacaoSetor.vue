@@ -30,6 +30,11 @@
         </div>
         <!-- Mensagem de erro caso o mapeamento não esteja completo -->
         <p v-if="!isMappingComplete" class="text-red-500 card">{{$t('messageCampos')}}</p>
+
+        <p v-if="isValidating" class="text-blue-500 text-center my-2">
+    <i class="pi pi-spin pi-spinner mr-2"></i>
+    {{ $t('validandoDados') || 'Validando dados, por favor aguarde...' }}
+</p>
     </div>
 </template>
 
@@ -48,6 +53,8 @@ const { t } = useI18n();
  */
 const props = defineProps(['fileData']); // Recebe os dados do arquivo enviado, como uma lista de objetos
 const toast = useToast(); // Instância do sistema de notificações do PrimeVue.
+
+const isValidating = ref(false); 
 
 // Emissão de eventos para o componente pai
 /**
@@ -114,6 +121,8 @@ const handleMappingChange = (field) => {
  * Função que valida os dados do arquivo carregado, dividindo os dados entre válidos e inválidos
  */
 const validarDados = async () => {
+          isValidating.value = true; // Começou a validar
+
     const validos = []; // Array para armazenar os dados válidos
     const invalidos = []; // Array para armazenar os dados inválidos
 
@@ -156,6 +165,9 @@ const validarDados = async () => {
     emit('dados-validos', validos); // Envia os dados válidos
     emit('dados-invalidos', invalidos); // Envia os dados inválidos
     emit('mapeamento-completo', validos.length > 0 || invalidos.length > 0); // Emite 'true' ou 'false' se o mapeamento está completo
+
+        isValidating.value = false; // Finalizou validação
+
 };
 </script>
 

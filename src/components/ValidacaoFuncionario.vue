@@ -1,19 +1,21 @@
 <template>
     <div class="validation-container card">
         <!-- Título da página de mapeamento -->
-        <h3 class="text-center my-4">{{ $t('mapCampo') }} - {{$t('employee')}}</h3>
+        <h3 class="text-center my-4">{{ $t('mapCampo') }} - {{ $t('employee') }}</h3>
         <Divider class="mt-0 mb-2" />
         <!-- Container das colunas para mapeamento -->
         <div class="mt-6">
             <div class="grid mb-4">
-                
+
                 <div class="col-6 pb-0" style="height: 50px">
                     <!-- Rótulo para o nome da coluna esperada -->
-                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">{{$t('camposEsperado')}}</div>
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">
+                        {{ $t('camposEsperado') }}</div>
                 </div>
                 <div class="col-6 pb-0" style="height: 50px">
                     <!-- Rótulo para o nome da coluna esperada -->
-                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">{{$t('camposArquivo')}}</div>
+                    <div class="gap-2 justify-content-start text-2xl text-center border-primary-500">
+                        {{ $t('camposArquivo') }}</div>
                 </div>
             </div>
             <!-- Loop para gerar um item de mapeamento para cada coluna esperada -->
@@ -24,20 +26,27 @@
                 </div>
                 <div class="col-6 py-0">
                     <!-- Select para selecionar a coluna do arquivo carregado -->
-                    <Select class="w-full" v-model="mappedColumns[expected]" :options="availableOptions(expected)" optionLabel="label" optionValue="value" :placeholder="t('selecioneCampo')" @change="handleMappingChange(expected)" />
+                    <Select class="w-full" v-model="mappedColumns[expected]" :options="availableOptions(expected)"
+                        optionLabel="label" optionValue="value" :placeholder="t('selecioneCampo')"
+                        @change="handleMappingChange(expected)" />
                 </div>
-                <hr/>
-                <Divider/>
+                <hr />
+                <Divider />
             </div>
         </div>
         <!-- Mensagem de erro caso o mapeamento não esteja completo -->
-        <p v-if="!isMappingComplete" class="text-red-500 card">{{$t('messageCampos')}}</p>
+        <p v-if="!isMappingComplete" class="text-red-500 card">{{ $t('messageCampos') }}</p>
+
+        <p v-if="isValidating" class="text-blue-500 text-center my-2">
+    <i class="pi pi-spin pi-spinner mr-2"></i>
+    {{ $t('validandoDados') || 'Validando dados, por favor aguarde...' }}
+</p>
     </div>
 </template>
 <script setup>
-import { ref, computed, watch } from 'vue'; // Importando hooks do Vue para reatividade e observação
+import { ref, computed, watch, onMounted } from 'vue'; // Importando hooks do Vue para reatividade e observação
 import Select from 'primevue/select'; // Componente Select do PrimeVue para seleção de opções
-import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists, isCentroCustoExists, isFuncaoExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
+import { isSetorExists, isPlantaExists, isCentroCustoExists, isFuncaoExists } from '@/helpers/HelperValidacao.js'; // Importa funções de validação personalizadas
 import { useToast } from 'primevue/usetoast'; // Utilizado para exibir mensagens de sucesso, erro ou aviso ao usuário.
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -57,6 +66,8 @@ const toast = useToast(); // Instância do sistema de notificações do PrimeVue
  * @param {string} mapeamento-completo - Emite o status de mapeamento completo para o componente pai.
  */
 const emit = defineEmits(['dados-validos', 'dados-invalidos', 'mapeamento-completo']); // Emite eventos para o componente pai
+
+const isValidating = ref(false); 
 
 const expectedColumns = ref([
     'Nome',
@@ -83,20 +94,20 @@ const expectedColumns = ref([
     'domingo'
 ]);
 const requiredColumns = [
-  'Nome',
-  'CPF',
-  'Matrícula',
-  'Email',
-  'data_admissao',
-  'RG',
-  'CTPS',
-  'Centro_Custo',
-  'Planta',
-  'Setor',
-  'Funcao',
-  'Status',
-  'hora_inicial',
-  'hora_final'
+    'Nome',
+    'CPF',
+    'Matrícula',
+    'Email',
+    'data_admissao',
+    'RG',
+    'CTPS',
+    'Centro_Custo',
+    'Planta',
+    'Setor',
+    'Funcao',
+    'Status',
+    'hora_inicial',
+    'hora_final'
 ];
 // Colunas disponíveis no arquivo carregado (extraídas dos dados do arquivo)
 /**
@@ -149,6 +160,7 @@ const handleMappingChange = (field) => {
  * Função que valida os dados do arquivo carregado, dividindo os dados entre válidos e inválidos
  */
 const validarDados = async () => {
+      isValidating.value = true; // Começou a validar
     const validos = []; // Array para armazenar os dados válidos
     const invalidos = []; // Array para armazenar os dados inválidos
 
@@ -184,7 +196,8 @@ const validarDados = async () => {
         }
 
         // Valida o campo "CPF"
-        if (!mappedRow.CPF || !isValidCPF(mappedRow.CPF)) {
+        // Exemplo simples: verifica se o CPF tem 11 dígitos numéricos
+        if (!mappedRow.CPF || !/^\d{11}$/.test(String(mappedRow.CPF))) {
             errors.CPF = 'CPF inválido'; // Mensagem de erro se o CPF for inválido
         }
 
@@ -194,11 +207,13 @@ const validarDados = async () => {
         }
 
         // Valida o campo "Email"
-        if (!mappedRow.Email || !isValidEmail(mappedRow.Email)) {
-            errors.Email = 'Email inválido'; // Mensagem de erro se o email for inválido
+        const email = String(mappedRow.Email || '').trim();
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            errors.Email = 'Email inválido';
         }
 
-        if (!mappedRow.Centro_Custo || !( await isCentroCustoExists(mappedRow.Centro_Custo))) {
+        if (!mappedRow.Centro_Custo || !(await isCentroCustoExists(mappedRow.Centro_Custo))) {
             errors.Centro_Custo = 'Centro de Custo não registrado ou inválido'; // Mensagem de erro se o centro de custo estiver vazio
         }
 
@@ -213,7 +228,7 @@ const validarDados = async () => {
         }
 
         // Valida o campo "Setor"
-        if (!mappedRow.Funcao || !(await isFuncaoExists(mappedRow.Funcao))) {
+        if (!mappedRow.Funcao || !(isFuncaoExists(mappedRow.Funcao))) {
             errors.Funcao = 'Função não registrada ou inválida'; // Mensagem de erro se o setor for inválido
         }
 
@@ -233,6 +248,8 @@ const validarDados = async () => {
     emit('dados-validos', validos); // Envia os dados válidos
     emit('dados-invalidos', invalidos); // Envia os dados inválidos
     emit('mapeamento-completo', validos.length > 0 || invalidos.length > 0); // Emite 'true' ou 'false' se o mapeamento está completo
+
+    isValidating.value = false; // Finalizou validação
 };
 </script>
 

@@ -608,4 +608,5 @@ export default {
     reenviarCorrigido: 'Reenviar Correcciones',
     nomeCompleto: 'Nombre Completo',
     period: 'Período',
+    validandoDados: 'Por favor espere... Validando datos'
 };

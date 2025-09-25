@@ -89,7 +89,7 @@ const handleDatepickerOpen = () => {
         
         <div class="flex flex-row gap-3 mb-5">
             <!-- Select para selecionar DM -->
-            <Select filter id="dm" panelStyle="width: 200px;" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="select1" @change="KeepAlive" />
+            <Select filter id="dm" v-model="relatorio.id_dm" :options="dms" optionLabel="label" optionValue="value" :placeholder="$t('select_machine')" class="mr-3 w-full md:w-14rem" style="width: 20%" ref="select1" @change="KeepAlive" />
             <!-- DatePicker para selecionar a data -->
             <VueDatePicker
                 class="drop w-full md:w-14rem"
@@ -173,7 +173,7 @@ const handleDatepickerOpen = () => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText v-model="filters['global'].value":placeholder="t('search')" autocomplete="off"/>
+                            <InputText v-model="filters['global'].value":placeholder="t('search')" />
                             <!-- Campo de busca global -->
                         </IconField>
                     </div>
@@ -192,7 +192,7 @@ const handleDatepickerOpen = () => {
                     <!-- Exibe a data formatada -->
                 </template>
             </Column>
-            <Column field="Hora" style="width: 15%; text-align: center" sortable :header="t('time')">
+            <Column field="Hora" style="width: 15%; text-align: center" :header="t('time')">
                 <template #body="{ data }">
                     {{ getTimeFromString(data.dataHora) }}
                 </template>
@@ -203,6 +203,14 @@ const handleDatepickerOpen = () => {
     </div>
 </template>
 
-<style>
 
-</style>
+
+
+
+
+
+
+
+
+
+

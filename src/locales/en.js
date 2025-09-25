@@ -614,4 +614,5 @@ export default {
     reenviarCorrigido: 'Resend Corrected File',
     nomeCompleto: 'Full Name',
     period: 'Period',
+    validandoDados: 'Please wait... Validating data'
 };

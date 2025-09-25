@@ -6,6 +6,7 @@ import setorService from '@/Services/SetorService';
 import cdcService from '@/Services/cdcService';
 import dmService from '@/Services/DmService';
 import produtoService from '@/Services/produtoService';
+import funcaoService from '../Services/funcaoService';
 import i18n from '@/i18n';
 
 // Define a store 'data' utilizando Pinia
@@ -30,6 +31,7 @@ export const useDataStore = defineStore('data', {
             ? [{ label: i18n.global.t('all'), value: null }, ...state.setores]
             : [];
         },
+
         cdcsOptions(state) {
           const _ = i18n.global.locale;
           return state.cdcs

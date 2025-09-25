@@ -59,6 +59,7 @@ const salvarRequisicao = async () => {
                         modulo,
                         posicao,
                         andar,
+                        controladora: dipItem.tipo,
                         requisicao: pos.requisicao
                     });
 
@@ -170,6 +171,7 @@ async function carregarDIPsComPosicoes() {
                             placa: p.Placa,
                             mola: p.Mola1,
                             andar: p.Andar,
+                            abastecido: itemEncontrado?.abastecido,
                             produto: itemEncontrado?.id_produto, // ✔
                             posicao: p.Posicao,
                             dip: dip.DIP
@@ -180,6 +182,7 @@ async function carregarDIPsComPosicoes() {
                             placa: p.Placa,
                             mola: p.Mola1,
                             andar: p.Andar,
+                            abastecido: itemEncontrado?.abastecido,
                             posicao: p.Posicao,
                             dip: dip.DIP
                         });
@@ -190,6 +193,7 @@ async function carregarDIPsComPosicoes() {
                         andar: p.Andar || null,
                         mola: p.Mola1 || null,
                         placa: p.Placa || null,
+                        abastecido: itemEncontrado ? itemEncontrado.abastecido : null,
                         produto: itemEncontrado ? itemEncontrado.id_produto : null, // ✔ agora vem do itemEncontrado
                         ocupado,
                         item: itemEncontrado,
@@ -200,7 +204,7 @@ async function carregarDIPsComPosicoes() {
             });
         }
 
-        console.log('DIPs com posições finais:', dipsComPosicoes.value);
+        console.log('Itens abastecidos (azul):', dipsComPosicoes.value.flatMap(dip => dip.posicoes.filter(pos => pos.abastecido === 1)));
     } catch (error) {
         console.error('Erro ao carregar DIPs e posições:', error);
         toast.add({ severity: 'error', summary: 'Erro', life: 3000, detail: 'Falha ao carregar DIPs e posições' });
@@ -318,8 +322,15 @@ onMounted(async () => {
                 </label>
                 <div class="grid-portas ml-2 mt-2">
                     <div v-for="pos in dipItem.posicoes" :key="pos.index"
-                        class="porta p-3 border-1 border-round font-bold cursor-pointer"
-                        :style="{ backgroundColor: pos.ocupado ? '#ef4444' : '#22c55e', color: '#fff' }">
+                        class="porta p-3 border-1 border-round font-bold cursor-pointer" :style="{
+                            backgroundColor:
+                                pos.item?.origem === 'DM_Itens' ? '#ef4444' :         // 🔴 Vermelho: não pode usar
+                                    pos.abastecido === 1 ? '#3B82F6' :                    // 🔵 Azul: abastecido
+                                        pos.item?.origem === 'Retirada_Avulsa' ? 'orange' :   // 🟠 Laranja: aguardando abastecimento
+                                            '#22c55e',                                            // 🟢 Verde: livre
+                            color: '#fff'
+                        }"
+                        v-tooltip="pos.ocupado ? (pos.item?.origem === 'DM_Itens' ? 'Indisponível' : pos.item?.abastecido === 1 ? 'Abastecido' : 'Aguardando abastecimento') : 'Livre'">
                         <!-- Caso seja 2018 -->
                         <div v-if="dipItem.tipo === '2018'" class="text-sm font-semibold">
                             <p class="mb-0 nowrap">Placa {{ pos.placa }} - {{ t('position') }} {{ pos.mola }}</p>
@@ -350,16 +361,19 @@ onMounted(async () => {
                             </template>
                         </div>
 
-                        <div v-if="pos.ocupado" class="card-ocupado flex justify-between items-center">
-                            <div class="texto-ocupado" :class="{
-                                'bg-red-400': pos.item?.origem === 'Retirada_Avulsa', // Requisição (vermelho)
-                                'bg-gray-400': pos.item?.origem === 'DM_Itens' // Produto (cinza)
-                            }">
-                            <span>{{ pos.ocupadoPor }}</span>
-                        </div> 
-                            <Button v-if="pos.item?.origem === 'Retirada_Avulsa'" icon="pi pi-trash"
-                                severity="danger" size="small" text rounded class="delete-btn"
-                                @click="excluirRequisicao(dipItem, pos)" />
+                        <div v-if="pos.ocupado" class="card-ocupado flex justify-between items-center" :style="{
+                            backgroundColor:
+                                pos.item?.origem === 'DM_Itens' ? '#f9becc' :         // 🔴 Vermelho: não pode usar
+                                    pos.abastecido === 1 ? '#84cef9' :                    // 🔵 Azul: abastecido
+                                        pos.item?.origem === 'Retirada_Avulsa' ? '#ffc04d' :   // 🟠 Laranja: aguardando abastecimento
+                                            '#22c55e',                                            // 🟢 Verde: livre
+                            color: '#fff',
+                        }">
+                            <div class="texto-ocupado">
+                                <span>{{ pos.ocupadoPor }}</span>
+                            </div>
+                            <Button v-if="pos.item?.origem === 'Retirada_Avulsa'" icon="pi pi-trash" severity="danger"
+                                size="small" text rounded class="delete-btn" @click="excluirRequisicao(dipItem, pos)" />
 
 
                         </div>
@@ -411,10 +425,8 @@ onMounted(async () => {
 .card-ocupado {
     position: relative;
     padding: 2px 2px;
-    background: #fba0a0;
     /* vermelho */
     border-radius: 5px;
-    color: white;
     font-size: 0.85rem;
     display: flex;
     justify-content: space-between;

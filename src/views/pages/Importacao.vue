@@ -27,8 +27,8 @@
                     <div>
                         <component v-if="componenteAtual" :is="componenteAtual" :fileData="fileData" @dados-validos="handleDadosValidos" @dados-invalidos="handleDadosInvalidos" @mapeamento-completo="updateValidacaoConcluida" />
                         <div class="flex justify-content-between mt-4">
-                            <Button :label="$t('back')" icon="pi pi-arrow-left" @click="activateCallback('1')" />
-                            <Button :label="$t('proximo')" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="activateCallback('3')" />
+                            <Button :label="t('back')" icon="pi pi-arrow-left" @click="activateCallback('1')" />
+                            <Button :label="t('proximo')" icon="pi pi-arrow-right" :disabled="!validacaoConcluida" @click="activateCallback('3')" />
                         </div>
                     </div>
                 </StepPanel>
@@ -274,24 +274,26 @@ const fieldLabels = ref({});
  */
 const carregarComponente = () => {
     switch (selectedImportType.value) {
-        case 'funcionarios':
-            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoFuncionario.vue'));
-            break;
-        case 'produtos':
-            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoProduto.vue'));
-            break;
-        case 'planta':
-            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoPlanta.vue'));
-            break;
-        case 'setor':
-            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoSetor.vue'));
+        case 'centro_custo':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoCdc.vue'));
             break;
         case 'funcao':
             componenteAtual.value = defineAsyncComponent(() => import('@/components/Validacaofuncao.vue'));
             break;
-        case 'centro_custo':
-            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoCdc.vue'));
+        case 'funcionarios':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoFuncionario.vue'));
             break;
+        case 'planta':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoPlanta.vue'));
+            break;
+        case 'produtos':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoProduto.vue'));
+            break;
+        case 'setor':
+            componenteAtual.value = defineAsyncComponent(() => import('@/components/ValidacaoSetor.vue'));
+            break;
+        
+        
         default:
             componenteAtual.value = null;
     }

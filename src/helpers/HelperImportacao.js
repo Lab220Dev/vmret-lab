@@ -1,4 +1,4 @@
-import { isValidEmail, isValidCPF, isSetorExists, isPlantaExists, isCentroCustoExists } from '@/helpers/HelperValidacao'; // Importa as funções para validação de CPF e Email.
+import { isSetorExists, isPlantaExists, isCentroCustoExists } from '@/helpers/HelperValidacao'; // Importa as funções para validação de CPF e Email.
 import { generateCSV, downloadCSV } from '@/helpers/HelperUtils'; // Importa funções para gerar e baixar arquivos CSV.
 import Papa from 'papaparse'; // Importa a biblioteca PapaParse para processar arquivos CSV.
 
@@ -20,10 +20,9 @@ export const validateRow = async (row, type) => {
         if (!row.Nome || row.Nome.trim() === '') errors.Nome = 'Nome é obrigatório'; // Erro: "Nome é obrigatório"
 
         // Verifica se o CPF é válido, usando a função isValidCPF importada
-        if (!isValidCPF(row.CPF)) errors.CPF = 'CPF inválido'; // Erro: "CPF inválido"
+        if (!row.CPF) errors.CPF = 'CPF inválido'; // Erro: "CPF inválido"
 
-        // Verifica se o email está vazio ou não é válido, usando a função isValidEmail importada
-        if (!row.Email || !isValidEmail(row.Email)) errors.Email = 'Email inválido'; // Erro: "Email inválido"
+        if (!row.Email || row.Email.trim() === '') errors.Email = 'Email inválido'; // Erro: "Email inválido"
 
         // Verifica se a matrícula está vazia
         if (!row.Matrícula || String(row.Matrícula).trim() === '') errors.Matrícula = 'Matrícula é obrigatória'; // Erro: "Matrícula é obrigatória"
@@ -236,11 +235,20 @@ export function processFileReupload(file, onSuccess, onError) {
  * @param {Function} onError - Função de callback a ser chamada em caso de erro.
  */
 export function processFileUpload(file, onSuccess, onError) {
-    Papa.parse(file, {
-        header: true, // Especifica que o arquivo CSV contém um cabeçalho, que será usado para mapear os campos
-        complete: (results) => onSuccess(results.data), // Chama a função de sucesso passando os dados processados
-        error: () => onError('Erro ao processar o arquivo.') // Chama a função de erro caso ocorra algum problema durante o processamento
-    });
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+        const csvContent = e.target.result;
+
+        Papa.parse(csvContent, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => onSuccess(results.data),
+            error: () => onError('Erro ao processar o arquivo.')
+        });
+    };
+
+    reader.readAsText(file, "ISO-8859-1");
 }
 // HelperImportacao.js
 
