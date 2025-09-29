@@ -34,6 +34,7 @@ export default {
     yes_no: 'Sí/No',
     back: 'Regresa',
     save: 'Guardar',
+    saveMenu: 'Guardar Menu',
     factory: 'Planta',
     role: 'Perfil',
     status_active: 'Activo',
@@ -608,5 +609,9 @@ export default {
     reenviarCorrigido: 'Reenviar Correcciones',
     nomeCompleto: 'Nombre Completo',
     period: 'Período',
-    validandoDados: 'Por favor espere... Validando datos'
+    validandoDados: 'Por favor espere... Validando datos',
+    onlyCSV: 'Solo se aceptan archivos en formato CSV',
+    onlyCSV0:'El nombre del empleado debe contener como máximo 40 caracteres, incluidos los espacios',
+    onlyCSV1:  'Asegúrese de que no haya empleados duplicados ni previamente registrados en el sistema, considerando que el nombre del empleado se utiliza como clave única de identificación',
+    onlyCSV2: 'Los datos inválidos podrán corregirse directamente en la tabla disponible en el paso 3 o a través del menú: Registros > Empleados, seleccionando el empleado que desea editar'
 };

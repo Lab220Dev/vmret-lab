@@ -33,6 +33,7 @@ export default {
     yes_no: 'Sim/Não',
     back: 'Voltar',
     save: 'Salvar',
+    saveMenu: 'Salvar Menu',
     factory: 'Planta',
     role: 'Role',
     status_active: 'Ativo',
@@ -644,5 +645,9 @@ export default {
     reenviarCorrigido: 'Reenviar arquivo corrigido',
     nomeCompleto: 'Nome Completo',
     period: 'Período',
-    validandoDados: 'Por favor aguarde... Validando dados'
+    validandoDados: 'Por favor aguarde... Validando dados',
+    onlyCSV: 'Apenas arquivos no formato CSV são aceitos',
+    onlyCSV0: 'O nome do funcionário deve conter 40 caracteres no máximo, incluindo os espaços',
+    onlyCSV1: 'Certifique-se de que não há funcionários duplicados ou já cadastrados anteriormente no sistema, considerando que o nome do funcionário é utilizado como chave única para identificação',
+    onlyCSV2: 'Os dados inválidos poderão ser corrigidos diretamente na tabela disponível no passo 3 ou por meio do menu: Cadastros > Funcionários, selecionando o funcionário desejado para edição'
 };

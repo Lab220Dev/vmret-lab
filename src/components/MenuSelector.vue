@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" :label="t('save')" @click="submitMenu" /></div> <!-- Botão para salvar as seleções -->
+        <div class="mr-1 mt-8 grid justify-content-end"><Button class="botao" v-if="selectedPerfil" :label="t('saveMenu')" @click="submitMenu" /></div> <!-- Botão para salvar as seleções -->
     </div>
 </template>
 
@@ -159,27 +159,28 @@ const menus = computed(() => ({
 const filteredMenus = computed(() => menus.value[props.selectedPerfil] || []); //menus filtrados conforme o perfil selecionado
 
 onMounted(() => {
-    //hook que é executado quando o componente é montado
-    if (props.initialMenus) {
-        // Verifica se o `props.initialMenus` foi passado (não é null ou undefined)
-        props.initialMenus.forEach((menu) => {
-            // Itera sobre os menus recebidos (inicialmente definidos pelo componente pai)
+  const menus = props.initialMenus || []; // já é um array
+  if (menus.length > 0) {
+    menus.forEach((menu) => {
             if (!selectedMenus.value.includes(menu.name)) {
-                // Verifica se o menu já foi selecionado (evitar duplicações)
-                selectedMenus.value.push(menu.name); // Adiciona o nome do menu à lista de menus selecionados
-                menu.submenus?.forEach((submenu) => {
-                    // Verifica se o menu possui submenus
-                    selectedSubmenus.value.push(submenu.name); // Adiciona o nome do submenu à lista de submenus selecionados
-                    submenu.subsubmenus?.forEach((subsubmenu) => {
-                        // Verifica se o submenu possui subsubmenus
-                        selectedSubsubmenus.value.push(subsubmenu.name); // Adiciona o nome do subsubmenu à lista de subsubmenus selecionados
-                    });
-                });
+                selectedMenus.value.push(menu.name);
             }
+            menu.submenus?.forEach((submenu) => {
+                if (!selectedSubmenus.value.includes(submenu.name)) {
+                    selectedSubmenus.value.push(submenu.name);
+                }
+                submenu.subsubmenus?.forEach((subsubmenu) => {
+                    if (!selectedSubsubmenus.value.includes(subsubmenu.name)) {
+                        selectedSubsubmenus.value.push(subsubmenu.name);
+                    }
+                });
+            });
         });
-        console.log(props.initialMenus); // Exibe os menus iniciais no console (útil para debug)
+        buildStructuredMenus();
     }
 });
+
+
 
 /**
  * Estrutura os menus selecionados de forma hierárquica.

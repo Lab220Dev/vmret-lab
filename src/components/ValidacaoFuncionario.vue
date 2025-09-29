@@ -41,6 +41,15 @@
     <i class="pi pi-spin pi-spinner mr-2"></i>
     {{ $t('validandoDados') || 'Validando dados, por favor aguarde...' }}
 </p>
+<div class="validation-container card border-primary-500">
+    <h5>Orientações:</h5>
+    <Divider></Divider>
+    <ul>
+        <li>{{ $t('onlyCSV') }}.</li>
+        <li>{{ $t('onlyCSV1') }}.</li>
+        <li>{{ $t('onlyCSV2') }}.</li>
+    </ul>
+</div>
     </div>
 </template>
 <script setup>

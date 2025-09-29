@@ -10,7 +10,7 @@ const ImportService = {
             const response = await axios.post('/import/mass', data);
             return response.data;
         } catch (error) {
-            console.error('Erro ao listar clientes:', error.message);
+            console.error('Erro ao importar dados:', error.message);
             throw error;
         }
     }

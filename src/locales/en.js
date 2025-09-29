@@ -34,6 +34,7 @@ export default {
     yes_no: 'Yes/No?',
     back: 'Back',
     save: 'Save',
+    saveMenu: 'Save Menu',
     factory: 'Factory',
     role: 'Role',
     status_active: 'Active',
@@ -614,5 +615,9 @@ export default {
     reenviarCorrigido: 'Resend Corrected File',
     nomeCompleto: 'Full Name',
     period: 'Period',
-    validandoDados: 'Please wait... Validating data'
+    validandoDados: 'Please wait... Validating data',
+    onlyCSV: 'Only files in CSV format are accepted',
+    onlyCSV0: 'The employees name must contain a maximum of 40 characters, including spaces.',
+    onlyCSV1: 'Make sure there are no duplicate employees or employees already registered in the system, as the employees name is used as a unique identification key',
+    onlyCSV2: 'Invalid data can be corrected directly in the table available in step 3 or through the menu: Records > Employees, by selecting the employee you wish to edit'
 };
